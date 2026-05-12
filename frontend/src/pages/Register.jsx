@@ -9,8 +9,9 @@ function Register() {
 
   const handleRegister = async () => {
     try {
+      // تم التعديل هنا لربط عملية التسجيل بالرابط العالمي المنشور على Render
       const response = await fetch(
-        "http://localhost:3000/api/users/register",
+        `${import.meta.env.VITE_API_URL}/api/users/register`,
         {
           method: "POST",
           headers: {

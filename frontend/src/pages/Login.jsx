@@ -9,8 +9,9 @@ function Login() {
 
   const handleLogin = async () => {
     try {
+      // تم التعديل هنا لاستخدام المتغير البيئي من ملف .env
       const response = await fetch(
-        "http://localhost:3000/api/users/login",
+        `${import.meta.env.VITE_API_URL}/api/users/login`,
         {
           method: "POST",
           headers: {

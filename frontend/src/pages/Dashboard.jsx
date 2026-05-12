@@ -16,8 +16,9 @@ function Dashboard() {
 
   const getProducts = async () => {
     try {
+      // تم التعديل هنا لجلب المنتجات من السيرفر المباشر
       const response = await fetch(
-        "http://localhost:3000/api/products/my-products",
+        `${import.meta.env.VITE_API_URL}/api/products/my-products`,
         {
           headers: { Authorization: token },
         }
@@ -43,8 +44,9 @@ function Dashboard() {
 
   const createStore = async () => {
     try {
+      // تم التعديل هنا لإنشاء المتجر على السيرفر المباشر
       const response = await fetch(
-        "http://localhost:3000/api/stores/create",
+        `${import.meta.env.VITE_API_URL}/api/stores/create`,
         {
           method: "POST",
           headers: {
@@ -73,8 +75,9 @@ function Dashboard() {
 
   const createProduct = async () => {
     try {
+      // تم التعديل هنا لإضافة منتج جديد عبر السيرفر المباشر
       const response = await fetch(
-        "http://localhost:3000/api/products/create",
+        `${import.meta.env.VITE_API_URL}/api/products/create`,
         {
           method: "POST",
           headers: {
