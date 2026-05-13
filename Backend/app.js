@@ -1,3 +1,4 @@
+require('dotenv').config(); // السطر الأهم: يجب أن يكون أول سطر في الملف لتمكين قراءة متغيرات البيئة
 const express = require("express");
 const cors = require("cors");
 
@@ -10,27 +11,26 @@ const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
-// connect database
+// الاتصال بقاعدة البيانات
 connectDB();
 
-// middleware
+// Middlewares
 app.use(express.json());
+app.use(cors()); // يسمح لـ Vercel بالتواصل مع السيرفر
 
-// CORS
-app.use(cors());
-
-// routes
+// Routes
 app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
-// test route
+// Test route
 app.get("/", (req, res) => {
-  res.send("Hello SaaS 🚀");
+  res.send("Hello SaaS 🚀 - Server is Running and Database is Connected!");
 });
 
-// server
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+// Server
+const PORT = process.env.PORT || 3000; // Render يحدد المنفذ تلقائياً
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
