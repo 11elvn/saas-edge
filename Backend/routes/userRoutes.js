@@ -11,7 +11,6 @@ const auth = require("../middleware/auth");
 // REGISTER
 router.post("/register", async (req, res) => {
   try {
-
     const { email, password } = req.body;
 
     // validation
@@ -22,7 +21,9 @@ router.post("/register", async (req, res) => {
     }
 
     // duplicate email
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      email,
+    });
 
     if (existingUser) {
       return res.status(400).json({
@@ -31,7 +32,8 @@ router.post("/register", async (req, res) => {
     }
 
     // hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
     // create user
     const user = new User({
@@ -46,18 +48,17 @@ router.post("/register", async (req, res) => {
     });
 
   } catch (error) {
+    console.log(error);
 
     res.status(500).json({
       message: "Server error ❌",
     });
-
   }
 });
 
 // LOGIN
 router.post("/login", async (req, res) => {
   try {
-
     const { email, password } = req.body;
 
     // validation
@@ -68,7 +69,9 @@ router.post("/login", async (req, res) => {
     }
 
     // find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      email,
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -77,10 +80,11 @@ router.post("/login", async (req, res) => {
     }
 
     // compare password
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isMatch) {
       return res.status(400).json({
@@ -93,7 +97,7 @@ router.post("/login", async (req, res) => {
       {
         id: user._id,
       },
-      "SECRET_KEY",
+      process.env.JWT_SECRET,
       {
         expiresIn: "1d",
       }
@@ -105,29 +109,30 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (error) {
+    console.log(error);
 
     res.status(500).json({
       message: "Server error ❌",
     });
-
   }
 });
 
 // PROFILE
 router.get("/profile", auth, async (req, res) => {
   try {
-
-    const user = await User.findById(req.user.id)
-      .select("-password");
+    const user =
+      await User.findById(
+        req.user.id
+      ).select("-password");
 
     res.status(200).json(user);
 
   } catch (error) {
+    console.log(error);
 
     res.status(500).json({
       message: "Server error ❌",
     });
-
   }
 });
 
