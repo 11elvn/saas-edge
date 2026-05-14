@@ -5,59 +5,94 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // الحالة الابتدائية للمتجر نضعها false لضمان فحصها من السيرفر أولاً
-  const [hasStore, setHasStore] = useState(false);
+  // Store
+  const [hasStore, setHasStore] = useState(true);
   const [storeName, setStoreName] = useState("");
+
+  // Products
   const [products, setProducts] = useState([]);
 
-  // حالات إدخال المنتج
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [currentPrice, setCurrentPrice] = useState("");
-  const [oldPrice, setOldPrice] = useState("");
+  // Orders
+  const [orders, setOrders] = useState([]);
 
-  // دالة جلب المنتجات وفحص وجود المتجر
+  // Product form
+  const [name, setName] = useState("");
+  const [description, setDescription] =
+    useState("");
+  const [currentPrice, setCurrentPrice] =
+    useState("");
+  const [oldPrice, setOldPrice] =
+    useState("");
+
+  // =========================
+  // GET PRODUCTS
+  // =========================
   const getProducts = async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/products/my-products`,
         {
-          headers: { 
-            "Authorization": `Bearer ${token}` 
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (response.status === 404) {
         setHasStore(false);
-        setProducts([]);
         return;
       }
 
-      if (response.ok && Array.isArray(data)) {
-        setHasStore(true);
-        setProducts(data);
-      }
+      setProducts(data);
 
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.log(error);
     }
   };
 
-  // دالة إنشاء المتجر
-  const createStore = async () => {
-    if (!storeName.trim()) return alert("Please enter a store name");
+  // =========================
+  // GET ORDERS
+  // =========================
+  const getOrders = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/my-orders`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
 
+      const data =
+        await response.json();
+
+      setOrders(data);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =========================
+  // CREATE STORE
+  // =========================
+  const createStore = async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/stores/create`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${token}`,
           },
           body: JSON.stringify({
             name: storeName,
@@ -65,22 +100,21 @@ function Dashboard() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.ok) {
-        alert("Store created successfully! 🎉");
-        setHasStore(true); // تحديث الحالة فوراً لإخفاء نموذج الإنشاء
-        getProducts();     // جلب البيانات لتحديث العدادات
-      } else {
-        alert(data.message || "Error creating store");
-      }
+      alert(data.message);
+
+      window.location.reload();
 
     } catch (error) {
-      console.error("Error creating store:", error);
+      console.log(error);
     }
   };
 
-  // دالة إضافة منتج جديد
+  // =========================
+  // CREATE PRODUCT
+  // =========================
   const createProduct = async () => {
     try {
       const response = await fetch(
@@ -88,8 +122,10 @@ function Dashboard() {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${token}`,
           },
           body: JSON.stringify({
             name,
@@ -100,26 +136,48 @@ function Dashboard() {
         }
       );
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("Product added successfully! ✅");
-        // تفريغ الحقول بعد النجاح
-        setName("");
-        setDescription("");
-        setCurrentPrice("");
-        setOldPrice("");
-        // تحديث القائمة
-        getProducts();
-      } else {
-        alert(data.message || "Error adding product");
-      }
+      const data =
+        await response.json();
+
+      alert(data.message);
+
+      getProducts();
 
     } catch (error) {
-      console.error("Error creating product:", error);
+      console.log(error);
     }
   };
 
+  // =========================
+  // UPDATE ORDER STATUS
+  // =========================
+  const markShipped =
+    async (orderId) => {
+      try {
+        await fetch(
+          `${import.meta.env.VITE_API_URL}/api/orders/update-status/${orderId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Authorization:
+                `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              status: "shipped",
+            }),
+          }
+        );
+
+        getOrders();
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  // logout
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -130,101 +188,184 @@ function Dashboard() {
       navigate("/login");
       return;
     }
+
     getProducts();
-  }, [token]);
+    getOrders();
+
+  }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-bold">Dashboard 🚀</h1>
-        <button
-          onClick={logout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
-        >
-          Logout
-        </button>
-      </div>
+    <div style={{ padding: 20 }}>
+      <h1>Dashboard 🚀</h1>
 
-      <hr className="my-6" />
+      <button onClick={logout}>
+        Logout
+      </button>
 
-      {/* عرض الإحصائيات فقط إذا كان لديه متجر */}
-      {hasStore && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-blue-500 text-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg opacity-80">Total Products</h3>
-            <p className="text-3xl font-bold">{products.length}</p>
-          </div>
-          <div className="bg-green-500 text-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg opacity-80">Total Orders</h3>
-            <p className="text-3xl font-bold">0</p>
-          </div>
-          <div className="bg-purple-500 text-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg opacity-80">Total Sales</h3>
-            <p className="text-3xl font-bold">0 DA</p>
-          </div>
-        </div>
-      )}
+      <hr />
 
-      {/* التبديل بين نموذج إنشاء المتجر ونموذج إضافة المنتجات */}
       {!hasStore ? (
-        <div className="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
-          <h2 className="text-2xl font-semibold mb-4">Welcome! Create Your Store First</h2>
-          <div className="space-y-4">
-            <input
-              className="border p-3 rounded w-full focus:ring-2 focus:ring-blue-400 outline-none"
-              placeholder="Store Name (e.g., My Awesome Shop)"
-              value={storeName}
-              onChange={(e) => setStoreName(e.target.value)}
-            />
-            <button
-              onClick={createStore}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition w-full md:w-auto"
-            >
-              Create My Store
-            </button>
-          </div>
+        <div>
+          <h2>Create Store</h2>
+
+          <input
+            placeholder="Store Name"
+            onChange={(e) =>
+              setStoreName(
+                e.target.value
+              )
+            }
+          />
+
+          <br /><br />
+
+          <button
+            onClick={createStore}
+          >
+            Create Store
+          </button>
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">Add New Product</h2>
-          <div className="space-y-4">
-            <input
-              className="border p-3 rounded w-full focus:ring-2 focus:ring-green-400 outline-none"
-              placeholder="Product Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <textarea
-              className="border p-3 rounded w-full focus:ring-2 focus:ring-green-400 outline-none"
-              placeholder="Product Description"
-              rows="3"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                className="border p-3 rounded w-full focus:ring-2 focus:ring-green-400 outline-none"
-                placeholder="Current Price (DA)"
-                type="number"
-                value={currentPrice}
-                onChange={(e) => setCurrentPrice(e.target.value)}
-              />
-              <input
-                className="border p-3 rounded w-full focus:ring-2 focus:ring-green-400 outline-none"
-                placeholder="Old Price (DA)"
-                type="number"
-                value={oldPrice}
-                onChange={(e) => setOldPrice(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={createProduct}
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold transition w-full"
-            >
-              Add Product to Store
-            </button>
-          </div>
-        </div>
+        <>
+          <h2>Create Product</h2>
+
+          <input
+            placeholder="Name"
+            onChange={(e) =>
+              setName(
+                e.target.value
+              )
+            }
+          />
+
+          <br /><br />
+
+          <input
+            placeholder="Description"
+            onChange={(e) =>
+              setDescription(
+                e.target.value
+              )
+            }
+          />
+
+          <br /><br />
+
+          <input
+            placeholder="Current Price"
+            onChange={(e) =>
+              setCurrentPrice(
+                e.target.value
+              )
+            }
+          />
+
+          <br /><br />
+
+          <input
+            placeholder="Old Price"
+            onChange={(e) =>
+              setOldPrice(
+                e.target.value
+              )
+            }
+          />
+
+          <br /><br />
+
+          <button
+            onClick={
+              createProduct
+            }
+          >
+            Add Product
+          </button>
+
+          <hr />
+
+          <h2>
+            My Products
+          </h2>
+
+          {products.map(
+            (product) => (
+              <div
+                key={
+                  product._id
+                }
+              >
+                <h3>
+                  {
+                    product.name
+                  }
+                </h3>
+                <p>
+                  {
+                    product.description
+                  }
+                </p>
+                <hr />
+              </div>
+            )
+          )}
+
+          <hr />
+
+          <h2>
+            My Orders 📦
+          </h2>
+
+          {orders.map(
+            (order) => (
+              <div
+                key={
+                  order._id
+                }
+              >
+                <h3>
+                  {
+                    order.customerName
+                  }
+                </h3>
+
+                <p>
+                  {
+                    order.phone
+                  }
+                </p>
+
+                <p>
+                  {
+                    order
+                      .productId
+                      ?.name
+                  }
+                </p>
+
+                <p>
+                  {
+                    order.status
+                  }
+                </p>
+
+                {order.status ===
+                  "pending" && (
+                  <button
+                    onClick={() =>
+                      markShipped(
+                        order._id
+                      )
+                    }
+                  >
+                    Mark Shipped
+                  </button>
+                )}
+
+                <hr />
+              </div>
+            )
+          )}
+        </>
       )}
     </div>
   );
