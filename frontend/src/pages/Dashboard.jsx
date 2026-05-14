@@ -16,11 +16,13 @@ function Dashboard() {
 
   const getProducts = async () => {
     try {
-      // تم التعديل هنا لجلب المنتجات من السيرفر المباشر
+      // تعديل: إضافة Bearer قبل التوكن ليتوافق مع الـ Middleware في الباكند
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/products/my-products`,
         {
-          headers: { Authorization: token },
+          headers: { 
+            "Authorization": `Bearer ${token}` 
+          },
         }
       );
 
@@ -38,20 +40,19 @@ function Dashboard() {
       }
 
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching products:", error);
     }
   };
 
   const createStore = async () => {
     try {
-      // تم التعديل هنا لإنشاء المتجر على السيرفر المباشر
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/stores/create`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: token,
+            "Authorization": `Bearer ${token}`, // تعديل هنا أيضاً
           },
           body: JSON.stringify({
             name: storeName,
@@ -60,7 +61,6 @@ function Dashboard() {
       );
 
       const data = await response.json();
-
       alert(data.message);
 
       if (response.ok) {
@@ -69,20 +69,19 @@ function Dashboard() {
       }
 
     } catch (error) {
-      console.log(error);
+      console.log("Error creating store:", error);
     }
   };
 
   const createProduct = async () => {
     try {
-      // تم التعديل هنا لإضافة منتج جديد عبر السيرفر المباشر
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/products/create`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: token,
+            "Authorization": `Bearer ${token}`, // تعديل هنا أيضاً
           },
           body: JSON.stringify({
             name,
@@ -94,12 +93,20 @@ function Dashboard() {
       );
 
       const data = await response.json();
-
       alert(data.message);
-      getProducts();
+      
+      if (response.ok) {
+        // تفريغ الحقول بعد النجاح
+        setName("");
+        setDescription("");
+        setCurrentPrice("");
+        setOldPrice("");
+        // تحديث القائمة
+        getProducts();
+      }
 
     } catch (error) {
-      console.log(error);
+      console.log("Error creating product:", error);
     }
   };
 
@@ -119,14 +126,10 @@ function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-
-      <h1 className="text-4xl font-bold mb-6">
-        Dashboard 🚀
-      </h1>
-
+      <h1 className="text-4xl font-bold mb-6">Dashboard 🚀</h1>
       <button
         onClick={logout}
-        className="bg-red-500 text-white px-4 py-2 rounded"
+        className="bg-red-500 text-white px-4 py-2 rounded mb-6"
       >
         Logout
       </button>
@@ -135,45 +138,30 @@ function Dashboard() {
 
       {hasStore && (
         <div className="grid grid-cols-3 gap-4 mb-8">
-
           <div className="bg-blue-500 text-white p-6 rounded-xl">
             <h3>Total Products</h3>
-            <p className="text-3xl font-bold">
-              {products.length}
-            </p>
+            <p className="text-3xl font-bold">{products.length}</p>
           </div>
-
           <div className="bg-green-500 text-white p-6 rounded-xl">
             <h3>Total Orders</h3>
-            <p className="text-3xl font-bold">
-              0
-            </p>
+            <p className="text-3xl font-bold">0</p>
           </div>
-
           <div className="bg-purple-500 text-white p-6 rounded-xl">
             <h3>Total Sales</h3>
-            <p className="text-3xl font-bold">
-              0 DA
-            </p>
+            <p className="text-3xl font-bold">0 DA</p>
           </div>
-
         </div>
       )}
 
       {!hasStore ? (
-        <div>
-          <h2>Create Your Store</h2>
-
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Create Your Store</h2>
           <input
             className="border p-3 rounded w-full"
             placeholder="Store Name"
-            onChange={(e) =>
-              setStoreName(e.target.value)
-            }
+            value={storeName}
+            onChange={(e) => setStoreName(e.target.value)}
           />
-
-          <br /><br />
-
           <button
             onClick={createStore}
             className="bg-blue-500 text-white px-6 py-3 rounded"
@@ -182,58 +170,40 @@ function Dashboard() {
           </button>
         </div>
       ) : (
-        <>
-          <h2>Create Product</h2>
-
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Create Product</h2>
           <input
             className="border p-3 rounded w-full"
-            placeholder="Name"
-            onChange={(e) =>
-              setName(e.target.value)
-            }
+            placeholder="Product Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
-
-          <br /><br />
-
           <input
             className="border p-3 rounded w-full"
             placeholder="Description"
-            onChange={(e) =>
-              setDescription(e.target.value)
-            }
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
-
-          <br /><br />
-
           <input
             className="border p-3 rounded w-full"
             placeholder="Current Price"
-            onChange={(e) =>
-              setCurrentPrice(e.target.value)
-            }
+            value={currentPrice}
+            onChange={(e) => setCurrentPrice(e.target.value)}
           />
-
-          <br /><br />
-
           <input
             className="border p-3 rounded w-full"
             placeholder="Old Price"
-            onChange={(e) =>
-              setOldPrice(e.target.value)
-            }
+            value={oldPrice}
+            onChange={(e) => setOldPrice(e.target.value)}
           />
-
-          <br /><br />
-
           <button
             onClick={createProduct}
-            className="bg-green-500 text-white px-6 py-3 rounded"
+            className="bg-green-500 text-white px-6 py-3 rounded w-full md:w-auto"
           >
             Add Product
           </button>
-        </>
+        </div>
       )}
-
     </div>
   );
 }
