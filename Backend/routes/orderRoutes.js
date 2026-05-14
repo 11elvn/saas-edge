@@ -7,61 +7,166 @@ const Store = require("../models/Store");
 
 const auth = require("../middleware/auth");
 
+
+// =============================
 // CREATE ORDER
-router.post("/create/:productId", async (req, res) => {
+// =============================
+router.post("/create", async (req, res) => {
   try {
+    const {
+      productId,
+      customerName,
+      phone,
+    } = req.body;
 
-    const { clientName, phone, address } = req.body;
-
-    // نجيب product
-    const product = await Product.findById(req.params.productId);
-
-    if (!product) {
-      return res.send("Product not found ❌");
+    // validation
+    if (
+      !productId ||
+      !customerName ||
+      !phone
+    ) {
+      return res.status(400).json({
+        message: "Missing fields ❌",
+      });
     }
 
-    // إنشاء الطلب
-    const order = new Order({
-      clientName,
-      phone,
-      address,
+    // check product
+    const product =
+      await Product.findById(productId);
 
-      productId: product._id,
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found ❌",
+      });
+    }
+
+    // create order
+    const order = new Order({
+      productId,
+      customerName,
+      phone,
       storeId: product.storeId,
+      status: "pending",
     });
 
     await order.save();
 
-    res.send("Order created 🧾");
+    res.status(201).json({
+      message: "Order created ✅",
+      order,
+    });
 
   } catch (error) {
-    res.send("Error ❌");
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error ❌",
+    });
   }
 });
 
-// GET STORE ORDERS
+
+// =============================
+// GET MY ORDERS
+// =============================
 router.get("/my-orders", auth, async (req, res) => {
   try {
-
-    // نجيب store تاع user
-    const store = await Store.findOne({
-      owner: req.user.id,
-    });
+    const store =
+      await Store.findOne({
+        owner: req.user.id,
+      });
 
     if (!store) {
-      return res.send("Store not found ❌");
+      return res.status(404).json({
+        message: "Store not found ❌",
+      });
     }
 
-    // نجيب الطلبات
-    const orders = await Order.find({
-      storeId: store._id,
-    });
+    const orders =
+      await Order.find({
+        storeId: store._id,
+      }).populate(
+        "productId",
+        "name currentPrice"
+      );
 
-    res.json(orders);
+    res.status(200).json(orders);
 
   } catch (error) {
-    res.send("Error ❌");
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error ❌",
+    });
   }
 });
+
+
+// =============================
+// UPDATE ORDER STATUS
+// =============================
+router.put(
+  "/update-status/:id",
+  auth,
+  async (req, res) => {
+    try {
+      const { status } = req.body;
+
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found ❌",
+        });
+      }
+
+      const store =
+        await Store.findOne({
+          owner: req.user.id,
+        });
+
+      if (!store) {
+        return res.status(404).json({
+          message:
+            "Store not found ❌",
+        });
+      }
+
+      // ownership check
+      if (
+        order.storeId.toString() !==
+        store._id.toString()
+      ) {
+        return res.status(403).json({
+          message:
+            "Unauthorized ❌",
+        });
+      }
+
+      order.status =
+        status || order.status;
+
+      await order.save();
+
+      res.status(200).json({
+        message:
+          "Order updated ✅",
+        order,
+      });
+
+    } catch (error) {
+      console.log(error);
+
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
+    }
+  }
+);
 
 module.exports = router;
