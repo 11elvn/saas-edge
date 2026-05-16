@@ -12,164 +12,113 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
-  // حالات إدخال المنتج (للإضافة)
+  // حالات إضافة منتج
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
 
-  // حالات التعديل (Edit Mode)
+  // حالة التعديل
   const [editingProduct, setEditingProduct] = useState(null);
 
   // ======================
-  // GET STORE
+  // API CALLS
   // ======================
+
   const getStore = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
-      if (response.status === 404) {
-        setHasStore(false);
-        return;
-      }
+      const data = await res.json();
+      if (res.status === 404) return setHasStore(false);
       setStore(data);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // GET PRODUCTS
-  // ======================
   const getProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await res.json();
       if (Array.isArray(data)) setProducts(data);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // GET ORDERS
-  // ======================
   const getOrders = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await res.json();
       if (Array.isArray(data)) setOrders(data);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // CREATE STORE
-  // ======================
   const createStore = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: storeName }),
       });
-      const data = await response.json();
+      const data = await res.json();
       alert(data.message);
       window.location.reload();
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // CREATE PRODUCT
-  // ======================
   const createProduct = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, description, currentPrice, oldPrice }),
       });
-      const data = await response.json();
+      const data = await res.json();
       alert(data.message);
       getProducts();
       setName(""); setDescription(""); setCurrentPrice(""); setOldPrice("");
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // UPDATE PRODUCT (EDIT) - الميزة الجديدة
-  // ======================
   const updateProduct = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(editingProduct),
       });
-      const data = await response.json();
+      const data = await res.json();
       alert(data.message);
-      setEditingProduct(null); // إغلاق واجهة التعديل
-      getProducts(); // تحديث القائمة
-    } catch (error) {
-      console.log(error);
-    }
+      setEditingProduct(null);
+      getProducts();
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // DELETE PRODUCT
-  // ======================
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/delete/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/delete/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await res.json();
       alert(data.message);
       getProducts();
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
-  // ======================
-  // UPDATE ORDER STATUS
-  // ======================
   const markShipped = async (id) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/orders/update-status/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: "shipped" }),
       });
       getOrders();
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (err) { console.log(err); }
   };
 
   const logout = () => {
@@ -178,119 +127,202 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    if (!token) { navigate("/login"); return; }
+    if (!token) return navigate("/login");
     getStore(); getProducts(); getOrders();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      {/* الترويسة */}
-      <div className="bg-white rounded-2xl shadow p-6 flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-600">Dashboard 🚀</h1>
-        <button onClick={logout} className="bg-red-500 text-white px-5 py-2 rounded-xl">Logout</button>
-      </div>
-
-      {!hasStore ? (
-        <div className="bg-white p-10 rounded-2xl shadow text-center">
-          <h2 className="text-2xl font-bold mb-4">Create your store 🏪</h2>
-          <input className="border p-3 rounded-xl w-full max-w-md" placeholder="Store Name" onChange={(e) => setStoreName(e.target.value)} />
-          <br /><br />
-          <button onClick={createStore} className="bg-blue-600 text-white px-8 py-3 rounded-xl">Create Store</button>
+    <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans pb-12">
+      
+      {/* NAVBAR */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-3xl">🚀</span>
+            <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              SaaS Edge
+            </h1>
+          </div>
+          <button 
+            onClick={logout} 
+            className="bg-red-50 text-red-600 border border-red-100 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-300"
+          >
+            Logout
+          </button>
         </div>
-      ) : (
-        <>
-          {/* رابط المتجر */}
-          {store && (
-            <div className="bg-white p-6 rounded-2xl shadow mb-8">
-              <h2 className="text-xl font-bold mb-3">Your Store Link 🌍</h2>
-              <div className="flex gap-3">
-                <input readOnly value={`${window.location.origin}/store/${store._id}`} className="border p-3 rounded-xl w-full" />
-                <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/store/${store._id}`)} className="bg-blue-600 text-white px-6 rounded-xl">Copy</button>
+      </nav>
+
+      <main className="max-w-6xl mx-auto px-6 mt-10">
+
+        {!hasStore ? (
+          /* CREATE STORE UI */
+          <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center">
+            <div className="text-5xl mb-4">🏪</div>
+            <h2 className="text-2xl font-bold mb-2">Build Your Empire</h2>
+            <p className="text-slate-500 mb-6">Enter a name for your online store to get started.</p>
+            <input 
+              className="w-full border border-slate-200 p-4 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all mb-4" 
+              placeholder="e.g. My Awesome Shop" 
+              onChange={(e) => setStoreName(e.target.value)} 
+            />
+            <button 
+              onClick={createStore} 
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all"
+            >
+              Launch My Store
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* STORE LINK SECTION */}
+            {store && (
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-2xl text-white mb-10 relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-xl font-medium opacity-90 mb-4 flex items-center gap-2">
+                    <span>🌍</span> Your Global Store Link
+                  </h2>
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <input 
+                      readOnly 
+                      value={`${window.location.origin}/store/${store._id}`} 
+                      className="bg-white/10 border border-white/20 p-4 rounded-2xl w-full backdrop-blur-md outline-none text-white placeholder-white/50"
+                    />
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/store/${store._id}`);
+                        alert("Link copied!");
+                      }} 
+                      className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-slate-100 transition-all active:scale-95"
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </div>
+                <div className="absolute -bottom-10 -right-10 text-[150px] opacity-10 rotate-12">🛒</div>
+              </div>
+            )}
+
+            {/* STATS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all">
+                <div>
+                  <h3 className="text-slate-500 font-medium">Active Products</h3>
+                  <p className="text-5xl font-black text-slate-800 mt-1">{products.length}</p>
+                </div>
+                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📦</div>
+              </div>
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-green-300 transition-all">
+                <div>
+                  <h3 className="text-slate-500 font-medium">Total Orders</h3>
+                  <p className="text-5xl font-black text-slate-800 mt-1">{orders.length}</p>
+                </div>
+                <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">💰</div>
               </div>
             </div>
-          )}
 
-          {/* الإحصائيات */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-2xl shadow">
-              <h3 className="text-gray-500">Products</h3>
-              <p className="text-4xl font-bold text-blue-600">{products.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow">
-              <h3 className="text-gray-500">Orders</h3>
-              <p className="text-4xl font-bold text-green-600">{orders.length}</p>
-            </div>
-          </div>
-
-          {/* واجهة تعديل منتج (تظهر فقط عند الضغط على Edit) */}
-          {editingProduct && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
-                <h2 className="text-2xl font-bold mb-6">Edit Product ✏️</h2>
-                <div className="grid gap-4">
-                  <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="border p-3 rounded-xl" placeholder="Name" />
-                  <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="border p-3 rounded-xl" placeholder="Description" />
-                  <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="border p-3 rounded-xl" placeholder="Price" type="number" />
-                  <div className="flex gap-3">
-                    <button onClick={updateProduct} className="bg-green-600 text-white py-3 rounded-xl flex-1 font-bold">Update</button>
-                    <button onClick={() => setEditingProduct(null)} className="bg-gray-200 text-gray-700 py-3 rounded-xl flex-1 font-bold">Cancel</button>
+            {/* MODAL EDIT PRODUCT */}
+            {editingProduct && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+                <div className="bg-white p-8 rounded-[32px] shadow-2xl w-full max-w-lg border border-slate-100 animate-in fade-in zoom-in duration-300">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold">Edit Product Details</h2>
+                    <button onClick={() => setEditingProduct(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+                  </div>
+                  <div className="space-y-4">
+                    <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
+                    <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
+                    <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
+                    <div className="flex gap-3 pt-2">
+                      <button onClick={updateProduct} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Save Changes</button>
+                      <button onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">Cancel</button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* إضافة منتج */}
-          <div className="bg-white p-8 rounded-2xl shadow mb-8">
-            <h2 className="text-2xl font-bold mb-6">Add Product</h2>
-            <div className="grid gap-4">
-              <input value={name} onChange={(e) => setName(e.target.value)} className="border p-3 rounded-xl" placeholder="Name" />
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="border p-3 rounded-xl" placeholder="Description" />
-              <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="border p-3 rounded-xl" placeholder="Current Price" type="number" />
-              <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="border p-3 rounded-xl" placeholder="Old Price" type="number" />
-              <button onClick={createProduct} className="bg-black text-white py-3 rounded-xl font-bold">Save Product</button>
-            </div>
-          </div>
-
-          {/* عرض المنتجات */}
-          <div className="bg-white p-8 rounded-2xl shadow mb-8">
-            <h2 className="text-2xl font-bold mb-6">My Products</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {products.map((product) => (
-                <div key={product._id} className="border p-4 rounded-xl hover:border-blue-300 transition">
-                  <h3 className="font-bold text-lg">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2">{product.description}</p>
-                  <p className="text-blue-600 font-bold">{product.currentPrice} DA</p>
-                  <div className="flex gap-2 mt-3">
-                    <button onClick={() => setEditingProduct(product)} className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Edit</button>
-                    <button onClick={() => deleteProduct(product._id)} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Delete</button>
-                  </div>
+            {/* ADD PRODUCT SECTION */}
+            <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
+              <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
+                <span className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-xl">✨</span>
+                Add New Product
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Name" />
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all min-h-[120px]" placeholder="Detailed Description" />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* عرض الطلبات */}
-          <div className="bg-white p-8 rounded-2xl shadow">
-            <h2 className="text-2xl font-bold mb-6">My Orders 📦</h2>
-            <div className="grid gap-4">
-              {orders.map((order) => (
-                <div key={order._id} className="border p-4 rounded-xl flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold">{order.customerName}</h3>
-                    <p className="text-sm text-gray-500">{order.phone}</p>
-                    <p className="text-sm font-medium">{order.productId?.name}</p>
-                    <p className={`text-sm font-bold ${order.status === 'pending' ? 'text-orange-500' : 'text-green-500'}`}>{order.status}</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
+                    <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all line-through text-slate-400" placeholder="Old Price" type="number" />
                   </div>
-                  {order.status === "pending" && (
-                    <button onClick={() => markShipped(order._id)} className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Mark Shipped</button>
-                  )}
+                  <button onClick={createProduct} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]">
+                    List Product to Store
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
+              </div>
+            </section>
+
+            {/* PRODUCTS LIST */}
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-6 px-2">Catalog Inventory</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <div key={product._id} className="bg-white p-6 rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div className="h-12 w-12 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center text-2xl">🏷️</div>
+                    <h3 className="font-bold text-xl mb-1 truncate">{product.name}</h3>
+                    <p className="text-slate-500 text-sm mb-4 line-clamp-2 min-h-[40px]">{product.description}</p>
+                    <div className="flex items-end gap-2 mb-6">
+                      <span className="text-2xl font-black text-blue-600">{product.currentPrice} DA</span>
+                      {product.oldPrice && <span className="text-slate-300 line-through text-sm mb-1">{product.oldPrice} DA</span>}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setEditingProduct(product)} className="flex-1 bg-amber-50 text-amber-600 py-3 rounded-xl font-bold hover:bg-amber-500 hover:text-white transition-all">Edit</button>
+                      <button onClick={() => deleteProduct(product._id)} className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-500 hover:text-white transition-all">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ORDERS SECTION */}
+            <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+              <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
+                <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
+                Recent Orders
+              </h2>
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <p className="text-slate-400 text-center py-10">No orders yet. Keep pushing! 🚀</p>
+                ) : (
+                  orders.map((order) => (
+                    <div key={order._id} className="bg-slate-50/50 p-5 rounded-2xl flex flex-col md:flex-row justify-between md:items-center gap-4 hover:bg-slate-50 transition-colors">
+                      <div className="flex gap-4 items-center">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">👤</div>
+                        <div>
+                          <h3 className="font-bold">{order.customerName}</h3>
+                          <p className="text-slate-500 text-sm">{order.phone} • {order.productId?.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+                          {order.status}
+                        </span>
+                        {order.status === "pending" && (
+                          <button onClick={() => markShipped(order._id)} className="bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-green-700 active:scale-95 transition-all">
+                            Ship Order
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </>
+        )}
+      </main>
     </div>
   );
 }
