@@ -1,47 +1,24 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import PublicStore from "./pages/PublicStore";
+import PublicStore from "./pages/PublicStore"; // الصفحة العمومية للزبائن
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Navigate to="/login" />
-          }
-        />
+        {/* التوجيه التلقائي للصفحة الرئيسية إلى تسجيل الدخول */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        {/* مسارات لوحة التحكم والتاجر */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/store/:storeId"
-          element={
-            <PublicStore />
-          }
-        />
+        {/* رابط المتجر العمومي للزبائن (Public Store) */}
+        <Route path="/store/:storeId" element={<PublicStore />} />
       </Routes>
     </BrowserRouter>
   );

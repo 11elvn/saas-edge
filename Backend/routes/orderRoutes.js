@@ -7,44 +7,41 @@ const Store = require("../models/Store");
 
 const auth = require("../middleware/auth");
 
-
 // =============================
-// CREATE ORDER
+// CREATE ORDER (Public)
 // =============================
 router.post("/create", async (req, res) => {
   try {
-    const {
-      productId,
-      customerName,
-      phone,
+    const { 
+      productId, 
+      customerName, 
+      phone, 
+      address, 
+      shippingCity, 
+      shippingPrice, 
+      totalPrice 
     } = req.body;
 
-    // validation
-    if (
-      !productId ||
-      !customerName ||
-      !phone
-    ) {
-      return res.status(400).json({
-        message: "Missing fields ❌",
-      });
+    // التحقق من الحقول الأساسية الإجبارية
+    if (!productId || !customerName || !phone || !shippingCity) {
+      return res.status(400).json({ message: "Missing fields ❌" });
     }
 
-    // check product
-    const product =
-      await Product.findById(productId);
-
+    // التأكد من وجود المنتج
+    const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({
-        message: "Product not found ❌",
-      });
+      return res.status(404).json({ message: "Product not found ❌" });
     }
 
-    // create order
+    // إنشاء الطلب بالحقول الجديدة للشحن والتوصيل الجزائري
     const order = new Order({
       productId,
       customerName,
       phone,
+      address: address || "",
+      shippingCity,
+      shippingPrice: Number(shippingPrice) || 0,
+      totalPrice: Number(totalPrice) || product.currentPrice,
       storeId: product.storeId,
       status: "pending",
     });
@@ -55,118 +52,67 @@ router.post("/create", async (req, res) => {
       message: "Order created ✅",
       order,
     });
-
   } catch (error) {
     console.log(error);
-
-    res.status(500).json({
-      message: "Server error ❌",
-    });
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
-
 // =============================
-// GET MY ORDERS
+// GET MY ORDERS (Protected)
 // =============================
 router.get("/my-orders", auth, async (req, res) => {
   try {
-    const store =
-      await Store.findOne({
-        owner: req.user.id,
-      });
-
+    const store = await Store.findOne({ owner: req.user.id });
     if (!store) {
-      return res.status(404).json({
-        message: "Store not found ❌",
-      });
+      return res.status(404).json({ message: "Store not found ❌" });
     }
 
-    const orders =
-      await Order.find({
-        storeId: store._id,
-      }).populate(
-        "productId",
-        "name currentPrice"
-      );
+    // جلب الطلبات مرتبة من الأحدث إلى الأقدم مع بيانات المنتجات
+    const orders = await Order.find({ storeId: store._id })
+      .sort({ createdAt: -1 }) 
+      .populate("productId", "name currentPrice");
 
     res.status(200).json(orders);
-
   } catch (error) {
     console.log(error);
-
-    res.status(500).json({
-      message: "Server error ❌",
-    });
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
-
 // =============================
-// UPDATE ORDER STATUS
+// UPDATE ORDER STATUS (Protected)
 // =============================
-router.put(
-  "/update-status/:id",
-  auth,
-  async (req, res) => {
-    try {
-      const { status } = req.body;
+router.put("/update-status/:id", auth, async (req, res) => {
+  try {
+    const { status } = req.body;
 
-      const order =
-        await Order.findById(
-          req.params.id
-        );
-
-      if (!order) {
-        return res.status(404).json({
-          message:
-            "Order not found ❌",
-        });
-      }
-
-      const store =
-        await Store.findOne({
-          owner: req.user.id,
-        });
-
-      if (!store) {
-        return res.status(404).json({
-          message:
-            "Store not found ❌",
-        });
-      }
-
-      // ownership check
-      if (
-        order.storeId.toString() !==
-        store._id.toString()
-      ) {
-        return res.status(403).json({
-          message:
-            "Unauthorized ❌",
-        });
-      }
-
-      order.status =
-        status || order.status;
-
-      await order.save();
-
-      res.status(200).json({
-        message:
-          "Order updated ✅",
-        order,
-      });
-
-    } catch (error) {
-      console.log(error);
-
-      res.status(500).json({
-        message:
-          "Server error ❌",
-      });
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found ❌" });
     }
+
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store) {
+      return res.status(404).json({ message: "Store not found ❌" });
+    }
+
+    // التحقق من الملكية لضمان الحماية لـ SaaS الخاص بك
+    if (order.storeId.toString() !== store._id.toString()) {
+      return res.status(403).json({ message: "Unauthorized ❌" });
+    }
+
+    order.status = status || order.status;
+    await order.save();
+
+    res.status(200).json({
+      message: "Order updated ✅",
+      order,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error ❌" });
   }
-);
+});
 
 module.exports = router;
