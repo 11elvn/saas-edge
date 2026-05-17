@@ -12,13 +12,13 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
-  // حالات إضافة منتج
+  // حالات إضافة منتج جديد
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
 
-  // حالة التعديل
+  // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
 
   // ======================
@@ -155,7 +155,7 @@ function Dashboard() {
       <main className="max-w-6xl mx-auto px-6 mt-10">
 
         {!hasStore ? (
-          /* CREATE STORE UI */
+          /* واجهة إنشاء متجر جديد */
           <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center">
             <div className="text-5xl mb-4">🏪</div>
             <h2 className="text-2xl font-bold mb-2">Build Your Empire</h2>
@@ -174,7 +174,7 @@ function Dashboard() {
           </div>
         ) : (
           <>
-            {/* STORE LINK SECTION */}
+            {/* رابط المتجر الخاص بالمستخدم */}
             {store && (
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-2xl text-white mb-10 relative overflow-hidden">
                 <div className="relative z-10">
@@ -202,7 +202,7 @@ function Dashboard() {
               </div>
             )}
 
-            {/* STATS GRID */}
+            {/* الإحصائيات العامة */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all">
                 <div>
@@ -220,10 +220,10 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* MODAL EDIT PRODUCT */}
+            {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
             {editingProduct && (
               <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-                <div className="bg-white p-8 rounded-[32px] shadow-2xl w-full max-w-lg border border-slate-100 animate-in fade-in zoom-in duration-300">
+                <div className="bg-white p-8 rounded-[32px] shadow-2xl w-full max-w-lg border border-slate-100">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">Edit Product Details</h2>
                     <button onClick={() => setEditingProduct(null)} className="text-slate-400 hover:text-slate-600">✕</button>
@@ -241,7 +241,7 @@ function Dashboard() {
               </div>
             )}
 
-            {/* ADD PRODUCT SECTION */}
+            {/* قسم إضافة منتج جديد */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
               <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                 <span className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-xl">✨</span>
@@ -264,7 +264,7 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* PRODUCTS LIST */}
+            {/* قسم عرض المنتجات الحالية */}
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-6 px-2">Catalog Inventory</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -286,7 +286,7 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* ORDERS SECTION */}
+            {/* قسم إدارة الطلبات المستلمة */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
               <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                 <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
