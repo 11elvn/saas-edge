@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import PublicStore from "./pages/PublicStore"; // الصفحة العمومية للزبائن
+import ProductDetails from "./pages/ProductDetails"; // 🆕 استيراد صفحة تفاصيل المنتج الجديدة
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
 
         {/* رابط المتجر العمومي للزبائن (Public Store) */}
         <Route path="/store/:storeId" element={<PublicStore />} />
+
+        {/* 🆕 المسار الجديد لصفحة تفاصيل المنتج بناءً على الـ productId */}
+        <Route path="/store/:storeId/product/:productId" element={<ProductDetails />} />
       </Routes>
     </BrowserRouter>
   );
