@@ -81,6 +81,48 @@ router.get("/my-orders", auth, async (req, res) => {
 });
 
 // =============================
+// NEW: GET STORE ANALYTICS (Protected) - Day 25 📊
+// =============================
+router.get("/analytics", auth, async (req, res) => {
+  try {
+    // 1. تحديد متجر التاجر الحالي بناءً على الـ Token
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store) {
+      return res.status(404).json({ message: "Store not found ❌" });
+    }
+
+    const storeId = store._id;
+
+    // 2. حساب عدد المنتجات الإجمالي في المتجر تلقائياً
+    const totalProducts = await Product.countDocuments({ storeId });
+
+    // 3. جلب جميع طلبات المتجر للقيام بالعمليات الحسابية والفلترة
+    const orders = await Order.find({ storeId });
+
+    // 4. إجراء الحسابات اللوجيستية والمالية
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(order => order.status === "pending").length;
+
+    // حساب الإيرادات الإجمالية بناءً على الطلبات التي تم تسليمها فقط (delivered) تماشياً مع طبيعة الـ COD في الجزائر
+    const totalRevenue = orders
+      .filter(order => order.status === "delivered")
+      .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+
+    // 5. إرجاع الأرقام الجاهزة للفرونت-أند
+    res.status(200).json({
+      totalProducts,
+      totalOrders,
+      pendingOrders,
+      totalRevenue
+    });
+
+  } catch (error) {
+    console.error("CRITICAL ERROR IN ANALYTICS ROUTE:", error.message);
+    res.status(500).json({ message: "Server error ❌", error: error.message });
+  }
+});
+
+// =============================
 // UPDATE ORDER STATUS (Protected)
 // =============================
 router.put("/update-status/:id", auth, async (req, res) => {

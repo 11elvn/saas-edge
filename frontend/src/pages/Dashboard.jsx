@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // 🆕 أضفنا Link هنا
+import { useNavigate, Link } from "react-router-dom";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -11,6 +11,14 @@ function Dashboard() {
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+
+  // 🆕 حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
+  const [analytics, setAnalytics] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalRevenue: 0,
+  });
 
   // حالات إضافة منتج جديد
   const [name, setName] = useState("");
@@ -56,6 +64,17 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
+  // 🆕 دالة جلب الإحصائيات من الباك-أند (Day 25)
+  const getAnalytics = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/analytics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) setAnalytics(data);
+    } catch (err) { console.log("خطأ في جلب الإحصائيات:", err); }
+  };
+
   const createStore = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
@@ -79,6 +98,7 @@ function Dashboard() {
       const data = await res.json();
       alert(data.message);
       getProducts();
+      getAnalytics(); // تحديث الأرقام فوراً عند إضافة منتج
       setName(""); setDescription(""); setCurrentPrice(""); setOldPrice("");
     } catch (err) { console.log(err); }
   };
@@ -107,6 +127,7 @@ function Dashboard() {
       const data = await res.json();
       alert(data.message);
       getProducts();
+      getAnalytics(); // تحديث الأرقام فوراً عند حذف منتج
     } catch (err) { console.log(err); }
   };
 
@@ -118,6 +139,7 @@ function Dashboard() {
         body: JSON.stringify({ status: "shipped" }),
       });
       getOrders();
+      getAnalytics(); // تحديث الأرقام فوراً عند تحديث الحالة
     } catch (err) { console.log(err); }
   };
 
@@ -128,7 +150,10 @@ function Dashboard() {
 
   useEffect(() => {
     if (!token) return navigate("/login");
-    getStore(); getProducts(); getOrders();
+    getStore(); 
+    getProducts(); 
+    getOrders();
+    getAnalytics(); // جلب الإحصائيات بمجرد فتح الصفحة
   }, []);
 
   return (
@@ -202,24 +227,47 @@ function Dashboard() {
               </div>
             )}
 
-            {/* الإحصائيات العامة */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all">
-                <div>
-                  <h3 className="text-slate-500 font-medium">Active Products</h3>
-                  <p className="text-5xl font-black text-slate-800 mt-1">{products.length}</p>
-                </div>
-                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📦</div>
-              </div>
+            {/* 🆕 شبكة كروت الإحصائيات المتقدمة لليوم 25 - Analytics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               
-              {/* 🆕 تعديل كرت الطلبات ليصبح قابلاً للضغط كـ رابط لصفحة الجدول */}
-              <Link to="/dashboard/orders" className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-green-500 hover:shadow-md transition-all duration-300 cursor-pointer">
+              {/* كرت إجمالي المنتجات */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all duration-300">
                 <div>
-                  <h3 className="text-slate-500 font-medium group-hover:text-green-600 transition-colors">Total Orders</h3>
-                  <p className="text-5xl font-black text-slate-800 mt-1">{orders.length}</p>
+                  <h3 className="text-slate-400 font-medium text-sm">Total Products</h3>
+                  <p className="text-4xl font-black text-slate-800 mt-1 font-mono">{analytics.totalProducts}</p>
                 </div>
-                <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-green-100 group-hover:scale-110 transition-all">💰</div>
+                <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📦</div>
+              </div>
+
+              {/* كرت إجمالي الطلبات */}
+              <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-emerald-500 hover:shadow-md transition-all duration-300">
+                <div>
+                  <h3 className="text-slate-400 font-medium text-sm group-hover:text-emerald-600 transition-colors">Total Orders</h3>
+                  <p className="text-4xl font-black text-slate-800 mt-1 font-mono">{analytics.totalOrders}</p>
+                </div>
+                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">📋</div>
               </Link>
+
+              {/* كرت الطلبات قيد الانتظار */}
+              <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-amber-500 hover:shadow-md transition-all duration-300">
+                <div>
+                  <h3 className="text-slate-400 font-medium text-sm group-hover:text-amber-600 transition-colors">Pending Orders</h3>
+                  <p className="text-4xl font-black text-amber-600 mt-1 font-mono">{analytics.pendingOrders}</p>
+                </div>
+                <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">⏳</div>
+              </Link>
+
+              {/* كرت إجمالي الأرباح المستلمة */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-violet-500 transition-all duration-300">
+                <div>
+                  <h3 className="text-slate-400 font-medium text-sm">Total Revenue</h3>
+                  <p className="text-3xl font-black text-violet-600 mt-1 font-mono truncate max-w-[160px]">
+                    {analytics.totalRevenue.toLocaleString()} <span className="text-xs font-bold text-slate-400">DA</span>
+                  </p>
+                </div>
+                <div className="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💰</div>
+              </div>
+
             </div>
 
             {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
@@ -290,7 +338,6 @@ function Dashboard() {
 
             {/* قسم إدارة الطلبات المستلمة */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
-              {/* 🆕 تعديل الهيدر ليحتوي على زر الانتقال السريع */}
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
                   <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
@@ -308,7 +355,7 @@ function Dashboard() {
                 {orders.length === 0 ? (
                   <p className="text-slate-400 text-center py-10">No orders yet. Keep pushing! 🚀</p>
                 ) : (
-                  orders.slice(0, 5).map((order) => ( // عرض آخر 5 طلبات فقط لتبقى الصفحة خفيفة
+                  orders.slice(0, 5).map((order) => (
                     <div key={order._id} className="bg-slate-50/50 p-5 rounded-2xl flex flex-col md:flex-row justify-between md:items-center gap-4 hover:bg-slate-50 transition-colors">
                       <div className="flex gap-4 items-center">
                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">👤</div>
@@ -318,7 +365,7 @@ function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+                        <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-amber-100 text-amber-600' : order.status === 'delivered' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                           {order.status}
                         </span>
                         {order.status === "pending" && (
