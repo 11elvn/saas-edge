@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // 🆕 أضفنا Link هنا
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -211,13 +211,15 @@ function Dashboard() {
                 </div>
                 <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📦</div>
               </div>
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-green-300 transition-all">
+              
+              {/* 🆕 تعديل كرت الطلبات ليصبح قابلاً للضغط كـ رابط لصفحة الجدول */}
+              <Link to="/dashboard/orders" className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-green-500 hover:shadow-md transition-all duration-300 cursor-pointer">
                 <div>
-                  <h3 className="text-slate-500 font-medium">Total Orders</h3>
+                  <h3 className="text-slate-500 font-medium group-hover:text-green-600 transition-colors">Total Orders</h3>
                   <p className="text-5xl font-black text-slate-800 mt-1">{orders.length}</p>
                 </div>
-                <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">💰</div>
-              </div>
+                <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-green-100 group-hover:scale-110 transition-all">💰</div>
+              </Link>
             </div>
 
             {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
@@ -288,15 +290,25 @@ function Dashboard() {
 
             {/* قسم إدارة الطلبات المستلمة */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
-              <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
-                Recent Orders
-              </h2>
+              {/* 🆕 تعديل الهيدر ليحتوي على زر الانتقال السريع */}
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
+                  Recent Orders
+                </h2>
+                <Link 
+                  to="/dashboard/orders" 
+                  className="text-blue-600 hover:text-indigo-600 font-semibold text-sm flex items-center gap-1 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all"
+                >
+                  إدارة جميع الطلبات ⬅️
+                </Link>
+              </div>
+
               <div className="space-y-4">
                 {orders.length === 0 ? (
                   <p className="text-slate-400 text-center py-10">No orders yet. Keep pushing! 🚀</p>
                 ) : (
-                  orders.map((order) => (
+                  orders.slice(0, 5).map((order) => ( // عرض آخر 5 طلبات فقط لتبقى الصفحة خفيفة
                     <div key={order._id} className="bg-slate-50/50 p-5 rounded-2xl flex flex-col md:flex-row justify-between md:items-center gap-4 hover:bg-slate-50 transition-colors">
                       <div className="flex gap-4 items-center">
                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">👤</div>

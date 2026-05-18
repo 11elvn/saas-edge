@@ -4,7 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import PublicStore from "./pages/PublicStore"; // الصفحة العمومية للزبائن
-import ProductDetails from "./pages/ProductDetails"; // 🆕 استيراد صفحة تفاصيل المنتج الجديدة
+import ProductDetails from "./pages/ProductDetails"; // صفحة تفاصيل المنتج الجديدة
+import OrdersManagement from "./pages/OrdersManagement"; // 🆕 استيراد صفحة إدارة الطلبات الكاملة لليوم 24
 
 function App() {
   return (
@@ -17,11 +18,14 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* 🆕 المسار الجديد لجدول إدارة الطلبات الكامل بالأزرار الأربعة */}
+        <Route path="/dashboard/orders" element={<OrdersManagement />} />
 
         {/* رابط المتجر العمومي للزبائن (Public Store) */}
         <Route path="/store/:storeId" element={<PublicStore />} />
 
-        {/* 🆕 المسار الجديد لصفحة تفاصيل المنتج بناءً على الـ productId */}
+        {/* المسار لصفحة تفاصيل المنتج بناءً على الـ productId */}
         <Route path="/store/:storeId/product/:productId" element={<ProductDetails />} />
       </Routes>
     </BrowserRouter>
