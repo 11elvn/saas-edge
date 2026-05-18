@@ -6,7 +6,9 @@ const Store = require("../models/Store");
 
 const auth = require("../middleware/auth");
 
-// CREATE PRODUCT
+// =============================
+// CREATE PRODUCT (Protected)
+// =============================
 router.post("/create", auth, async (req, res) => {
   try {
     const {
@@ -14,6 +16,7 @@ router.post("/create", auth, async (req, res) => {
       description,
       currentPrice,
       oldPrice,
+      image, // 🆕 استخراج حقل رابط الصورة من الجسد (req.body)
     } = req.body;
 
     // validation
@@ -41,6 +44,7 @@ router.post("/create", auth, async (req, res) => {
       currentPrice,
       oldPrice,
       storeId: store._id,
+      image: image || undefined, // 🆕 إذا أرسل التاجر رابطاً سيتم حفظه، وإلا سيعتمد الموديل على الصورة الافتراضية
     });
 
     await product.save();
@@ -52,14 +56,15 @@ router.post("/create", auth, async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Server error ❌",
     });
   }
 });
 
-// GET MY PRODUCTS
+// =============================
+// GET MY PRODUCTS (Protected)
+// =============================
 router.get("/my-products", auth, async (req, res) => {
   try {
     const store = await Store.findOne({
@@ -80,14 +85,15 @@ router.get("/my-products", auth, async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Server error ❌",
     });
   }
 });
 
-// UPDATE PRODUCT
+// =============================
+// UPDATE PRODUCT (Protected)
+// =============================
 router.put("/update/:id", auth, async (req, res) => {
   try {
     const product = await Product.findById(
@@ -114,7 +120,7 @@ router.put("/update/:id", auth, async (req, res) => {
     // ownership check
     if (
       product.storeId.toString() !==
-      store._id.toString()
+      store._id.toString
     ) {
       return res.status(403).json({
         message: "Unauthorized ❌",
@@ -136,6 +142,10 @@ router.put("/update/:id", auth, async (req, res) => {
       req.body.oldPrice ||
       product.oldPrice;
 
+    // 🆕 إتاحة الفرصة لتحديث رابط الصورة أيضاً عند تعديل المنتج
+    product.image =
+      req.body.image || product.image;
+
     await product.save();
 
     res.status(200).json({
@@ -145,14 +155,15 @@ router.put("/update/:id", auth, async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Server error ❌",
     });
   }
 });
 
-// DELETE PRODUCT
+// =============================
+// DELETE PRODUCT (Protected)
+// =============================
 router.delete("/delete/:id", auth, async (req, res) => {
   try {
     const product = await Product.findById(
@@ -194,7 +205,6 @@ router.delete("/delete/:id", auth, async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Server error ❌",
     });
@@ -202,9 +212,8 @@ router.delete("/delete/:id", auth, async (req, res) => {
 });
 
 // ==========================================
-// 🆕 PUBLIC ROUTE: GET SINGLE PRODUCT BY ID
+// PUBLIC ROUTE: GET SINGLE PRODUCT BY ID
 // ==========================================
-// لاحظ أننا لم نضع الـ auth هنا لكي يتمكن الزبائن من رؤية تفاصيل المنتج
 router.get("/:productId", async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId);

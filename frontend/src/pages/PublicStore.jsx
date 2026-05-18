@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // 🆕 أضفنا useNavigate هنا
+import { useParams, useNavigate } from "react-router-dom";
 
-// قائمة افتراضية ببعض الولايات وأسعار التوصيل المقترحة (يمكنك التعديل عليها أو توسيعها)
+// قائمة افتراضية ببعض الولايات وأسعار التوصيل المقترحة
 const ALGERIAN_CITIES = [
   { id: "16", name: "الجزائر العاصمة", price: 400 },
   { id: "31", name: "وهران", price: 500 },
@@ -13,9 +13,12 @@ const ALGERIAN_CITIES = [
   { id: "17", name: "الجلفة", price: 550 },
 ];
 
+// رابط الصورة الافتراضية في حال لم يرفع التاجر صورة أو كان الرابط مكسوراً
+const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
+
 function PublicStore() {
   const { storeId } = useParams();
-  const navigate = useNavigate(); // 🆕 تهيئة الـ hook للانتقال بين الصفحات
+  const navigate = useNavigate();
 
   const [storeName, setStoreName] = useState("متجر إلكتروني");
   const [products, setProducts] = useState([]);
@@ -64,7 +67,6 @@ function PublicStore() {
   // ORDER PRODUCT
   // ==================
   const orderProduct = async (productId, productName, productPrice) => {
-    // التحقق من الحقول قبل الإرسال
     if (!customerName.trim()) {
       alert("يرجى إدخال الاسم الكامل أولاً في الأعلى ⚠️");
       return;
@@ -234,11 +236,21 @@ function PublicStore() {
             {products.map((product) => (
               <div
                 key={product._id}
-                className="bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer" // 🆕 أضفنا cursor-pointer هنا
-                onClick={() => navigate(`/store/${storeId}/product/${product._id}`)} // 🆕 عند الضغط على أي مكان في الكارد، يذهب لصفحة تفاصيل المنتج
+                className="bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer group"
+                onClick={() => navigate(`/store/${storeId}/product/${product._id}`)}
               >
-                <div className="h-44 bg-slate-50 w-full flex items-center justify-center text-4xl">
-                  📦
+                {/* 🆕 قسم عرض صورة المنتج الاحترافي الجديد لليوم 26 */}
+                <div className="h-48 w-full bg-slate-50 overflow-hidden relative border-b border-slate-50">
+                  <img
+                    src={product.image || DEFAULT_PRODUCT_IMAGE}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      // حماية تمنع ظهور أي رابط مكسور وتستبدله بالخلفية الافتراضية فوراً
+                      e.target.onerror = null; 
+                      e.target.src = DEFAULT_PRODUCT_IMAGE;
+                    }}
+                  />
                 </div>
 
                 <div className="p-5 flex-1 flex flex-col justify-between">
@@ -266,10 +278,9 @@ function PublicStore() {
                       )}
                     </div>
 
-                    {/* أوقفنا انتشار الحدث هنا لكي لا يتداخل زر الشراء المباشر مع ضغطة الكارد الكاملة */}
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // 🆕 تمنع الانتقال لصفحة التفاصيل عند الضغط على الزر مباشرة، وتنفذ الشراء السريع فقط
+                        e.stopPropagation();
                         orderProduct(product._id, product.name, product.currentPrice);
                       }}
                       className="w-full bg-slate-900 hover:bg-blue-600 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"

@@ -12,7 +12,7 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
-  // 🆕 حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
+  // حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -25,9 +25,13 @@ function Dashboard() {
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
+  const [image, setImage] = useState(""); // 🆕 حالة جديدة لتخزين رابط صورة المنتج
 
   // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // رابط الصورة الافتراضية لحماية الواجهة في الدشبرد
+  const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
   // ======================
   // API CALLS
@@ -64,7 +68,6 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 دالة جلب الإحصائيات من الباك-أند (Day 25)
   const getAnalytics = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/analytics`, {
@@ -93,13 +96,14 @@ function Dashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name, description, currentPrice, oldPrice }),
+        // 🆕 أضفنا حقل الـ image هنا ليرسل للباك-أند
+        body: JSON.stringify({ name, description, currentPrice, oldPrice, image }), 
       });
       const data = await res.json();
       alert(data.message);
       getProducts();
-      getAnalytics(); // تحديث الأرقام فوراً عند إضافة منتج
-      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice("");
+      getAnalytics();
+      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); // 🆕 تصفير حقل الصورة بعد الإضافة
     } catch (err) { console.log(err); }
   };
 
@@ -127,7 +131,7 @@ function Dashboard() {
       const data = await res.json();
       alert(data.message);
       getProducts();
-      getAnalytics(); // تحديث الأرقام فوراً عند حذف منتج
+      getAnalytics();
     } catch (err) { console.log(err); }
   };
 
@@ -139,7 +143,7 @@ function Dashboard() {
         body: JSON.stringify({ status: "shipped" }),
       });
       getOrders();
-      getAnalytics(); // تحديث الأرقام فوراً عند تحديث الحالة
+      getAnalytics();
     } catch (err) { console.log(err); }
   };
 
@@ -153,7 +157,7 @@ function Dashboard() {
     getStore(); 
     getProducts(); 
     getOrders();
-    getAnalytics(); // جلب الإحصائيات بمجرد فتح الصفحة
+    getAnalytics();
   }, []);
 
   return (
@@ -199,7 +203,7 @@ function Dashboard() {
           </div>
         ) : (
           <>
-            {/* رابط المتجر الخاص بالمستخدم */}
+            {/* رابط المتجر */}
             {store && (
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-2xl text-white mb-10 relative overflow-hidden">
                 <div className="relative z-10">
@@ -227,10 +231,8 @@ function Dashboard() {
               </div>
             )}
 
-            {/* 🆕 شبكة كروت الإحصائيات المتقدمة لليوم 25 - Analytics Grid */}
+            {/* شبكة كروت الإحصائيات */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              
-              {/* كرت إجمالي المنتجات */}
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm">Total Products</h3>
@@ -239,7 +241,6 @@ function Dashboard() {
                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📦</div>
               </div>
 
-              {/* كرت إجمالي الطلبات */}
               <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-emerald-500 hover:shadow-md transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm group-hover:text-emerald-600 transition-colors">Total Orders</h3>
@@ -248,7 +249,6 @@ function Dashboard() {
                 <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">📋</div>
               </Link>
 
-              {/* كرت الطلبات قيد الانتظار */}
               <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-amber-500 hover:shadow-md transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm group-hover:text-amber-600 transition-colors">Pending Orders</h3>
@@ -257,7 +257,6 @@ function Dashboard() {
                 <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">⏳</div>
               </Link>
 
-              {/* كرت إجمالي الأرباح المستلمة */}
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-violet-500 transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm">Total Revenue</h3>
@@ -267,7 +266,6 @@ function Dashboard() {
                 </div>
                 <div className="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💰</div>
               </div>
-
             </div>
 
             {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
@@ -282,6 +280,10 @@ function Dashboard() {
                     <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
+                    
+                    {/* 🆕 إضافة حقل تعديل رابط الصورة في الـ Modal */}
+                    <input value={editingProduct.image || ""} onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Image URL (Link)" />
+                    
                     <div className="flex gap-3 pt-2">
                       <button onClick={updateProduct} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Save Changes</button>
                       <button onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">Cancel</button>
@@ -307,6 +309,10 @@ function Dashboard() {
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
                     <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all line-through text-slate-400" placeholder="Old Price" type="number" />
                   </div>
+                  
+                  {/* 🆕 حقل إدخال رابط الصورة الجديد في لوحة التاجر */}
+                  <input value={image} onChange={(e) => setImage(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Image URL (Paste link here)" />
+                  
                   <button onClick={createProduct} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]">
                     List Product to Store
                   </button>
@@ -319,18 +325,38 @@ function Dashboard() {
               <h2 className="text-2xl font-bold mb-6 px-2">Catalog Inventory</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <div key={product._id} className="bg-white p-6 rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                    <div className="h-12 w-12 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center text-2xl">🏷️</div>
-                    <h3 className="font-bold text-xl mb-1 truncate">{product.name}</h3>
-                    <p className="text-slate-500 text-sm mb-4 line-clamp-2 min-h-[40px]">{product.description}</p>
-                    <div className="flex items-end gap-2 mb-6">
-                      <span className="text-2xl font-black text-blue-600">{product.currentPrice} DA</span>
-                      {product.oldPrice && <span className="text-slate-300 line-through text-sm mb-1">{product.oldPrice} DA</span>}
+                  <div key={product._id} className="bg-white rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+                    
+                    {/* 🆕 استبدال الـ Div الرمادي بصورة حقيقية ومتحكم بها */}
+                    <div className="h-44 bg-slate-50 w-full relative overflow-hidden border-b border-slate-100">
+                      <img 
+                        src={product.image || DEFAULT_PRODUCT_IMAGE} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = DEFAULT_PRODUCT_IMAGE;
+                        }}
+                      />
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => setEditingProduct(product)} className="flex-1 bg-amber-50 text-amber-600 py-3 rounded-xl font-bold hover:bg-amber-500 hover:text-white transition-all">Edit</button>
-                      <button onClick={() => deleteProduct(product._id)} className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-500 hover:text-white transition-all">Delete</button>
+
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-bold text-xl mb-1 truncate">{product.name}</h3>
+                        <p className="text-slate-500 text-sm mb-4 line-clamp-2 min-h-[40px]">{product.description}</p>
+                      </div>
+                      <div>
+                        <div className="flex items-end gap-2 mb-6">
+                          <span className="text-2xl font-black text-blue-600">{product.currentPrice} DA</span>
+                          {product.oldPrice && <span className="text-slate-300 line-through text-sm mb-1">{product.oldPrice} DA</span>}
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => setEditingProduct(product)} className="flex-1 bg-amber-50 text-amber-600 py-3 rounded-xl font-bold hover:bg-amber-500 hover:text-white transition-all">Edit</button>
+                          <button onClick={() => deleteProduct(product._id)} className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-500 hover:text-white transition-all">Delete</button>
+                        </div>
+                      </div>
                     </div>
+
                   </div>
                 ))}
               </div>
