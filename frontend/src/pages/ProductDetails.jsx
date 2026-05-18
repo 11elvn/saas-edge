@@ -24,6 +24,9 @@ function ProductDetails() {
   const [shippingPrice, setShippingPrice] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // رابط الصورة الافتراضية لحماية الواجهة في حال لم يرفع التاجر صورة
+  const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
+
   const handleCityChange = (cityName) => {
     setSelectedCity(cityName);
     const city = ALGERIAN_CITIES.find((c) => c.name === cityName);
@@ -106,7 +109,20 @@ function ProductDetails() {
       <main className="max-w-5xl mx-auto px-4 mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* معلومات المنتج */}
         <div className="space-y-6">
-          <div className="h-80 bg-white rounded-[32px] shadow-sm border border-slate-100 flex items-center justify-center text-6xl">📦</div>
+          
+          {/* 🆕 استبدال الـ Div القديم بالصورة الحقيقية والمتحكم بها */}
+          <div className="h-80 bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden relative">
+            <img 
+              src={product.image || DEFAULT_PRODUCT_IMAGE} 
+              alt={product.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null; // يمنع حلقة تكرار لا نهائية إذا كان رابط السقوط مكسوراً أيضاً
+                e.target.src = DEFAULT_PRODUCT_IMAGE;
+              }}
+            />
+          </div>
+
           <div className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
             <h1 className="text-2xl font-black mb-2">{product.name}</h1>
             <div className="text-2xl font-black text-blue-600 mb-4">{product.currentPrice} د.ج</div>
