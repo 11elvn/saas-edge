@@ -37,7 +37,8 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "shipped", "cancelled"], // تحديد الحالات المسموحة فقط
+    // تم إضافة "delivered" هنا لتفادي خطأ الـ ValidationError والـ 500
+    enum: ["pending", "shipped", "delivered", "cancelled"], 
     default: "pending"
   }
 }, { timestamps: true }); // توليد createdAt و updatedAt تلقائياً لتسهيل الترتيب

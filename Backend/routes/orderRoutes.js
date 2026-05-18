@@ -53,7 +53,7 @@ router.post("/create", async (req, res) => {
       order,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error creating order:", error);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
@@ -75,7 +75,7 @@ router.get("/my-orders", auth, async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching store orders:", error);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
@@ -86,6 +86,12 @@ router.get("/my-orders", auth, async (req, res) => {
 router.put("/update-status/:id", auth, async (req, res) => {
   try {
     const { status } = req.body;
+
+    // 1. صمام أمان للباك-أند: التحقق من الحالات المدعومة للتجارة الإلكترونية
+    const allowedStatuses = ["pending", "shipped", "delivered", "cancelled"];
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: "الحالة المرسلة غير صالحة ❌" });
+    }
 
     const order = await Order.findById(req.params.id);
     if (!order) {
@@ -102,6 +108,7 @@ router.put("/update-status/:id", auth, async (req, res) => {
       return res.status(403).json({ message: "Unauthorized ❌" });
     }
 
+    // تحديث الحالة وحفظ التغييرات
     order.status = status || order.status;
     await order.save();
 
@@ -110,8 +117,12 @@ router.put("/update-status/:id", auth, async (req, res) => {
       order,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error ❌" });
+    // طباعة تفصيلية لمعرفة سبب المشكلة فوراً من الـ Logs
+    console.error("CRITICAL ERROR IN UPDATE-STATUS:", error.message);
+    res.status(500).json({ 
+      message: "Server error ❌", 
+      error: error.message 
+    });
   }
 });
 

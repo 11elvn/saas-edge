@@ -14,7 +14,6 @@ const OrdersManagement = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      // تأكد من ضبط الـ Headers لتمرير التوكن الخاص بالتاجر (auth)
       const token = localStorage.getItem("token"); 
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/orders/my-orders`,
@@ -29,24 +28,33 @@ const OrdersManagement = () => {
     }
   };
 
-  // 2. دالة تحديث حالة الطلب عند الضغط على الأزرار
+  // 2. دالة تحديث حالة الطلب المعدلة لتتوافق 100% مع الباك-أند الخاص بك
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
+      
+      // التعديل الجوهري: إرسال الطلب متوافق مع شروط حماية وتوقعات السيرفر لديك
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/orders/update-status/${orderId}`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}` 
+          } 
+        }
       );
       
-      // تحديث الحالة في الواجهة فوراً بدون الحاجة لعمل Refresh للصفحة
+      // تحديث الحالة في الواجهة فوراً بدون الحاجة لعمل Refresh للصحفة
       setOrders(
         orders.map((order) =>
           order._id === orderId ? { ...order, status: newStatus } : order
         )
       );
+
+      alert("تم تحديث حالة الطلب بنجاح! 🎉");
     } catch (err) {
-      console.error(err);
+      console.error("تفاصيل الخطأ كاملة:", err.response || err);
       alert("حدث خطأ أثناء تحديث حالة الطلب ❌");
     }
   };
@@ -63,11 +71,11 @@ const OrdersManagement = () => {
       case "cancelled":
         return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">ملغي 🔴</span>;
       default:
-        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">غير معروف</span>;
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">{status || "غير معروف"}</span>;
     }
   };
 
-  if (loading) return <div className="text-center py-10 font-bold">جاري تحميل الطلبات... 📦</div>;
+  if (loading) return <div className="text-center py-10 font-bold text-slate-600">جاري تحميل الطلبات... 📦</div>;
   if (error) return <div className="text-center py-10 text-red-500 font-bold">{error}</div>;
 
   return (
@@ -107,10 +115,10 @@ const OrdersManagement = () => {
                       {order.productId ? order.productId.name : <span className="text-red-400">منتج محذوف</span>}
                     </td>
                     <td className="p-4 text-gray-600">
-                      <span className="font-bold text-indigo-600">{order.shippingCity}</span>
+                      <span className="font-bold text-indigo-600">{order.shippingCity || "غير محدد"}</span>
                       <p className="text-xs text-gray-400">{order.address}</p>
                     </td>
-                    <td className="p-4 font-bold text-green-600">{order.totalPrice} دج</td>
+                    <td className="p-4 font-bold text-green-600">{order.totalPrice || order.productId?.currentPrice} دج</td>
                     <td className="p-4">{getStatusBadge(order.status)}</td>
                     <td className="p-4">
                       <div className="flex justify-center gap-2">
