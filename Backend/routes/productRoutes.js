@@ -96,9 +96,7 @@ router.get("/my-products", auth, async (req, res) => {
 // =============================
 router.put("/update/:id", auth, async (req, res) => {
   try {
-    const product = await Product.findById(
-      req.params.id
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -117,34 +115,23 @@ router.put("/update/:id", auth, async (req, res) => {
       });
     }
 
-    // ownership check
+    // 🛠️ تم تصحيح الأقواس المفقودة وإضافة حماية للمنتجات القديمة
     if (
-      product.storeId.toString() !==
-      store._id.toString
+      product.storeId && 
+      product.storeId.toString() !== store._id.toString()
     ) {
       return res.status(403).json({
         message: "Unauthorized ❌",
       });
     }
 
-    product.name =
-      req.body.name || product.name;
-
-    product.description =
-      req.body.description ||
-      product.description;
-
-    product.currentPrice =
-      req.body.currentPrice ||
-      product.currentPrice;
-
-    product.oldPrice =
-      req.body.oldPrice ||
-      product.oldPrice;
+    product.name = req.body.name || product.name;
+    product.description = req.body.description || product.description;
+    product.currentPrice = req.body.currentPrice || product.currentPrice;
+    product.oldPrice = req.body.oldPrice || product.oldPrice;
 
     // 🆕 إتاحة الفرصة لتحديث رابط الصورة أيضاً عند تعديل المنتج
-    product.image =
-      req.body.image || product.image;
+    product.image = req.body.image || product.image;
 
     await product.save();
 
@@ -166,9 +153,7 @@ router.put("/update/:id", auth, async (req, res) => {
 // =============================
 router.delete("/delete/:id", auth, async (req, res) => {
   try {
-    const product = await Product.findById(
-      req.params.id
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -189,8 +174,8 @@ router.delete("/delete/:id", auth, async (req, res) => {
 
     // ownership check
     if (
-      product.storeId.toString() !==
-      store._id.toString()
+      product.storeId &&
+      product.storeId.toString() !== store._id.toString()
     ) {
       return res.status(403).json({
         message: "Unauthorized ❌",
