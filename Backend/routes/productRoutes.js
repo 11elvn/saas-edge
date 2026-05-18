@@ -201,4 +201,27 @@ router.delete("/delete/:id", auth, async (req, res) => {
   }
 });
 
+// ==========================================
+// 🆕 PUBLIC ROUTE: GET SINGLE PRODUCT BY ID
+// ==========================================
+// لاحظ أننا لم نضع الـ auth هنا لكي يتمكن الزبائن من رؤية تفاصيل المنتج
+router.get("/:productId", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found ❌",
+      });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Server error ❌",
+    });
+  }
+});
+
 module.exports = router;
