@@ -20,15 +20,13 @@ router.post("/create", auth, async (req, res) => {
       });
     }
 
-    const existingStore =
-      await Store.findOne({
-        owner: req.user.id,
-      });
+    const existingStore = await Store.findOne({
+      owner: req.user.id,
+    });
 
     if (existingStore) {
       return res.status(400).json({
-        message:
-          "Store already exists ❌",
+        message: "Store already exists ❌",
       });
     }
 
@@ -40,47 +38,46 @@ router.post("/create", auth, async (req, res) => {
     await store.save();
 
     res.status(201).json({
-      message:
-        "Store created ✅",
+      message: "Store created ✅",
       store,
     });
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
-      message:
-        "Server error ❌",
+      message: "Server error ❌",
     });
   }
 });
 
 
 // ==========================
-// GET MY STORE
+// GET MY STORE (🆕 مـحدث للأنظمة الكبيرة)
 // ==========================
 router.get("/my-store", auth, async (req, res) => {
   try {
-    const store =
-      await Store.findOne({
-        owner: req.user.id,
-      });
+    const store = await Store.findOne({
+      owner: req.user.id,
+    });
 
+    // 🔥 التعديل هنا: إذا لم يجد متجر، نرد بـ 200 ونخبر الفرونت-أند بوضوح
     if (!store) {
-      return res.status(404).json({
-        message:
-          "Store not found ❌",
+      return res.status(200).json({
+        hasStore: false,
+        store: null
       });
     }
 
-    res.status(200).json(store);
+    // إذا وجد المتجر، نرسله مع علم نجاح التواجد لتسهيل التحقق في الـ Dashboard
+    res.status(200).json({
+      hasStore: true,
+      store: store
+    });
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
-      message:
-        "Server error ❌",
+      message: "Server error ❌",
     });
   }
 });
@@ -91,22 +88,17 @@ router.get("/my-store", auth, async (req, res) => {
 // ==========================
 router.get("/public/:storeId", async (req, res) => {
   try {
-    const store =
-      await Store.findById(
-        req.params.storeId
-      );
+    const store = await Store.findById(req.params.storeId);
 
     if (!store) {
       return res.status(404).json({
-        message:
-          "Store not found ❌",
+        message: "Store not found ❌",
       });
     }
 
-    const products =
-      await Product.find({
-        storeId: store._id,
-      });
+    const products = await Product.find({
+      storeId: store._id,
+    });
 
     res.status(200).json({
       store,
@@ -115,10 +107,8 @@ router.get("/public/:storeId", async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
-      message:
-        "Server error ❌",
+      message: "Server error ❌",
     });
   }
 });

@@ -40,21 +40,24 @@ function Dashboard() {
   // API CALLS
   // ======================
 
+  // 🆕 تم تحديث الدالة لتتوافق مع منطق الـ Enterprise الجديد
   const getStore = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      if (res.status === 404) {
+      const data = await res.json();
+
+      // التحقق الذكي من حقلhasStore القادم من السيرفر بـ 200 OK
+      if (data.hasStore === false || !data.store) {
         setHasStore(false);
-        return false; // 🆕 نرجع false لكي نعلم الـ useEffect أن المستخدم ليس لديه متجر
+        return false; // نرجع false لكي نعلم الـ useEffect أن المستخدم ليس لديه متجر
       }
       
-      const data = await res.json();
-      setStore(data);
+      setStore(data.store); // نخزن المتجر الحقيقي بداخل الـ State
       setHasStore(true);
-      return true; // 🆕 نرجع true إذا كان المتجر موجوداً
+      return true; // نرجع true إذا كان المتجر موجوداً
     } catch (err) { 
       console.log(err); 
       return false;
@@ -166,15 +169,15 @@ function Dashboard() {
     navigate("/login");
   };
 
-  // 🆕 الاستدعاء المشروط والذكي للـ APIs لمنع الـ 404
+  // الاستدعاء المشروط والذكي للـ APIs لمنع الـ 404
   useEffect(() => {
     if (!token) return navigate("/login");
 
     const checkAndFetchData = async () => {
-      // 1. نتحقق من وجود المتجر أولاً وننتظر النتيجة
+      // 1. نتحقق من وجود المتجر أولاً وننتظر النتيجة المنطقية المرجعة
       const storeExists = await getStore(); 
       
-      // 2. إذا كان عنده متجر فعلاً، نجلب بقية البيانات بالتوازي لكي تظهر الواجهة كاملة
+      // 2. إذا كان عنده متجر فعلاً (true)، نجلب بقية البيانات بالتوازي
       if (storeExists) {
         Promise.all([
           getProducts(),
