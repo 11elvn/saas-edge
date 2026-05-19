@@ -12,7 +12,7 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
-  // حالة تخزين الإحصائيات العامة القادمة من الباك-أند
+  // حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -25,7 +25,7 @@ function Dashboard() {
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
-  const [image, setImage] = useState(""); 
+  const [image, setImage] = useState(""); // 🆕 حالة جديدة لتخزين رابط صورة المنتج
 
   // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
@@ -34,25 +34,23 @@ function Dashboard() {
   const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
   // ======================
-  // API CALLS (Corrected Routes)
+  // API CALLS
   // ======================
 
   const getStore = async () => {
     try {
-      // ✅ تعديل المسار ليتوافق مع الباك-أند: حذف /my-store والاكتفاء بالمسار الرئيسي
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.status === 404 || !data) return setHasStore(false);
+      if (res.status === 404) return setHasStore(false);
       setStore(data);
     } catch (err) { console.log(err); }
   };
 
   const getProducts = async () => {
     try {
-      // ✅ تعديل المسار: حذف /my-products والاتصال بـ /api/products مباشرة
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -62,8 +60,7 @@ function Dashboard() {
 
   const getOrders = async () => {
     try {
-      // ✅ تعديل المسار: حذف /my-orders والاتصال بـ /api/orders مباشرة
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -73,60 +70,52 @@ function Dashboard() {
 
   const getAnalytics = async () => {
     try {
-      // ✅ تعديل المسار: التأكد من توجيهه للرابط الصحيح، وفي حال غيابه من الباك-أند لا يعطل الواجهة
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/analytics`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok && !data.message) {
-        // حساب إحصائيات تقريبية مؤقتاً لحين برمجة مسار الـ analytics المنفصل
-        setAnalytics({
-          totalProducts: products.length,
-          totalOrders: Array.isArray(data) ? data.length : 0,
-          pendingOrders: Array.isArray(data) ? data.filter(o => o.status === 'pending').length : 0,
-          totalRevenue: Array.isArray(data) ? data.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0) : 0,
-        });
-      }
+      if (res.ok) setAnalytics(data);
     } catch (err) { console.log("خطأ في جلب الإحصائيات:", err); }
   };
 
   const createStore = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: storeName }),
       });
       const data = await res.json();
-      alert(data.message || "Store Created!");
+      alert(data.message);
       window.location.reload();
     } catch (err) { console.log(err); }
   };
 
   const createProduct = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        // 🆕 أضفنا حقل الـ image هنا ليرسل للباك-أند
         body: JSON.stringify({ name, description, currentPrice, oldPrice, image }), 
       });
       const data = await res.json();
-      alert(data.message || "Product Created!");
+      alert(data.message);
       getProducts();
       getAnalytics();
-      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); 
+      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); // 🆕 تصفير حقل الصورة بعد الإضافة
     } catch (err) { console.log(err); }
   };
 
   const updateProduct = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id: editingProduct._id, ...editingProduct }),
+        body: JSON.stringify(editingProduct),
       });
       const data = await res.json();
-      alert(data.message || "Product Updated!");
+      alert(data.message);
       setEditingProduct(null);
       getProducts();
     } catch (err) { console.log(err); }
@@ -135,13 +124,12 @@ function Dashboard() {
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/delete/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id }),
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      alert(data.message || "Product Deleted!");
+      alert(data.message);
       getProducts();
       getAnalytics();
     } catch (err) { console.log(err); }
@@ -149,10 +137,10 @@ function Dashboard() {
 
   const markShipped = async (id) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/orders/update-status/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id, status: "shipped" }),
+        body: JSON.stringify({ status: "shipped" }),
       });
       getOrders();
       getAnalytics();
@@ -253,21 +241,21 @@ function Dashboard() {
                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📦</div>
               </div>
 
-              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-emerald-500 hover:shadow-md transition-all duration-300">
+              <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-emerald-500 hover:shadow-md transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm group-hover:text-emerald-600 transition-colors">Total Orders</h3>
                   <p className="text-4xl font-black text-slate-800 mt-1 font-mono">{analytics.totalOrders}</p>
                 </div>
                 <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">📋</div>
-              </div>
+              </Link>
 
-              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-amber-500 hover:shadow-md transition-all duration-300">
+              <Link to="/dashboard/orders" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-amber-500 hover:shadow-md transition-all duration-300">
                 <div>
                   <h3 className="text-slate-400 font-medium text-sm group-hover:text-amber-600 transition-colors">Pending Orders</h3>
                   <p className="text-4xl font-black text-amber-600 mt-1 font-mono">{analytics.pendingOrders}</p>
                 </div>
                 <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">⏳</div>
-              </div>
+              </Link>
 
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-violet-500 transition-all duration-300">
                 <div>
@@ -292,6 +280,8 @@ function Dashboard() {
                     <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
+                    
+                    {/* 🆕 إضافة حقل تعديل رابط الصورة في الـ Modal */}
                     <input value={editingProduct.image || ""} onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Image URL (Link)" />
                     
                     <div className="flex gap-3 pt-2">
@@ -319,7 +309,10 @@ function Dashboard() {
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
                     <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all line-through text-slate-400" placeholder="Old Price" type="number" />
                   </div>
+                  
+                  {/* 🆕 حقل إدخال رابط الصورة الجديد في لوحة التاجر */}
                   <input value={image} onChange={(e) => setImage(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Image URL (Paste link here)" />
+                  
                   <button onClick={createProduct} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]">
                     List Product to Store
                   </button>
@@ -333,6 +326,8 @@ function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="bg-white rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+                    
+                    {/* 🆕 استبدال الـ Div الرمادي بصورة حقيقية ومتحكم بها */}
                     <div className="h-44 bg-slate-50 w-full relative overflow-hidden border-b border-slate-100">
                       <img 
                         src={product.image || DEFAULT_PRODUCT_IMAGE} 
@@ -361,6 +356,7 @@ function Dashboard() {
                         </div>
                       </div>
                     </div>
+
                   </div>
                 ))}
               </div>
@@ -373,6 +369,12 @@ function Dashboard() {
                   <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
                   Recent Orders
                 </h2>
+                <Link 
+                  to="/dashboard/orders" 
+                  className="text-blue-600 hover:text-indigo-600 font-semibold text-sm flex items-center gap-1 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all"
+                >
+                  إدارة جميع الطلبات ⬅️
+                </Link>
               </div>
 
               <div className="space-y-4">
