@@ -9,6 +9,9 @@ function Dashboard() {
   const [hasStore, setHasStore] = useState(true);
   const [storeName, setStoreName] = useState("");
 
+  // 🆕 حالة تحميل أولية لمنع وميض واجهة الداشبورد قبل التحقق من وجود المتجر
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
@@ -25,7 +28,7 @@ function Dashboard() {
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
-  const [image, setImage] = useState(""); // 🆕 حالة جديدة لتخزين رابط صورة المنتج
+  const [image, setImage] = useState(""); // حالة جديدة لتخزين رابط صورة المنتج
 
   // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
@@ -43,9 +46,16 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.status === 404) return setHasStore(false);
+      if (res.status === 404) {
+        setHasStore(false);
+        return;
+      }
       setStore(data);
-    } catch (err) { console.log(err); }
+    } catch (err) { 
+      console.log(err); 
+    } finally {
+      setIsInitialLoading(false); // 🆕 نوقف التحميل هنا بعد معرفة النتيجة يقيناً
+    }
   };
 
   const getProducts = async () => {
@@ -96,14 +106,13 @@ function Dashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        // 🆕 أضفنا حقل الـ image هنا ليرسل للباك-أند
         body: JSON.stringify({ name, description, currentPrice, oldPrice, image }), 
       });
       const data = await res.json();
       alert(data.message);
       getProducts();
       getAnalytics();
-      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); // 🆕 تصفير حقل الصورة بعد الإضافة
+      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); 
     } catch (err) { console.log(err); }
   };
 
@@ -159,6 +168,20 @@ function Dashboard() {
     getOrders();
     getAnalytics();
   }, []);
+
+  // 🆕 شاشة تحميل نظيفة ومؤقتة تمنع ظهور أي مكونات قبل انتهاء طلب التحقق من السيرفر
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center items-center font-sans antialiased">
+        <div className="text-center space-y-3">
+          <div className="text-4xl animate-bounce">🚀</div>
+          <p className="text-sm font-semibold tracking-wide text-slate-400 uppercase">
+            Loading space...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans pb-12">
@@ -280,10 +303,7 @@ function Dashboard() {
                     <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
-                    
-                    {/* 🆕 إضافة حقل تعديل رابط الصورة في الـ Modal */}
                     <input value={editingProduct.image || ""} onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Image URL (Link)" />
-                    
                     <div className="flex gap-3 pt-2">
                       <button onClick={updateProduct} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Save Changes</button>
                       <button onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">Cancel</button>
@@ -309,10 +329,7 @@ function Dashboard() {
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
                     <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all line-through text-slate-400" placeholder="Old Price" type="number" />
                   </div>
-                  
-                  {/* 🆕 حقل إدخال رابط الصورة الجديد في لوحة التاجر */}
                   <input value={image} onChange={(e) => setImage(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Image URL (Paste link here)" />
-                  
                   <button onClick={createProduct} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]">
                     List Product to Store
                   </button>
@@ -326,8 +343,6 @@ function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="bg-white rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
-                    
-                    {/* 🆕 استبدال الـ Div الرمادي بصورة حقيقية ومتحكم بها */}
                     <div className="h-44 bg-slate-50 w-full relative overflow-hidden border-b border-slate-100">
                       <img 
                         src={product.image || DEFAULT_PRODUCT_IMAGE} 
@@ -339,7 +354,6 @@ function Dashboard() {
                         }}
                       />
                     </div>
-
                     <div className="p-6 flex-1 flex flex-col justify-between">
                       <div>
                         <h3 className="font-bold text-xl mb-1 truncate">{product.name}</h3>
@@ -356,7 +370,6 @@ function Dashboard() {
                         </div>
                       </div>
                     </div>
-
                   </div>
                 ))}
               </div>
