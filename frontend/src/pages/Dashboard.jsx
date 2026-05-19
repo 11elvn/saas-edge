@@ -9,7 +9,7 @@ function Dashboard() {
   const [hasStore, setHasStore] = useState(true);
   const [storeName, setStoreName] = useState("");
 
-  // 🆕 حالة تحميل أولية لمنع وميض واجهة الداشبورد قبل التحقق من وجود المتجر
+  // حالة تحميل أولية لمنع وميض واجهة الداشبورد قبل التحقق من وجود المتجر
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [products, setProducts] = useState([]);
@@ -45,16 +45,21 @@ function Dashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      
       if (res.status === 404) {
         setHasStore(false);
-        return;
+        return false; // 🆕 نرجع false لكي نعلم الـ useEffect أن المستخدم ليس لديه متجر
       }
+      
+      const data = await res.json();
       setStore(data);
+      setHasStore(true);
+      return true; // 🆕 نرجع true إذا كان المتجر موجوداً
     } catch (err) { 
       console.log(err); 
+      return false;
     } finally {
-      setIsInitialLoading(false); // 🆕 نوقف التحميل هنا بعد معرفة النتيجة يقيناً
+      setIsInitialLoading(false); // نوقف التحميل هنا بعد معرفة النتيجة يقيناً
     }
   };
 
@@ -161,15 +166,28 @@ function Dashboard() {
     navigate("/login");
   };
 
+  // 🆕 الاستدعاء المشروط والذكي للـ APIs لمنع الـ 404
   useEffect(() => {
     if (!token) return navigate("/login");
-    getStore(); 
-    getProducts(); 
-    getOrders();
-    getAnalytics();
+
+    const checkAndFetchData = async () => {
+      // 1. نتحقق من وجود المتجر أولاً وننتظر النتيجة
+      const storeExists = await getStore(); 
+      
+      // 2. إذا كان عنده متجر فعلاً، نجلب بقية البيانات بالتوازي لكي تظهر الواجهة كاملة
+      if (storeExists) {
+        Promise.all([
+          getProducts(),
+          getOrders(),
+          getAnalytics()
+        ]);
+      }
+    };
+
+    checkAndFetchData();
   }, []);
 
-  // 🆕 شاشة تحميل نظيفة ومؤقتة تمنع ظهور أي مكونات قبل انتهاء طلب التحقق من السيرفر
+  // شاشة تحميل نظيفة ومؤقتة تمنع ظهور أي مكونات قبل انتهاء طلب التحقق من السيرفر
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center items-center font-sans antialiased">
