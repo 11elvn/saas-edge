@@ -33,14 +33,15 @@ function Dashboard() {
   // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // رابط الصورة الافتراضية لحماية الواجهة في الدشبرد
-  const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
+  // 🆕 رابط الصورة الافتراضية الجديد والأكثر احترافية لحماية الواجهة في الدشبرد
+  const DEFAULT_PRODUCT_IMAGE = "https://placehold.co/600x400/f1f5f9/94a3b8?text=No+Image";
+  const OLD_UNSPLASH_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
   // ======================
   // API CALLS
   // ======================
 
-  // 🆕 تم تحديث الدالة لتتوافق مع منطق الـ Enterprise الجديد
+  // تم تحديث الدالة لتتوافق مع منطق الـ Enterprise الجديد
   const getStore = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
@@ -124,6 +125,7 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
+  // 🆕 تم تحديث الدالة لتدعم التحديث المحلي الفوري لمنع قلق ثقل السيرفر المجاني
   const updateProduct = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
@@ -132,12 +134,22 @@ function Dashboard() {
         body: JSON.stringify(editingProduct),
       });
       const data = await res.json();
-      alert(data.message);
-      setEditingProduct(null);
-      getProducts();
+      
+      if (res.ok) {
+        // تحديث المنتج في الذاكرة المحلية مباشرة لتسريع الواجهة 
+        setProducts(prevProducts => 
+          prevProducts.map(p => p._id === editingProduct._id ? editingProduct : p)
+        );
+        setEditingProduct(null);
+        alert(data.message || "Product updated successfully! ✅");
+        getAnalytics(); // تحديث الإحصائيات في الخلفية
+      } else {
+        alert(data.message || "Failed to update ❌");
+      }
     } catch (err) { console.log(err); }
   };
 
+  // 🆕 تم تحديث الدالة لتدعم الحذف المحلي الفوري لتسريع الـ UX
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -146,9 +158,15 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      alert(data.message);
-      getProducts();
-      getAnalytics();
+      
+      if (res.ok) {
+        // حذف المنتج محلياً فوراً
+        setProducts(prevProducts => prevProducts.filter(p => p._id !== id));
+        alert(data.message || "Product deleted successfully! ✅");
+        getAnalytics();
+      } else {
+        alert(data.message || "Failed to delete ❌");
+      }
     } catch (err) { console.log(err); }
   };
 
@@ -324,7 +342,15 @@ function Dashboard() {
                     <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
-                    <input value={editingProduct.image || ""} onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Image URL (Link)" />
+                    
+                    {/* 🆕 تم تعديل الـ Input ذكياً ليظهر فارغاً إذا كان المنتج بلا صورة أو يحمل الرابط الافتراضي القديم */}
+                    <input 
+                      value={(editingProduct.image === OLD_UNSPLASH_IMAGE || editingProduct.image === DEFAULT_PRODUCT_IMAGE) ? "" : (editingProduct.image || "")} 
+                      onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} 
+                      className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" 
+                      placeholder="Image URL (Link)" 
+                    />
+                    
                     <div className="flex gap-3 pt-2">
                       <button onClick={updateProduct} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Save Changes</button>
                       <button onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">Cancel</button>
@@ -366,7 +392,7 @@ function Dashboard() {
                   <div key={product._id} className="bg-white rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
                     <div className="h-44 bg-slate-50 w-full relative overflow-hidden border-b border-slate-100">
                       <img 
-                        src={product.image || DEFAULT_PRODUCT_IMAGE} 
+                        src={(product.image === OLD_UNSPLASH_IMAGE || !product.image) ? DEFAULT_PRODUCT_IMAGE : product.image} 
                         alt={product.name} 
                         className="w-full h-full object-cover"
                         onError={(e) => {
