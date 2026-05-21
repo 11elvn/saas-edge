@@ -17,7 +17,8 @@ const ALGERIAN_CITIES = [
 const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
 function PublicStore() {
-  const { storeId } = useParams();
+  // 🔄 التعديل 01: تلقي الـ slug من الرابط في بلاصة الـ storeId القديم
+  const { slug } = useParams();
   const navigate = useNavigate();
 
   const [storeName, setStoreName] = useState("متجر إلكتروني");
@@ -37,17 +38,20 @@ function PublicStore() {
   };
 
   // ==================
-  // GET STORE PRODUCTS & INFO
+  // GET STORE PRODUCTS & INFO (🆕 مُحدث للـ Slug)
   // ==================
   const getStoreData = async () => {
     try {
       setLoading(true);
+      // 🔄 التعديل 02: تحديث الرابط ليرسل الـ slug ديريكت للباك-أند
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/stores/public/${storeId}`
+        `${import.meta.env.VITE_API_URL}/api/stores/public/${slug}`
       );
       const data = await response.json();
       
-      if (data.storeName || data.name) {
+      if (data.store) {
+        setStoreName(data.store.name || data.store.storeName);
+      } else if (data.storeName || data.name) {
         setStoreName(data.storeName || data.name);
       }
       
@@ -124,11 +128,12 @@ function PublicStore() {
     }
   };
 
+  // 🔄 التعديل 03: جعل الـ useEffect يراقب ويتفاعل مع تغير الـ slug
   useEffect(() => {
-    if (storeId) {
+    if (slug) {
       getStoreData();
     }
-  }, [storeId]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -223,7 +228,7 @@ function PublicStore() {
 
         {/* عنوان قسم المنتجات */}
         <h2 className="text-xl font-bold mb-6 text-slate-800 border-r-4 border-blue-600 pr-2">
-          المنتجات المعروضة ({products.length})
+           المنتجات المعروضة ({products.length})
         </h2>
 
         {/* شبكة عرض المنتجات */}
@@ -237,16 +242,16 @@ function PublicStore() {
               <div
                 key={product._id}
                 className="bg-white rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer group"
-                onClick={() => navigate(`/store/${storeId}/product/${product._id}`)}
+                // 🔄 التعديل 04: تحديث الرابط ليعتمد على الـ slug في التوجيه لصفحة التفاصيل
+                onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
               >
-                {/* 🆕 قسم عرض صورة المنتج الاحترافي الجديد لليوم 26 */}
+                {/* قسم عرض صورة المنتج */}
                 <div className="h-48 w-full bg-slate-50 overflow-hidden relative border-b border-slate-50">
                   <img
                     src={product.image || DEFAULT_PRODUCT_IMAGE}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
-                      // حماية تمنع ظهور أي رابط مكسور وتستبدله بالخلفية الافتراضية فوراً
                       e.target.onerror = null; 
                       e.target.src = DEFAULT_PRODUCT_IMAGE;
                     }}

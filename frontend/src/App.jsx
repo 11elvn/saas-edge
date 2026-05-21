@@ -5,7 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import PublicStore from "./pages/PublicStore"; // الصفحة العمومية للزبائن
 import ProductDetails from "./pages/ProductDetails"; // صفحة تفاصيل المنتج الجديدة
-import OrdersManagement from "./pages/OrdersManagement"; // 🆕 استيراد صفحة إدارة الطلبات الكاملة لليوم 24
+import OrdersManagement from "./pages/OrdersManagement"; // استيراد صفحة إدارة الطلبات الكاملة
 
 function App() {
   return (
@@ -19,14 +19,14 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         
-        {/* 🆕 المسار الجديد لجدول إدارة الطلبات الكامل بالأزرار الأربعة */}
+        {/* المسار لجدول إدارة الطلبات الكامل بالأزرار الأربعة */}
         <Route path="/dashboard/orders" element={<OrdersManagement />} />
 
-        {/* رابط المتجر العمومي للزبائن (Public Store) */}
-        <Route path="/store/:storeId" element={<PublicStore />} />
+        {/* 🔄 التعديل 01: رابط المتجر العمومي للزبائن رجع بالـ :slug الاحترافي */}
+        <Route path="/store/:slug" element={<PublicStore />} />
 
-        {/* المسار لصفحة تفاصيل المنتج بناءً على الـ productId */}
-        <Route path="/store/:storeId/product/:productId" element={<ProductDetails />} />
+        {/* 🔄 التعديل 02: مسار تفاصيل المنتج حتا هو حدثناه ليعتمد على الـ :slug نتاع المتجر */}
+        <Route path="/store/:slug/product/:productId" element={<ProductDetails />} />
       </Routes>
     </BrowserRouter>
   );

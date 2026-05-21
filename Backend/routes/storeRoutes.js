@@ -33,6 +33,7 @@ router.post("/create", auth, async (req, res) => {
     const store = new Store({
       name,
       owner: req.user.id,
+      // الـ slug يتولد تلقائياً هنا بفضل الـ pre-save hook الموجود في الموديل
     });
 
     await store.save();
@@ -52,7 +53,7 @@ router.post("/create", auth, async (req, res) => {
 
 
 // ==========================
-// GET MY STORE (🆕 مـحدث للأنظمة الكبيرة)
+// GET MY STORE (مـحدث للأنظمة الكبيرة)
 // ==========================
 router.get("/my-store", auth, async (req, res) => {
   try {
@@ -60,7 +61,7 @@ router.get("/my-store", auth, async (req, res) => {
       owner: req.user.id,
     });
 
-    // 🔥 التعديل هنا: إذا لم يجد متجر، نرد بـ 200 ونخبر الفرونت-أند بوضوح
+    // إذا لم يجد متجر، نرد بـ 200 ونخبر الفرونت-أند بوضوح
     if (!store) {
       return res.status(200).json({
         hasStore: false,
@@ -84,11 +85,12 @@ router.get("/my-store", auth, async (req, res) => {
 
 
 // ==========================
-// PUBLIC STORE
+// PUBLIC STORE (🆕 مُحدث بالـ Slug للروابط الذكية)
 // ==========================
-router.get("/public/:storeId", async (req, res) => {
+router.get("/public/:slug", async (req, res) => {
   try {
-    const store = await Store.findById(req.params.storeId);
+    // درك ولينا نبحثوا بالـ slug المخصص في الرابط في بلاصة الـ ID القديم المعقد
+    const store = await Store.findOne({ slug: req.params.slug });
 
     if (!store) {
       return res.status(404).json({
@@ -96,6 +98,7 @@ router.get("/public/:storeId", async (req, res) => {
       });
     }
 
+    // جلب المنتجات المربوطة بالـ ID نتاع المتجر هذا
     const products = await Product.find({
       storeId: store._id,
     });

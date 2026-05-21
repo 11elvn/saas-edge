@@ -13,7 +13,8 @@ const ALGERIAN_CITIES = [
 ];
 
 function ProductDetails() {
-  const { storeId, productId } = useParams();
+  // 🔄 التعديل 01: استقبال الـ slug في بلاصة الـ storeId القديم ليتوافق مع الـ App.jsx
+  const { slug, productId } = useParams();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
@@ -93,7 +94,8 @@ function ProductDetails() {
   if (!product) return (
     <div className="min-h-screen flex flex-col items-center justify-center" dir="rtl">
       <p className="text-slate-500 font-bold mb-4">المنتج غير موجود ❌</p>
-      <button onClick={() => navigate(`/store/${storeId}`)} className="text-blue-600 font-bold">العودة للمتجر</button>
+      {/* 🔄 التعديل 02: تحديث التوجيه للعودة إلى المتجر بالاعتماد على الـ slug */}
+      <button onClick={() => navigate(`/store/${slug}`)} className="text-blue-600 font-bold">العودة للمتجر</button>
     </div>
   );
 
@@ -101,7 +103,8 @@ function ProductDetails() {
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] pb-16" dir="rtl">
       <header className="bg-white border-b border-slate-100 py-4 shadow-sm sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
-          <button onClick={() => navigate(`/store/${storeId}`)} className="font-bold text-slate-600">⬅️ العودة</button>
+          {/* 🔄 التعديل 03: زر العودة الأعلى تم تحديثه ليعود بالـ slug */}
+          <button onClick={() => navigate(`/store/${slug}`)} className="font-bold text-slate-600">⬅️ العودة للمتجر</button>
           <span className="font-black text-slate-700">تفاصيل المنتج</span>
         </div>
       </header>
@@ -110,14 +113,14 @@ function ProductDetails() {
         {/* معلومات المنتج */}
         <div className="space-y-6">
           
-          {/* 🆕 استبدال الـ Div القديم بالصورة الحقيقية والمتحكم بها */}
+          {/* قسم عرض صورة المنتج */}
           <div className="h-80 bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden relative">
             <img 
               src={product.image || DEFAULT_PRODUCT_IMAGE} 
               alt={product.name} 
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.onerror = null; // يمنع حلقة تكرار لا نهائية إذا كان رابط السقوط مكسوراً أيضاً
+                e.target.onerror = null; 
                 e.target.src = DEFAULT_PRODUCT_IMAGE;
               }}
             />
