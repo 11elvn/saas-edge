@@ -195,7 +195,7 @@ function Dashboard() {
       // 1. نتحقق من وجود المتجر أولاً وننتظر النتيجة المنطقية المرجعة
       const storeExists = await getStore(); 
       
-      // 2. إذا كان عنده متجر فعلاً (true)، نجلب بقية البيانات بالتوازي
+      // 2. إذا كان معه متجر فعلاً (true)، نجلب بقية البيانات بالتوازي
       if (storeExists) {
         Promise.all([
           getProducts(),
@@ -273,15 +273,17 @@ function Dashboard() {
                     <span>🌍</span> Your Global Store Link
                   </h2>
                   <div className="flex flex-col md:flex-row gap-3">
+                    {/* 🔄 التعديل السحري هنا: استبدال store._id بـ store.slug الحقيقي والمحمي */}
                     <input 
                       readOnly 
-                      value={`${window.location.origin}/store/${store._id}`} 
+                      value={`${window.location.origin}/store/${store.slug}`} 
                       className="bg-white/10 border border-white/20 p-4 rounded-2xl w-full backdrop-blur-md outline-none text-white placeholder-white/50"
                     />
                     <button 
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/store/${store._id}`);
-                        alert("Link copied!");
+                        // 🔄 تعديل زر النسخ ليرفد الـ slug كذلك تلقائياً
+                        navigator.clipboard.writeText(`${window.location.origin}/store/${store.slug}`);
+                        alert("Link copied! ✅ Enjoy your smart URL.");
                       }} 
                       className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-slate-100 transition-all active:scale-95"
                     >
@@ -343,7 +345,6 @@ function Dashboard() {
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
                     
-                    {/* 🆕 تم تعديل الـ Input ذكياً ليظهر فارغاً إذا كان المنتج بلا صورة أو يحمل الرابط الافتراضي القديم */}
                     <input 
                       value={(editingProduct.image === OLD_UNSPLASH_IMAGE || editingProduct.image === DEFAULT_PRODUCT_IMAGE) ? "" : (editingProduct.image || "")} 
                       onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} 
