@@ -16,13 +16,13 @@ router.post("/create", auth, async (req, res) => {
       return res.status(400).json({ message: "Category name is required! ❌" });
     }
 
-    // 2. البحث عن المتجر التابع لهذا المستخدم الذي قام بتسجيل الدخول
-    const store = await Store.findOne({ userId: req.user.id });
+    // 2. البحث عن المتجر التابع لهذا المستخدم (استخدام owner)
+    const store = await Store.findOne({ owner: req.user.id });
     if (!store) {
       return res.status(404).json({ message: "Store not found for this user! ❌" });
     }
 
-    // 3. منع تكرار نفس اسم القسم في نفس المتجر (حماية الداتابيز من العشوائية)
+    // 3. منع تكرار نفس اسم القسم في نفس المتجر
     const categoryExists = await Category.findOne({ name: name.trim(), storeId: store._id });
     if (categoryExists) {
       return res.status(400).json({ message: "This category already exists in your store! ⚠️" });
@@ -52,13 +52,13 @@ router.post("/create", auth, async (req, res) => {
 // ==========================================
 router.get("/my-categories", auth, async (req, res) => {
   try {
-    // 1. جلب متجر المستخدم أولاً لمعرفة الـ ID
-    const store = await Store.findOne({ userId: req.user.id });
+    // 1. جلب متجر المستخدم (استخدام owner)
+    const store = await Store.findOne({ owner: req.user.id });
     if (!store) {
       return res.status(404).json({ message: "Store not found! ❌" });
     }
 
-    // 2. جلب الأقسام التابعة للمتجر وترتيبها من الأحدث للأقدم
+    // 2. جلب الأقسام التابعة للمتجر
     const categories = await Category.find({ storeId: store._id }).sort({ createdAt: -1 });
     res.json(categories);
 
@@ -69,28 +69,27 @@ router.get("/my-categories", auth, async (req, res) => {
 });
 
 // ==========================================
-// 3️⃣ مسح قسم معين مع حماية صارومة (DELETE)
+// 3️⃣ مسح قسم معين (DELETE)
 // ==========================================
 router.delete("/delete/:id", auth, async (req, res) => {
   try {
-    // 1. جلب متجر المستخدم للتأكد من الصلاحيات
-    const store = await Store.findOne({ userId: req.user.id });
+    // 1. جلب متجر المستخدم (استخدام owner)
+    const store = await Store.findOne({ owner: req.user.id });
     if (!store) {
       return res.status(404).json({ message: "Store not found! ❌" });
     }
 
-    // 2. البحث عن القسم المراد حذفه
+    // 2. البحث عن القسم
     const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ message: "Category not found! ❌" });
     }
 
-    // 🔥 خطوة الأمان الكبرى: التأكد من أن القسم يخص متجر هذا التاجر فعلاً وليس متجر شخص آخر!
+    // 3. التحقق من الملكية
     if (category.storeId.toString() !== store._id.toString()) {
       return res.status(401).json({ message: "Unauthorized! You don't own this category ⛔" });
     }
 
-    // 3. تنفيذ الحذف
     await Category.findByIdAndDelete(req.params.id);
     res.json({ message: "Category deleted successfully! ✅" });
 
