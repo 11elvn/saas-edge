@@ -32,10 +32,11 @@ const productSchema = new mongoose.Schema({
     type: [String],
     default: [] // يبدأ كمصفوفة فارغة، والـ Front-end راح يقرا من هنا أولاً
   },
-  // 🆕 حقل القسم (Category) لتنظيم المنتجات
-  category: {
-    type: String,
-    default: "عام" // القسم الافتراضي باللغة العربية للـ DZ Market
+  // 🔄 التحديث الذكي لليوم 03: ربط المنتج بالقسم عبر الـ ObjectId نتاعه
+  categoryId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Category", 
+    default: null // إذا كان null معنتها راهو في القسم الافتراضي "عام"
   },
   // 🆕 حقل المخزون (Inventory System)
   stock: {

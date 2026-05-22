@@ -15,6 +15,11 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
+  // 🆕 حالات الأقسام الجديدة (اليوم 03)
+  const [categories, setCategories] = useState([]);
+  const [categoryName, setCategoryName] = useState(""); // لإنشاء قسم جديد
+  const [selectedCategory, setSelectedCategory] = useState(""); // لربط المنتج الجديد بقسم
+
   // حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
@@ -97,6 +102,17 @@ function Dashboard() {
     } catch (err) { console.log("خطأ في جلب الإحصائيات:", err); }
   };
 
+  // 🆕 دالة جلب الأقسام من الباك-أند
+  const getCategories = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/my-categories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) setCategories(data);
+    } catch (err) { console.log("خطأ في جلب الأقسام:", err); }
+  };
+
   const createStore = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
@@ -110,22 +126,60 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
+  // 🆕 دالة إنشاء قسم جديد
+  const createCategory = async () => {
+    if (!categoryName.trim()) return alert("رجاءً اكتب اسم القسم أولاً! ❌");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: categoryName }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("تم إنشاء القسم بنجاح! ✅");
+        setCategoryName("");
+        getCategories(); // تحديث القائمة فوراً
+      } else {
+        alert(data.message);
+      }
+    } catch (err) { console.log(err); }
+  };
+
+  // 🆕 دالة حذف قسم معين
+  const deleteCategory = async (id) => {
+    if (!window.confirm("هل أنت متأكد من المَسح؟ سيتم فك ارتباط المنتجات بهذا القسم. ⚠️")) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/delete/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCategories(prev => prev.filter(c => c._id !== id));
+        alert(data.message);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) { console.log(err); }
+  };
+
+  // 🆕 تعديل دالة إنشاء منتج لتمرير الـ categoryId للباك-أند
   const createProduct = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name, description, currentPrice, oldPrice, image }), 
+        body: JSON.stringify({ name, description, currentPrice, oldPrice, image, categoryId: selectedCategory }), 
       });
       const data = await res.json();
       alert(data.message);
       getProducts();
       getAnalytics();
-      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); 
+      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); setSelectedCategory(""); 
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 تم تحديث الدالة لتدعم التحديث المحلي الفوري لمنع قلق ثقل السيرفر المجاني
   const updateProduct = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
@@ -136,20 +190,18 @@ function Dashboard() {
       const data = await res.json();
       
       if (res.ok) {
-        // تحديث المنتج في الذاكرة المحلية مباشرة لتسريع الواجهة 
         setProducts(prevProducts => 
           prevProducts.map(p => p._id === editingProduct._id ? editingProduct : p)
         );
         setEditingProduct(null);
         alert(data.message || "Product updated successfully! ✅");
-        getAnalytics(); // تحديث الإحصائيات في الخلفية
+        getAnalytics();
       } else {
         alert(data.message || "Failed to update ❌");
       }
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 تم تحديث الدالة لتدعم الحذف المحلي الفوري لتسريع الـ UX
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -160,7 +212,6 @@ function Dashboard() {
       const data = await res.json();
       
       if (res.ok) {
-        // حذف المنتج محلياً فوراً
         setProducts(prevProducts => prevProducts.filter(p => p._id !== id));
         alert(data.message || "Product deleted successfully! ✅");
         getAnalytics();
@@ -187,20 +238,18 @@ function Dashboard() {
     navigate("/login");
   };
 
-  // الاستدعاء المشروط والذكي للـ APIs لمنع الـ 404
   useEffect(() => {
     if (!token) return navigate("/login");
 
     const checkAndFetchData = async () => {
-      // 1. نتحقق من وجود المتجر أولاً وننتظر النتيجة المنطقية المرجعة
       const storeExists = await getStore(); 
       
-      // 2. إذا كان معه متجر فعلاً (true)، نجلب بقية البيانات بالتوازي
       if (storeExists) {
         Promise.all([
           getProducts(),
           getOrders(),
-          getAnalytics()
+          getAnalytics(),
+          getCategories() // 🆕 جلب الأقسام تلقائياً بالتوازي عند الإقلاع
         ]);
       }
     };
@@ -208,7 +257,6 @@ function Dashboard() {
     checkAndFetchData();
   }, []);
 
-  // شاشة تحميل نظيفة ومؤقتة تمنع ظهور أي مكونات قبل انتهاء طلب التحقق من السيرفر
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center items-center font-sans antialiased">
@@ -246,7 +294,6 @@ function Dashboard() {
       <main className="max-w-6xl mx-auto px-6 mt-10">
 
         {!hasStore ? (
-          /* واجهة إنشاء متجر جديد */
           <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center">
             <div className="text-5xl mb-4">🏪</div>
             <h2 className="text-2xl font-bold mb-2">Build Your Empire</h2>
@@ -273,7 +320,6 @@ function Dashboard() {
                     <span>🌍</span> Your Global Store Link
                   </h2>
                   <div className="flex flex-col md:flex-row gap-3">
-                    {/* 🔄 التعديل السحري هنا: استبدال store._id بـ store.slug الحقيقي والمحمي */}
                     <input 
                       readOnly 
                       value={`${window.location.origin}/store/${store.slug}`} 
@@ -281,7 +327,6 @@ function Dashboard() {
                     />
                     <button 
                       onClick={() => {
-                        // 🔄 تعديل زر النسخ ليرفد الـ slug كذلك تلقائياً
                         navigator.clipboard.writeText(`${window.location.origin}/store/${store.slug}`);
                         alert("Link copied! ✅ Enjoy your smart URL.");
                       }} 
@@ -332,6 +377,47 @@ function Dashboard() {
               </div>
             </div>
 
+            {/* 🆕 قسم إدارة وإنشاء الأقسام الجديد لليوم 03 */}
+            <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-800">
+                <span className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">📁</span>
+                Manage Store Categories
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <input 
+                  value={categoryName} 
+                  onChange={(e) => setCategoryName(e.target.value)} 
+                  className="flex-1 border border-slate-200 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" 
+                  placeholder="New Category Name (e.g. Shoes, Electronics...)" 
+                />
+                <button 
+                  onClick={createCategory} 
+                  className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all"
+                >
+                  Add Category
+                </button>
+              </div>
+              {/* قائمة عرض وحذف الأقسام الفورية */}
+              <div className="flex flex-wrap gap-2">
+                {categories.length === 0 ? (
+                  <p className="text-slate-400 text-sm">No categories created yet. Add your first one!</p>
+                ) : (
+                  categories.map((cat) => (
+                    <div key={cat._id} className="bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold border border-slate-200/60 flex items-center gap-2 group">
+                      <span>{cat.name}</span>
+                      <button 
+                        onClick={() => deleteCategory(cat._id)} 
+                        className="text-red-400 hover:text-red-600 font-bold ml-1 transition-colors opacity-60 group-hover:opacity-100"
+                        title="Delete Category"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
             {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
             {editingProduct && (
               <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
@@ -371,7 +457,20 @@ function Dashboard() {
                 <div className="space-y-4">
                   <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Name" />
                   <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all min-h-[120px]" placeholder="Detailed Description" />
+                  
+                  {/* 🆕 قائمة اختيار القسم الذكية للمنتج الجديد */}
+                  <select 
+                    value={selectedCategory} 
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-500 font-medium"
+                  >
+                    <option value="">Select Category (Optional - Default: General)</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
+                
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
@@ -401,6 +500,12 @@ function Dashboard() {
                           e.target.src = DEFAULT_PRODUCT_IMAGE;
                         }}
                       />
+                      {/* عرض تاغ القسم فوق كارت المنتج الذكي لو وُجد */}
+                      {product.categoryId && (
+                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-indigo-600 text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full border border-slate-100 shadow-sm">
+                          {typeof product.categoryId === 'object' ? product.categoryId.name : 'Categorized'}
+                        </span>
+                      )}
                     </div>
                     <div className="p-6 flex-1 flex flex-col justify-between">
                       <div>

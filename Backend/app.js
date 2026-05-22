@@ -8,6 +8,7 @@ const userRoutes = require("./routes/userRoutes");
 const storeRoutes = require("./routes/storeRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const categoryRoutes = require("./routes/categoryRoutes"); // 🆕 استدعاء موديل الأقسام بالتسمية الصحيحة والموحدة
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/categories", categoryRoutes); // 🔥 تم التعديل هنا إلى categories بالـ (es) لتكون احترافية ومطابقة للفرونت-أند
 
 // Test route
 app.get("/", (req, res) => {
