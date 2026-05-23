@@ -1,13 +1,50 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("../controllers/productController");
-const auth = require("../middleware/auth");
 
-router.post("/create", auth, productController.createProduct);
-router.get("/my-products", auth, productController.getMyProducts);
-router.put("/update/:id", auth, productController.updateProduct);
-// 🆕 هذا السطر هو المفقود:
-router.delete("/delete/:id", auth, productController.deleteProduct); 
-router.get("/:productId", productController.getProductById);
+const productController =
+  require("../controllers/productController");
+
+const auth =
+  require("../middleware/auth");
+
+// create
+router.post(
+  "/create",
+  auth,
+  productController.createProduct
+);
+
+// my products
+router.get(
+  "/my-products",
+  auth,
+  productController.getMyProducts
+);
+
+// public store products ✅
+router.get(
+  "/store/:storeId",
+  productController.getProductsByStore
+);
+
+// update
+router.put(
+  "/update/:id",
+  auth,
+  productController.updateProduct
+);
+
+// delete
+router.delete(
+  "/delete/:id",
+  auth,
+  productController.deleteProduct
+);
+
+// single product
+router.get(
+  "/:productId",
+  productController.getProductById
+);
 
 module.exports = router;

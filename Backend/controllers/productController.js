@@ -1,89 +1,297 @@
-// controllers/productController.js
-const Product = require("../models/Product");
-const Store = require("../models/Store");
+const Product =
+  require("../models/Product");
 
-exports.createProduct = async (req, res) => {
-  try {
-    const { name, description, currentPrice, oldPrice, image, images, stock, categoryId } = req.body;
+const Store =
+  require("../models/Store");
 
-    if (!name || !description || !currentPrice) {
-      return res.status(400).json({ message: "Missing fields ❌" });
+// ======================
+// CREATE PRODUCT
+// ======================
+exports.createProduct =
+  async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        currentPrice,
+        oldPrice,
+        image,
+        images,
+        stock,
+        categoryId,
+      } = req.body;
+
+      if (
+        !name ||
+        !description ||
+        !currentPrice
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Missing fields ❌",
+          });
+      }
+
+      const store =
+        await Store.findOne({
+          owner:
+            req.user.id,
+        });
+
+      if (!store)
+        return res
+          .status(404)
+          .json({
+            message:
+              "Store not found ❌",
+          });
+
+      const product =
+        new Product({
+          name,
+          description,
+          currentPrice,
+          oldPrice,
+          storeId:
+            store._id,
+          image:
+            image ||
+            "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
+          images:
+            images || [],
+          stock:
+            stock || 10,
+          categoryId:
+            categoryId ||
+            null,
+        });
+
+      await product.save();
+
+      res.status(201).json({
+        message:
+          "Product created 📦",
+        product,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
     }
+  };
 
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store) return res.status(404).json({ message: "Store not found ❌" });
+// ======================
+// GET MY PRODUCTS
+// ======================
+exports.getMyProducts =
+  async (req, res) => {
+    try {
+      const store =
+        await Store.findOne({
+          owner:
+            req.user.id,
+        });
 
-    const product = new Product({
-      name, description, currentPrice, oldPrice, storeId: store._id,
-      image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
-      images: images || [],
-      stock: stock || 10,
-      categoryId: categoryId || null
-    });
+      if (!store)
+        return res
+          .status(404)
+          .json({
+            message:
+              "Store not found ❌",
+          });
 
-    await product.save();
-    res.status(201).json({ message: "Product created 📦", product });
-  } catch (error) {
-    res.status(500).json({ message: "Server error ❌" });
-  }
-};
+      const products =
+        await Product.find({
+          storeId:
+            store._id,
+        }).populate(
+          "categoryId"
+        );
 
-// 🆕 تم التعديل هنا: استخدام .populate لجلب بيانات القسم كاملة (الاسم)
-exports.getMyProducts = async (req, res) => {
-  try {
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store) return res.status(404).json({ message: "Store not found ❌" });
-    
-    // ربط الـ categoryId بالوثيقة الحقيقية للقسم لجلب الاسم
-    const products = await Product.find({ storeId: store._id }).populate("categoryId");
-    
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: "Server error ❌" });
-  }
-};
+      res.status(200).json(
+        products
+      );
 
-exports.updateProduct = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found ❌" });
-
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store || product.storeId.toString() !== store._id.toString()) {
-      return res.status(403).json({ message: "Unauthorized ❌" });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
     }
+  };
 
-    Object.assign(product, req.body);
-    await product.save();
-    res.status(200).json({ message: "Product updated ✏️", product });
-  } catch (error) {
-    res.status(500).json({ message: "Server error ❌" });
-  }
-};
+// ======================
+// GET PRODUCTS BY STORE
+// ======================
+exports.getProductsByStore =
+  async (req, res) => {
+    try {
+      const products =
+        await Product.find({
+          storeId:
+            req.params.storeId,
+        }).populate(
+          "categoryId"
+        );
 
-exports.deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found ❌" });
+      res.status(200).json(
+        products
+      );
 
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store || product.storeId.toString() !== store._id.toString()) {
-      return res.status(403).json({ message: "Unauthorized ❌" });
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
     }
+  };
 
-    await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Product deleted successfully ✅" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error ❌" });
-  }
-};
+// ======================
+// UPDATE PRODUCT
+// ======================
+exports.updateProduct =
+  async (req, res) => {
+    try {
+      const product =
+        await Product.findById(
+          req.params.id
+        );
 
-exports.getProductById = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.productId);
-    if (!product) return res.status(404).json({ message: "Product not found ❌" });
-    res.status(200).json(product);
-  } catch (error) {
-    res.status(500).json({ message: "Server error ❌" });
-  }
-};
+      if (!product)
+        return res
+          .status(404)
+          .json({
+            message:
+              "Product not found ❌",
+          });
+
+      const store =
+        await Store.findOne({
+          owner:
+            req.user.id,
+        });
+
+      if (
+        !store ||
+        product.storeId.toString() !==
+          store._id.toString()
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              "Unauthorized ❌",
+          });
+      }
+
+      Object.assign(
+        product,
+        req.body
+      );
+
+      await product.save();
+
+      res.status(200).json({
+        message:
+          "Product updated ✏️",
+        product,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
+    }
+  };
+
+// ======================
+// DELETE PRODUCT
+// ======================
+exports.deleteProduct =
+  async (req, res) => {
+    try {
+      const product =
+        await Product.findById(
+          req.params.id
+        );
+
+      if (!product)
+        return res
+          .status(404)
+          .json({
+            message:
+              "Product not found ❌",
+          });
+
+      const store =
+        await Store.findOne({
+          owner:
+            req.user.id,
+        });
+
+      if (
+        !store ||
+        product.storeId.toString() !==
+          store._id.toString()
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              "Unauthorized ❌",
+          });
+      }
+
+      await Product.findByIdAndDelete(
+        req.params.id
+      );
+
+      res.status(200).json({
+        message:
+          "Product deleted successfully ✅",
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
+    }
+  };
+
+// ======================
+// GET SINGLE PRODUCT
+// ======================
+exports.getProductById =
+  async (req, res) => {
+    try {
+      const product =
+        await Product.findById(
+          req.params
+            .productId
+        );
+
+      if (!product)
+        return res
+          .status(404)
+          .json({
+            message:
+              "Product not found ❌",
+          });
+
+      res.status(200).json(
+        product
+      );
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
+    }
+  };
