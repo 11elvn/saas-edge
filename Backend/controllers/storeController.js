@@ -1,9 +1,31 @@
 const Store = require("../models/Store");
 
+// دالة إنشاء متجر جديد
+exports.createStore = async (req, res) => {
+  const { name } = req.body;
+  try {
+    // التأكد من أن التاجر لا يملك متجراً بالفعل
+    const existingStore = await Store.findOne({ owner: req.user.id });
+    if (existingStore) {
+      return res.status(400).json({ message: "You already have a store" });
+    }
+
+    const newStore = new Store({
+      name,
+      owner: req.user.id,
+      slug: name.toLowerCase().replace(/ /g, '-')
+    });
+
+    await newStore.save();
+    res.status(201).json({ message: "Store created successfully", store: newStore });
+  } catch (err) {
+    res.status(500).json({ message: "Server error: " + err.message });
+  }
+};
+
 // دالة جلب المتجر الخاص بالتاجر المسجل حالياً
 exports.getMyStore = async (req, res) => {
   try {
-    // req.user.id يأتي من الـ middleware الخاص بالتسجيل (auth)
     const store = await Store.findOne({ owner: req.user.id });
     
     if (!store) {
@@ -21,16 +43,14 @@ exports.updateStore = async (req, res) => {
   const { name, slug, whatsapp, logo, banner } = req.body;
   
   try {
-    // التحقق من اسم المتجر
     if (!name) {
       return res.status(400).json({ message: "Store name is required" });
     }
 
-    // البحث عن المتجر الخاص بالتاجر وتحديث بياناته
     const updatedStore = await Store.findOneAndUpdate(
       { owner: req.user.id }, 
       { name, slug, whatsapp, logo, banner },
-      { new: true } // ليعيد لنا الكائن بعد التحديث
+      { new: true } 
     );
 
     if (!updatedStore) {
