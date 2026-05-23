@@ -58,6 +58,24 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// 🆕 دالة الحذف التي كانت مفقودة
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found ❌" });
+
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store || product.storeId.toString() !== store._id.toString()) {
+      return res.status(403).json({ message: "Unauthorized ❌" });
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Product deleted successfully ✅" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error ❌" });
+  }
+};
+
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId);

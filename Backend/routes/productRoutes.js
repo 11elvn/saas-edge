@@ -6,6 +6,8 @@ const auth = require("../middleware/auth");
 router.post("/create", auth, productController.createProduct);
 router.get("/my-products", auth, productController.getMyProducts);
 router.put("/update/:id", auth, productController.updateProduct);
+// 🆕 هذا السطر هو المفقود:
+router.delete("/delete/:id", auth, productController.deleteProduct); 
 router.get("/:productId", productController.getProductById);
 
 module.exports = router;
