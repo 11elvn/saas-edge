@@ -1,4 +1,5 @@
 const Store = require("../models/Store");
+const Product = require("../models/Product");
 
 // ======================
 // CREATE STORE
@@ -48,35 +49,37 @@ exports.createStore = async (req, res) => {
 // ======================
 // GET MY STORE
 // ======================
-exports.getMyStore = async (
-  req,
-  res
-) => {
-  try {
-    const store =
-      await Store.findOne({
-        owner: req.user.id,
+exports.getMyStore =
+  async (req, res) => {
+    try {
+      const store =
+        await Store.findOne({
+          owner:
+            req.user.id,
+        });
+
+      if (!store) {
+        return res
+          .status(200)
+          .json({
+            hasStore:
+              false,
+          });
+      }
+
+      res.status(200).json({
+        hasStore: true,
+        store,
       });
 
-    if (!store) {
-      return res.status(200).json({
-        hasStore: false,
+    } catch (err) {
+      res.status(500).json({
+        message:
+          "Server error: " +
+          err.message,
       });
     }
-
-    res.status(200).json({
-      hasStore: true,
-      store,
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      message:
-        "Server error: " +
-        err.message,
-    });
-  }
-};
+  };
 
 // ======================
 // UPDATE STORE
@@ -133,6 +136,49 @@ exports.updateStore =
           "Store updated successfully",
         store:
           updatedStore,
+      });
+
+    } catch (err) {
+      res.status(500).json({
+        message:
+          "Server error: " +
+          err.message,
+      });
+    }
+  };
+
+// ======================
+// GET PUBLIC STORE
+// ======================
+exports.getPublicStore =
+  async (req, res) => {
+    try {
+      const store =
+        await Store.findOne({
+          slug:
+            req.params.slug,
+        });
+
+      if (!store) {
+        return res
+          .status(404)
+          .json({
+            message:
+              "Store not found",
+          });
+      }
+
+      const products =
+        await Product.find({
+          storeId:
+            store._id,
+        }).populate(
+          "categoryId"
+        );
+
+      res.status(200).json({
+        store,
+        products,
       });
 
     } catch (err) {
