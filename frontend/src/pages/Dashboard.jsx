@@ -144,7 +144,7 @@ function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setCategories(prev => prev.filter(c => c._id !== id));
-        getProducts(); // تحديث المنتجات لتعكس التغيير
+        getProducts(); 
         alert(data.message);
       } else {
         alert(data.message);
@@ -274,12 +274,21 @@ function Dashboard() {
               SaaS Edge
             </h1>
           </div>
-          <button 
-            onClick={logout} 
-            className="bg-red-50 text-red-600 border border-red-100 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-300"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-4">
+            {/* زر الإعدادات الجديد */}
+            <Link 
+              to="/settings" 
+              className="bg-slate-100 text-slate-700 px-5 py-2 rounded-full font-semibold hover:bg-slate-200 transition-all text-sm"
+            >
+              ⚙️ Settings
+            </Link>
+            <button 
+              onClick={logout} 
+              className="bg-red-50 text-red-600 border border-red-100 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-300"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </nav>
 

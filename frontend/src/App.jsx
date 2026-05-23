@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import PublicStore from "./pages/PublicStore"; // الصفحة العمومية للزبائن
-import ProductDetails from "./pages/ProductDetails"; // صفحة تفاصيل المنتج الجديدة
-import OrdersManagement from "./pages/OrdersManagement"; // استيراد صفحة إدارة الطلبات الكاملة
+import PublicStore from "./pages/PublicStore"; 
+import ProductDetails from "./pages/ProductDetails"; 
+import OrdersManagement from "./pages/OrdersManagement"; 
+import StoreSettings from "./pages/StoreSettings"; // 🆕 استيراد صفحة الإعدادات الجديدة
 
 function App() {
   return (
@@ -18,6 +19,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* مسار إعدادات المتجر الجديد */}
+        <Route path="/settings" element={<StoreSettings />} />
         
         {/* المسار لجدول إدارة الطلبات الكامل بالأزرار الأربعة */}
         <Route path="/dashboard/orders" element={<OrdersManagement />} />
