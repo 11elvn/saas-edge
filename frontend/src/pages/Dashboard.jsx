@@ -15,10 +15,10 @@ function Dashboard() {
   const [orders, setOrders] = useState([]);
 
   const [categories, setCategories] = useState([]);
-  const [categoryName, setCategoryName] = useState(""); 
-  const [selectedCategory, setSelectedCategory] = useState(""); 
+  const [categoryName, setCategoryName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const [images, setImages] = useState(""); 
+  const [images, setImages] = useState("");
 
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
@@ -31,7 +31,7 @@ function Dashboard() {
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
-  const [image, setImage] = useState(""); 
+  const [image, setImage] = useState("");
 
   const [editingProduct, setEditingProduct] = useState(null);
 
@@ -43,22 +43,22 @@ function Dashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       const data = await res.json();
 
       if (data.hasStore === false || !data.store) {
         setHasStore(false);
-        return false; 
+        return false;
       }
-      
-      setStore(data.store); 
+
+      setStore(data.store);
       setHasStore(true);
-      return true; 
-    } catch (err) { 
-      console.log(err); 
+      return true;
+    } catch (err) {
+      console.log(err);
       return false;
     } finally {
-      setIsInitialLoading(false); 
+      setIsInitialLoading(false);
     }
   };
 
@@ -127,7 +127,7 @@ function Dashboard() {
       if (res.ok) {
         alert("تم إنشاء القسم بنجاح! ✅");
         setCategoryName("");
-        getCategories(); 
+        getCategories();
       } else {
         alert(data.message);
       }
@@ -144,7 +144,7 @@ function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setCategories(prev => prev.filter(c => c._id !== id));
-        getProducts(); 
+        getProducts();
         alert(data.message);
       } else {
         alert(data.message);
@@ -157,17 +157,17 @@ function Dashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          name, description, currentPrice, oldPrice, image, 
-          images: images ? images.split(",").map(img => img.trim()) : [], 
-          categoryId: selectedCategory || null 
-        }), 
+        body: JSON.stringify({
+          name, description, currentPrice, oldPrice, image,
+          images: images ? images.split(",").map(img => img.trim()) : [],
+          categoryId: selectedCategory || null
+        }),
       });
       const data = await res.json();
       alert(data.message);
       getProducts();
       getAnalytics();
-      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); setImages(""); setSelectedCategory(""); 
+      setName(""); setDescription(""); setCurrentPrice(""); setOldPrice(""); setImage(""); setImages(""); setSelectedCategory("");
     } catch (err) { console.log(err); }
   };
 
@@ -179,9 +179,9 @@ function Dashboard() {
         body: JSON.stringify(editingProduct),
       });
       const data = await res.json();
-      
+
       if (res.ok) {
-        setProducts(prevProducts => 
+        setProducts(prevProducts =>
           prevProducts.map(p => p._id === editingProduct._id ? editingProduct : p)
         );
         setEditingProduct(null);
@@ -202,7 +202,7 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         setProducts(prevProducts => prevProducts.filter(p => p._id !== id));
         alert(data.message || "Product deleted successfully! ✅");
@@ -234,14 +234,14 @@ function Dashboard() {
     if (!token) return navigate("/login");
 
     const checkAndFetchData = async () => {
-      const storeExists = await getStore(); 
-      
+      const storeExists = await getStore();
+
       if (storeExists) {
         Promise.all([
           getProducts(),
           getOrders(),
           getAnalytics(),
-          getCategories() 
+          getCategories()
         ]);
       }
     };
@@ -264,8 +264,6 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans pb-12">
-      
-      {/* NAVBAR */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -275,15 +273,14 @@ function Dashboard() {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            {/* زر الإعدادات الجديد */}
-            <Link 
-              to="/settings" 
+            <Link
+              to="/settings"
               className="bg-slate-100 text-slate-700 px-5 py-2 rounded-full font-semibold hover:bg-slate-200 transition-all text-sm"
             >
               ⚙️ Settings
             </Link>
-            <button 
-              onClick={logout} 
+            <button
+              onClick={logout}
               className="bg-red-50 text-red-600 border border-red-100 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-all duration-300"
             >
               Logout
@@ -293,19 +290,18 @@ function Dashboard() {
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
-
         {!hasStore ? (
           <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center">
             <div className="text-5xl mb-4">🏪</div>
             <h2 className="text-2xl font-bold mb-2">Build Your Empire</h2>
             <p className="text-slate-500 mb-6">Enter a name for your online store to get started.</p>
-            <input 
-              className="w-full border border-slate-200 p-4 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all mb-4" 
-              placeholder="e.g. My Awesome Shop" 
-              onChange={(e) => setStoreName(e.target.value)} 
+            <input
+              className="w-full border border-slate-200 p-4 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all mb-4"
+              placeholder="e.g. My Awesome Shop"
+              onChange={(e) => setStoreName(e.target.value)}
             />
-            <button 
-              onClick={createStore} 
+            <button
+              onClick={createStore}
               className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all"
             >
               Launch My Store
@@ -313,7 +309,6 @@ function Dashboard() {
           </div>
         ) : (
           <>
-            {/* رابط المتجر */}
             {store && (
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-2xl text-white mb-10 relative overflow-hidden">
                 <div className="relative z-10">
@@ -321,16 +316,16 @@ function Dashboard() {
                     <span>🌍</span> Your Global Store Link
                   </h2>
                   <div className="flex flex-col md:flex-row gap-3">
-                    <input 
-                      readOnly 
-                      value={`${window.location.origin}/store/${store.slug}`} 
+                    <input
+                      readOnly
+                      value={`${window.location.origin}/store/${store.slug}`}
                       className="bg-white/10 border border-white/20 p-4 rounded-2xl w-full backdrop-blur-md outline-none text-white placeholder-white/50"
                     />
-                    <button 
+                    <button
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/store/${store.slug}`);
                         alert("Link copied! ✅ Enjoy your smart URL.");
-                      }} 
+                      }}
                       className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-slate-100 transition-all active:scale-95"
                     >
                       Copy Link
@@ -341,7 +336,6 @@ function Dashboard() {
               </div>
             )}
 
-            {/* شبكة كروت الإحصائيات */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-300 transition-all duration-300">
                 <div>
@@ -378,21 +372,20 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* قسم إدارة وإنشاء الأقسام الجديد */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-800">
                 <span className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">📁</span>
                 Manage Store Categories
               </h2>
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <input 
-                  value={categoryName} 
-                  onChange={(e) => setCategoryName(e.target.value)} 
-                  className="flex-1 border border-slate-200 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" 
-                  placeholder="New Category Name (e.g. Shoes, Electronics...)" 
+                <input
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  className="flex-1 border border-slate-200 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
+                  placeholder="New Category Name (e.g. Shoes, Electronics...)"
                 />
-                <button 
-                  onClick={createCategory} 
+                <button
+                  onClick={createCategory}
                   className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all"
                 >
                   Add Category
@@ -405,8 +398,8 @@ function Dashboard() {
                   categories.map((cat) => (
                     <div key={cat._id} className="bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold border border-slate-200/60 flex items-center gap-2 group">
                       <span>{cat.name}</span>
-                      <button 
-                        onClick={() => deleteCategory(cat._id)} 
+                      <button
+                        onClick={() => deleteCategory(cat._id)}
                         className="text-red-400 hover:text-red-600 font-bold ml-1 transition-colors opacity-60 group-hover:opacity-100"
                         title="Delete Category"
                       >
@@ -418,7 +411,6 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* النافذة المنبثقة لتعديل بيانات منتج (Modal) */}
             {editingProduct && (
               <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
                 <div className="bg-white p-8 rounded-[32px] shadow-2xl w-full max-w-lg border border-slate-100">
@@ -430,14 +422,12 @@ function Dashboard() {
                     <input value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Product Name" />
                     <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500 min-h-[100px]" placeholder="Description" />
                     <input value={editingProduct.currentPrice} onChange={(e) => setEditingProduct({...editingProduct, currentPrice: e.target.value})} className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" placeholder="Price (DA)" type="number" />
-                    
-                    <input 
-                      value={(editingProduct.image === OLD_UNSPLASH_IMAGE || editingProduct.image === DEFAULT_PRODUCT_IMAGE) ? "" : (editingProduct.image || "")} 
-                      onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} 
-                      className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500" 
-                      placeholder="Image URL (Link)" 
+                    <input
+                      value={(editingProduct.image === OLD_UNSPLASH_IMAGE || editingProduct.image === DEFAULT_PRODUCT_IMAGE) ? "" : (editingProduct.image || "")}
+                      onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})}
+                      className="w-full border border-slate-200 p-4 rounded-2xl outline-none focus:border-blue-500"
+                      placeholder="Image URL (Link)"
                     />
-                    
                     <div className="flex gap-3 pt-2">
                       <button onClick={updateProduct} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Save Changes</button>
                       <button onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">Cancel</button>
@@ -447,7 +437,6 @@ function Dashboard() {
               </div>
             )}
 
-            {/* قسم إضافة منتج جديد */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
               <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                 <span className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-xl">✨</span>
@@ -457,9 +446,8 @@ function Dashboard() {
                 <div className="space-y-4">
                   <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Name" />
                   <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all min-h-[120px]" placeholder="Detailed Description" />
-                  
-                  <select 
-                    value={selectedCategory} 
+                  <select
+                    value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-500 font-medium"
                   >
@@ -469,7 +457,6 @@ function Dashboard() {
                     ))}
                   </select>
                 </div>
-                
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
@@ -484,16 +471,15 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* قسم عرض المنتجات */}
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-6 px-2">Catalog Inventory</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="bg-white rounded-[28px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
                     <div className="h-44 bg-slate-50 w-full relative overflow-hidden border-b border-slate-100">
-                      <img 
-                        src={(product.image === OLD_UNSPLASH_IMAGE || !product.image) ? DEFAULT_PRODUCT_IMAGE : product.image} 
-                        alt={product.name} 
+                      <img
+                        src={(product.image === OLD_UNSPLASH_IMAGE || !product.image) ? DEFAULT_PRODUCT_IMAGE : product.image}
+                        alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_PRODUCT_IMAGE; }}
                       />
@@ -524,7 +510,6 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* قسم إدارة الطلبات */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
@@ -535,7 +520,6 @@ function Dashboard() {
                   إدارة جميع الطلبات ⬅️
                 </Link>
               </div>
-
               <div className="space-y-4">
                 {orders.length === 0 ? (
                   <p className="text-slate-400 text-center py-10">No orders yet. Keep pushing! 🚀</p>
