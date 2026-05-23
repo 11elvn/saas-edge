@@ -9,21 +9,17 @@ function Dashboard() {
   const [hasStore, setHasStore] = useState(true);
   const [storeName, setStoreName] = useState("");
 
-  // حالة تحميل أولية لمنع وميض واجهة الداشبورد قبل التحقق من وجود المتجر
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
 
-  // 🆕 حالات الأقسام الجديدة (اليوم 03)
   const [categories, setCategories] = useState([]);
-  const [categoryName, setCategoryName] = useState(""); // لإنشاء قسم جديد
-  const [selectedCategory, setSelectedCategory] = useState(""); // لربط المنتج الجديد بقسم
+  const [categoryName, setCategoryName] = useState(""); 
+  const [selectedCategory, setSelectedCategory] = useState(""); 
 
-  // 🆕 حالة الصور المتعددة الجديدة لـ Phase 02 (اليوم 03)
   const [images, setImages] = useState(""); 
 
-  // حالة تخزين الإحصائيات العامة القادمة من الباك-أند (Day 25)
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -31,25 +27,17 @@ function Dashboard() {
     totalRevenue: 0,
   });
 
-  // حالات إضافة منتج جديد
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
-  const [image, setImage] = useState(""); // حالة جديدة لتخزين رابط صورة المنتج
+  const [image, setImage] = useState(""); 
 
-  // حالة التعديل (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // 🆕 رابط الصورة الافتراضية الجديد والأكثر احترافية لحماية الواجهة في الدشبرد
   const DEFAULT_PRODUCT_IMAGE = "https://placehold.co/600x400/f1f5f9/94a3b8?text=No+Image";
   const OLD_UNSPLASH_IMAGE = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
-  // ======================
-  // API CALLS
-  // ======================
-
-  // تم تحديث الدالة لتتوافق مع منطق الـ Enterprise الجديد
   const getStore = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
@@ -58,20 +46,19 @@ function Dashboard() {
       
       const data = await res.json();
 
-      // التحقق الذكي من حقلhasStore القادم من السيرفر بـ 200 OK
       if (data.hasStore === false || !data.store) {
         setHasStore(false);
-        return false; // نرجع false لكي نعلم الـ useEffect أن المستخدم ليس لديه متجر
+        return false; 
       }
       
-      setStore(data.store); // نخزن المتجر الحقيقي بداخل الـ State
+      setStore(data.store); 
       setHasStore(true);
-      return true; // نرجع true إذا كان المتجر موجوداً
+      return true; 
     } catch (err) { 
       console.log(err); 
       return false;
     } finally {
-      setIsInitialLoading(false); // نوقف التحميل هنا بعد معرفة النتيجة يقيناً
+      setIsInitialLoading(false); 
     }
   };
 
@@ -105,7 +92,6 @@ function Dashboard() {
     } catch (err) { console.log("خطأ في جلب الإحصائيات:", err); }
   };
 
-  // 🆕 دالة جلب الأقسام من الباك-أند
   const getCategories = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/my-categories`, {
@@ -129,7 +115,6 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 دالة إنشاء قسم جديد
   const createCategory = async () => {
     if (!categoryName.trim()) return alert("رجاءً اكتب اسم القسم أولاً! ❌");
     try {
@@ -142,14 +127,13 @@ function Dashboard() {
       if (res.ok) {
         alert("تم إنشاء القسم بنجاح! ✅");
         setCategoryName("");
-        getCategories(); // تحديث القائمة فوراً
+        getCategories(); 
       } else {
         alert(data.message);
       }
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 دالة حذف قسم معين
   const deleteCategory = async (id) => {
     if (!window.confirm("هل أنت متأكد من المَسح؟ سيتم فك ارتباط المنتجات بهذا القسم. ⚠️")) return;
     try {
@@ -160,6 +144,7 @@ function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setCategories(prev => prev.filter(c => c._id !== id));
+        getProducts(); // تحديث المنتجات لتعكس التغيير
         alert(data.message);
       } else {
         alert(data.message);
@@ -167,7 +152,6 @@ function Dashboard() {
     } catch (err) { console.log(err); }
   };
 
-  // 🆕 تعديل دالة إنشاء منتج لتمرير الـ categoryId والـ images الجديدة للباك-أند
   const createProduct = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
@@ -175,8 +159,8 @@ function Dashboard() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
           name, description, currentPrice, oldPrice, image, 
-          images: images ? images.split(",").map(img => img.trim()) : [], // معالجة المصفوفة
-          categoryId: selectedCategory 
+          images: images ? images.split(",").map(img => img.trim()) : [], 
+          categoryId: selectedCategory || null 
         }), 
       });
       const data = await res.json();
@@ -203,6 +187,7 @@ function Dashboard() {
         setEditingProduct(null);
         alert(data.message || "Product updated successfully! ✅");
         getAnalytics();
+        getProducts();
       } else {
         alert(data.message || "Failed to update ❌");
       }
@@ -256,7 +241,7 @@ function Dashboard() {
           getProducts(),
           getOrders(),
           getAnalytics(),
-          getCategories() // 🆕 جلب الأقسام تلقائياً بالتوازي عند الإقلاع
+          getCategories() 
         ]);
       }
     };
@@ -384,7 +369,7 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* 🆕 قسم إدارة وإنشاء الأقسام الجديد لليوم 03 */}
+            {/* قسم إدارة وإنشاء الأقسام الجديد */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-10">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-800">
                 <span className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">📁</span>
@@ -404,7 +389,6 @@ function Dashboard() {
                   Add Category
                 </button>
               </div>
-              {/* قائمة عرض وحذف الأقسام الفورية */}
               <div className="flex flex-wrap gap-2">
                 {categories.length === 0 ? (
                   <p className="text-slate-400 text-sm">No categories created yet. Add your first one!</p>
@@ -465,13 +449,12 @@ function Dashboard() {
                   <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Name" />
                   <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all min-h-[120px]" placeholder="Detailed Description" />
                   
-                  {/* 🆕 قائمة اختيار القسم الذكية للمنتج الجديد */}
                   <select 
                     value={selectedCategory} 
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-500 font-medium"
                   >
-                    <option value="">Select Category (Optional - Default: General)</option>
+                    <option value="">Select Category (Optional)</option>
                     {categories.map((cat) => (
                       <option key={cat._id} value={cat._id}>{cat.name}</option>
                     ))}
@@ -483,8 +466,7 @@ function Dashboard() {
                     <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all font-bold text-blue-600" placeholder="Price (DA)" type="number" />
                     <input value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all line-through text-slate-400" placeholder="Old Price" type="number" />
                   </div>
-                  <input value={image} onChange={(e) => setImage(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Image URL (Paste link here)" />
-                  {/* 🆕 حقل الصور المتعددة الجديد */}
+                  <input value={image} onChange={(e) => setImage(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Product Image URL" />
                   <input value={images} onChange={(e) => setImages(e.target.value)} className="w-full border border-slate-100 bg-slate-50 p-4 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all" placeholder="Extra Image URLs (comma separated)" />
                   <button onClick={createProduct} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 active:scale-[0.98]">
                     List Product to Store
@@ -493,7 +475,7 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* قسم عرض المنتجات الحالية */}
+            {/* قسم عرض المنتجات */}
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-6 px-2">Catalog Inventory</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -504,12 +486,8 @@ function Dashboard() {
                         src={(product.image === OLD_UNSPLASH_IMAGE || !product.image) ? DEFAULT_PRODUCT_IMAGE : product.image} 
                         alt={product.name} 
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = DEFAULT_PRODUCT_IMAGE;
-                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_PRODUCT_IMAGE; }}
                       />
-                      {/* عرض تاغ القسم فوق كارت المنتج الذكي لو وُجد */}
                       {product.categoryId && (
                         <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-indigo-600 text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full border border-slate-100 shadow-sm">
                           {typeof product.categoryId === 'object' ? product.categoryId.name : 'Categorized'}
@@ -537,17 +515,14 @@ function Dashboard() {
               </div>
             </section>
 
-            {/* قسم إدارة الطلبات المستلمة */}
+            {/* قسم إدارة الطلبات */}
             <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
                   <span className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🛒</span>
                   Recent Orders
                 </h2>
-                <Link 
-                  to="/dashboard/orders" 
-                  className="text-blue-600 hover:text-indigo-600 font-semibold text-sm flex items-center gap-1 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all"
-                >
+                <Link to="/dashboard/orders" className="text-blue-600 hover:text-indigo-600 font-semibold text-sm flex items-center gap-1 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all">
                   إدارة جميع الطلبات ⬅️
                 </Link>
               </div>

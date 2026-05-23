@@ -28,11 +28,15 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+// 🆕 تم التعديل هنا: استخدام .populate لجلب بيانات القسم كاملة (الاسم)
 exports.getMyProducts = async (req, res) => {
   try {
     const store = await Store.findOne({ owner: req.user.id });
     if (!store) return res.status(404).json({ message: "Store not found ❌" });
-    const products = await Product.find({ storeId: store._id });
+    
+    // ربط الـ categoryId بالوثيقة الحقيقية للقسم لجلب الاسم
+    const products = await Product.find({ storeId: store._id }).populate("categoryId");
+    
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: "Server error ❌" });
@@ -49,7 +53,6 @@ exports.updateProduct = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized ❌" });
     }
 
-    // تحديث الحقول
     Object.assign(product, req.body);
     await product.save();
     res.status(200).json({ message: "Product updated ✏️", product });
@@ -58,7 +61,6 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-// 🆕 دالة الحذف التي كانت مفقودة
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
