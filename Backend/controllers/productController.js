@@ -1,0 +1,69 @@
+// controllers/productController.js
+const Product = require("../models/Product");
+const Store = require("../models/Store");
+
+exports.createProduct = async (req, res) => {
+  try {
+    const { name, description, currentPrice, oldPrice, image, images, stock, categoryId } = req.body;
+
+    if (!name || !description || !currentPrice) {
+      return res.status(400).json({ message: "Missing fields ❌" });
+    }
+
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store) return res.status(404).json({ message: "Store not found ❌" });
+
+    const product = new Product({
+      name, description, currentPrice, oldPrice, storeId: store._id,
+      image: image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
+      images: images || [],
+      stock: stock || 10,
+      categoryId: categoryId || null
+    });
+
+    await product.save();
+    res.status(201).json({ message: "Product created 📦", product });
+  } catch (error) {
+    res.status(500).json({ message: "Server error ❌" });
+  }
+};
+
+exports.getMyProducts = async (req, res) => {
+  try {
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store) return res.status(404).json({ message: "Store not found ❌" });
+    const products = await Product.find({ storeId: store._id });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Server error ❌" });
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found ❌" });
+
+    const store = await Store.findOne({ owner: req.user.id });
+    if (!store || product.storeId.toString() !== store._id.toString()) {
+      return res.status(403).json({ message: "Unauthorized ❌" });
+    }
+
+    // تحديث الحقول
+    Object.assign(product, req.body);
+    await product.save();
+    res.status(200).json({ message: "Product updated ✏️", product });
+  } catch (error) {
+    res.status(500).json({ message: "Server error ❌" });
+  }
+};
+
+exports.getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+    if (!product) return res.status(404).json({ message: "Product not found ❌" });
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Server error ❌" });
+  }
+};

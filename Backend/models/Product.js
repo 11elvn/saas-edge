@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema({
     ref: "Store",
     required: true
   },
-  // 🔄 حقل الصورة القديم (حافظنا عليه باش ما تتكسرش المنتجات القديمة)
+  // 🔄 حقل الصورة القديم (لضمان التوافق مع البيانات السابقة)
   image: {
     type: String,
     default: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400"
@@ -30,18 +30,18 @@ const productSchema = new mongoose.Schema({
   // 🆕 حقل الصور المتعددة الجديد لـ Phase 02
   images: {
     type: [String],
-    default: [] // يبدأ كمصفوفة فارغة، والـ Front-end راح يقرا من هنا أولاً
+    default: [] 
   },
-  // 🔄 التحديث الذكي لليوم 03: ربط المنتج بالقسم عبر الـ ObjectId نتاعه
+  // 🔄 التحديث الذكي: ربط المنتج بالقسم
   categoryId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Category", 
-    default: null // إذا كان null معنتها راهو في القسم الافتراضي "عام"
+    default: null 
   },
   // 🆕 حقل المخزون (Inventory System)
   stock: {
     type: Number,
-    default: 10 // الكمية الافتراضية لأي منتج جديد
+    default: 10 
   }
 }, { timestamps: true });
 
