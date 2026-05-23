@@ -1,0 +1,68 @@
+[33mcc47bcb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Your commit message
+[33m572b22f[m هنا اكتب وصفاً قصيراً للتغييرات التي قمت بها
+[33m1eaf5c8[m Fix: Add missing createStore controller
+[33m2aecccd[m رسالة التوضيح
+[33m0efb1c4[m update dashboard with category management and delete functionality
+[33me6f3bd6[m Fix 404 delete error: add deleteProduct controller and route
+[33m5bdb4fb[m Add product images support and category management in dashboard
+[33m411eddc[m update dashboard interface
+[33mdee9429[m update dashboard interface
+[33ma825b43[m feat: setup product controller and refactor routes
+[33me275ce0[m fix: update store lookup to use owner field
+[33m1635fa3[m fix: remove code duplication and clean userRoutes
+[33m7e00de8[m fix: remove syntax error from userRoutes
+[33mebe4c4d[m Convert Backend to regular folder
+[33m10035d4[m chore: apply gitignore and clean cache
+[33mc80c44a[m feat: complete fresh recreation of app.js to break cache
+[33m848c80c[m fix: force push app.js and category routes from root folder
+[33mdcad77d[m feat: integrate categories management into dashboard and fix backend routing
+[33mcf26524[m fix: update dashboard store link to use store slug dynamic parameter
+[33ma6c9a40[m feat: implement smart URLs and store slugs for backend and frontend
+[33me4fd18d[m feat: upgrade product image defaults, fix edit input placeholder and switch to local state updates
+[33mcf97243[m refactor: change my-store API response format to return 200 OK with hasStore flag
+[33m6ced540[m refactor: implement conditional API fetching to fix 404 console errors
+[33me0965f6[m Design: upgrade register page to a modern minimalist UI and fix double-submit
+[33m8235cc1[m Design: upgrade register page to a modern minimalist UI and fix double-submit
+[33m253cfb4[m Design: upgrade register page to a modern minimalist UI and fix double-submit
+[33meeb541e[m Fix: restore correct product router in backend and fix toString typo
+[33md748610[m Revert: restore original stable dashboard configuration
+[33md48b766[m Revert back to original dashboard setup
+[33me7f929e[m Fix: Update dashboard API routes to match back-end architecture and fix 404 errors
+[33me3cf3db[m Fix: Add missing parentheses to toString in ownership check and make storeId flexible for older products
+[33md268656[m Feat: Display product image on the single product details page with error fallback
+[33m8ad12fa[m Feat: Add product image support to dashboard and public store with fallback image handles
+[33m757fdc2[m Feat: Implement full dashboard analytics grid with live counter update
+[33md43560a[m Fix: Update order status enum to support delivered and handle 500 error
+[33m09fb301[m Feat: Complete Day 24 - Advanced Orders Management and Routing
+[33mf36a4d6[m Feat: Add public route to get single product by ID
+[33m30df188[m Feat: Implement public store layout with Algerian shipping cities and dynamic rates calculation
+[33mda95852[m Feat: Implement public store layout with Algerian shipping cities and dynamic rates calculation
+[33m0c56897[m إضافة الهيكل الأولي للمصمم المجهر
+[33m19ccb90[m إضافة الهيكل الأولي للمصمم المجهر
+[33m7df7d25[m إضافة الهيكل الأولي للمصمم المجهر
+[33m0a7c2e6[m إضافة الهيكل الأولي للمصمم المجهر
+[33m81982b8[m إضافة الهيكل الأولي للمصمم المجهر
+[33m5fc0110[m إضافة الهيكل الأولي للمصمم المجهر
+[33mc9d0f72[m إضافة الهيكل الأولي للمصمم المجهر
+[33mad96d81[m إضافة الهيكل الأولي للمصمم المجهر
+[33m5f7fa7f[m إضافة الهيكل الأولي للمصمم المجهر
+[33m4bd8cc4[m day19 store link dashboard
+[33m1acddd5[m public store route
+[33mf3d172f[m dashboard redesign
+[33m0f18804[m day18 dashboard orders
+[33m1c985e8[m day18 orders backend
+[33m4198b01[m remove wrong gitignore
+[33md5a04ee[m fix: change res.send to res.json in store creation
+[33mcbf4101[m fix: professional auth middleware with JSON response
+[33m9898ddd[m fix: updated authorization headers with Bearer token
+[33mf40dff9[m fix: updated authorization headers with Bearer token
+[33m312710a[m fix: install dotenv dependency
+[33m7f441f4[m fix: add dotenv configuration and dynamic port
+[33maeb2c77[m fix login jwt
+[33m8b1c448[m add vercel routing
+[33mdeaf939[m fix: add home route and vercel config
+[33m9e67663[m update frontend api url
+[33m32e0048[m Update DB connection to use environment variables
+[33m8ec9584[m setup project structure and ignore node_modules
+[33m68ae594[m gitignore is working perfectly
+[33m1345f2b[m initial deploy
