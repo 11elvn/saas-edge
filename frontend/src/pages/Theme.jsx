@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function StoreSettings() {
+function Theme() {
   const [store, setStore] = useState({ 
     name: "", 
     slug: "", 
@@ -103,4 +103,4 @@ function StoreSettings() {
   );
 }
 
-export default StoreSettings;
+export default Theme;

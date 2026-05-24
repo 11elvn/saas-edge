@@ -274,10 +274,10 @@ function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              to="/settings"
+              to="/theme"
               className="bg-slate-100 text-slate-700 px-5 py-2 rounded-full font-semibold hover:bg-slate-200 transition-all text-sm"
             >
-              ⚙️ Settings
+              🎨 Theme
             </Link>
             <button
               onClick={logout}
@@ -555,4 +555,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard
+export default Dashboard;

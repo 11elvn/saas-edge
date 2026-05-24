@@ -6,7 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import PublicStore from "./pages/PublicStore"; 
 import ProductDetails from "./pages/ProductDetails"; 
 import OrdersManagement from "./pages/OrdersManagement"; 
-import StoreSettings from "./pages/StoreSettings"; // 🆕 استيراد صفحة الإعدادات الجديدة
+import Theme from "./pages/Theme"; // 🆕 استيراد صفحة الإعدادات الجديدة
 
 function App() {
   return (
@@ -21,8 +21,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         
         {/* مسار إعدادات المتجر الجديد */}
-        <Route path="/settings" element={<StoreSettings />} />
-        
+        <Route path="/theme" element={<Theme />} />        
         {/* المسار لجدول إدارة الطلبات الكامل بالأزرار الأربعة */}
         <Route path="/dashboard/orders" element={<OrdersManagement />} />
 
