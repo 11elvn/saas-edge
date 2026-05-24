@@ -30,6 +30,12 @@ function PublicStore() {
   const [shippingPrice, setShippingPrice] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [primaryColor, setPrimaryColor] = useState("#2563eb");
+  const [secondaryColor, setSecondaryColor] = useState("#0f172a");
+  const [fontFamily, setFontFamily] = useState("Inter");
+  const [logo, setLogo] = useState("");
+  const [banner, setBanner] = useState("");
+
   // تحديث سعر التوصيل عند اختيار الولاية
   const handleCityChange = (cityName) => {
     setSelectedCity(cityName);
@@ -48,12 +54,36 @@ function PublicStore() {
         `${import.meta.env.VITE_API_URL}/api/stores/public/${slug}`
       );
       const data = await response.json();
-      
       if (data.store) {
-        setStoreName(data.store.name || data.store.storeName);
-      } else if (data.storeName || data.name) {
-        setStoreName(data.storeName || data.name);
-      }
+  setStoreName(
+    data.store.name || data.store.storeName
+  );
+
+  setPrimaryColor(
+    data.store.primaryColor || "#2563eb"
+  );
+
+  setSecondaryColor(
+    data.store.secondaryColor || "#0f172a"
+  );
+
+  setFontFamily(
+    data.store.fontFamily || "Inter"
+  );
+
+  setLogo(
+    data.store.logo || ""
+  );
+
+  setBanner(
+    data.store.banner || ""
+  );
+
+} else if (data.storeName || data.name) {
+  setStoreName(
+    data.storeName || data.name
+  );
+}
       
       if (data.products && Array.isArray(data.products)) {
         setProducts(data.products);
@@ -137,7 +167,10 @@ function PublicStore() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center"
+      style={{
+    fontFamily: fontFamily
+            }} >
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-slate-500 font-medium animate-pulse">جاري تحميل المتجر...</p>
@@ -150,10 +183,24 @@ function PublicStore() {
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans pb-16" dir="rtl">
       
       {/* أعلى المتجر (Header) */}
-      <header className="bg-white border-b border-slate-100 py-8 shadow-sm sticky top-0 z-40 backdrop-blur-md bg-white/90">
+      <header
+  className="border-b py-8"
+  style={{
+    backgroundColor: primaryColor,
+    color: "white"
+  }}
+>
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 shadow-sm">
-            🏪
+            {logo ? (
+             <img
+                   src={logo}
+                   alt="logo"
+                   className="w-16 h-16 rounded-xl mx-auto"
+                   />
+                   ) : (
+                      "🏪"
+)}
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">
             {storeName}
@@ -285,12 +332,18 @@ function PublicStore() {
 
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();
-                        orderProduct(product._id, product.name, product.currentPrice);
-                      }}
-                      className="w-full bg-slate-900 hover:bg-blue-600 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>🛒</span>
+                      e.stopPropagation();
+                       orderProduct(
+                       product._id,
+                       product.name,
+                       product.currentPrice
+                  );
+                            }}
+                        style={{
+                       backgroundColor: secondaryColor
+                                 }}
+                       className="w-full text-white py-3.5 rounded-xl text-sm font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+>
                       اضغط هنا للشراء السريع
                     </button>
                   </div>
