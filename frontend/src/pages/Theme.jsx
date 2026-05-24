@@ -54,7 +54,7 @@ function Theme() {
 
   return (
     <div className="max-w-xl mx-auto p-8 bg-white rounded-3xl shadow-sm border mt-10">
-      <h1 className="text-2xl font-bold mb-6">⚙️ Store Settings</h1>
+      <h1 className="text-2xl font-bold mb-6"> 🎨 Theme </h1>
       
       <div className="space-y-4">
         <div>
