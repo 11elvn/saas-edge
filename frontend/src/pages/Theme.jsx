@@ -95,6 +95,10 @@ function Theme() {
               {["Inter", "Poppins", "Cairo", "Roboto"].map(font => <option key={font} value={font}>{font}</option>)}
             </select>
           </div>
+          <div>
+             <label className="block text-sm font-medium mb-1">Banner URL </label>
+          <input className="w-full border p-3 rounded-xl" value={store.banner} onChange={(e) =>   setStore({   ...store,banner: e.target.value }) }  />
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Logo URL</label>
