@@ -3,13 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 
 const ALGERIAN_CITIES = [
   { id: "16", name: "الجزائر العاصمة", price: 400 },
-  { id: "31", name: "وهران", price: 500 },
-  { id: "25", name: "قسنطينة", price: 500 },
-  { id: "19", name: "سطيف", price: 450 },
-  { id: "06", name: "بجاية", price: 500 },
-  { id: "39", name: "الوادي", price: 700 },
-  { id: "30", name: "ورقلة", price: 750 },
-  { id: "17", name: "الجلفة", price: 550 },
+  { id: "31", name: "وهران",            price: 500 },
+  { id: "25", name: "قسنطينة",          price: 500 },
+  { id: "19", name: "سطيف",             price: 450 },
+  { id: "06", name: "بجاية",            price: 500 },
+  { id: "39", name: "الوادي",           price: 700 },
+  { id: "30", name: "ورقلة",            price: 750 },
+  { id: "17", name: "الجلفة",           price: 550 },
 ];
 
 const DEFAULT_PRODUCT_IMAGE =
@@ -20,21 +20,23 @@ function PublicStore() {
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const [storeName, setStoreName] = useState("متجر إلكتروني");
-  const [products, setProducts] = useState([]);
-  const [customerName, setCustomerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [storeName,     setStoreName]     = useState("متجر إلكتروني");
+  const [products,      setProducts]      = useState([]);
+  const [customerName,  setCustomerName]  = useState("");
+  const [phone,         setPhone]         = useState("");
+  const [address,       setAddress]       = useState("");
+  const [selectedCity,  setSelectedCity]  = useState("");
   const [shippingPrice, setShippingPrice] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading,       setLoading]       = useState(true);
 
-  const [primaryColor, setPrimaryColor] = useState("#2563eb");
+  // 🎨 ألوان وإعدادات المتجر — تأتي من الباك-أند
+  const [primaryColor,   setPrimaryColor]   = useState("#2563eb");
   const [secondaryColor, setSecondaryColor] = useState("#0f172a");
-  const [fontFamily, setFontFamily] = useState("Inter");
-  const [logo, setLogo] = useState("");
-  const [banner, setBanner] = useState("");
+  const [fontFamily,     setFontFamily]     = useState("Inter");
+  const [logo,           setLogo]           = useState("");
+  const [banner,         setBanner]         = useState("");
 
+  // تحديث سعر التوصيل عند اختيار الولاية
   const handleCityChange = (cityName) => {
     setSelectedCity(cityName);
     const city = ALGERIAN_CITIES.find((c) => c.name === cityName);
@@ -42,7 +44,7 @@ function PublicStore() {
   };
 
   // ==================
-  // GET STORE PRODUCTS & INFO (🆕 مُحدث للـ Slug)
+  // GET STORE PRODUCTS & INFO
   // ==================
   const getStoreData = async () => {
     try {
@@ -55,10 +57,12 @@ function PublicStore() {
 
       if (data.store) {
         setStoreName(data.store.name || data.store.storeName);
-        setPrimaryColor(data.store.primaryColor || "#2563eb");
+        // 🎨 primaryColor   → لون خلفية الهيدر (اسم المتجر + اللوجو)
+        // 🎨 secondaryColor → لون زر "طلب سريع" في كل كرت منتج
+        setPrimaryColor(data.store.primaryColor   || "#2563eb");
         setSecondaryColor(data.store.secondaryColor || "#0f172a");
         setFontFamily(data.store.fontFamily || "Inter");
-        setLogo(data.store.logo || "");
+        setLogo(data.store.logo     || "");
         setBanner(data.store.banner || "");
       } else if (data.storeName || data.name) {
         setStoreName(data.storeName || data.name);
@@ -110,7 +114,7 @@ function PublicStore() {
             customerName,
             phone,
             address,
-            shippingCity: selectedCity,
+            shippingCity:  selectedCity,
             shippingPrice,
             totalPrice,
           }),
@@ -139,16 +143,17 @@ function PublicStore() {
 
   // 🔄 التعديل 03: جعل الـ useEffect يراقب ويتفاعل مع تغير الـ slug
   useEffect(() => {
-    if (slug) {
-      getStoreData();
-    }
+    if (slug) getStoreData();
   }, [slug]);
 
+  // ==================
+  // LOADING SCREEN
+  // ==================
   if (loading) {
     return (
       <div
-        style={{ fontFamily }}
         className="min-h-screen bg-[#f5f5f0] flex items-center justify-center"
+        style={{ fontFamily }}
       >
         <div className="text-center">
           <div className="w-10 h-10 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -160,19 +165,32 @@ function PublicStore() {
     );
   }
 
+  // ==================
+  // RENDER
+  // ==================
   return (
     <div
       className="min-h-screen bg-[#f5f5f0] text-stone-900 pb-20"
       dir="rtl"
       style={{ fontFamily: fontFamily || "inherit" }}
     >
-      {/* ===== HEADER ===== */}
-      <header className="bg-white border-b border-stone-200">
+
+      {/* ===== HEADER =====
+          🎨 primaryColor يتحكم في لون خلفية الهيدر كامل —
+          غيّره من صفحة Theme وهيدر المتجر يتبدل فوراً بعد الحفظ
+      */}
+      <header
+        className="border-b"
+        style={{
+          backgroundColor: primaryColor,
+          borderBottomColor: "rgba(0,0,0,0.08)",
+        }}
+      >
         <div className="max-w-5xl mx-auto px-5">
 
-          {/* Banner */}
+          {/* Banner — يظهر فوق اللوجو إذا كان موجوداً */}
           {banner && (
-            <div className="pt-5">
+            <div className="pt-4">
               <img
                 src={banner}
                 alt="banner"
@@ -181,9 +199,15 @@ function PublicStore() {
             </div>
           )}
 
-          {/* Logo + store info */}
+          {/* Logo + اسم المتجر */}
           <div className="flex items-center gap-4 py-5">
-            <div className="w-14 h-14 rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                border: "1.5px solid rgba(255,255,255,0.35)",
+              }}
+            >
               {logo ? (
                 <img src={logo} alt="logo" className="w-full h-full object-cover" />
               ) : (
@@ -191,26 +215,43 @@ function PublicStore() {
               )}
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-stone-900 leading-tight">
+              <h1
+                className="text-xl font-semibold leading-tight"
+                style={{ color: "white" }}
+              >
                 {storeName}
               </h1>
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "rgba(255,255,255,0.65)" }}
+              >
                 الدفع عند الاستلام · التوصيل لـ 58 ولاية 🇩🇿
               </p>
             </div>
           </div>
 
           {/* Nav tabs */}
-          <div className="flex gap-1 border-t border-stone-100">
-            <button className="px-4 py-3 text-sm font-medium text-stone-900 border-b-2 border-stone-900 -mb-px">
+          <div
+            className="flex gap-1 border-t"
+            style={{ borderTopColor: "rgba(255,255,255,0.15)" }}
+          >
+            <button
+              className="px-4 py-3 text-sm font-medium border-b-2 -mb-px"
+              style={{ color: "white", borderBottomColor: "white" }}
+            >
               المنتجات
             </button>
-            <button className="px-4 py-3 text-sm text-stone-400 border-b-2 border-transparent -mb-px">
+            <button
+              className="px-4 py-3 text-sm border-b-2 border-transparent -mb-px"
+              style={{ color: "rgba(255,255,255,0.55)" }}
+            >
               عن المتجر
             </button>
           </div>
+
         </div>
       </header>
+      {/* ===== END HEADER ===== */}
 
       <main className="max-w-5xl mx-auto px-5 mt-7">
 
@@ -276,8 +317,12 @@ function PublicStore() {
 
           {selectedCity && (
             <div className="flex items-center justify-between mt-3 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl">
-              <span className="text-xs text-stone-500">سعر التوصيل إلى {selectedCity}</span>
-              <span className="text-sm font-semibold text-stone-800">{shippingPrice} د.ج</span>
+              <span className="text-xs text-stone-500">
+                سعر التوصيل إلى {selectedCity}
+              </span>
+              <span className="text-sm font-semibold text-stone-800">
+                {shippingPrice} د.ج
+              </span>
             </div>
           )}
         </section>
@@ -305,7 +350,7 @@ function PublicStore() {
                 onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
                 className="bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-stone-400 transition-all duration-200 cursor-pointer group flex flex-col"
               >
-                {/* Product image */}
+                {/* صورة المنتج */}
                 <div className="relative h-52 bg-stone-100 overflow-hidden">
                   <img
                     src={product.image || DEFAULT_PRODUCT_IMAGE}
@@ -323,7 +368,7 @@ function PublicStore() {
                   )}
                 </div>
 
-                {/* Product body */}
+                {/* تفاصيل المنتج */}
                 <div className="p-4 flex flex-col flex-1">
                   <h3 className="font-medium text-stone-900 text-sm mb-1 truncate">
                     {product.name}
@@ -332,7 +377,7 @@ function PublicStore() {
                     {product.description}
                   </p>
 
-                  {/* Price row */}
+                  {/* السعر */}
                   <div className="flex items-baseline gap-2 mb-3">
                     <span className="text-lg font-semibold text-stone-900">
                       {product.currentPrice.toLocaleString()} د.ج
@@ -352,7 +397,10 @@ function PublicStore() {
                     )}
                   </div>
 
-                  {/* Order button */}
+                  {/* زر الطلب
+                      🎨 secondaryColor يتحكم في لون هذا الزر —
+                      غيّره من صفحة Theme وزر الشراء يتبدل فوراً بعد الحفظ
+                  */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
