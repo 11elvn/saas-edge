@@ -18,12 +18,23 @@ exports.createStore = async (req, res) => {
       });
     }
 
+    // 🔥 secure slug generation
+    const baseSlug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-");
+
+    const slugExists = await Store.findOne({ slug: baseSlug });
+
+    const finalSlug = slugExists
+      ? `${baseSlug}-${Date.now()}`
+      : baseSlug;
+
     const newStore = new Store({
       name,
       owner: req.user.id,
-      slug: name
-        .toLowerCase()
-        .replace(/ /g, "-"),
+      slug: finalSlug,
     });
 
     await newStore.save();
@@ -71,13 +82,12 @@ exports.getMyStore = async (req, res) => {
 exports.updateStore = async (req, res) => {
   const {
     name,
-    slug,
     phone,
     logo,
     banner,
     primaryColor,
     secondaryColor,
-    fontFamily
+    fontFamily,
   } = req.body;
 
   try {
@@ -87,17 +97,17 @@ exports.updateStore = async (req, res) => {
       });
     }
 
+    // ❌ slug ممنوع يتبدل (security fix)
     const updatedStore = await Store.findOneAndUpdate(
       { owner: req.user.id },
       {
         name,
-        slug,
         phone,
         logo,
         banner,
         primaryColor,
         secondaryColor,
-        fontFamily
+        fontFamily,
       },
       { new: true }
     );
