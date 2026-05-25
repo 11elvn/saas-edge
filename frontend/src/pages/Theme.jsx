@@ -80,27 +80,7 @@ function Theme() {
                 setStore({ ...store, name: e.target.value })
               }
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Store Slug
-            </label>
-            <input
-              className="w-full border p-3 rounded-xl"
-              value={store.slug}
-              onChange={(e) =>
-                setStore({
-                  ...store,
-                  slug: e.target.value
-                    .toLowerCase()
-                    .replace(/\s+/g, "-"),
-                })
-              }
-            />
-            <p className="text-xs text-gray-500">
-              yourstore.com/store/{store.slug}
-            </p>
+            
           </div>
 
           <div className="grid grid-cols-2 gap-4">
