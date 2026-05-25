@@ -183,33 +183,52 @@ function PublicStore() {
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] font-sans pb-16" dir="rtl">
       
       {/* أعلى المتجر (Header) */}
-      <header
+<header
   className="border-b py-8"
   style={{
     backgroundColor: primaryColor,
     color: "white"
   }}
 >
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 shadow-sm">
-            {logo ? (
-             <img
-                   src={logo}
-                   alt="logo"
-                   className="w-16 h-16 rounded-xl mx-auto"
-                   />
-                   ) : (
-                      "🏪"
-)}
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">
-            {storeName}
-          </h1>
-          <p className="text-slate-400 text-xs md:text-sm">الدفع عند الاستلام والتوصيل متوفر لـ 58 ولاية 🇩🇿</p>
-        </div>
-      </header>
+  <div className="max-w-6xl mx-auto px-6 text-center">
 
-      <main className="max-w-5xl mx-auto px-4 mt-8">
+    {/* Logo */}
+    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 shadow-sm">
+      {logo ? (
+        <img
+          src={logo}
+          alt="logo"
+          className="w-16 h-16 rounded-xl mx-auto"
+        />
+      ) : (
+        "🏪"
+      )}
+    </div>
+
+    {/* Banner تحت اللوجو */}
+    {banner && (
+      <div className="mb-4">
+        <img
+          src={banner}
+          alt="banner"
+          className="w-full max-h-48 object-cover rounded-xl shadow-md"
+        />
+      </div>
+    )}
+
+    {/* Store name */}
+    <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">
+      {storeName}
+    </h1>
+
+    <p className="text-slate-400 text-xs md:text-sm">
+      الدفع عند الاستلام والتوصيل متوفر لـ 58 ولاية 🇩🇿
+    </p>
+
+  </div>
+</header>
+
+<main className="max-w-5xl mx-auto px-4 mt-8">
         
         {/* معلومات المشتري (Checkout Form) */}
         <section className="max-w-md mx-auto mb-10 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
