@@ -30,9 +30,9 @@ const StatCard = ({ icon, label, value, color, href }) => {
 // بادج حالة الطلب (pending / shipped / delivered)
 const StatusBadge = ({ status }) => {
   const map = {
-    pending:   { label: "قيد الانتظار", cls: "badge--amber" },
-    shipped:   { label: "تم الشحن",     cls: "badge--blue"  },
-    delivered: { label: "تم التوصيل",   cls: "badge--green" },
+    pending: { label: "قيد الانتظار", cls: "badge--amber" },
+    shipped: { label: "تم الشحن", cls: "badge--blue" },
+    delivered: { label: "تم التوصيل", cls: "badge--green" },
   };
   const { label, cls } = map[status] || { label: status, cls: "badge--gray" };
   return <span className={`badge ${cls}`}>{label}</span>;
@@ -41,8 +41,8 @@ const StatusBadge = ({ status }) => {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🖼️ CONSTANTS — ثوابت الصور الافتراضية
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const DEFAULT_IMG   = "https://placehold.co/600x400/0f172a/334155?text=No+Image";
-const OLD_UNSPLASH  = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
+const DEFAULT_IMG = "https://placehold.co/600x400/0f172a/334155?text=No+Image";
+const OLD_UNSPLASH = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400";
 
 // دالة مساعدة: ترجع الصورة الصحيحة أو الافتراضية
 const resolveImg = (img) =>
@@ -59,44 +59,46 @@ function Dashboard() {
   const token = localStorage.getItem("token");
 
   // ── Store State ───────────────────────────
-  const [store,           setStore]           = useState(null);   // بيانات المتجر
-  const [hasStore,        setHasStore]        = useState(true);   // هل المتجر موجود؟
-  const [storeName,       setStoreName]       = useState("");     // اسم المتجر الجديد عند الإنشاء
-  const [isInitialLoading,setIsInitialLoading]= useState(true);   // loading أول تحميل
+  const [store, setStore] = useState(null);   // بيانات المتجر
+  const [hasStore, setHasStore] = useState(true);   // هل المتجر موجود؟
+  const [storeName, setStoreName] = useState("");     // اسم المتجر الجديد عند الإنشاء
+  const [isInitialLoading, setIsInitialLoading] = useState(true);   // loading أول تحميل
 
   // ── Data States ───────────────────────────
-  const [products,   setProducts]   = useState([]);  // قائمة المنتجات
-  const [orders,     setOrders]     = useState([]);  // قائمة الطلبات
+  const [products, setProducts] = useState([]);  // قائمة المنتجات
+  const [orders, setOrders] = useState([]);  // قائمة الطلبات
   const [categories, setCategories] = useState([]);  // قائمة التصنيفات
 
   // ── Analytics ─────────────────────────────
   // إحصائيات الداشبورد (products, orders, revenue...)
   const [analytics, setAnalytics] = useState({
     totalProducts: 0,
-    totalOrders:   0,
+    totalOrders: 0,
     pendingOrders: 0,
-    totalRevenue:  0,
+    totalRevenue: 0,
   });
 
   // ── Category Form ─────────────────────────
   const [categoryName, setCategoryName] = useState(""); // حقل اسم التصنيف الجديد
 
   // ── Product Form (Add) ────────────────────
-  const [name,             setName]            = useState("");
-  const [description,      setDescription]     = useState("");
-  const [currentPrice,     setCurrentPrice]    = useState("");
-  const [oldPrice,         setOldPrice]        = useState("");
-  const [image,            setImage]           = useState("");
-  const [images,           setImages]          = useState(""); // صور إضافية مفصولة بفاصلة
-  const [selectedCategory, setSelectedCategory]= useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("");
+  const [oldPrice, setOldPrice] = useState("");
+  const [image, setImage] = useState("");
+  const [images, setImages] = useState(""); // صور إضافية مفصولة بفاصلة
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // ── Product Edit (Modal) ──────────────────
   // إذا editingProduct !== null يظهر modal التعديل
   const [editingProduct, setEditingProduct] = useState(null);
+  // ✦ stock: نفصل تعديل المخزون عن تعديل المنتج
+  const [editingStock, setEditingStock] = useState(null); // { id, value }
 
   // ── UI ────────────────────────────────────
-  const [activeTab,    setActiveTab]    = useState("overview"); // التبويب النشط
-  const [copied,       setCopied]       = useState(false);      // حالة نسخ الرابط
+  const [activeTab, setActiveTab] = useState("overview"); // التبويب النشط
+  const [copied, setCopied] = useState(false);      // حالة نسخ الرابط
   const [notification, setNotification] = useState(null);       // إشعار مؤقت
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,7 +116,7 @@ function Dashboard() {
   // جلب بيانات المتجر الخاص بالمستخدم
   const getStore = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -138,7 +140,7 @@ function Dashboard() {
   // جلب منتجات المتجر
   const getProducts = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -149,7 +151,7 @@ function Dashboard() {
   // جلب طلبات المتجر
   const getOrders = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -160,7 +162,7 @@ function Dashboard() {
   // جلب إحصائيات (عدد المنتجات، الطلبات، الإيرادات...)
   const getAnalytics = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/analytics`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/analytics`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -171,7 +173,7 @@ function Dashboard() {
   // جلب تصنيفات المتجر
   const getCategories = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/my-categories`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/my-categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -187,10 +189,10 @@ function Dashboard() {
   const createStore = async () => {
     if (!storeName.trim()) return notify("أدخل اسم المتجر أولاً", "error");
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
-        method:  "POST",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/create`, {
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ name: storeName }),
+        body: JSON.stringify({ name: storeName }),
       });
       const data = await res.json();
       notify(data.message);
@@ -206,10 +208,10 @@ function Dashboard() {
   const createCategory = async () => {
     if (!categoryName.trim()) return notify("اكتب اسم التصنيف أولاً", "error");
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/create`, {
-        method:  "POST",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/create`, {
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ name: categoryName }),
+        body: JSON.stringify({ name: categoryName }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -226,8 +228,8 @@ function Dashboard() {
   const deleteCategory = async (id) => {
     if (!window.confirm("سيتم فك ارتباط المنتجات بهذا التصنيف. متأكد؟")) return;
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/delete/${id}`, {
-        method:  "DELETE",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/delete/${id}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -250,13 +252,13 @@ function Dashboard() {
   const createProduct = async () => {
     if (!name.trim() || !currentPrice) return notify("اسم المنتج والسعر مطلوبان", "error");
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
-        method:  "POST",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/create`, {
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({
+        body: JSON.stringify({
           name, description, currentPrice, oldPrice, image,
           // نحوّل الصور الإضافية من string مفصول بفاصلة إلى array
-          images:     images ? images.split(",").map(i => i.trim()) : [],
+          images: images ? images.split(",").map(i => i.trim()) : [],
           categoryId: selectedCategory || null,
         }),
       });
@@ -273,10 +275,10 @@ function Dashboard() {
   // تعديل منتج موجود (يُستدعى من modal التعديل)
   const updateProduct = async () => {
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
-        method:  "PUT",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/update/${editingProduct._id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(editingProduct),
+        body: JSON.stringify(editingProduct),
       });
       const data = await res.json();
       if (res.ok) {
@@ -291,13 +293,47 @@ function Dashboard() {
       }
     } catch (err) { console.error("❌ updateProduct:", err); }
   };
+  // ✦ تعديل المخزون يدوياً
+  const updateStock = async () => {
+    if (!editingStock) return;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/update/${editingStock.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ stock: Number(editingStock.value) }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        // ✦ نحدث المخزون في الـ state مباشرة
+        setProducts(prev =>
+          prev.map(p =>
+            p._id === editingStock.id
+              ? { ...p, stock: Number(editingStock.value) }
+              : p
+          )
+        );
+        setEditingStock(null);
+        notify("تم تحديث المخزون ✅");
+      } else {
+        notify(data.message || "فشل التحديث ❌", "error");
+      }
+    } catch (err) {
+      console.error("❌ updateStock:", err);
+    }
+  };
 
   // حذف منتج
   const deleteProduct = async (id) => {
     if (!window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/products/delete/${id}`, {
-        method:  "DELETE",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/delete/${id}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -320,9 +356,9 @@ function Dashboard() {
   const markShipped = async (id) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/orders/update-status/${id}`, {
-        method:  "PUT",
+        method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ status: "shipped" }),
+        body: JSON.stringify({ status: "shipped" }),
       });
       getOrders();    // تحديث قائمة الطلبات
       getAnalytics(); // تحديث الإحصائيات
@@ -511,10 +547,10 @@ function Dashboard() {
               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
               <div className="tabs">
                 {[
-                  { key: "overview",   label: "📊 نظرة عامة"  },
-                  { key: "products",   label: "📦 المنتجات"   },
-                  { key: "categories", label: "📁 التصنيفات"  },
-                  { key: "orders",     label: "🛒 الطلبات"    },
+                  { key: "overview", label: "📊 نظرة عامة" },
+                  { key: "products", label: "📦 المنتجات" },
+                  { key: "categories", label: "📁 التصنيفات" },
+                  { key: "orders", label: "🛒 الطلبات" },
                 ].map(tab => (
                   <button
                     key={tab.key}
@@ -695,8 +731,114 @@ function Dashboard() {
                                   <span className="product-card__old">{product.oldPrice} DA</span>
                                 )}
                               </div>
+                              {/* ✦ بادج المخزون */}
+                              <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                background: "rgba(255,255,255,0.03)",
+                                border: "1px solid rgba(255,255,255,0.07)",
+                                borderRadius: "10px",
+                                padding: "8px 12px",
+                                marginBottom: "4px",
+                              }}>
+                                <span style={{ fontSize: ".8rem", color: "var(--text-mute)" }}>
+                                  المخزون
+                                </span>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {/* ✦ لو بنعدل هذا المنتج نعرض input، غير هيك نعرض الرقم */}
+                                  {editingStock?.id === product._id ? (
+                                    <div style={{ display: "flex", gap: "6px" }}>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={editingStock.value}
+                                        onChange={e =>
+                                          setEditingStock({ ...editingStock, value: e.target.value })
+                                        }
+                                        onKeyDown={e => e.key === "Enter" && updateStock()}
+                                        style={{
+                                          width: "64px",
+                                          background: "rgba(99,102,241,0.1)",
+                                          border: "1px solid var(--accent)",
+                                          borderRadius: "6px",
+                                          padding: "3px 8px",
+                                          color: "#fff",
+                                          fontSize: ".85rem",
+                                          outline: "none",
+                                          textAlign: "center",
+                                        }}
+                                        autoFocus
+                                      />
+                                      {/* زر حفظ */}
+                                      <button
+                                        className="btn btn--success btn--sm"
+                                        onClick={updateStock}
+                                      >
+                                        ✓
+                                      </button>
+                                      {/* زر إلغاء */}
+                                      <button
+                                        className="btn btn--ghost btn--sm"
+                                        onClick={() => setEditingStock(null)}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                      {/* ✦ لون الرقم حسب الكمية */}
+                                      <span style={{
+                                        fontFamily: "'Space Mono', monospace",
+                                        fontWeight: "700",
+                                        fontSize: ".95rem",
+                                        color: product.stock === 0
+                                          ? "var(--red)"          // أحمر إذا نفد
+                                          : product.stock <= 5
+                                            ? "var(--amber)"        // أصفر إذا قليل
+                                            : "var(--green)",       // أخضر إذا كافي
+                                      }}>
+                                        {product.stock ?? 0}
+                                      </span>
+                                      {/* ✦ بادج نفد */}
+                                      {product.stock === 0 && (
+                                        <span style={{
+                                          fontSize: ".68rem", fontWeight: "700",
+                                          background: "rgba(239,68,68,0.1)",
+                                          border: "1px solid rgba(239,68,68,0.3)",
+                                          color: "var(--red)",
+                                          padding: "2px 7px", borderRadius: "99px",
+                                        }}>
+                                          نفد
+                                        </span>
+                                      )}
+                                      {/* ✦ تحذير إذا stock ≤ 5 */}
+                                      {product.stock > 0 && product.stock <= 5 && (
+                                        <span style={{
+                                          fontSize: ".68rem", fontWeight: "700",
+                                          background: "rgba(245,158,11,0.1)",
+                                          border: "1px solid rgba(245,158,11,0.3)",
+                                          color: "var(--amber)",
+                                          padding: "2px 7px", borderRadius: "99px",
+                                        }}>
+                                          قليل
+                                        </span>
+                                      )}
+                                      {/* ✦ زر تعديل المخزون */}
+                                      <button
+                                        className="btn btn--ghost btn--sm"
+                                        onClick={() => setEditingStock({ id: product._id, value: product.stock ?? 0 })}
+                                        title="تعديل المخزون"
+                                        style={{ padding: "3px 8px", fontSize: ".75rem" }}
+                                      >
+                                        ✏️
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
                               <div className="product-card__actions">
-                                {/* زر التعديل: يفتح الـ modal ويحمّل بيانات هذا المنتج */}
                                 <button
                                   className="btn btn--warning btn--sm"
                                   onClick={() => setEditingProduct(product)}
@@ -847,6 +989,17 @@ function Dashboard() {
                   placeholder="السعر (DA)"
                   value={editingProduct.currentPrice}
                   onChange={e => setEditingProduct({ ...editingProduct, currentPrice: e.target.value })}
+                />
+                {/* ✦ حقل المخزون في modal التعديل */}
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  placeholder="المخزون (عدد القطع)"
+                  value={editingProduct.stock ?? 0}
+                  onChange={e =>
+                    setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
+                  }
                 />
                 <input
                   className="input"
