@@ -87,9 +87,9 @@ function Dashboard() {
   const [currentPrice, setCurrentPrice] = useState("");
   const [oldPrice, setOldPrice] = useState("");
   const [image, setImage] = useState("");
-  const [images, setImages] = useState(""); // صور إضافية مفصولة بفاصلة
+  const [images, setImages] = useState("");
+  const [stock, setStock] = useState(10); // ✦ Day 09
   const [selectedCategory, setSelectedCategory] = useState("");
-
   // ── Product Edit (Modal) ──────────────────
   // إذا editingProduct !== null يظهر modal التعديل
   const [editingProduct, setEditingProduct] = useState(null);
@@ -259,8 +259,9 @@ function Dashboard() {
           name, description, currentPrice, oldPrice, image,
           // نحوّل الصور الإضافية من string مفصول بفاصلة إلى array
           images: images ? images.split(",").map(i => i.trim()) : [],
+          stock: Number(stock) || 10, // ✦ يتبعث للباك-أند
           categoryId: selectedCategory || null,
-        }),
+        })
       });
       const data = await res.json();
       notify(data.message);
@@ -268,7 +269,7 @@ function Dashboard() {
       getAnalytics();
       // نصفّر حقول الفورم
       setName(""); setDescription(""); setCurrentPrice(""); setOldPrice("");
-      setImage(""); setImages(""); setSelectedCategory("");
+      setImage(""); setImages(""); setStock(10); setSelectedCategory("");
     } catch (err) { console.error("❌ createProduct:", err); }
   };
 
@@ -468,12 +469,14 @@ function Dashboard() {
                 <div className="create-store-icon">🏪</div>
                 <h2>أنشئ متجرك الآن</h2>
                 <p>اختر اسماً لمتجرك وابدأ البيع خلال ثوانٍ</p>
+                {/* ✦ حقل المخزون — التاجر يحدد كم عنده من البداية */}
                 <input
                   className="input"
-                  placeholder="مثال: متجر الإلكترونيات الذكي"
-                  value={storeName}
-                  onChange={e => setStoreName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && createStore()}
+                  type="number"
+                  min="0"
+                  placeholder="المخزون (عدد القطع) — افتراضي 10"
+                  value={stock}
+                  onChange={e => setStock(e.target.value)}
                 />
                 <button className="btn btn--primary btn--full" onClick={createStore}>
                   🚀 إطلاق المتجر
