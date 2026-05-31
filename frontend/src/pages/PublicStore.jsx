@@ -11,21 +11,21 @@ function PublicStore() {
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const [storeName,     setStoreName]     = useState("متجر إلكتروني");
-  const [products,      setProducts]      = useState([]);
-  const [customerName,  setCustomerName]  = useState("");
-  const [phone,         setPhone]         = useState("");
-  const [address,       setAddress]       = useState("");
-  const [selectedCity,  setSelectedCity]  = useState("");
+  const [storeName, setStoreName] = useState("متجر إلكتروني");
+  const [products, setProducts] = useState([]);
+  const [customerName, setCustomerName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [shippingPrice, setShippingPrice] = useState(0);
-  const [loading,       setLoading]       = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // ✦ إعدادات الثيم — تأتي من الباك-أند
-  const [primaryColor,   setPrimaryColor]   = useState("#2563eb");
+  const [primaryColor, setPrimaryColor] = useState("#2563eb");
   const [secondaryColor, setSecondaryColor] = useState("#0f172a");
-  const [fontFamily,     setFontFamily]     = useState("Inter");
-  const [logo,           setLogo]           = useState("");
-  const [banner,         setBanner]         = useState("");
+  const [fontFamily, setFontFamily] = useState("Inter");
+  const [logo, setLogo] = useState("");
+  const [banner, setBanner] = useState("");
 
   // ✦ استخدام getShippingPrice من الـ constants بدل البحث اليدوي
   const handleCityChange = (cityName) => {
@@ -43,10 +43,10 @@ function PublicStore() {
 
       if (data.store) {
         setStoreName(data.store.name || data.store.storeName);
-        setPrimaryColor(data.store.primaryColor   || "#2563eb");
+        setPrimaryColor(data.store.primaryColor || "#2563eb");
         setSecondaryColor(data.store.secondaryColor || "#0f172a");
         setFontFamily(data.store.fontFamily || "Inter");
-        setLogo(data.store.logo   || "");
+        setLogo(data.store.logo || "");
         setBanner(data.store.banner || "");
       } else if (data.storeName || data.name) {
         setStoreName(data.storeName || data.name);
@@ -94,7 +94,7 @@ function PublicStore() {
             customerName,
             phone: phone.trim().replace(/\s/g, ""), // ✦ نظّف الرقم قبل الإرسال
             address,
-            shippingCity:  selectedCity,
+            shippingCity: selectedCity,
             shippingPrice,
             totalPrice,
           }),
@@ -104,13 +104,18 @@ function PublicStore() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(
-          `🎉 تم تسجيل طلبك بنجاح!\nالمنتج: ${productName}\nالإجمالي: ${totalPrice} د.ج\nسنتصل بك قريباً`
-        );
-        // ✦ تصفير الفورم بعد الطلب الناجح
-        setCustomerName(""); setPhone(""); setAddress("");
-        setSelectedCity(""); setShippingPrice(0);
-      } else {
+        // ✦ navigate لصفحة النجاح مع بيانات الطلب
+        navigate("/order-success", {
+          state: {
+            productName,
+            totalPrice,
+            customerName,
+            shippingCity: selectedCity,
+            slug,
+          }
+        });
+      }
+      else {
         // ✦ نعرض رسالة الخطأ من الباك-أند مباشرة (مثل: "نفد من المخزون")
         alert(data.message || "حدث خطأ أثناء إرسال الطلب");
       }

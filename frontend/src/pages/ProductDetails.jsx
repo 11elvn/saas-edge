@@ -11,14 +11,14 @@ function ProductDetails() {
   const { slug, productId } = useParams();
   const navigate = useNavigate();
 
-  const [product,       setProduct]       = useState(null);
-  const [customerName,  setCustomerName]  = useState("");
-  const [phone,         setPhone]         = useState("");
-  const [address,       setAddress]       = useState("");
-  const [selectedCity,  setSelectedCity]  = useState("");
+  const [product, setProduct] = useState(null);
+  const [customerName, setCustomerName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [shippingPrice, setShippingPrice] = useState(0);
-  const [loading,       setLoading]       = useState(true);
-  const [ordering,      setOrdering]      = useState(false); // ✦ منع الضغط المتكرر
+  const [loading, setLoading] = useState(true);
+  const [ordering, setOrdering] = useState(false); // ✦ منع الضغط المتكرر
 
   // ✦ استخدام getShippingPrice من الـ constants
   const handleCityChange = (cityName) => {
@@ -69,7 +69,7 @@ function ProductDetails() {
             customerName,
             phone: phone.trim().replace(/\s/g, ""), // ✦ نظّف الرقم
             address,
-            shippingCity:  selectedCity,
+            shippingCity: selectedCity,
             shippingPrice,
             totalPrice,
           }),
@@ -79,10 +79,18 @@ function ProductDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("🎉 تم تسجيل طلبك بنجاح! سنتصل بك قريباً.");
-        setCustomerName(""); setPhone(""); setAddress("");
-        setSelectedCity(""); setShippingPrice(0);
-      } else {
+        // ✦ navigate لصفحة النجاح مع بيانات الطلب
+        navigate("/order-success", {
+          state: {
+            productName: product.name,
+            totalPrice: product.currentPrice + shippingPrice,
+            customerName,
+            shippingCity: selectedCity,
+            slug,
+          }
+        });
+      }
+      else {
         // ✦ نعرض رسالة الباك-أند (مثل: "نفد من المخزون")
         alert(data.message || "حدث خطأ أثناء إرسال الطلب ❌");
       }
@@ -216,13 +224,12 @@ function ProductDetails() {
               <button
                 onClick={handleOrder}
                 disabled={product.stock === 0 || ordering}
-                className={`w-full py-4 rounded-xl font-bold transition-all ${
-                  product.stock === 0
+                className={`w-full py-4 rounded-xl font-bold transition-all ${product.stock === 0
                     ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                     : ordering
-                    ? "bg-slate-400 text-white cursor-not-allowed"
-                    : "bg-slate-900 text-white hover:bg-blue-600"
-                }`}
+                      ? "bg-slate-400 text-white cursor-not-allowed"
+                      : "bg-slate-900 text-white hover:bg-blue-600"
+                  }`}
               >
                 {ordering ? "جاري الإرسال... ⏳" : product.stock === 0 ? "نفد من المخزون" : "تأكيد الطلب"}
               </button>
