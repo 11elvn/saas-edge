@@ -469,14 +469,12 @@ function Dashboard() {
                 <div className="create-store-icon">🏪</div>
                 <h2>أنشئ متجرك الآن</h2>
                 <p>اختر اسماً لمتجرك وابدأ البيع خلال ثوانٍ</p>
-                {/* ✦ حقل المخزون — التاجر يحدد كم عنده من البداية */}
                 <input
                   className="input"
-                  type="number"
-                  min="0"
-                  placeholder="المخزون (عدد القطع) — افتراضي 10"
-                  value={stock}
-                  onChange={e => setStock(e.target.value)}
+                  placeholder="مثال: متجر الإلكترونيات الذكي"
+                  value={storeName}
+                  onChange={e => setStoreName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && createStore()}
                 />
                 <button className="btn btn--primary btn--full" onClick={createStore}>
                   🚀 إطلاق المتجر
@@ -668,6 +666,15 @@ function Dashboard() {
                             placeholder="السعر القديم (DA)"
                             value={oldPrice}
                             onChange={e => setOldPrice(e.target.value)}
+                          />
+                          {/* ✦ حقل المخزون — التاجر يحدد كم عنده من البداية */}
+                          <input
+                            className="input"
+                            type="number"
+                            min="0"
+                            placeholder="المخزون (عدد القطع) — افتراضي 10"
+                            value={stock}
+                            onChange={e => setStock(e.target.value)}
                           />
                         </div>
                         <input
