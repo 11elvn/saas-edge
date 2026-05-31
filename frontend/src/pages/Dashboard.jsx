@@ -95,11 +95,27 @@ function Dashboard() {
   const [editingProduct, setEditingProduct] = useState(null);
   // ✦ stock: نفصل تعديل المخزون عن تعديل المنتج
   const [editingStock, setEditingStock] = useState(null); // { id, value }
+  // ✦ Day 11 — Search + Filter
+  const [searchProduct, setSearchProduct] = useState(""); // بحث في المنتجات
+  const [filterCategory, setFilterCategory] = useState(""); // فلتر بالتصنيف
+  const [filterOrder, setFilterOrder] = useState(""); // فلتر الطلبات بالحالة
 
   // ── UI ────────────────────────────────────
   const [activeTab, setActiveTab] = useState("overview"); // التبويب النشط
   const [copied, setCopied] = useState(false);      // حالة نسخ الرابط
   const [notification, setNotification] = useState(null);       // إشعار مؤقت
+  // ✦ Day 11 — قوائم مفلترة — بدون API calls إضافية
+  // فلترة المنتجات حسب البحث والتصنيف
+  const filteredProducts = products.filter(p => {
+    const matchSearch = p.name.toLowerCase().includes(searchProduct.toLowerCase());
+    const matchCategory = filterCategory ? p.categoryId?._id === filterCategory || p.categoryId === filterCategory : true;
+    return matchSearch && matchCategory;
+  });
+
+  // فلترة الطلبات حسب الحالة
+  const filteredOrders = filterOrder
+    ? orders.filter(o => o.status === filterOrder)
+    : orders;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 🔔 NOTIFICATION HELPER — إظهار إشعار
@@ -695,22 +711,51 @@ function Dashboard() {
                       </div>
                     </div>
                   </div>
-
                   {/* ── شبكة عرض المنتجات ── */}
                   <div className="panel">
                     <div className="panel__header">
                       <h2 className="panel__title">📦 كتالوج المنتجات</h2>
-                      <span className="badge badge--gray">{products.length} منتج</span>
+                      <span className="badge badge--gray">{filteredProducts.length} / {products.length} منتج</span>
                     </div>
 
-                    {products.length === 0 ? (
+                    {/* ✦ شريط البحث والفلتر */}
+                    <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
+                      <input
+                        className="input"
+                        placeholder="🔍 ابحث عن منتج..."
+                        value={searchProduct}
+                        onChange={e => setSearchProduct(e.target.value)}
+                        style={{ flex: "1", minWidth: "200px" }}
+                      />
+                      <select
+                        className="input input--select"
+                        value={filterCategory}
+                        onChange={e => setFilterCategory(e.target.value)}
+                        style={{ flex: "1", minWidth: "160px", maxWidth: "220px" }}
+                      >
+                        <option value="">كل التصنيفات</option>
+                        {categories.map(cat => (
+                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
+                      </select>
+                      {/* ✦ زر مسح الفلتر */}
+                      {(searchProduct || filterCategory) && (
+                        <button
+                          className="btn btn--ghost"
+                          onClick={() => { setSearchProduct(""); setFilterCategory(""); }}
+                        >
+                          ✕ مسح
+                        </button>
+                      )}
+                    </div>
+                    {filteredProducts.length === 0 ? (
                       <div className="empty-state">
                         <span>📦</span>
-                        <p>لا توجد منتجات بعد. أضف أول منتج!</p>
+                        <p>{products.length === 0 ? "لا توجد منتجات بعد. أضف أول منتج!" : "لا توجد نتائج للبحث"}</p>
                       </div>
                     ) : (
                       <div className="products-grid">
-                        {products.map(product => (
+                        {filteredProducts.map(product => (
                           <div key={product._id} className="product-card">
                             {/* صورة المنتج */}
                             <div className="product-card__img-wrap">
@@ -927,15 +972,42 @@ function Dashboard() {
                     <Link to="/dashboard/orders" className="link-btn">صفحة الطلبات الكاملة ←</Link>
                   </div>
 
-                  {orders.length === 0 ? (
+                  {/* ✦ فلتر الطلبات بالحالة */}
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+                    {[
+                      { val: "", label: "الكل" },
+                      { val: "pending", label: "⏳ معلق" },
+                      { val: "shipped", label: "📦 مشحون" },
+                      { val: "delivered", label: "✅ موصّل" },
+                      { val: "cancelled", label: "❌ ملغي" },
+                    ].map(f => (
+                      <button
+                        key={f.val}
+                        className={`btn btn--sm ${filterOrder === f.val ? "btn--primary" : "btn--ghost"}`}
+                        onClick={() => setFilterOrder(f.val)}
+                      >
+                        {f.label}
+                        <span style={{
+                          background: "rgba(255,255,255,0.15)",
+                          borderRadius: "99px",
+                          padding: "1px 7px",
+                          fontSize: ".72rem",
+                          marginRight: "4px",
+                        }}>
+                          {f.val === "" ? orders.length : orders.filter(o => o.status === f.val).length}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {filteredOrders.length === 0 ? (
                     <div className="empty-state">
                       <span>🛒</span>
-                      <p>لا توجد طلبات بعد</p>
+                      <p>{orders.length === 0 ? "لا توجد طلبات بعد" : "لا توجد طلبات بهذه الحالة"}</p>
                     </div>
                   ) : (
                     <div className="orders-list">
-                      {/* هنا نعرض كل الطلبات بدون slice */}
-                      {orders.map(order => (
+                      {filteredOrders.map(order => (
+
                         <div key={order._id} className="order-row">
                           <div className="order-row__avatar">
                             {order.customerName?.charAt(0).toUpperCase()}
