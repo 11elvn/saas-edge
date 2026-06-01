@@ -76,6 +76,7 @@ function Dashboard() {
     totalOrders: 0,
     pendingOrders: 0,
     totalRevenue: 0,
+    cancelledOrders: 0, // ✦ Day 12
   });
 
   // ── Category Form ─────────────────────────
@@ -116,6 +117,17 @@ function Dashboard() {
   const filteredOrders = filterOrder
     ? orders.filter(o => o.status === filterOrder)
     : orders;
+  // ✦ Day 12 — نسبة الإلغاء
+  const cancellationRate = analytics.totalOrders > 0
+    ? Math.round((analytics.cancelledOrders / analytics.totalOrders) * 100)
+    : 0;
+
+  // ✦ Day 12 — إيرادات متوقعة من الطلبات المعلقة
+  const deliveredOrders = analytics.totalOrders - analytics.pendingOrders - analytics.cancelledOrders;
+  const avgOrderValue = deliveredOrders > 0
+    ? Math.round(analytics.totalRevenue / deliveredOrders)
+    : 0;
+  const pendingRevenue = analytics.pendingOrders * avgOrderValue;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 🔔 NOTIFICATION HELPER — إظهار إشعار
@@ -531,32 +543,13 @@ function Dashboard() {
                   📊 STATS GRID — شبكة الإحصائيات
               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
               <div className="stats-grid">
-                <StatCard
-                  icon="📦"
-                  label="إجمالي المنتجات"
-                  value={analytics.totalProducts}
-                  color="blue"
-                />
-                <StatCard
-                  icon="📋"
-                  label="إجمالي الطلبات"
-                  value={analytics.totalOrders}
-                  color="green"
-                  href="/dashboard/orders" // قابل للنقر → صفحة الطلبات
-                />
-                <StatCard
-                  icon="⏳"
-                  label="طلبات معلقة"
-                  value={analytics.pendingOrders}
-                  color="amber"
-                  href="/dashboard/orders"
-                />
-                <StatCard
-                  icon="💰"
-                  label="إجمالي الإيرادات"
-                  value={`${analytics.totalRevenue.toLocaleString()} DA`}
-                  color="violet"
-                />
+                <StatCard icon="📦" label="إجمالي المنتجات" value={analytics.totalProducts} color="blue" />
+                <StatCard icon="📋" label="إجمالي الطلبات" value={analytics.totalOrders} href="/dashboard/orders" color="green" />
+                <StatCard icon="⏳" label="طلبات معلقة" value={analytics.pendingOrders} href="/dashboard/orders" color="amber" />
+                <StatCard icon="💰" label="إيرادات مؤكدة" value={`${analytics.totalRevenue.toLocaleString()} DA`} color="violet" />
+                {/* ✦ Day 12 */}
+                <StatCard icon="❌" label="طلبات ملغاة" value={`${analytics.cancelledOrders} (${cancellationRate}%)`} color="red" />
+                <StatCard icon="🔮" label="إيرادات متوقعة" value={`${pendingRevenue.toLocaleString()} DA`} color="emerald" />
               </div>
 
               {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1396,6 +1389,13 @@ const STYLES = `
   .stat-card--green .stat-card__glow  { background: var(--green); }
   .stat-card--amber .stat-card__glow  { background: var(--amber); }
   .stat-card--violet .stat-card__glow { background: var(--violet); }
+  /* ✦ Day 12 */
+.stat-card--red .stat-card__value    { color: var(--red); }
+.stat-card--red:hover                { border-color: rgba(239,68,68,.3); }
+.stat-card--red .stat-card__glow     { background: var(--red); }
+.stat-card--emerald .stat-card__value { color: #34d399; }
+.stat-card--emerald:hover            { border-color: rgba(52,211,153,.3); }
+.stat-card--emerald .stat-card__glow  { background: #34d399; }
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      TABS
