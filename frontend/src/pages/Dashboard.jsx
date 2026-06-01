@@ -411,6 +411,49 @@ function Dashboard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // ✦ Day 13 — Export الطلبات كـ CSV
+  const exportCSV = () => {
+    if (orders.length === 0) return notify("لا توجد طلبات للتصدير", "error");
+
+    // ✦ رأس الجدول
+    const headers = ["الاسم", "الهاتف", "الولاية", "العنوان", "المنتج", "سعر التوصيل", "المبلغ الإجمالي", "الحالة", "التاريخ"];
+
+    // ✦ تحويل كل طلب لصف CSV
+    const rows = orders.map(order => [
+      order.customerName || "",
+      order.phone || "",
+      order.shippingCity || "",
+      order.address || "",
+      order.productId?.name || "منتج محذوف",
+      order.shippingPrice || 0,
+      order.totalPrice || 0,
+      order.status === "pending" ? "معلق"
+        : order.status === "shipped" ? "مشحون"
+          : order.status === "delivered" ? "موصّل"
+            : order.status === "cancelled" ? "ملغي"
+              : order.status,
+      new Date(order.createdAt).toLocaleDateString("ar-DZ"),
+    ]);
+
+    // ✦ دمج الرأس والصفوف
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    // ✦ إضافة BOM للعربية تشتغل صح في Excel
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    // ✦ تحميل الملف تلقائياً
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `طلبات-${store?.slug || "متجر"}-${new Date().toLocaleDateString("en-CA")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    notify(`تم تصدير ${orders.length} طلب بنجاح ✅`);
+  };
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 🔁 useEffect — التشغيل عند أول تحميل
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -962,7 +1005,17 @@ function Dashboard() {
                 <div className="panel">
                   <div className="panel__header">
                     <h2 className="panel__title">🛒 جميع الطلبات</h2>
-                    <Link to="/dashboard/orders" className="link-btn">صفحة الطلبات الكاملة ←</Link>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      {/* ✦ Day 13 — زر Export CSV */}
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        onClick={exportCSV}
+                        title="تحميل الطلبات كـ Excel"
+                      >
+                        📥 تصدير CSV
+                      </button>
+                      <Link to="/dashboard/orders" className="link-btn">صفحة الطلبات الكاملة ←</Link>
+                    </div>
                   </div>
 
                   {/* ✦ فلتر الطلبات بالحالة */}
