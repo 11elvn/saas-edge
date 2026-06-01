@@ -101,6 +101,10 @@ function Dashboard() {
   const [filterCategory, setFilterCategory] = useState(""); // فلتر بالتصنيف
   const [filterOrder, setFilterOrder] = useState(""); // فلتر الطلبات بالحالة
 
+  // ── Day 14 — Cloudinary Upload ───────────
+  const [isUploadingMain, setIsUploadingMain]     = useState(false); // رفع الصورة الرئيسية (فورم الإضافة)
+  const [isUploadingEdit, setIsUploadingEdit]     = useState(false); // رفع الصورة في modal التعديل
+
   // ── UI ────────────────────────────────────
   const [activeTab, setActiveTab] = useState("overview"); // التبويب النشط
   const [copied, setCopied] = useState(false);      // حالة نسخ الرابط
@@ -135,6 +139,46 @@ function Dashboard() {
   const notify = (msg, type = "success") => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500); // يختفي بعد 3.5 ثانية
+  };
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ☁️ CLOUDINARY UPLOAD — Day 14
+  // يرفع الصورة مباشرة من الفرونت بدون باك-أند
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const CLOUDINARY_CLOUD  = "dbcbkly4w";
+  const CLOUDINARY_PRESET = "saas_edge";
+
+  const uploadToCloudinary = async (file, setLoading, onSuccess) => {
+    // 1. تحقق من النوع والحجم (5MB max)
+    if (!file.type.startsWith("image/")) {
+      return notify("الملف المختار ليس صورة ❌", "error");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return notify("حجم الصورة يتجاوز 5MB ❌", "error");
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file",        file);
+      formData.append("upload_preset", CLOUDINARY_PRESET);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+        { method: "POST", body: formData }
+      );
+
+      if (!res.ok) throw new Error("فشل رفع الصورة");
+      const data = await res.json();
+
+      onSuccess(data.secure_url); // ✦ نعطي الـ URL للـ callback
+      notify("تم رفع الصورة بنجاح ✅");
+    } catch (err) {
+      console.error("❌ Cloudinary upload:", err);
+      notify("فشل رفع الصورة، حاول مجدداً ❌", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -740,12 +784,65 @@ function Dashboard() {
                             onChange={e => setStock(e.target.value)}
                           />
                         </div>
-                        <input
-                          className="input"
-                          placeholder="رابط صورة المنتج (URL)"
-                          value={image}
-                          onChange={e => setImage(e.target.value)}
-                        />
+                        {/* ✦ Day 14 — رفع الصورة الرئيسية لـ Cloudinary */}
+                        <div style={{
+                          border: "1px solid var(--border)",
+                          borderRadius: "12px",
+                          overflow: "hidden",
+                        }}>
+                          {/* معاينة الصورة إذا موجودة */}
+                          {image && image !== OLD_UNSPLASH && (
+                            <div style={{ position: "relative", height: "140px", background: "#0a0f1a" }}>
+                              <img
+                                src={image}
+                                alt="معاينة"
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
+                              />
+                              {/* زر حذف الصورة */}
+                              <button
+                                onClick={() => setImage("")}
+                                style={{
+                                  position: "absolute", top: "8px", left: "8px",
+                                  background: "rgba(0,0,0,.7)", border: "none",
+                                  color: "#fff", borderRadius: "8px",
+                                  width: "28px", height: "28px", cursor: "pointer",
+                                  fontSize: ".9rem", display: "flex",
+                                  alignItems: "center", justifyContent: "center",
+                                }}
+                              >✕</button>
+                            </div>
+                          )}
+                          {/* زر الرفع */}
+                          <label style={{
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            gap: "10px", padding: "14px",
+                            cursor: isUploadingMain ? "not-allowed" : "pointer",
+                            background: "rgba(255,255,255,.03)",
+                            color: isUploadingMain ? "var(--text-mute)" : "var(--accent2)",
+                            fontSize: ".9rem", fontWeight: "600",
+                            transition: "background .2s",
+                          }}
+                            onMouseEnter={e => !isUploadingMain && (e.currentTarget.style.background = "rgba(99,102,241,.08)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,.03)")}
+                          >
+                            {isUploadingMain
+                              ? <><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span> جاري الرفع...</>
+                              : <>{image ? "🔄 تغيير الصورة" : "📤 رفع صورة المنتج"}</>
+                            }
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              disabled={isUploadingMain}
+                              onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (file) uploadToCloudinary(file, setIsUploadingMain, url => setImage(url));
+                                e.target.value = ""; // reset باش يقدر يرفع نفس الملف مجدداً
+                              }}
+                            />
+                          </label>
+                        </div>
                         <input
                           className="input"
                           placeholder="صور إضافية (مفصولة بفاصلة)"
@@ -1140,17 +1237,70 @@ function Dashboard() {
                     setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
                   }
                 />
-                <input
-                  className="input"
-                  placeholder="رابط الصورة (URL)"
-                  // نتجاهل الصورة القديمة من Unsplash والصورة الافتراضية
-                  value={
-                    editingProduct.image === OLD_UNSPLASH || editingProduct.image === DEFAULT_IMG
-                      ? ""
-                      : editingProduct.image || ""
-                  }
-                  onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                />
+                {/* ✦ Day 14 — رفع الصورة في modal التعديل */}
+                <div style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                }}>
+                  {/* معاينة الصورة الحالية */}
+                  {editingProduct.image &&
+                   editingProduct.image !== OLD_UNSPLASH &&
+                   editingProduct.image !== DEFAULT_IMG && (
+                    <div style={{ position: "relative", height: "140px", background: "#0a0f1a" }}>
+                      <img
+                        src={editingProduct.image}
+                        alt="معاينة"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
+                      />
+                      <button
+                        onClick={() => setEditingProduct({ ...editingProduct, image: "" })}
+                        style={{
+                          position: "absolute", top: "8px", left: "8px",
+                          background: "rgba(0,0,0,.7)", border: "none",
+                          color: "#fff", borderRadius: "8px",
+                          width: "28px", height: "28px", cursor: "pointer",
+                          fontSize: ".9rem", display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                        }}
+                      >✕</button>
+                    </div>
+                  )}
+                  {/* زر الرفع */}
+                  <label style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    gap: "10px", padding: "14px",
+                    cursor: isUploadingEdit ? "not-allowed" : "pointer",
+                    background: "rgba(255,255,255,.03)",
+                    color: isUploadingEdit ? "var(--text-mute)" : "var(--accent2)",
+                    fontSize: ".9rem", fontWeight: "600",
+                    transition: "background .2s",
+                  }}
+                    onMouseEnter={e => !isUploadingEdit && (e.currentTarget.style.background = "rgba(99,102,241,.08)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,.03)")}
+                  >
+                    {isUploadingEdit
+                      ? <><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span> جاري الرفع...</>
+                      : <>{editingProduct.image && editingProduct.image !== OLD_UNSPLASH && editingProduct.image !== DEFAULT_IMG ? "🔄 تغيير الصورة" : "📤 رفع صورة المنتج"}</>
+                    }
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      disabled={isUploadingEdit}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadToCloudinary(
+                          file,
+                          setIsUploadingEdit,
+                          url => setEditingProduct({ ...editingProduct, image: url })
+                        );
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div className="modal__footer">
@@ -1252,6 +1402,7 @@ const STYLES = `
     50% { width: 70%; margin-right: 0%; }
     100% { width: 0%; margin-right: 100%; }
   }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   @keyframes pulse { 0%,100%{box-shadow:0 0 40px rgba(99,102,241,.5)} 50%{box-shadow:0 0 60px rgba(99,102,241,.9)} }
   .loading-text { color: var(--text-mute); font-size: .85rem; }
 
