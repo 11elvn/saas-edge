@@ -418,7 +418,15 @@ function Dashboard() {
     // ✦ رأس الجدول
     const headers = ["الاسم", "الهاتف", "الولاية", "العنوان", "المنتج", "سعر التوصيل", "المبلغ الإجمالي", "الحالة", "التاريخ"];
 
-    // ✦ تحويل كل طلب لصف CSV
+    // ✦ ترجمة الحالة للعربية
+    const translateStatus = (s) =>
+      s === "pending" ? "معلق"
+      : s === "shipped" ? "مشحون"
+      : s === "delivered" ? "موصّل"
+      : s === "cancelled" ? "ملغي"
+      : s;
+
+    // ✦ تحويل كل طلب لصف — التاريخ بالأرقام اللاتينية باش ما يكسرش Excel
     const rows = orders.map(order => [
       order.customerName || "",
       order.phone || "",
@@ -427,25 +435,28 @@ function Dashboard() {
       order.productId?.name || "منتج محذوف",
       order.shippingPrice || 0,
       order.totalPrice || 0,
-      order.status === "pending" ? "معلق"
-        : order.status === "shipped" ? "مشحون"
-          : order.status === "delivered" ? "موصّل"
-            : order.status === "cancelled" ? "ملغي"
-              : order.status,
-      new Date(order.createdAt).toLocaleDateString("ar-DZ"),
+      translateStatus(order.status),
+      new Date(order.createdAt).toLocaleDateString("en-CA"), // ✦ YYYY-MM-DD — أرقام لاتينية دائماً
     ]);
 
-    // ✦ دمج الرأس والصفوف
+    // ✦ دالة تنظيف الخانة: تهرب الـ " وتلف القيمة بـ "..."
+    const escapeCell = (cell) => `"${String(cell).replace(/"/g, '""')}"`;
+
+    // ✦ الفاصل ; بدل , — Excel في الجزائر/أوروبا يقرأ ; كفاصل أعمدة
+    const SEP = ";";
+
+    // ✦ sep= في أول سطر يخبر Excel صراحةً بالفاصل المستخدم
+    const sepHint = `sep=${SEP}\n`;
+
     const csvContent = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .map(row => row.map(escapeCell).join(SEP))
       .join("\n");
 
-    // ✦ إضافة BOM للعربية تشتغل صح في Excel
+    // ✦ BOM + sep hint + المحتوى — الثلاثة مطلوبين للعربية في Excel
     const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([BOM + sepHint + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
 
-    // ✦ تحميل الملف تلقائياً
     const link = document.createElement("a");
     link.href = url;
     link.download = `طلبات-${store?.slug || "متجر"}-${new Date().toLocaleDateString("en-CA")}.csv`;
