@@ -27,7 +27,6 @@ function Theme() {
     name: "",
     slug: "",
     phone: "",
-    whatsappNumber: "",
     logo: "",
     banner: "",
     primaryColor: "#2563eb",
@@ -102,7 +101,6 @@ function Theme() {
           body: JSON.stringify({
             name:            store.name,
             phone:           store.phone,
-            whatsappNumber:  store.whatsappNumber,
             logo:            store.logo,
             banner:          store.banner,
             primaryColor:    store.primaryColor,
@@ -122,7 +120,6 @@ function Theme() {
             name:            data.store.name            ?? prev.name,
             slug:            data.store.slug            ?? prev.slug,
             phone:           data.store.phone           ?? prev.phone,
-            whatsappNumber:  data.store.whatsappNumber  ?? prev.whatsappNumber,
             logo:            data.store.logo            ?? prev.logo,
             banner:          data.store.banner          ?? prev.banner,
             primaryColor:    data.store.primaryColor    ?? prev.primaryColor,
@@ -335,28 +332,6 @@ function Theme() {
                 value={store.phone}
                 onChange={(e) => updateField("phone", e.target.value)}
               />
-            </div>
-
-            {/* ✦ Day 15 — رقم واتساب الإشعارات */}
-            <div>
-              <span className="block text-xs text-white/50 mb-1">رقم واتساب الإشعارات</span>
-              <p className="text-[11px] text-white/25 mb-2">
-                عند وصول طلب جديد، الزبون سيُحوَّل لهذا الرقم تلقائياً
-              </p>
-              <div className="relative">
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">📱</span>
-                <input
-                  type="tel"
-                  dir="ltr"
-                  className="w-full bg-white/6 border border-white/10 rounded-xl pr-9 pl-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:bg-emerald-500/5 transition-colors"
-                  placeholder="213661234567"
-                  value={store.whatsappNumber}
-                  onChange={(e) => updateField("whatsappNumber", e.target.value)}
-                />
-              </div>
-              <p className="text-[10px] text-white/20 mt-1.5 text-left" dir="ltr">
-                Format: 213XXXXXXXXX (country code without +)
-              </p>
             </div>
           </div>
 

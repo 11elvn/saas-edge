@@ -18,9 +18,7 @@ function ProductDetails() {
   const [selectedCity, setSelectedCity] = useState("");
   const [shippingPrice, setShippingPrice] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [ordering, setOrdering] = useState(false); // ✦ منع الضغط المتكرر
-  // ✦ Day 15 — رقم واتساب التاجر
-  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [ordering, setOrdering] = useState(false);
 
   // ✦ استخدام getShippingPrice من الـ constants
   const handleCityChange = (cityName) => {
@@ -40,21 +38,6 @@ function ProductDetails() {
       console.error("Error fetching product:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ✦ Day 15 — نجيبو رقم واتساب التاجر من المتجر
-  const getStoreWhatsapp = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/stores/public/${slug}`
-      );
-      const data = await res.json();
-      if (data.store?.whatsappNumber) {
-        setWhatsappNumber(data.store.whatsappNumber);
-      }
-    } catch (err) {
-      console.error("Error fetching store whatsapp:", err);
     }
   };
 
@@ -96,23 +79,6 @@ function ProductDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        // ✦ Day 15 — فتح واتساب التاجر برسالة جاهزة
-        if (whatsappNumber) {
-          const totalPrice = product.currentPrice + shippingPrice;
-          const msg = encodeURIComponent(
-            `🛍️ طلب جديد!\n\n` +
-            `👤 الاسم: ${customerName}\n` +
-            `📱 الهاتف: ${phone}\n` +
-            `📦 المنتج: ${product.name}\n` +
-            `📍 الولاية: ${selectedCity}\n` +
-            (address ? `🏠 العنوان: ${address}\n` : "") +
-            `💰 المبلغ: ${totalPrice.toLocaleString()} د.ج\n` +
-            `   (${product.currentPrice.toLocaleString()} + ${shippingPrice.toLocaleString()} توصيل)`
-          );
-          window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, "_blank");
-        }
-
-        // ✦ navigate لصفحة النجاح
         navigate("/order-success", {
           state: {
             productName: product.name,
@@ -137,7 +103,6 @@ function ProductDetails() {
 
   useEffect(() => {
     if (productId) getProductDetails();
-    if (slug)      getStoreWhatsapp();  // ✦ Day 15
   }, [productId]);
 
   if (loading) return (

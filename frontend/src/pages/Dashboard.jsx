@@ -642,34 +642,26 @@ function Dashboard() {
             {/* روابط التنقل */}
             <div className="navbar__links">
               <Link to="/theme" className="nav-btn nav-btn--outline">🎨 الثيم</Link>
+              <Link to="/dashboard/orders" className="nav-btn nav-btn--outline">📋 الطلبات</Link>
 
-              {/* ✦ Day 15 — زر الطلبات مع بادج الإشعار */}
-              <Link
-                to="/dashboard/orders"
-                className="nav-btn nav-btn--outline"
-                style={{ position: "relative" }}
-                onClick={() => setNewOrdersCount(0)}
+              {/* ✦ Day 15 — جرس الإشعارات */}
+              <button
+                className={`notif-bell${newOrdersCount > 0 ? " notif-bell--ringing" : ""}`}
+                onClick={() => { setNewOrdersCount(0); navigate("/dashboard/orders"); }}
+                title="الطلبات الجديدة"
               >
-                📋 الطلبات
+                {/* أيقونة الجرس SVG */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {/* البادج — يظهر فقط إذا في طلبات جديدة */}
                 {newOrdersCount > 0 && (
-                  <span style={{
-                    position: "absolute",
-                    top: "-6px", left: "-6px",
-                    background: "var(--red)",
-                    color: "#fff",
-                    fontSize: ".65rem",
-                    fontWeight: "800",
-                    minWidth: "18px", height: "18px",
-                    borderRadius: "99px",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    padding: "0 4px",
-                    boxShadow: "0 0 0 2px var(--bg)",
-                    animation: "pulse 1.5s infinite",
-                  }}>
-                    {newOrdersCount > 9 ? "9+" : newOrdersCount}
+                  <span className="notif-bell__badge">
+                    {newOrdersCount > 99 ? "99+" : newOrdersCount}
                   </span>
                 )}
-              </Link>
+              </button>
 
               <button onClick={logout} className="nav-btn nav-btn--danger">تسجيل الخروج</button>
             </div>
@@ -1453,6 +1445,59 @@ const STYLES = `
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     NOTIFICATION BELL — Day 15
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .notif-bell {
+    position: relative;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--border);
+    color: var(--text-mute);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+    flex-shrink: 0;
+  }
+  .notif-bell:hover {
+    background: rgba(255,255,255,.1);
+    color: var(--text);
+    border-color: rgba(255,255,255,.15);
+  }
+  /* جرس يتأرجح عند وصول طلب جديد */
+  .notif-bell--ringing svg {
+    animation: bell-ring .6s ease infinite;
+    transform-origin: top center;
+  }
+  @keyframes bell-ring {
+    0%,100% { transform: rotate(0deg); }
+    20%      { transform: rotate(15deg); }
+    40%      { transform: rotate(-15deg); }
+    60%      { transform: rotate(10deg); }
+    80%      { transform: rotate(-10deg); }
+  }
+  /* البادج الأحمر فوق الجرس */
+  .notif-bell__badge {
+    position: absolute;
+    top: -5px; left: -5px;
+    background: var(--red);
+    color: #fff;
+    font-size: .6rem;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    min-width: 17px; height: 17px;
+    border-radius: 99px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3px;
+    box-shadow: 0 0 0 2px var(--bg);
+    animation: badge-pop .3s cubic-bezier(.175,.885,.32,1.275);
+  }
+  @keyframes badge-pop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
   }
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
