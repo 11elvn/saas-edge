@@ -285,14 +285,20 @@ function Dashboard() {
     } catch (err) { console.error("❌ getProducts:", err); }
   };
 
-  // جلب طلبات المتجر
+  // جلب طلبات المتجر + تهيئة lastOrderIdRef
   const getOrders = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (Array.isArray(data)) setOrders(data);
+      if (Array.isArray(data)) {
+        setOrders(data);
+        // ✦ نحفظ أحدث ID كنقطة مرجعية للـ polling
+        if (data.length > 0) {
+          lastOrderIdRef.current = data[0]._id;
+        }
+      }
     } catch (err) { console.error("❌ getOrders:", err); }
   };
 
@@ -587,8 +593,8 @@ function Dashboard() {
         await Promise.all([getProducts(), getOrders(), getAnalytics(), getCategories()]);
       }
 
-      // ✦ نبدأ الـ polling بعد ما تتحمل البيانات — هكذا lastOrderIdRef يكون محدث
-      const pollingInterval = setInterval(pollNewOrders, 30_000);
+      // ✦ polling كل 10 ثواني — اكتشاف سريع للطلبات الجديدة
+      const pollingInterval = setInterval(pollNewOrders, 10_000);
       return () => clearInterval(pollingInterval);
     };
 
