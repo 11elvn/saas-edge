@@ -83,6 +83,7 @@ exports.updateStore = async (req, res) => {
   const {
     name,
     phone,
+    whatsappNumber,
     logo,
     banner,
     primaryColor,
@@ -103,6 +104,7 @@ exports.updateStore = async (req, res) => {
       {
         name,
         phone,
+        whatsappNumber,
         logo,
         banner,
         primaryColor,

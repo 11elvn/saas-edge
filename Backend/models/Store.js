@@ -37,6 +37,13 @@ const storeSchema = new mongoose.Schema(
       default: "",
     },
 
+    // ✦ Day 15 — رقم واتساب التاجر (يستخدم لإرسال إشعار الطلب)
+    whatsappNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     // 🎨 Theme Customization
     primaryColor: {
       type: String,

@@ -102,8 +102,12 @@ function Dashboard() {
   const [filterOrder, setFilterOrder] = useState(""); // فلتر الطلبات بالحالة
 
   // ── Day 14 — Cloudinary Upload ───────────
-  const [isUploadingMain, setIsUploadingMain]     = useState(false); // رفع الصورة الرئيسية (فورم الإضافة)
-  const [isUploadingEdit, setIsUploadingEdit]     = useState(false); // رفع الصورة في modal التعديل
+  const [isUploadingMain, setIsUploadingMain]     = useState(false);
+  const [isUploadingEdit, setIsUploadingEdit]     = useState(false);
+
+  // ── Day 15 — Real-time Notifications ─────
+  const [newOrdersCount, setNewOrdersCount]       = useState(0);   // عدد الطلبات الجديدة غير المقروءة
+  const [lastOrderId,    setLastOrderId]           = useState(null); // آخر طلب شوفناه
 
   // ── UI ────────────────────────────────────
   const [activeTab, setActiveTab] = useState("overview"); // التبويب النشط
@@ -138,7 +142,64 @@ function Dashboard() {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const notify = (msg, type = "success") => {
     setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 3500); // يختفي بعد 3.5 ثانية
+    setTimeout(() => setNotification(null), 3500);
+  };
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 🔔 REAL-TIME POLLING — Day 15
+  // يراقب الطلبات الجديدة كل 30 ثانية
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // صوت تنبيه بسيط بدون ملف خارجي (Web Audio API)
+  const playNotifSound = () => {
+    try {
+      const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type      = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (_) { /* المتصفح قد يمنع الصوت بدون تفاعل مسبق */ }
+  };
+
+  // دالة الـ polling — تجلب أحدث طلب وتقارنه بآخر ID شوفناه
+  const pollNewOrders = async () => {
+    if (!token) return;
+    try {
+      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) return;
+
+      const latestId = data[0]._id; // الطلبات مرتبة desc (الأحدث أولاً)
+
+      setLastOrderId(prev => {
+        if (prev === null) return latestId; // أول تحميل — نحفظ فقط
+
+        if (prev !== latestId) {
+          // ✦ جاء طلب جديد!
+          const diff = data.filter(o =>
+            new Date(o.createdAt) > new Date(data.find(x => x._id === prev)?.createdAt || 0)
+          ).length || 1;
+
+          setNewOrdersCount(c => c + diff);
+          setOrders(data);          // نحدث القائمة
+          getAnalytics();           // نحدث الإحصائيات
+          playNotifSound();
+          notify(`🛒 طلب جديد وصل!`, "success");
+          return latestId;
+        }
+        return prev;
+      });
+    } catch (_) {}
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -525,6 +586,10 @@ function Dashboard() {
     };
 
     init();
+
+    // ✦ Day 15 — Polling كل 30 ثانية بعد ما يتحمل المتجر
+    const pollingInterval = setInterval(pollNewOrders, 30_000);
+    return () => clearInterval(pollingInterval); // cleanup عند unmount
   }, []); // [] = يشتغل مرة واحدة فقط عند mount المكون
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -577,7 +642,35 @@ function Dashboard() {
             {/* روابط التنقل */}
             <div className="navbar__links">
               <Link to="/theme" className="nav-btn nav-btn--outline">🎨 الثيم</Link>
-              <Link to="/dashboard/orders" className="nav-btn nav-btn--outline">📋 الطلبات</Link>
+
+              {/* ✦ Day 15 — زر الطلبات مع بادج الإشعار */}
+              <Link
+                to="/dashboard/orders"
+                className="nav-btn nav-btn--outline"
+                style={{ position: "relative" }}
+                onClick={() => setNewOrdersCount(0)}
+              >
+                📋 الطلبات
+                {newOrdersCount > 0 && (
+                  <span style={{
+                    position: "absolute",
+                    top: "-6px", left: "-6px",
+                    background: "var(--red)",
+                    color: "#fff",
+                    fontSize: ".65rem",
+                    fontWeight: "800",
+                    minWidth: "18px", height: "18px",
+                    borderRadius: "99px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "0 4px",
+                    boxShadow: "0 0 0 2px var(--bg)",
+                    animation: "pulse 1.5s infinite",
+                  }}>
+                    {newOrdersCount > 9 ? "9+" : newOrdersCount}
+                  </span>
+                )}
+              </Link>
+
               <button onClick={logout} className="nav-btn nav-btn--danger">تسجيل الخروج</button>
             </div>
           </div>
