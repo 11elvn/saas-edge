@@ -4,7 +4,7 @@
 // الهدف: إدارة المتجر، المنتجات، الطلبات، الإحصائيات
 // ============================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -106,8 +106,8 @@ function Dashboard() {
   const [isUploadingEdit, setIsUploadingEdit]     = useState(false);
 
   // ── Day 15 — Real-time Notifications ─────
-  const [newOrdersCount, setNewOrdersCount]       = useState(0);   // عدد الطلبات الجديدة غير المقروءة
-  const [lastOrderId,    setLastOrderId]           = useState(null); // آخر طلب شوفناه
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
+  const lastOrderIdRef = useRef(null); // ✦ useRef بدل useState — يحل مشكلة stale closure في setInterval
 
   // ── UI ────────────────────────────────────
   const [activeTab, setActiveTab] = useState("overview"); // التبويب النشط
@@ -172,7 +172,7 @@ function Dashboard() {
   const pollNewOrders = async () => {
     if (!token) return;
     try {
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
@@ -181,24 +181,28 @@ function Dashboard() {
 
       const latestId = data[0]._id; // الطلبات مرتبة desc (الأحدث أولاً)
 
-      setLastOrderId(prev => {
-        if (prev === null) return latestId; // أول تحميل — نحفظ فقط
+      // أول تحميل — نحفظ الـ ID بدون إشعار
+      if (lastOrderIdRef.current === null) {
+        lastOrderIdRef.current = latestId;
+        return;
+      }
 
-        if (prev !== latestId) {
-          // ✦ جاء طلب جديد!
-          const diff = data.filter(o =>
-            new Date(o.createdAt) > new Date(data.find(x => x._id === prev)?.createdAt || 0)
-          ).length || 1;
+      // طلب جديد جاء؟
+      if (lastOrderIdRef.current !== latestId) {
+        // نحسب كم طلب جديد وصل
+        const prevDate = data.find(o => o._id === lastOrderIdRef.current)?.createdAt;
+        const newCount = prevDate
+          ? data.filter(o => new Date(o.createdAt) > new Date(prevDate)).length
+          : 1;
 
-          setNewOrdersCount(c => c + diff);
-          setOrders(data);          // نحدث القائمة
-          getAnalytics();           // نحدث الإحصائيات
-          playNotifSound();
-          notify(`🛒 طلب جديد وصل!`, "success");
-          return latestId;
-        }
-        return prev;
-      });
+        lastOrderIdRef.current = latestId; // نحدث الـ ref فوراً
+
+        setNewOrdersCount(c => c + newCount);
+        setOrders(data);
+        getAnalytics();
+        playNotifSound();
+        notify(`🛒 ${newCount > 1 ? `${newCount} طلبات جديدة!` : "طلب جديد وصل!"}`, "success");
+      }
     } catch (_) {}
   };
 
@@ -577,19 +581,18 @@ function Dashboard() {
     if (!token) return navigate("/login"); // إذا ما فيش توكن نرجعو للـ login
 
     const init = async () => {
-      const storeExists = await getStore(); // أول شيء: نجلب المتجر
+      const storeExists = await getStore();
 
-      // إذا المتجر موجود نجلب باقي البيانات بالتوازي
       if (storeExists) {
         await Promise.all([getProducts(), getOrders(), getAnalytics(), getCategories()]);
       }
+
+      // ✦ نبدأ الـ polling بعد ما تتحمل البيانات — هكذا lastOrderIdRef يكون محدث
+      const pollingInterval = setInterval(pollNewOrders, 30_000);
+      return () => clearInterval(pollingInterval);
     };
 
     init();
-
-    // ✦ Day 15 — Polling كل 30 ثانية بعد ما يتحمل المتجر
-    const pollingInterval = setInterval(pollNewOrders, 30_000);
-    return () => clearInterval(pollingInterval); // cleanup عند unmount
   }, []); // [] = يشتغل مرة واحدة فقط عند mount المكون
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
