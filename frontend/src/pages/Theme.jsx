@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ImageUploader from "../components/ui/ImageUploader";
 
 // ====================================================
 // 🎨 Theme.jsx — صفحة تخصيص المتجر
@@ -297,32 +298,43 @@ function Theme() {
             </div>
           </div>
 
-          {/* Media URLs */}
-          <div className="bg-white/4 border border-white/8 rounded-2xl p-5 space-y-4">
+          {/* Media Upload — Day 18 */}
+          <div className="bg-white/4 border border-white/8 rounded-2xl p-5 space-y-5">
             <label className="block text-xs text-white/40 uppercase tracking-widest">
               الوسائط
             </label>
 
+            {/* Logo */}
             <div>
-              <span className="block text-xs text-white/50 mb-2">رابط اللوجو</span>
-              <input
-                className="w-full bg-white/6 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/30 transition-colors"
-                placeholder="https://..."
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-white/50">اللوجو</span>
+                <span className="text-[10px] text-white/25">مربع — 1:1</span>
+              </div>
+              <ImageUploader
                 value={store.logo}
-                onChange={(e) => updateField("logo", e.target.value)}
+                onChange={(url) => updateField("logo", url)}
+                label="اللوجو"
+                aspect="square"
+                dark={true}
               />
             </div>
 
+            {/* Banner */}
             <div>
-              <span className="block text-xs text-white/50 mb-2">رابط البانر</span>
-              <input
-                className="w-full bg-white/6 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/30 transition-colors"
-                placeholder="https://..."
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-white/50">البانر</span>
+                <span className="text-[10px] text-white/25">عريض — 16:4</span>
+              </div>
+              <ImageUploader
                 value={store.banner}
-                onChange={(e) => updateField("banner", e.target.value)}
+                onChange={(url) => updateField("banner", url)}
+                label="البانر"
+                aspect="wide"
+                dark={true}
               />
             </div>
 
+            {/* Phone */}
             <div>
               <span className="block text-xs text-white/50 mb-2">رقم الهاتف</span>
               <input
@@ -377,20 +389,21 @@ function Theme() {
             <div className="rounded-[24px] overflow-hidden bg-white" style={{ fontFamily: store.fontFamily }}>
 
               {/* Preview header — يعكس primaryColor */}
-              <div className="p-4 text-center" style={{ backgroundColor: store.primaryColor }}>
-                {store.logo ? (
-                  <img src={store.logo} alt="logo" className="w-10 h-10 rounded-xl mx-auto mb-2 object-cover" />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-white/20 mx-auto mb-2 flex items-center justify-center text-lg">🏪</div>
+              <div style={{ backgroundColor: store.primaryColor }}>
+                {/* Banner preview */}
+                {store.banner && (
+                  <img src={store.banner} alt="banner" className="w-full h-12 object-cover" />
                 )}
-                <p className="text-white text-xs font-medium truncate px-2">{store.name || "اسم المتجر"}</p>
-                <p className="text-white/60 text-[9px] mt-0.5">الدفع عند الاستلام</p>
+                <div className="p-3 text-center">
+                  {store.logo ? (
+                    <img src={store.logo} alt="logo" className="w-8 h-8 rounded-lg mx-auto mb-1.5 object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-white/20 mx-auto mb-1.5 flex items-center justify-center text-base">🏪</div>
+                  )}
+                  <p className="text-white text-[11px] font-medium truncate px-2">{store.name || "اسم المتجر"}</p>
+                  <p className="text-white/60 text-[9px] mt-0.5">الدفع عند الاستلام</p>
+                </div>
               </div>
-
-              {/* Preview banner */}
-              {store.banner && (
-                <img src={store.banner} alt="banner" className="w-full h-16 object-cover" />
-              )}
 
               {/* Preview product card */}
               <div className="p-3">
