@@ -660,47 +660,8 @@ function Dashboard() {
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            🔝 NAVBAR — شريط التنقل العلوي
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <nav className="navbar">
-          <div className="navbar__inner">
-            {/* الشعار */}
-            <div className="navbar__brand">
-              <div className="navbar__logo">SE</div>
-              <span className="navbar__title">SaaS<span>Edge</span></span>
-            </div>
-
-            {/* روابط التنقل */}
-            <div className="navbar__links">
-              <Link to="/theme" className="nav-btn nav-btn--outline">🎨 الثيم</Link>
-              <Link to="/dashboard/orders" className="nav-btn nav-btn--outline">📋 الطلبات</Link>
-
-              {/* ✦ Day 15 — جرس الإشعارات */}
-              <button
-                className={`notif-bell${newOrdersCount > 0 ? " notif-bell--ringing" : ""}`}
-                onClick={() => { setNewOrdersCount(0); navigate("/dashboard/orders"); }}
-                title="الطلبات الجديدة"
-              >
-                {/* أيقونة الجرس SVG */}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                {/* البادج — يظهر فقط إذا في طلبات جديدة */}
-                {newOrdersCount > 0 && (
-                  <span className="notif-bell__badge">
-                    {newOrdersCount > 99 ? "99+" : newOrdersCount}
-                  </span>
-                )}
-              </button>
-
-              <button onClick={logout} className="nav-btn nav-btn--danger">تسجيل الخروج</button>
-            </div>
-          </div>
-        </nav>
-
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             📦 MAIN CONTENT — المحتوى الرئيسي
+            (Navbar انتقل لـ AppLayout/TopBar)
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <main className="main-content">
 
@@ -1334,8 +1295,7 @@ function Dashboard() {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  )}
+                  
 
                   {/* ✦ Day 16 — Pagination الطلبات */}
                   {totalOrderPages > 1 && (
@@ -1368,6 +1328,8 @@ function Dashboard() {
                         {(orderPage - 1) * ORDERS_PER_PAGE + 1}–{Math.min(orderPage * ORDERS_PER_PAGE, filteredOrders.length)} من {filteredOrders.length}
                       </span>
                     </div>
+                  )}
+               </div>
                   )}
                 </div>
               )}

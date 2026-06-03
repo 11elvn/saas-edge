@@ -1,0 +1,380 @@
+/* ============================================================
+   layout.css — CSS الهيكل الرئيسي (Sidebar + TopBar)
+   يُستورد مرة واحدة في main.jsx
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ألوان الداشبورد */
+  --layout-bg:        #f8f9fa;
+  --sidebar-bg:       #ffffff;
+  --sidebar-border:   #f0f0f0;
+  --sidebar-width:    220px;
+  --topbar-height:    60px;
+  --topbar-bg:        #ffffff;
+  --topbar-border:    #f0f0f0;
+
+  /* نصوص */
+  --text-primary:     #111827;
+  --text-secondary:   #6b7280;
+  --text-muted:       #9ca3af;
+
+  /* accent */
+  --accent:           #111827;
+  --accent-light:     #f3f4f6;
+  --red:              #ef4444;
+  --green:            #10b981;
+
+  /* شكل */
+  --radius:           10px;
+  --radius-sm:        7px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--layout-bg);
+  color: var(--text-primary);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   APP LAYOUT — الهيكل الرئيسي
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--layout-bg);
+}
+
+.app-layout__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: var(--sidebar-width); /* RTL: sidebar على اليمين */
+}
+
+.app-layout__content {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SIDEBAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.sidebar {
+  position: fixed;
+  top: 0; right: 0;           /* RTL: على اليمين */
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+/* Avatar + Store */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.sidebar__avatar {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: #111827;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sidebar__avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.sidebar__avatar-initials {
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 700;
+}
+
+.sidebar__brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sidebar__store-name {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__store-slug {
+  font-size: .72rem;
+  color: var(--text-muted);
+}
+
+/* Divider */
+.sidebar__divider {
+  height: 1px;
+  background: var(--sidebar-border);
+  margin: 0 16px 16px;
+}
+
+/* Navigation */
+.sidebar__nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px;
+}
+
+.sidebar__section {
+  margin-bottom: 8px;
+}
+
+.sidebar__group-label {
+  display: block;
+  font-size: .65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .8px;
+  padding: 6px 8px 4px;
+  text-transform: uppercase;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all .15s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.sidebar__item:hover {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.sidebar__item--active {
+  background: var(--accent-light);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sidebar__item-icon {
+  font-size: .9rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar__item-label { flex: 1; }
+
+.sidebar__item-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Footer */
+.sidebar__footer {
+  padding: 16px 10px 0;
+  border-top: 1px solid var(--sidebar-border);
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar__store-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all .15s;
+}
+
+.sidebar__store-link:hover {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.sidebar__store-link-arrow {
+  margin-right: auto;
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.sidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: .82rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  transition: all .15s;
+}
+
+.sidebar__logout:hover {
+  background: #fef2f2;
+  color: var(--red);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOPBAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.topbar {
+  height: var(--topbar-height);
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--topbar-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* زر إضافة منتج */
+.topbar__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity .15s;
+}
+
+.topbar__add-btn:hover { opacity: .85; }
+
+/* جرس الإشعارات */
+.topbar__bell {
+  position: relative;
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  border: 1px solid var(--topbar-border);
+  color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.topbar__bell:hover {
+  background: #e5e7eb;
+  color: var(--text-primary);
+}
+
+.topbar__bell--ringing svg {
+  animation: bell-ring .5s ease infinite;
+  transform-origin: top center;
+}
+
+@keyframes bell-ring {
+  0%,100% { transform: rotate(0); }
+  25%     { transform: rotate(12deg); }
+  75%     { transform: rotate(-12deg); }
+}
+
+.topbar__bell-badge {
+  position: absolute;
+  top: -5px; left: -5px;
+  min-width: 17px; height: 17px;
+  background: var(--red);
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 0 0 2px #fff;
+  animation: pop .25s cubic-bezier(.175,.885,.32,1.275);
+}
+
+@keyframes pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RESPONSIVE — الموبايل
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 0px; }
+
+  .sidebar {
+    transform: translateX(100%);
+    transition: transform .25s ease;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .app-layout__main {
+    margin-right: 0;
+  }
+
+  .app-layout__content {
+    padding: 20px 16px;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+}
