@@ -1,18 +1,17 @@
 require('dotenv').config();
-const express = require("express");
-const cors    = require("cors");
-const rateLimit = require("express-rate-limit"); // ✦ إضافة جديدة
+const express  = require("express");
+const cors     = require("cors");
+const rateLimit = require("express-rate-limit");
 
-const connectDB       = require("./config/db");
-const userRoutes      = require("./routes/userRoutes");
-const storeRoutes     = require("./routes/storeRoutes");
-const productRoutes   = require("./routes/productRoutes");
-const orderRoutes     = require("./routes/orderRoutes");
-const categoryRoutes  = require("./routes/categoryRoutes");
+const connectDB      = require("./config/db");
+const userRoutes     = require("./routes/userRoutes");
+const storeRoutes    = require("./routes/storeRoutes");
+const productRoutes  = require("./routes/productRoutes");
+const orderRoutes    = require("./routes/orderRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 
 const app = express();
 connectDB();
-
 app.use(express.json());
 app.use(cors());
 
@@ -20,49 +19,41 @@ app.use(cors());
 // ✦ RATE LIMITING
 // ==============================
 
-// ✦ حماية عامة — كل الـ API
-// max 100 طلب كل 15 دقيقة من نفس IP
+// ✦ حماية عامة — رفعنا الحد لأن الـ polling يستهلك requests
+// 500 طلب كل 15 دقيقة — كافي للداشبورد + polling
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 100,
-  message: {
-    message: "طلبات كثيرة جداً، حاول مجدداً بعد 15 دقيقة ❌"
-  },
+  windowMs: 15 * 60 * 1000,
+  max: 500, // ✦ رفعناه من 100 → 500 بسبب polling كل 10 ثواني
+  message: { message: "طلبات كثيرة جداً، حاول مجدداً بعد 15 دقيقة ❌" },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// ✦ حماية خاصة على إنشاء الطلبات — أشد تقييداً
-// max 10 طلبات كل 15 دقيقة — يمنع الإساءة من الزبائن
+// ✦ حماية إنشاء الطلبات — للزبائن فقط
 const orderLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
+  windowMs: 15 * 60 * 1000,
   max: 10,
-  message: {
-    message: "لقد أرسلت طلبات كثيرة، انتظر قليلاً وحاول مجدداً ❌"
-  },
+  message: { message: "لقد أرسلت طلبات كثيرة، انتظر قليلاً وحاول مجدداً ❌" },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// ✦ حماية خاصة على تسجيل الدخول — تمنع brute force
-// max 5 محاولات كل 15 دقيقة
+// ✦ حماية Login/Register — رفعنا الحد لـ 20 للتطوير
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 5,
-  message: {
-    message: "محاولات كثيرة، حاول مجدداً بعد 15 دقيقة ❌"
-  },
+  windowMs: 15 * 60 * 1000,
+  max: 20, // ✦ رفعناه من 5 → 20 باش ما يتبلوكش عند التجربة
+  message: { message: "محاولات كثيرة، حاول مجدداً بعد 15 دقيقة ❌" },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// ✦ تطبيق الحماية العامة على كل الـ API
+// ✦ تطبيق الحماية العامة
 app.use("/api/", generalLimiter);
 
-// ✦ تطبيق حماية خاصة على مسارات حساسة
-app.use("/api/orders/create",   orderLimiter); // ✦ إنشاء طلب
-app.use("/api/users/login",     authLimiter);  // ✦ تسجيل الدخول
-app.use("/api/users/register",  authLimiter);  // ✦ إنشاء حساب
+// ✦ حماية خاصة على مسارات حساسة
+app.use("/api/orders/create",  orderLimiter);
+app.use("/api/users/login",    authLimiter);
+app.use("/api/users/register", authLimiter);
 
 // ==============================
 // ROUTES
@@ -73,17 +64,9 @@ app.use("/api/products",   productRoutes);
 app.use("/api/orders",     orderRoutes);
 app.use("/api/categories", categoryRoutes);
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("SaaS Edge Backend is Live 🚀");
-});
+app.get("/", (req, res) => res.send("SaaS Edge Backend is Live 🚀"));
 
-// 404
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
