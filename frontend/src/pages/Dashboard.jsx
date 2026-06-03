@@ -125,6 +125,28 @@ function Dashboard() {
   const filteredOrders = filterOrder
     ? orders.filter(o => o.status === filterOrder)
     : orders;
+
+  // ✦ Day 16 — Pagination
+  const PRODUCTS_PER_PAGE = 12;
+  const ORDERS_PER_PAGE   = 10;
+  const [productPage, setProductPage] = useState(1);
+  const [orderPage,   setOrderPage]   = useState(1);
+
+  // نرجع للصفحة 1 عند تغيير الفلتر أو البحث
+  useEffect(() => { setProductPage(1); }, [searchProduct, filterCategory]);
+  useEffect(() => { setOrderPage(1);   }, [filterOrder]);
+
+  const totalProductPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const totalOrderPages   = Math.ceil(filteredOrders.length   / ORDERS_PER_PAGE);
+
+  const paginatedProducts = filteredProducts.slice(
+    (productPage - 1) * PRODUCTS_PER_PAGE,
+    productPage * PRODUCTS_PER_PAGE
+  );
+  const paginatedOrders = filteredOrders.slice(
+    (orderPage - 1) * ORDERS_PER_PAGE,
+    orderPage * ORDERS_PER_PAGE
+  );
   // ✦ Day 12 — نسبة الإلغاء
   const cancellationRate = analytics.totalOrders > 0
     ? Math.round((analytics.cancelledOrders / analytics.totalOrders) * 100)
@@ -993,7 +1015,7 @@ function Dashboard() {
                       </div>
                     ) : (
                       <div className="products-grid">
-                        {filteredProducts.map(product => (
+                        {paginatedProducts.map(product => (
                           <div key={product._id} className="product-card">
                             {/* صورة المنتج */}
                             <div className="product-card__img-wrap">
@@ -1151,6 +1173,39 @@ function Dashboard() {
                       </div>
                     )}
                   </div>
+
+                  {/* ✦ Day 16 — Pagination المنتجات */}
+                  {totalProductPages > 1 && (
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      gap: "8px", marginTop: "24px", flexWrap: "wrap",
+                    }}>
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        disabled={productPage === 1}
+                        onClick={() => setProductPage(p => p - 1)}
+                      >← السابق</button>
+
+                      {Array.from({ length: totalProductPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          className={`btn btn--sm ${productPage === page ? "btn--primary" : "btn--ghost"}`}
+                          onClick={() => setProductPage(page)}
+                          style={{ minWidth: "36px" }}
+                        >{page}</button>
+                      ))}
+
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        disabled={productPage === totalProductPages}
+                        onClick={() => setProductPage(p => p + 1)}
+                      >التالي →</button>
+
+                      <span style={{ color: "var(--text-mute)", fontSize: ".8rem", marginRight: "8px" }}>
+                        {(productPage - 1) * PRODUCTS_PER_PAGE + 1}–{Math.min(productPage * PRODUCTS_PER_PAGE, filteredProducts.length)} من {filteredProducts.length}
+                      </span>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -1254,7 +1309,7 @@ function Dashboard() {
                     </div>
                   ) : (
                     <div className="orders-list">
-                      {filteredOrders.map(order => (
+                      {paginatedOrders.map(order => (
 
                         <div key={order._id} className="order-row">
                           <div className="order-row__avatar">
@@ -1279,6 +1334,39 @@ function Dashboard() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* ✦ Day 16 — Pagination الطلبات */}
+                  {totalOrderPages > 1 && (
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      gap: "8px", marginTop: "20px", flexWrap: "wrap",
+                    }}>
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        disabled={orderPage === 1}
+                        onClick={() => setOrderPage(p => p - 1)}
+                      >← السابق</button>
+
+                      {Array.from({ length: totalOrderPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          className={`btn btn--sm ${orderPage === page ? "btn--primary" : "btn--ghost"}`}
+                          onClick={() => setOrderPage(page)}
+                          style={{ minWidth: "36px" }}
+                        >{page}</button>
+                      ))}
+
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        disabled={orderPage === totalOrderPages}
+                        onClick={() => setOrderPage(p => p + 1)}
+                      >التالي →</button>
+
+                      <span style={{ color: "var(--text-mute)", fontSize: ".8rem", marginRight: "8px" }}>
+                        {(orderPage - 1) * ORDERS_PER_PAGE + 1}–{Math.min(orderPage * ORDERS_PER_PAGE, filteredOrders.length)} من {filteredOrders.length}
+                      </span>
                     </div>
                   )}
                 </div>
