@@ -13,319 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const token = () => localStorage.getItem("token");
-const API   = () => import.meta.env.VITE_API_URL;
-
-// ── helpers ──────────────────────────────────────────────
-// يحوّل قائمة الطلبات لبيانات chart يومية (آخر 7 أيام)
-function buildChartData(orders) {
-  const days = 7;
-  const result = [];
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d     = new Date();
-    d.setDate(d.getDate() - i);
-    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const key   = d.toLocaleDateString("en-CA"); // YYYY-MM-DD
-
-    const dayOrders = orders.filter(
-      (o) => new Date(o.createdAt).toLocaleDateString("en-CA") === key
-    );
-
-    result.push({
-      date:     label,
-      orders:   dayOrders.length,
-      revenue:  dayOrders
-        .filter((o) => o.status === "delivered")
-        .reduce((s, o) => s + (o.totalPrice || 0), 0),
-      profit:   dayOrders
-        .filter((o) => o.status === "delivered")
-        .reduce((s, o) => s + (o.totalPrice || 0) * 0.8, 0), // تقديري 80%
-    });
-  }
-  return result;
-}
-
-// ── StatCard ──────────────────────────────────────────────
-function StatCard({ label, value, sub }) {
-  return (
-    <div className="ov-stat">
-      <span className="ov-stat__label">{label}</span>
-      <span className="ov-stat__value">{value}</span>
-      {sub && <span className="ov-stat__sub">{sub}</span>}
-    </div>
-  );
-}
-
-// ── ChartCard ─────────────────────────────────────────────
-function ChartCard({ title, value, trend, trendUp, children }) {
-  return (
-    <div className="ov-chart">
-      <div className="ov-chart__header">
-        <div>
-          <p className="ov-chart__title">{title}</p>
-          <p className="ov-chart__value">{value}</p>
-        </div>
-        {trend !== undefined && (
-          <span className={`ov-chart__trend ${trendUp ? "ov-chart__trend--up" : "ov-chart__trend--down"}`}>
-            {trendUp ? "↗" : "↘"} {trend}%
-          </span>
-        )}
-      </div>
-      <div className="ov-chart__body">{children}</div>
-    </div>
-  );
-}
-
-// ── StatusBadge ───────────────────────────────────────────
-const STATUS = {
-  pending:   { label: "معلق",    cls: "badge-amber" },
-  shipped:   { label: "مشحون",   cls: "badge-blue"  },
-  delivered: { label: "موصّل",   cls: "badge-green" },
-  cancelled: { label: "ملغي",    cls: "badge-red"   },
-};
-function Badge({ status }) {
-  const s = STATUS[status] || { label: status, cls: "badge-gray" };
-  return <span className={`ov-badge ${s.cls}`}>{s.label}</span>;
-}
-
-// ── MAIN ─────────────────────────────────────────────────
-function OverviewPage() {
-  const navigate = useNavigate();
-
-  const [analytics, setAnalytics] = useState({
-    totalProducts: 0, totalOrders: 0,
-    pendingOrders: 0, totalRevenue: 0, cancelledOrders: 0,
-  });
-  const [orders,    setOrders]    = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [period,    setPeriod]    = useState("7d"); // "24h" | "7d" | "30d"
-
-  // جلب البيانات
-  useEffect(() => {
-    const t = token();
-    if (!t) return navigate("/login");
-
-    Promise.all([
-      fetch(`${API()}/api/orders/analytics`,  { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
-      fetch(`${API()}/api/orders/my-orders`,  { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
-    ])
-      .then(([analyticsData, ordersData]) => {
-        if (analyticsData && !analyticsData.message) setAnalytics(analyticsData);
-        if (Array.isArray(ordersData)) setOrders(ordersData);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  // حسابات مشتقة
-  const cancellationRate = analytics.totalOrders > 0
-    ? Math.round((analytics.cancelledOrders / analytics.totalOrders) * 100)
-    : 0;
-  const confirmedOrders = analytics.totalOrders
-    - analytics.pendingOrders
-    - analytics.cancelledOrders;
-
-  // بيانات الـ charts
-  const chartData = buildChartData(orders);
-  const totalSales  = chartData.reduce((s, d) => s + d.revenue, 0);
-  const totalProfit = chartData.reduce((s, d) => s + d.profit,  0);
-  const totalChartOrders = chartData.reduce((s, d) => s + d.orders, 0);
-
-  if (loading) {
-    return (
-      <div className="ov-loading">
-        <div className="ov-loading__spinner" />
-        <p>جاري تحميل البيانات...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="ov-page">
-
-      {/* ── Period Tabs ── */}
-      <div className="ov-period-tabs">
-        {[
-          { key: "24h", label: "Last 24h"   },
-          { key: "7d",  label: "Last 7 Days" },
-          { key: "30d", label: "Last 30 Days"},
-        ].map((p) => (
-          <button
-            key={p.key}
-            className={`ov-period-btn ${period === p.key ? "ov-period-btn--active" : ""}`}
-            onClick={() => setPeriod(p.key)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Stats Row ── */}
-      <div className="ov-stats-row">
-        <StatCard label="Total orders"     value={analytics.totalOrders}  />
-        <StatCard label="Confirmed Orders" value={confirmedOrders}         />
-        <StatCard label="Processing Orders" value={analytics.pendingOrders} />
-        <StatCard label="Cancelled Orders" value={analytics.cancelledOrders}
-          sub={analytics.totalOrders > 0 ? `${cancellationRate}%` : undefined} />
-      </div>
-
-      {/* ── Charts Row ── */}
-      <div className="ov-charts-row">
-
-        {/* Total Sales */}
-        <ChartCard
-          title="Total Sales"
-          value={`DZD ${totalSales.toLocaleString()}`}
-          trend={0}
-          trendUp={true}
-        >
-          <ResponsiveContainer width="100%" height={140}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <defs>
-                <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
-              <Tooltip
-                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
-                formatter={(v) => [`${v.toLocaleString()} DA`, "المبيعات"]}
-              />
-              <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2}
-                fill="url(#salesGrad)" dot={false}/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Net Profit */}
-        <ChartCard
-          title="Net Profit"
-          value={`DZD ${Math.round(totalProfit).toLocaleString()}`}
-          trend={0}
-          trendUp={true}
-        >
-          <ResponsiveContainer width="100%" height={140}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <defs>
-                <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
-              <Tooltip
-                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
-                formatter={(v) => [`${v.toLocaleString()} DA`, "الربح"]}
-              />
-              <Area type="monotone" dataKey="profit" stroke="#6366f1" strokeWidth={2}
-                fill="url(#profitGrad)" dot={false}/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Orders Bar */}
-        <ChartCard
-          title="Orders"
-          value={totalChartOrders}
-          trend={cancellationRate}
-          trendUp={cancellationRate === 0}
-        >
-          <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}
-                allowDecimals={false}/>
-              <Tooltip
-                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
-                formatter={(v) => [v, "الطلبات"]}
-              />
-              <Bar dataKey="orders" fill="#111827" radius={[4, 4, 0, 0]}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-      </div>
-
-      {/* ── Recent Orders ── */}
-      <div className="ov-recent">
-        <div className="ov-recent__header">
-          <h3 className="ov-recent__title">آخر الطلبات</h3>
-          <button
-            className="ov-recent__link"
-            onClick={() => navigate("/dashboard/orders")}
-          >
-            عرض الكل ←
-          </button>
-        </div>
-
-        {orders.length === 0 ? (
-          <div className="ov-empty">
-            <span>🛒</span>
-            <p>لا توجد طلبات بعد</p>
-          </div>
-        ) : (
-          <table className="ov-table">
-            <thead>
-              <tr>
-                <th>الزبون</th>
-                <th>المنتج</th>
-                <th>الولاية</th>
-                <th>المبلغ</th>
-                <th>الحالة</th>
-                <th>التاريخ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, 8).map((o) => (
-                <tr key={o._id}>
-                  <td>
-                    <div className="ov-table__customer">
-                      <span className="ov-table__avatar">
-                        {o.customerName?.charAt(0).toUpperCase()}
-                      </span>
-                      <div>
-                        <p className="ov-table__name">{o.customerName}</p>
-                        <p className="ov-table__phone">{o.phone}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="ov-table__product">
-                    {o.productId?.name || "منتج محذوف"}
-                  </td>
-                  <td className="ov-table__city">{o.shippingCity || "—"}</td>
-                  <td className="ov-table__price">
-                    {(o.totalPrice || 0).toLocaleString()} DA
-                  </td>
-                  <td><Badge status={o.status} /></td>
-                  <td className="ov-table__date">
-                    {new Date(o.createdAt).toLocaleDateString("en-CA")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-    </div>
-  );
-}
-
-export default OverviewPage;
-
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🎨 STYLES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const style = document.createElement("style");
-style.textContent = `
+// ✅ FIX 1: CSS مباشرة في الملف بدل document.createElement
+const ovStyles = `
 /* ── Loading ── */
 .ov-loading {
   display: flex; flex-direction: column; align-items: center;
@@ -506,7 +195,318 @@ style.textContent = `
   .ov-table td:nth-child(6) { display: none; }
 }
 `;
-if (!document.getElementById("ov-styles")) {
-  style.id = "ov-styles";
-  document.head.appendChild(style);
+
+const token = () => localStorage.getItem("token");
+const API   = () => import.meta.env.VITE_API_URL;
+
+// ── helpers ──────────────────────────────────────────────
+function buildChartData(orders) {
+  const days = 7;
+  const result = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d     = new Date();
+    d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const key   = d.toLocaleDateString("en-CA");
+
+    const dayOrders = orders.filter(
+      (o) => new Date(o.createdAt).toLocaleDateString("en-CA") === key
+    );
+
+    result.push({
+      date:    label,
+      orders:  dayOrders.length,
+      revenue: dayOrders
+        .filter((o) => o.status === "delivered")
+        .reduce((s, o) => s + (o.totalPrice || 0), 0),
+      profit:  dayOrders
+        .filter((o) => o.status === "delivered")
+        .reduce((s, o) => s + (o.totalPrice || 0) * 0.8, 0),
+    });
+  }
+  return result;
 }
+
+// ── StatCard ──────────────────────────────────────────────
+function StatCard({ label, value, sub }) {
+  return (
+    <div className="ov-stat">
+      <span className="ov-stat__label">{label}</span>
+      <span className="ov-stat__value">{value}</span>
+      {sub && <span className="ov-stat__sub">{sub}</span>}
+    </div>
+  );
+}
+
+// ── ChartCard ─────────────────────────────────────────────
+function ChartCard({ title, value, trend, trendUp, children }) {
+  return (
+    <div className="ov-chart">
+      <div className="ov-chart__header">
+        <div>
+          <p className="ov-chart__title">{title}</p>
+          <p className="ov-chart__value">{value}</p>
+        </div>
+        {trend !== undefined && (
+          <span className={`ov-chart__trend ${trendUp ? "ov-chart__trend--up" : "ov-chart__trend--down"}`}>
+            {trendUp ? "↗" : "↘"} {trend}%
+          </span>
+        )}
+      </div>
+      <div className="ov-chart__body">{children}</div>
+    </div>
+  );
+}
+
+// ── Badge ─────────────────────────────────────────────────
+const STATUS = {
+  pending:   { label: "معلق",    cls: "badge-amber" },
+  shipped:   { label: "مشحون",   cls: "badge-blue"  },
+  delivered: { label: "موصّل",   cls: "badge-green" },
+  cancelled: { label: "ملغي",    cls: "badge-red"   },
+};
+function Badge({ status }) {
+  const s = STATUS[status] || { label: status, cls: "badge-gray" };
+  return <span className={`ov-badge ${s.cls}`}>{s.label}</span>;
+}
+
+// ── MAIN ─────────────────────────────────────────────────
+function OverviewPage() {
+  const navigate = useNavigate();
+
+  const [analytics, setAnalytics] = useState({
+    totalProducts: 0, totalOrders: 0,
+    pendingOrders: 0, totalRevenue: 0, cancelledOrders: 0,
+  });
+  const [orders,  setOrders]  = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [period,  setPeriod]  = useState("7d");
+
+  // ✅ FIX 2: نحط الـ CSS داخل useEffect بدل خارج الـ component
+  useEffect(() => {
+    if (!document.getElementById("ov-styles")) {
+      const style = document.createElement("style");
+      style.id = "ov-styles";
+      style.textContent = ovStyles;
+      document.head.appendChild(style);
+    }
+  }, []);
+
+  // جلب البيانات
+  useEffect(() => {
+    const t = token();
+    if (!t) return navigate("/login");
+
+    Promise.all([
+      fetch(`${API()}/api/orders/analytics`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
+      fetch(`${API()}/api/orders/my-orders`,  { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
+    ])
+      .then(([analyticsData, ordersData]) => {
+        if (analyticsData && !analyticsData.message) setAnalytics(analyticsData);
+        if (Array.isArray(ordersData)) setOrders(ordersData);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const cancellationRate = analytics.totalOrders > 0
+    ? Math.round((analytics.cancelledOrders / analytics.totalOrders) * 100)
+    : 0;
+  const confirmedOrders = analytics.totalOrders
+    - analytics.pendingOrders
+    - analytics.cancelledOrders;
+
+  const chartData        = buildChartData(orders);
+  const totalSales       = chartData.reduce((s, d) => s + d.revenue, 0);
+  const totalProfit      = chartData.reduce((s, d) => s + d.profit,  0);
+  const totalChartOrders = chartData.reduce((s, d) => s + d.orders,  0);
+
+  if (loading) {
+    return (
+      <div className="ov-loading">
+        <div className="ov-loading__spinner" />
+        <p>جاري تحميل البيانات...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ov-page">
+
+      {/* ── Period Tabs ── */}
+      <div className="ov-period-tabs">
+        {[
+          { key: "24h", label: "Last 24h"    },
+          { key: "7d",  label: "Last 7 Days" },
+          { key: "30d", label: "Last 30 Days"},
+        ].map((p) => (
+          <button
+            key={p.key}
+            className={`ov-period-btn ${period === p.key ? "ov-period-btn--active" : ""}`}
+            onClick={() => setPeriod(p.key)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Stats Row ── */}
+      <div className="ov-stats-row">
+        <StatCard label="Total orders"      value={analytics.totalOrders}     />
+        <StatCard label="Confirmed Orders"  value={confirmedOrders}            />
+        <StatCard label="Processing Orders" value={analytics.pendingOrders}    />
+        <StatCard label="Cancelled Orders"  value={analytics.cancelledOrders}
+          sub={analytics.totalOrders > 0 ? `${cancellationRate}%` : undefined} />
+      </div>
+
+      {/* ── Charts Row ── */}
+      <div className="ov-charts-row">
+
+        {/* Total Sales */}
+        <ChartCard
+          title="Total Sales"
+          value={`DZD ${totalSales.toLocaleString()}`}
+          trend={0}
+          trendUp={true}
+        >
+          <ResponsiveContainer width="100%" height={140}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
+              {/* ✅ FIX 3: formatter بالصيغة الصحيحة لـ Recharts 3 */}
+              <Tooltip
+                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
+                formatter={(value) => [value.toLocaleString() + " DA", "المبيعات"]}
+              />
+              <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2}
+                fill="url(#salesGrad)" dot={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Net Profit */}
+        <ChartCard
+          title="Net Profit"
+          value={`DZD ${Math.round(totalProfit).toLocaleString()}`}
+          trend={0}
+          trendUp={true}
+        >
+          <ResponsiveContainer width="100%" height={140}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
+              <Tooltip
+                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
+                formatter={(value) => [value.toLocaleString() + " DA", "الربح"]}
+              />
+              <Area type="monotone" dataKey="profit" stroke="#6366f1" strokeWidth={2}
+                fill="url(#profitGrad)" dot={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Orders Bar */}
+        <ChartCard
+          title="Orders"
+          value={totalChartOrders}
+          trend={cancellationRate}
+          trendUp={cancellationRate === 0}
+        >
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false}
+                allowDecimals={false}/>
+              <Tooltip
+                contentStyle={{ background: "#fff", border: "1px solid #f0f0f0", borderRadius: 8, fontSize: 12 }}
+                formatter={(value) => [value, "الطلبات"]}
+              />
+              <Bar dataKey="orders" fill="#111827" radius={[4, 4, 0, 0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+      </div>
+
+      {/* ── Recent Orders ── */}
+      <div className="ov-recent">
+        <div className="ov-recent__header">
+          <h3 className="ov-recent__title">آخر الطلبات</h3>
+          <button
+            className="ov-recent__link"
+            onClick={() => navigate("/dashboard/orders")}
+          >
+            عرض الكل ←
+          </button>
+        </div>
+
+        {orders.length === 0 ? (
+          <div className="ov-empty">
+            <span>🛒</span>
+            <p>لا توجد طلبات بعد</p>
+          </div>
+        ) : (
+          <table className="ov-table">
+            <thead>
+              <tr>
+                <th>الزبون</th>
+                <th>المنتج</th>
+                <th>الولاية</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.slice(0, 8).map((o) => (
+                <tr key={o._id}>
+                  <td>
+                    <div className="ov-table__customer">
+                      <span className="ov-table__avatar">
+                        {o.customerName?.charAt(0).toUpperCase()}
+                      </span>
+                      <div>
+                        <p className="ov-table__name">{o.customerName}</p>
+                        <p className="ov-table__phone">{o.phone}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="ov-table__product">
+                    {o.productId?.name || "منتج محذوف"}
+                  </td>
+                  <td className="ov-table__city">{o.shippingCity || "—"}</td>
+                  <td className="ov-table__price">
+                    {(o.totalPrice || 0).toLocaleString()} DA
+                  </td>
+                  <td><Badge status={o.status} /></td>
+                  <td className="ov-table__date">
+                    {new Date(o.createdAt).toLocaleDateString("en-CA")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+export default OverviewPage;
