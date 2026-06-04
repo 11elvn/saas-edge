@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login            from "./pages/Login";
 import Register         from "./pages/Register";
 import Dashboard        from "./pages/Dashboard";
+import OverviewPage     from "./pages/OverviewPage";
 import PublicStore      from "./pages/PublicStore";
 import ProductDetails   from "./pages/ProductDetails";
 import OrdersManagement from "./pages/OrdersManagement";
@@ -42,7 +43,9 @@ function App() {
 
         {/* ── صفحات الداشبورد (محمية + مع Layout) ── */}
         <Route path="/dashboard"
-          element={<DashPage component={Dashboard}        title="Business Analytics" />} />
+          element={<DashPage component={OverviewPage}     title="Business Analytics" />} />
+        <Route path="/dashboard/legacy"
+          element={<DashPage component={Dashboard}        title="Dashboard (Legacy)" />} />
         <Route path="/dashboard/orders"
           element={<DashPage component={OrdersManagement} title="Orders" />} />
         <Route path="/theme"
