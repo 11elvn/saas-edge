@@ -1,346 +1,234 @@
 // ============================================================
-// 📁 OrdersManagement.jsx
-// تحويل axios → fetch كامل + تصميم داكن احترافي
+// 📁 pages/OrdersManagement.jsx — Day 21
 // ============================================================
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✦ useNavigate بدل <a href>
+
+const API      = () => import.meta.env.VITE_API_URL;
+const getToken = () => localStorage.getItem("token");
+
+const STATUS_CONFIG = {
+  pending:   { label: "قيد الانتظار", color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" },
+  shipped:   { label: "تم الشحن",     color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
+  delivered: { label: "تم التوصيل",   color: "#10b981", bg: "#f0fdf4", border: "#bbf7d0" },
+  cancelled: { label: "ملغي",         color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+};
+
+const StatusBadge = ({ status }) => {
+  const cfg = STATUS_CONFIG[status] || { label: status, color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" };
+  return (
+    <span style={{
+      background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`,
+      padding: "3px 10px", borderRadius: 99, fontSize: ".72rem", fontWeight: 700,
+      display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color, display: "inline-block" }} />
+      {cfg.label}
+    </span>
+  );
+};
 
 const OrdersManagement = () => {
   const [orders,  setOrders]  = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
+  const [notif,   setNotif]   = useState(null);
 
-  const navigate = useNavigate(); // ✦ للتنقل بدون reload
+  const notify = (msg, type = "success") => {
+    setNotif({ msg, type });
+    setTimeout(() => setNotif(null), 3000);
+  };
 
-  // ✦ token يُقرأ داخل الدوال — لا خارجها
-  const getToken = () => localStorage.getItem("token");
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  // ==============================
-  // GET ORDERS — fetch بدل axios
-  // ==============================
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      setError("");
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders/my-orders`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
-
-      if (!res.ok) throw new Error("فشل جلب الطلبات");
-
+      setLoading(true); setError("");
+      const res = await fetch(`${API()}/api/orders/my-orders`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setOrders(data);
-
-    } catch (err) {
-      console.error("fetchOrders error:", err);
-      setError("فشل في جلب الطلبات، يرجى تحديث الصفحة ❌");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("فشل في جلب الطلبات ❌"); }
+    finally  { setLoading(false); }
   };
 
-  // ==============================
-  // UPDATE STATUS — fetch بدل axios
-  // ==============================
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders/update-status/${orderId}`,
-        {
-          method:  "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:  `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
+      const res = await fetch(`${API()}/api/orders/update-status/${orderId}`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body:    JSON.stringify({ status: newStatus }),
+      });
       const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "حدث خطأ ❌");
-        return;
-      }
-
-      // ✦ تحديث الـ state مباشرة بدون re-fetch
-      setOrders(prev =>
-        prev.map(order =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-
-    } catch (err) {
-      console.error("updateStatus error:", err);
-      alert("خطأ في الاتصال بالخادم ❌");
-    }
+      if (!res.ok) return notify(data.message || "حدث خطأ ❌", "error");
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      notify("تم تحديث الحالة ✅");
+    } catch { notify("خطأ في الاتصال ❌", "error"); }
   };
 
-  // ==============================
-  // STATUS CONFIG
-  // ==============================
-  const STATUS_CONFIG = {
-    pending:   { label: "قيد الانتظار", dot: "bg-amber-400",   bg: "bg-amber-400/10",   text: "text-amber-400"   },
-    shipped:   { label: "تم الشحن",     dot: "bg-blue-400",    bg: "bg-blue-400/10",    text: "text-blue-400"    },
-    delivered: { label: "تم التوصيل",   dot: "bg-emerald-400", bg: "bg-emerald-400/10", text: "text-emerald-400" },
-    cancelled: { label: "ملغي",         dot: "bg-red-400",     bg: "bg-red-400/10",     text: "text-red-400"     },
-  };
+  useEffect(() => { fetchOrders(); }, []);
 
-  const StatusBadge = ({ status }) => {
-    const cfg = STATUS_CONFIG[status] || {
-      label: status,
-      dot:  "bg-slate-400",
-      bg:   "bg-slate-400/10",
-      text: "text-slate-400",
-    };
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-        {cfg.label}
-      </span>
-    );
-  };
-
-  // ==============================
-  // LOADING
-  // ==============================
   if (loading) return (
-    <div className="min-h-screen bg-[#080c14] flex items-center justify-center" dir="rtl">
-      <div className="text-center space-y-4">
-        <div className="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-slate-400 text-sm tracking-widest uppercase">جاري تحميل الطلبات</p>
-      </div>
+    <div className="pp-loading">
+      <div className="pp-spinner" />
+      <p>جاري تحميل الطلبات...</p>
     </div>
   );
 
-  // ==============================
-  // ERROR
-  // ==============================
   if (error) return (
-    <div className="min-h-screen bg-[#080c14] flex items-center justify-center" dir="rtl">
-      <div className="text-center space-y-4">
-        <div className="text-4xl">⚠️</div>
-        <p className="text-red-400 font-semibold">{error}</p>
-        <button
-          onClick={fetchOrders}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-indigo-700 transition"
-        >
-          إعادة المحاولة
-        </button>
-      </div>
+    <div className="pp-empty">
+      <span>⚠️</span>
+      <p style={{ color: "#ef4444" }}>{error}</p>
+      <button className="pp-btn pp-btn--primary" onClick={fetchOrders}>إعادة المحاولة</button>
     </div>
   );
 
-  // ==============================
-  // RENDER
-  // ==============================
+  // إحصائيات سريعة
+  const stats = [
+    { label: "الكل",    count: orders.length,                                        color: "#111827" },
+    { label: "معلق",    count: orders.filter(o => o.status === "pending").length,   color: "#f59e0b" },
+    { label: "مشحون",   count: orders.filter(o => o.status === "shipped").length,   color: "#3b82f6" },
+    { label: "موصّل",   count: orders.filter(o => o.status === "delivered").length, color: "#10b981" },
+    { label: "ملغي",    count: orders.filter(o => o.status === "cancelled").length, color: "#ef4444" },
+  ];
+
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-        .orders-page { font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        .mono { font-family: 'Space Mono', monospace; }
-        .table-row:hover td { background: rgba(255,255,255,0.02); }
-      `}</style>
+    <div dir="rtl">
 
-      <div className="orders-page min-h-screen bg-[#080c14] text-slate-200 pb-16" dir="rtl">
+      {/* Toast */}
+      {notif && (
+        <div className={`pp-toast pp-toast--${notif.type}`}>
+          {notif.type === "success" ? "✅" : "❌"} {notif.msg}
+        </div>
+      )}
 
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            HEADER
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="border-b border-white/5 bg-[#0d1220]">
-          <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-
-            <div className="flex items-center gap-3">
-              {/* ✦ زر العودة — useNavigate بدل <a href> لمنع reload */}
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="w-9 h-9 rounded-xl bg-white/5 border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
-              >
-                ←
-              </button>
-              <div>
-                <h1 className="text-lg font-bold text-white">إدارة الطلبات</h1>
-                <p className="text-xs text-slate-500 mt-0.5">تتبع وإدارة جميع طلبات متجرك</p>
-              </div>
-            </div>
-
-            {/* إحصائيات سريعة في الهيدر */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {[
-                { label: "الكل",    count: orders.length,                                          color: "text-slate-300"  },
-                { label: "معلق",    count: orders.filter(o => o.status === "pending").length,   color: "text-amber-400"  },
-                { label: "مشحون",   count: orders.filter(o => o.status === "shipped").length,   color: "text-blue-400"   },
-                { label: "موصّل",   count: orders.filter(o => o.status === "delivered").length, color: "text-emerald-400"},
-                { label: "ملغي",    count: orders.filter(o => o.status === "cancelled").length, color: "text-red-400"    },
-              ].map(stat => (
-                <div key={stat.label} className="bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-center min-w-[64px]">
-                  <p className={`mono text-lg font-bold ${stat.color}`}>{stat.count}</p>
-                  <p className="text-xs text-slate-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-
+      {/* Stats */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+        {stats.map(s => (
+          <div key={s.label} className="pp-card" style={{ padding: "14px 20px", flex: "1 1 80px", textAlign: "center", minWidth: 80 }}>
+            <p style={{ fontSize: "1.4rem", fontWeight: 700, color: s.color, margin: 0 }}>{s.count}</p>
+            <p style={{ fontSize: ".72rem", color: "#9ca3af", margin: 0 }}>{s.label}</p>
           </div>
-        </div>
-
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            CONTENT
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="max-w-7xl mx-auto px-6 mt-8">
-
-          {orders.length === 0 ? (
-            <div className="bg-[#0d1220] border border-white/5 rounded-2xl text-center py-20">
-              <div className="text-5xl mb-4 opacity-30">📭</div>
-              <p className="text-slate-400 font-medium">لا توجد طلبات بعد</p>
-              <p className="text-slate-600 text-sm mt-1">شارك رابط متجرك لتبدأ في استقبال الطلبات</p>
-            </div>
-          ) : (
-            <div className="bg-[#0d1220] border border-white/5 rounded-2xl overflow-hidden">
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-right">
-                  <thead>
-                    <tr className="border-b border-white/5">
-                      {["الزبون", "رقم الهاتف", "المنتج", "الولاية", "المبلغ", "الحالة", "إجراءات"].map(h => (
-                        <th key={h} className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-
-                  <tbody className="divide-y divide-white/5">
-                    {orders.map((order) => (
-                      <tr key={order._id} className="table-row transition-colors">
-
-                        {/* الزبون */}
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                              {order.customerName?.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="font-semibold text-white text-sm whitespace-nowrap">
-                              {order.customerName}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* الهاتف */}
-                        <td className="px-5 py-4">
-                          <span className="mono text-sm text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
-                            {order.phone}
-                          </span>
-                        </td>
-
-                        {/* المنتج */}
-                        <td className="px-5 py-4">
-                          <span className="text-sm text-slate-300 max-w-[160px] truncate block">
-                            {order.productId
-                              ? order.productId.name
-                              : <span className="text-red-400/70 text-xs">منتج محذوف</span>
-                            }
-                          </span>
-                        </td>
-
-                        {/* الولاية */}
-                        <td className="px-5 py-4">
-                          <div>
-                            <span className="text-sm font-semibold text-indigo-400">
-                              {order.shippingCity || "غير محدد"}
-                            </span>
-                            {order.address && (
-                              <p className="text-xs text-slate-600 mt-0.5 max-w-[140px] truncate">
-                                {order.address}
-                              </p>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* المبلغ */}
-                        <td className="px-5 py-4">
-                          <span className="mono text-sm font-bold text-emerald-400">
-                            {(order.totalPrice || order.productId?.currentPrice || 0).toLocaleString()} دج
-                          </span>
-                        </td>
-
-                        {/* الحالة */}
-                        <td className="px-5 py-4">
-                          <StatusBadge status={order.status} />
-                        </td>
-
-                        {/* الإجراءات */}
-                        <td className="px-5 py-4">
-                          <div className="flex items-center justify-end gap-2 flex-wrap">
-
-                            {/* شحن — pending فقط */}
-                            {order.status === "pending" && (
-                              <button
-                                onClick={() => handleUpdateStatus(order._id, "shipped")}
-                                className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all whitespace-nowrap"
-                              >
-                                📦 شحن
-                              </button>
-                            )}
-
-                            {/* توصيل — shipped فقط */}
-                            {order.status === "shipped" && (
-                              <button
-                                onClick={() => handleUpdateStatus(order._id, "delivered")}
-                                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all whitespace-nowrap"
-                              >
-                                ✅ توصيل
-                              </button>
-                            )}
-
-                            {/* إلغاء — pending أو shipped فقط */}
-                            {(order.status === "pending" || order.status === "shipped") && (
-                              <button
-                                onClick={() => handleUpdateStatus(order._id, "cancelled")}
-                                className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-500 hover:text-white hover:border-red-500 transition-all whitespace-nowrap"
-                              >
-                                ✕ إلغاء
-                              </button>
-                            )}
-
-                            {/* نهائي — delivered أو cancelled */}
-                            {(order.status === "delivered" || order.status === "cancelled") && (
-                              <span className="text-xs text-slate-600 italic">نهائي</span>
-                            )}
-
-                          </div>
-                        </td>
-
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-white/5 px-5 py-3 flex items-center justify-between">
-                <p className="text-xs text-slate-600">
-                  إجمالي <span className="text-slate-400 font-semibold">{orders.length}</span> طلب
-                </p>
-                <button
-                  onClick={fetchOrders}
-                  className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  🔄 تحديث
-                </button>
-              </div>
-
-            </div>
-          )}
-        </div>
+        ))}
       </div>
-    </>
+
+      {/* Table */}
+      <div className="pp-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="pp-card__header" style={{ padding: "16px 20px" }}>
+          <h2 className="pp-card__title">🛒 الطلبات</h2>
+          <button className="pp-btn pp-btn--ghost pp-btn--sm" onClick={fetchOrders}>🔄 تحديث</button>
+        </div>
+
+        {orders.length === 0 ? (
+          <div className="pp-empty">
+            <span>📭</span>
+            <p>لا توجد طلبات بعد</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "right", fontSize: ".84rem" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #f0f0f0", background: "#f9fafb" }}>
+                  {["الزبون", "الهاتف", "المنتج", "الولاية", "المبلغ", "الحالة", "إجراءات"].map(h => (
+                    <th key={h} style={{ padding: "10px 16px", color: "#6b7280", fontWeight: 600, fontSize: ".75rem", whiteSpace: "nowrap" }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order, i) => (
+                  <tr key={order._id} style={{ borderBottom: "1px solid #f9fafb", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+
+                    {/* الزبون */}
+                    <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: "#111827", color: "#fff",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontWeight: 700, fontSize: ".85rem", flexShrink: 0,
+                        }}>
+                          {order.customerName?.charAt(0).toUpperCase()}
+                        </div>
+                        <span style={{ fontWeight: 600, color: "#111827" }}>{order.customerName}</span>
+                      </div>
+                    </td>
+
+                    {/* الهاتف */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <span style={{ fontFamily: "monospace", background: "#f3f4f6", padding: "3px 8px", borderRadius: 6, fontSize: ".8rem", color: "#374151" }}>
+                        {order.phone}
+                      </span>
+                    </td>
+
+                    {/* المنتج */}
+                    <td style={{ padding: "12px 16px", maxWidth: 160 }}>
+                      <span style={{ color: "#374151", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
+                      </span>
+                    </td>
+
+                    {/* الولاية */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <span style={{ color: "#6366f1", fontWeight: 600 }}>{order.shippingCity || "—"}</span>
+                      {order.address && <p style={{ color: "#9ca3af", fontSize: ".72rem", margin: 0 }}>{order.address}</p>}
+                    </td>
+
+                    {/* المبلغ */}
+                    <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
+                      <span style={{ fontWeight: 700, color: "#10b981", fontFamily: "monospace" }}>
+                        {(order.totalPrice || 0).toLocaleString()} دج
+                      </span>
+                    </td>
+
+                    {/* الحالة */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <StatusBadge status={order.status} />
+                    </td>
+
+                    {/* الإجراءات */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                        {order.status === "pending" && (
+                          <button className="pp-btn pp-btn--sm"
+                            style={{ background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }}
+                            onClick={() => handleUpdateStatus(order._id, "shipped")}>
+                            📦 شحن
+                          </button>
+                        )}
+                        {order.status === "shipped" && (
+                          <button className="pp-btn pp-btn--sm"
+                            style={{ background: "#f0fdf4", color: "#10b981", border: "1px solid #bbf7d0" }}
+                            onClick={() => handleUpdateStatus(order._id, "delivered")}>
+                            ✅ توصيل
+                          </button>
+                        )}
+                        {(order.status === "pending" || order.status === "shipped") && (
+                          <button className="pp-btn pp-btn--danger pp-btn--sm"
+                            onClick={() => handleUpdateStatus(order._id, "cancelled")}>
+                            ✕ إلغاء
+                          </button>
+                        )}
+                        {(order.status === "delivered" || order.status === "cancelled") && (
+                          <span style={{ fontSize: ".72rem", color: "#9ca3af", fontStyle: "italic" }}>نهائي</span>
+                        )}
+                      </div>
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div style={{ borderTop: "1px solid #f0f0f0", padding: "10px 20px" }}>
+              <p style={{ fontSize: ".75rem", color: "#9ca3af", margin: 0 }}>
+                إجمالي <strong style={{ color: "#374151" }}>{orders.length}</strong> طلب
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
