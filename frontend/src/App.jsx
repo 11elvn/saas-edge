@@ -10,6 +10,8 @@ import Login            from "./pages/Login";
 import Register         from "./pages/Register";
 import Dashboard        from "./pages/Dashboard";
 import OverviewPage     from "./pages/OverviewPage";
+import ProductsPage     from "./pages/ProductsPage";
+import CategoriesPage   from "./pages/CategoriesPage";
 import PublicStore      from "./pages/PublicStore";
 import ProductDetails   from "./pages/ProductDetails";
 import OrdersManagement from "./pages/OrdersManagement";
@@ -48,6 +50,10 @@ function App() {
           element={<DashPage component={Dashboard}        title="Dashboard (Legacy)" />} />
         <Route path="/dashboard/orders"
           element={<DashPage component={OrdersManagement} title="Orders" />} />
+        <Route path="/dashboard/products"
+          element={<DashPage component={ProductsPage}     title="Products" />} />
+        <Route path="/dashboard/categories"
+          element={<DashPage component={CategoriesPage}   title="Categories" />} />
         <Route path="/theme"
           element={<DashPage component={Theme}            title="Themes" />} />
 
