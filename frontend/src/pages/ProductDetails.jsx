@@ -1,241 +1,341 @@
+// ============================================================
+// 📁 pages/ProductDetails.jsx — Day 23 Redesign (dark vibe)
+// ============================================================
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-// ✦ import من المصدر الواحد — حذفنا ALGERIAN_CITIES المحلية
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 
-const DEFAULT_PRODUCT_IMAGE =
-  "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
+const API = () => import.meta.env.VITE_API_URL;
+const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
+
+const PD_CSS = `
+@keyframes pd-fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pd-spin     { to{transform:rotate(360deg)} }
+.pd-fade  { animation: pd-fade-up .45s ease both; }
+.pd-d1    { animation-delay: .08s; }
+.pd-d2    { animation-delay: .16s; }
+.pd-spinner { animation: pd-spin .7s linear infinite; }
+.pd-thumb {
+  cursor:pointer; border-radius:10px; overflow:hidden;
+  border:2px solid transparent;
+  transition: border-color .2s, transform .2s;
+}
+.pd-thumb:hover { transform:scale(1.05); }
+.pd-thumb.active { border-color: var(--pd-primary); }
+.pd-input {
+  width:100%; padding:12px 14px; border-radius:12px;
+  border:1px solid #2a2a2a; background:#111;
+  color:#e5e5e5; font-family:inherit; font-size:14px;
+  outline:none; transition: border-color .2s, background .2s;
+  text-align:right; box-sizing:border-box;
+}
+.pd-input:focus { border-color: var(--pd-primary); background:#161616; }
+.pd-input::placeholder { color:#444; }
+.pd-btn-order {
+  position:relative; overflow:hidden;
+  transition: transform .15s, box-shadow .15s, opacity .2s;
+}
+.pd-btn-order:not(:disabled):hover { transform:translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+.pd-btn-order:not(:disabled):active { transform:scale(.97); }
+`;
+
+function injectCSS() {
+  if (document.getElementById("pd-styles")) return;
+  const s = document.createElement("style");
+  s.id = "pd-styles";
+  s.textContent = PD_CSS;
+  document.head.appendChild(s);
+}
 
 function ProductDetails() {
   const { slug, productId } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(null);
+  const [product,      setProduct]      = useState(null);
+  const [store,        setStore]        = useState(null);
+  const [activeImg,    setActiveImg]    = useState(0);
+  const [loading,      setLoading]      = useState(true);
+  const [ordering,     setOrdering]     = useState(false);
   const [customerName, setCustomerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [phone,        setPhone]        = useState("");
+  const [address,      setAddress]      = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [shippingPrice, setShippingPrice] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [ordering, setOrdering] = useState(false);
+  const [shippingPrice,setShippingPrice]= useState(0);
 
-  // ✦ استخدام getShippingPrice من الـ constants
-  const handleCityChange = (cityName) => {
-    setSelectedCity(cityName);
-    setShippingPrice(getShippingPrice(cityName));
-  };
+  const primary   = store?.primaryColor   || "#6366f1";
+  const secondary = store?.secondaryColor || "#4f46e5";
+  const font      = store?.fontFamily     || "Cairo";
 
-  const getProductDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/products/${productId}`
-      );
-      const data = await response.json();
-      if (response.ok) setProduct(data);
-    } catch (error) {
-      console.error("Error fetching product:", error);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    injectCSS();
+    document.documentElement.style.setProperty("--pd-primary", primary);
+  }, [primary]);
+
+  useEffect(() => {
+    if (!productId) return;
+    (async () => {
+      try {
+        // fetch product
+        const pRes  = await fetch(`${API()}/api/products/${productId}`);
+        const pData = await pRes.json();
+        if (pRes.ok) setProduct(pData);
+
+        // fetch store from slug
+        if (slug) {
+          const sRes  = await fetch(`${API()}/api/stores/public/${slug}`);
+          const sData = await sRes.json();
+          if (sData.store) setStore(sData.store);
+        }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
+  }, [productId, slug]);
+
+  const handleCityChange = (city) => {
+    setSelectedCity(city);
+    setShippingPrice(getShippingPrice(city));
   };
 
   const handleOrder = async () => {
-    // ✦ validation قبل الإرسال
     if (!customerName.trim() || !phone.trim() || !selectedCity) {
-      alert("يرجى ملء جميع الحقول الإجبارية ⚠️");
-      return;
+      alert("يرجى ملء جميع الحقول الإجبارية ⚠️"); return;
     }
-    // ✦ نفس regex الباك-أند للتناسق
     const phoneRegex = /^0[5-7][0-9]{8}$/;
     if (!phoneRegex.test(phone.trim().replace(/\s/g, ""))) {
-      alert("يرجى إدخال رقم هاتف جزائري صحيح (مثال: 0550123456) ⚠️");
-      return;
+      alert("رقم الهاتف غير صحيح (مثال: 0550123456) ⚠️"); return;
     }
-
-    setOrdering(true); // ✦ نعطل الزر أثناء الإرسال
-
-    const totalPrice = product.currentPrice + shippingPrice;
-
+    setOrdering(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders/create`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId,
-            customerName,
-            phone: phone.trim().replace(/\s/g, ""), // ✦ نظّف الرقم
-            address,
-            shippingCity: selectedCity,
-            shippingPrice,
-            totalPrice,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate("/order-success", {
-          state: {
-            productName: product.name,
-            totalPrice: product.currentPrice + shippingPrice,
-            customerName,
-            shippingCity: selectedCity,
-            slug,
-          }
-        });
-      }
-      else {
-        // ✦ نعرض رسالة الباك-أند (مثل: "نفد من المخزون")
+      const res  = await fetch(`${API()}/api/orders/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          customerName,
+          phone: phone.trim().replace(/\s/g, ""),
+          address,
+          shippingCity: selectedCity,
+          shippingPrice,
+          totalPrice: product.currentPrice + shippingPrice,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        navigate("/order-success", { state: {
+          productName: product.name,
+          totalPrice: product.currentPrice + shippingPrice,
+          customerName, shippingCity: selectedCity, slug,
+        }});
+      } else {
         alert(data.message || "حدث خطأ أثناء إرسال الطلب ❌");
       }
-    } catch (error) {
-      console.error("Order error:", error);
-      alert("حدث خطأ في الاتصال بالخادم ❌");
-    } finally {
-      setOrdering(false); // ✦ أعد تفعيل الزر بعد الانتهاء
-    }
+    } catch { alert("خطأ في الاتصال بالخادم ❌"); }
+    finally { setOrdering(false); }
   };
 
-  useEffect(() => {
-    if (productId) getProductDetails();
-  }, [productId]);
-
+  // ── Loading ───────────────────────────────────────────────
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="pd-spinner" style={{ width: 36, height: 36, border: "3px solid #2a2a2a", borderTopColor: "#fff", borderRadius: "50%" }} />
     </div>
   );
 
   if (!product) return (
-    <div className="min-h-screen flex flex-col items-center justify-center" dir="rtl">
-      <p className="text-slate-500 font-bold mb-4">المنتج غير موجود ❌</p>
-      <button onClick={() => navigate(`/store/${slug}`)} className="text-blue-600 font-bold">
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} dir="rtl">
+      <p style={{ color: "#ef4444", fontSize: 16 }}>المنتج غير موجود ❌</p>
+      <button onClick={() => navigate(`/store/${slug}`)} style={{ background: primary, color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
         العودة للمتجر
       </button>
     </div>
   );
 
+  const images = product.images?.length > 0 ? product.images : [product.image || DEFAULT_IMG];
+  const outOfStock = product.stock === 0;
+  const total = product.currentPrice + shippingPrice;
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] pb-16" dir="rtl">
-      <header className="bg-white border-b border-slate-100 py-4 shadow-sm sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
-          <button onClick={() => navigate(`/store/${slug}`)} className="font-bold text-slate-600">
-            ⬅️ العودة للمتجر
-          </button>
-          <span className="font-black text-slate-700">تفاصيل المنتج</span>
-        </div>
-      </header>
+    <div
+      dir="rtl"
+      style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0", fontFamily: `'${font}', 'Cairo', sans-serif` }}
+    >
+      <style>{`
+        @media (max-width: 768px) {
+          .pd-grid { grid-template-columns: 1fr !important; }
+          .pd-thumbs { flex-direction: row !important; }
+          .pd-thumb { width: 60px !important; height: 60px !important; }
+        }
+      `}</style>
 
-      <main className="max-w-5xl mx-auto px-4 mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* ── Navbar ── */}
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 100,
+        background: "rgba(13,13,13,.92)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid #1f1f1f",
+        padding: "0 24px", height: 60,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <button
+          onClick={() => navigate(`/store/${slug}`)}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#888", fontFamily: "inherit", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          العودة للمتجر
+        </button>
+        <span style={{ fontWeight: 800, fontSize: 15, color: "#fff" }}>
+          {store?.name || "المتجر"}
+        </span>
+        <div style={{ width: 80 }} />
+      </nav>
 
-        {/* معلومات المنتج */}
-        <div className="space-y-6">
-          <div className="h-80 bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden relative">
+      {/* ── Content ── */}
+      <div
+        className="pd-grid"
+        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 80px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}
+      >
+
+        {/* ── LEFT: Product Images & Info ── */}
+        <div className="pd-fade" style={{ display: "flex", gap: 14 }}>
+          {/* Thumbnails (vertical on desktop) */}
+          {images.length > 1 && (
+            <div className="pd-thumbs" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {images.map((img, i) => (
+                <div
+                  key={i}
+                  className={`pd-thumb ${activeImg === i ? "active" : ""}`}
+                  onClick={() => setActiveImg(i)}
+                  style={{ width: 70, height: 70, flexShrink: 0 }}
+                >
+                  <img src={img} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Main image */}
+          <div style={{ flex: 1, borderRadius: 18, overflow: "hidden", background: "#111", border: "1px solid #1f1f1f", position: "relative", aspectRatio: "1/1" }}>
             <img
-              src={product.image || DEFAULT_PRODUCT_IMAGE}
+              src={images[activeImg] || DEFAULT_IMG}
               alt={product.name}
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_PRODUCT_IMAGE; }}
+              onError={e => { e.target.src = DEFAULT_IMG; }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity .3s" }}
             />
-            {/* ✦ بادج "نفد" فوق الصورة */}
-            {product.stock === 0 && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="bg-white text-stone-800 font-bold px-4 py-2 rounded-full text-sm">
-                  نفد من المخزون
-                </span>
+            {outOfStock && (
+              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
               </div>
             )}
           </div>
+        </div>
 
-          <div className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
-            <h1 className="text-2xl font-black mb-2">{product.name}</h1>
-            <div className="flex items-baseline gap-3 mb-4">
-              <span className="text-2xl font-black text-blue-600">
-                {product.currentPrice.toLocaleString()} د.ج
+        {/* ── RIGHT: Order Section ── */}
+        <div className="pd-fade pd-d1" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Product Info */}
+          <div style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 18, padding: "24px 22px" }}>
+            {product.oldPrice && (
+              <span style={{ background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
+                خصم {Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
+              </span>
+            )}
+            <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", lineHeight: 1.3 }}>
+              {product.name}
+            </h1>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
+              <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#fff" }}>
+                {product.currentPrice.toLocaleString()}
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#555", marginRight: 4 }}>د.ج</span>
               </span>
               {product.oldPrice && (
-                <span className="text-slate-300 line-through text-lg">
+                <span style={{ fontSize: 15, color: "#444", textDecoration: "line-through" }}>
                   {product.oldPrice.toLocaleString()} د.ج
                 </span>
               )}
             </div>
-            <p className="text-slate-600 text-sm leading-relaxed">{product.description}</p>
-            {/* ✦ عرض المخزون المتبقي إذا كان أقل من 5 */}
+            <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: 0 }}>{product.description}</p>
             {product.stock > 0 && product.stock <= 5 && (
-              <p className="text-amber-500 text-sm font-bold mt-3">
-                ⚠️ بقي {product.stock} فقط في المخزون
+              <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>
+                ⚠️ بقي {product.stock} قطعة فقط
               </p>
             )}
           </div>
-        </div>
 
-        {/* فورم الطلب */}
-        <div className="h-fit">
-          <section className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 space-y-4">
-            <h3 className="font-bold text-center">🛒 الشراء السريع</h3>
-            <div className="space-y-3">
+          {/* Order Form */}
+          <div className="pd-fade pd-d2" style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 18, padding: "24px 22px" }}>
+            <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 18 }}>🛒</span> تأكيد الطلب
+            </h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <input
+                className="pd-input"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border p-3 rounded-xl outline-none focus:border-blue-500 transition-all"
-                placeholder="الاسم الكامل"
+                onChange={e => setCustomerName(e.target.value)}
+                placeholder="الاسم الكامل *"
               />
               <input
+                className="pd-input"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={e => setPhone(e.target.value)}
                 type="tel"
-                className="w-full border p-3 rounded-xl text-right outline-none focus:border-blue-500 transition-all"
-                placeholder="0661234567"
+                placeholder="رقم الهاتف * (مثال: 0550123456)"
               />
               <select
+                className="pd-input"
                 value={selectedCity}
-                onChange={(e) => handleCityChange(e.target.value)}
-                className="w-full border p-3 rounded-xl outline-none focus:border-blue-500 transition-all"
+                onChange={e => handleCityChange(e.target.value)}
+                style={{ cursor: "pointer" }}
               >
-                <option value="">-- اختر ولايتك --</option>
-                {/* ✦ 58 ولاية من الـ constants */}
-                {ALGERIAN_CITIES.map((city) => (
+                <option value="">اختر الولاية *</option>
+                {ALGERIAN_CITIES.map(city => (
                   <option key={city.id} value={city.name}>{city.name}</option>
                 ))}
               </select>
               <input
+                className="pd-input"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full border p-3 rounded-xl outline-none focus:border-blue-500 transition-all"
-                placeholder="العنوان (اختياري)"
+                onChange={e => setAddress(e.target.value)}
+                placeholder="العنوان التفصيلي (اختياري)"
               />
 
+              {/* Price breakdown */}
               {selectedCity && (
-                <div className="bg-blue-50 p-3 rounded-xl text-sm font-bold flex justify-between">
-                  <span>المجموع مع التوصيل:</span>
-                  <span className="text-blue-600">
-                    {(product.currentPrice + shippingPrice).toLocaleString()} د.ج
-                  </span>
+                <div style={{ background: "#0d0d0d", border: "1px solid #1f1f1f", borderRadius: 12, padding: "14px 16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: "#555" }}>سعر المنتج</span>
+                    <span style={{ fontSize: 13, color: "#888" }}>{product.currentPrice.toLocaleString()} د.ج</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid #1f1f1f" }}>
+                    <span style={{ fontSize: 13, color: "#555" }}>التوصيل إلى {selectedCity}</span>
+                    <span style={{ fontSize: 13, color: "#888" }}>{shippingPrice.toLocaleString()} د.ج</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e5e5e5" }}>المجموع</span>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: "#fff" }}>{total.toLocaleString()} د.ج</span>
+                  </div>
                 </div>
               )}
 
-              {/* ✦ زر الطلب — معطل إذا نفد المخزون أو أثناء الإرسال */}
               <button
+                className="pd-btn-order"
                 onClick={handleOrder}
-                disabled={product.stock === 0 || ordering}
-                className={`w-full py-4 rounded-xl font-bold transition-all ${product.stock === 0
-                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : ordering
-                      ? "bg-slate-400 text-white cursor-not-allowed"
-                      : "bg-slate-900 text-white hover:bg-blue-600"
-                  }`}
+                disabled={outOfStock || ordering}
+                style={{
+                  width: "100%", padding: "15px 0", borderRadius: 14,
+                  border: "none", cursor: outOfStock || ordering ? "not-allowed" : "pointer",
+                  background: outOfStock ? "#1a1a1a" : `linear-gradient(135deg, ${primary}, ${secondary})`,
+                  color: outOfStock ? "#444" : "#fff",
+                  fontSize: 15, fontWeight: 800, fontFamily: "inherit",
+                  opacity: ordering ? 0.7 : 1,
+                  boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
+                }}
               >
-                {ordering ? "جاري الإرسال... ⏳" : product.stock === 0 ? "نفد من المخزون" : "تأكيد الطلب"}
+                {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : "✅ تأكيد الطلب"}
               </button>
             </div>
-          </section>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

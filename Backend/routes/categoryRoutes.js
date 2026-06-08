@@ -99,4 +99,16 @@ router.delete("/delete/:id", auth, async (req, res) => {
   }
 });
 
+// ==========================================
+// 4️⃣ جلب أقسام متجر عام بالـ storeId (GET - Public)
+// ==========================================
+router.get("/public/:storeId", async (req, res) => {
+  try {
+    const categories = await Category.find({ storeId: req.params.storeId }).sort({ createdAt: -1 });
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error ❌" });
+  }
+});
+
 module.exports = router;
