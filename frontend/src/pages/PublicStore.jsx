@@ -424,36 +424,88 @@ function PublicStore() {
       {/* ── Categories ── */}
       {categories.length > 0 && (
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "48px 24px 0" }}>
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 28 }}>
             <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: "#fff", margin: 0 }}>التصنيفات</h2>
             <p style={{ color: "#555", fontSize: 13, margin: "6px 0 0" }}>اعثر على ما تريد</p>
           </div>
-          <div className="ps-cat-strip" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
-            {/* All chip */}
-            <button
+
+          {/* Category Cards Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14 }}>
+            {/* "الكل" card */}
+            <div
               className="ps-cat-chip"
               onClick={() => setActiveCat("all")}
               style={{
-                padding: "9px 20px", borderRadius: 50, fontSize: 13, fontWeight: 700,
-                border: `1.5px solid ${activeCat === "all" ? primary : "#2a2a2a"}`,
-                background: activeCat === "all" ? primary : "#161616",
-                color: activeCat === "all" ? "#fff" : "#888",
-                fontFamily: "inherit",
+                borderRadius: 14, overflow: "hidden", cursor: "pointer",
+                border: `2px solid ${activeCat === "all" ? primary : "#1f1f1f"}`,
+                background: "#141414",
+                boxShadow: activeCat === "all" ? `0 0 0 3px ${primary}33` : "none",
+                transition: "border-color .2s, box-shadow .2s",
               }}
-            >الكل ({products.length})</button>
+            >
+              <div style={{ height: 100, background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
+                🛍️
+              </div>
+              <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: activeCat === "all" ? "#fff" : "#888" }}>الكل</span>
+                <span style={{ fontSize: 11, color: "#444", background: "#1a1a1a", padding: "2px 8px", borderRadius: 99 }}>{products.length}</span>
+              </div>
+            </div>
+
+            {categories.map(cat => {
+              const count = products.filter(p => {
+                const cid = p.categoryId?._id ? String(p.categoryId._id) : p.categoryId ? String(p.categoryId) : null;
+                return cid === String(cat._id);
+              }).length;
+              const isActive = activeCat === cat._id;
+              return (
+                <div
+                  key={cat._id}
+                  className="ps-cat-chip"
+                  onClick={() => setActiveCat(cat._id)}
+                  style={{
+                    borderRadius: 14, overflow: "hidden", cursor: "pointer",
+                    border: `2px solid ${isActive ? primary : "#1f1f1f"}`,
+                    background: "#141414",
+                    boxShadow: isActive ? `0 0 0 3px ${primary}33` : "none",
+                    transition: "border-color .2s, box-shadow .2s",
+                  }}
+                >
+                  {/* Category image or placeholder */}
+                  <div style={{ height: 100, overflow: "hidden", background: "#0d0d0d", position: "relative" }}>
+                    {cat.image ? (
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .4s" }}
+                        onMouseEnter={e => e.target.style.transform = "scale(1.08)"}
+                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                      />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#2a2a2a" }}>
+                        📁
+                      </div>
+                    )}
+                    {isActive && (
+                      <div style={{ position: "absolute", inset: 0, background: `${primary}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 99 }}>✓ محدد</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: isActive ? "#fff" : "#aaa" }}>{cat.name}</span>
+                    <span style={{ fontSize: 11, color: "#444", background: "#1a1a1a", padding: "2px 8px", borderRadius: 99 }}>{count}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Filter strip (chips under cards) */}
+          <div style={{ marginTop: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className="ps-cat-chip" onClick={() => setActiveCat("all")} style={{ padding: "6px 16px", borderRadius: 99, fontSize: 12, fontWeight: 700, border: `1.5px solid ${activeCat === "all" ? primary : "#2a2a2a"}`, background: activeCat === "all" ? primary : "transparent", color: activeCat === "all" ? "#fff" : "#666", fontFamily: "inherit" }}>الكل</button>
             {categories.map(cat => (
-              <button
-                key={cat._id}
-                className="ps-cat-chip"
-                onClick={() => setActiveCat(cat._id)}
-                style={{
-                  padding: "9px 20px", borderRadius: 50, fontSize: 13, fontWeight: 700,
-                  border: `1.5px solid ${activeCat === cat._id ? primary : "#2a2a2a"}`,
-                  background: activeCat === cat._id ? primary : "#161616",
-                  color: activeCat === cat._id ? "#fff" : "#888",
-                  fontFamily: "inherit",
-                }}
-              >{cat.name}</button>
+              <button key={cat._id} className="ps-cat-chip" onClick={() => setActiveCat(cat._id)} style={{ padding: "6px 16px", borderRadius: 99, fontSize: 12, fontWeight: 700, border: `1.5px solid ${activeCat === cat._id ? primary : "#2a2a2a"}`, background: activeCat === cat._id ? primary : "transparent", color: activeCat === cat._id ? "#fff" : "#666", fontFamily: "inherit" }}>{cat.name}</button>
             ))}
           </div>
         </section>
