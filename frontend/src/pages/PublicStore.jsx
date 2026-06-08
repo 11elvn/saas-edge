@@ -252,7 +252,12 @@ function PublicStore() {
 
   const filteredProducts = activeCat === "all"
     ? products
-    : products.filter(p => p.categoryId?._id === activeCat || p.categoryId === activeCat);
+    : products.filter(p => {
+        const catId = p.categoryId?._id
+          ? String(p.categoryId._id)
+          : p.categoryId ? String(p.categoryId) : null;
+        return catId === String(activeCat);
+      });
 
   const handleDrawerNav = (item) => {
     if (item === "التصنيفات") {
