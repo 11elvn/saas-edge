@@ -271,10 +271,10 @@ function PublicStore() {
 
   // ── Loading ───────────────────────────────────────────────
   if (loading) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0a" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff" }}>
       <div style={{ textAlign: "center" }}>
-        <div className="ps-spinner" style={{ width: 36, height: 36, border: "3px solid #333", borderTopColor: "#fff", borderRadius: "50%", margin: "0 auto 16px" }} />
-        <p style={{ color: "#666", fontSize: 13, letterSpacing: 2, textTransform: "uppercase" }}>جاري التحميل</p>
+        <div className="ps-spinner" style={{ width: 36, height: 36, border: "3px solid #eee", borderTopColor: "#111", borderRadius: "50%", margin: "0 auto 16px" }} />
+        <p style={{ color: "#555", fontSize: 13, letterSpacing: 2, textTransform: "uppercase" }}>جاري التحميل</p>
       </div>
     </div>
   );
@@ -285,7 +285,7 @@ function PublicStore() {
   const phone     = store?.whatsappNumber || "";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0", fontFamily: `'${font}', 'Cairo', sans-serif`, direction: "rtl" }}>
+    <div style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif`, direction: "rtl" }}>
 
       {/* ── Drawer ── */}
       <Drawer
@@ -298,10 +298,10 @@ function PublicStore() {
       />
 
       {/* ── Announcement Bar ── */}
-      <div style={{ background: "#000", borderBottom: "1px solid #1a1a1a", overflow: "hidden", padding: "9px 0" }}>
+      <div style={{ background: "#111", borderBottom: "1px solid #222", overflow: "hidden", padding: "9px 0" }}>
         <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
           {[...Array(6)].map((_, i) => (
-            <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: "#888", whiteSpace: "nowrap" }}>
+            <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: "#555", whiteSpace: "nowrap" }}>
               توصيل لـ 58 ولاية 🇩🇿 &nbsp;·&nbsp; الدفع عند الاستلام 💰 &nbsp;·&nbsp; جودة مضمونة ✅
             </span>
           ))}
@@ -311,8 +311,8 @@ function PublicStore() {
       {/* ── Navbar ── */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(13,13,13,.92)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #1f1f1f",
+        background: "rgba(255,255,255,.95)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid #f0f0f0",
         padding: "0 24px", height: 64,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
@@ -329,24 +329,24 @@ function PublicStore() {
               }}>{storeName.charAt(0)}</div>
             )
           }
-          <span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: .5 }}>{storeName}</span>
+          <span style={{ fontWeight: 800, fontSize: 17, color: "#111", letterSpacing: .5 }}>{storeName}</span>
         </div>
 
         {/* Desktop nav links */}
         <div className="ps-desktop-nav" style={{ display: "flex", gap: 4 }}>
           {[
             { label: "الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-            { label: "التصنيفات", action: () => document.getElementById("ps-categories")?.scrollIntoView({ behavior: "smooth" }) },
+            { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
             { label: "المنتجات",  action: () => productsRef.current?.scrollIntoView({ behavior: "smooth" }) },
           ].map((item, i) => (
             <button key={i} onClick={item.action} style={{
               background: "none", border: "none", cursor: "pointer",
-              color: "#aaa", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
+              color: "#555", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
               padding: "8px 14px", borderRadius: 8,
               transition: "color .2s, background .2s",
             }}
-            onMouseEnter={e => { e.target.style.color = "#fff"; e.target.style.background = "#1a1a1a"; }}
-            onMouseLeave={e => { e.target.style.color = "#aaa"; e.target.style.background = "none"; }}
+            onMouseEnter={e => { e.target.style.color = "#111"; e.target.style.background = "#f3f4f6"; }}
+            onMouseLeave={e => { e.target.style.color = "#888"; e.target.style.background = "none"; }}
             >{item.label}</button>
           ))}
         </div>
@@ -368,19 +368,19 @@ function PublicStore() {
         ) : (
           <div style={{
             width: "100%", height: "100%",
-            background: `linear-gradient(135deg, #0a0a0a 0%, ${primary}22 50%, ${secondary}44 100%)`,
+            background: `linear-gradient(135deg, #f8f9fa 0%, ${primary}18 50%, ${secondary}28 100%)`,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <div style={{ textAlign: "center" }}>
               <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
                 {storeName}
               </p>
-              <p style={{ color: "#666", fontSize: 16, marginTop: 12, letterSpacing: 1 }}>اكتشف أفضل المنتجات</p>
+              <p style={{ color: "#555", fontSize: 16, marginTop: 12, letterSpacing: 1 }}>اكتشف أفضل المنتجات</p>
             </div>
           </div>
         )}
         {/* Dark overlay gradient */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(13,13,13,.85) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,.55) 100%)" }} />
 
         {/* CTA */}
         <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, textAlign: "center" }}>
@@ -401,7 +401,7 @@ function PublicStore() {
       </section>
 
       {/* ── Trust Badges ── */}
-      <section style={{ background: "#111", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a" }}>
+      <section style={{ background: "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           {[
             { icon: <IconTruck />,   title: "توصيل سريع وآمن",   sub: "لجميع الولايات الـ 58" },
@@ -409,12 +409,12 @@ function PublicStore() {
             { icon: <IconHeadset />, title: "خدمة العملاء",       sub: "دعم على مدار 24 ساعة" },
           ].map((b, i) => (
             <div key={i} className={`ps-fade-up ps-delay-${i+1}`} style={{
-              background: "#161616", border: "1px solid #222",
+              background: "#161616", border: "1px solid #eee",
               borderRadius: 14, padding: "20px 18px",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center",
             }}>
               <div style={{ color: primary }}>{b.icon}</div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#e5e5e5", margin: 0 }}>{b.title}</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: 0 }}>{b.title}</p>
               <p style={{ fontSize: 12, color: "#555", margin: 0 }}>{b.sub}</p>
             </div>
           ))}
@@ -423,89 +423,60 @@ function PublicStore() {
 
       {/* ── Categories ── */}
       {categories.length > 0 && (
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "48px 24px 0" }}>
-          <div style={{ marginBottom: 28 }}>
-            <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: "#fff", margin: 0 }}>التصنيفات</h2>
-            <p style={{ color: "#555", fontSize: 13, margin: "6px 0 0" }}>اعثر على ما تريد</p>
-          </div>
-
-          {/* Category Cards Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14 }}>
-            {/* "الكل" card */}
-            <div
-              className="ps-cat-chip"
-              onClick={() => setActiveCat("all")}
-              style={{
-                borderRadius: 14, overflow: "hidden", cursor: "pointer",
-                border: `2px solid ${activeCat === "all" ? primary : "#1f1f1f"}`,
-                background: "#141414",
-                boxShadow: activeCat === "all" ? `0 0 0 3px ${primary}33` : "none",
-                transition: "border-color .2s, box-shadow .2s",
-              }}
-            >
-              <div style={{ height: 100, background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
-                🛍️
-              </div>
-              <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: activeCat === "all" ? "#fff" : "#888" }}>الكل</span>
-                <span style={{ fontSize: 11, color: "#444", background: "#1a1a1a", padding: "2px 8px", borderRadius: 99 }}>{products.length}</span>
-              </div>
+        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
+          {/* Header row */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+            <div>
+              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>التصنيفات</h2>
+              <p style={{ color: "#888", fontSize: 13, margin: 0 }}>اعثر على كل ما تريد</p>
             </div>
-
-            {categories.map(cat => {
-              const count = products.filter(p => {
-                const cid = p.categoryId?._id ? String(p.categoryId._id) : p.categoryId ? String(p.categoryId) : null;
-                return cid === String(cat._id);
-              }).length;
-              const isActive = activeCat === cat._id;
-              return (
-                <div
-                  key={cat._id}
-                  className="ps-cat-chip"
-                  onClick={() => setActiveCat(cat._id)}
-                  style={{
-                    borderRadius: 14, overflow: "hidden", cursor: "pointer",
-                    border: `2px solid ${isActive ? primary : "#1f1f1f"}`,
-                    background: "#141414",
-                    boxShadow: isActive ? `0 0 0 3px ${primary}33` : "none",
-                    transition: "border-color .2s, box-shadow .2s",
-                  }}
-                >
-                  {/* Category image or placeholder */}
-                  <div style={{ height: 100, overflow: "hidden", background: "#0d0d0d", position: "relative" }}>
-                    {cat.image ? (
-                      <img
-                        src={cat.image}
-                        alt={cat.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .4s" }}
-                        onMouseEnter={e => e.target.style.transform = "scale(1.08)"}
-                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                      />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#2a2a2a" }}>
-                        📁
-                      </div>
-                    )}
-                    {isActive && (
-                      <div style={{ position: "absolute", inset: 0, background: `${primary}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 99 }}>✓ محدد</span>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: isActive ? "#fff" : "#aaa" }}>{cat.name}</span>
-                    <span style={{ fontSize: 11, color: "#444", background: "#1a1a1a", padding: "2px 8px", borderRadius: 99 }}>{count}</span>
-                  </div>
-                </div>
-              );
-            })}
+            <button
+              onClick={() => navigate(`/store/${slug}/collections`)}
+              style={{
+                background: "none", border: `1.5px solid ${primary}`,
+                color: primary, padding: "7px 16px", borderRadius: 99,
+                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              }}
+            >عرض الكل ←</button>
           </div>
 
-          {/* Filter strip (chips under cards) */}
-          <div style={{ marginTop: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="ps-cat-chip" onClick={() => setActiveCat("all")} style={{ padding: "6px 16px", borderRadius: 99, fontSize: 12, fontWeight: 700, border: `1.5px solid ${activeCat === "all" ? primary : "#2a2a2a"}`, background: activeCat === "all" ? primary : "transparent", color: activeCat === "all" ? "#fff" : "#666", fontFamily: "inherit" }}>الكل</button>
-            {categories.map(cat => (
-              <button key={cat._id} className="ps-cat-chip" onClick={() => setActiveCat(cat._id)} style={{ padding: "6px 16px", borderRadius: 99, fontSize: 12, fontWeight: 700, border: `1.5px solid ${activeCat === cat._id ? primary : "#2a2a2a"}`, background: activeCat === cat._id ? primary : "transparent", color: activeCat === cat._id ? "#fff" : "#666", fontFamily: "inherit" }}>{cat.name}</button>
+          {/* Big category cards — bat-caveee style */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gap: 16,
+          }}>
+            {categories.slice(0, 6).map(cat => (
+              <div
+                key={cat._id}
+                onClick={() => navigate(`/store/${slug}/collections/${cat._id}`)}
+                style={{
+                  borderRadius: 16, overflow: "hidden", cursor: "pointer",
+                  border: "1px solid #eee", background: "#fff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,.05)",
+                  transition: "transform .25s, box-shadow .25s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.1)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.05)"; }}
+              >
+                {/* Big image */}
+                <div style={{ height: 200, overflow: "hidden", background: "#f9fafb" }}>
+                  {cat.image ? (
+                    <img
+                      src={cat.image} alt={cat.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s" }}
+                      onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
+                      onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                    />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, color: "#e5e7eb" }}>📁</div>
+                  )}
+                </div>
+                {/* Name */}
+                <div style={{ padding: "14px 16px" }}>
+                  <span style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>{cat.name}</span>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -517,13 +488,13 @@ function PublicStore() {
           <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: "#fff", margin: 0 }}>
             {activeCat === "all" ? "جميع المنتجات" : categories.find(c => c._id === activeCat)?.name || "المنتجات"}
           </h2>
-          <span style={{ fontSize: 13, color: "#555", background: "#161616", border: "1px solid #222", padding: "5px 14px", borderRadius: 50 }}>
+          <span style={{ fontSize: 13, color: "#555", background: "#161616", border: "1px solid #eee", padding: "5px 14px", borderRadius: 50 }}>
             {filteredProducts.length} منتج
           </span>
         </div>
 
         {filteredProducts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 0", color: "#444" }}>
+          <div style={{ textAlign: "center", padding: "80px 0", color: "#888" }}>
             <p style={{ fontSize: 40, marginBottom: 12 }}>🛍️</p>
             <p style={{ fontSize: 14 }}>لا توجد منتجات في هذا القسم</p>
           </div>
@@ -542,8 +513,8 @@ function PublicStore() {
                   className={`ps-card ps-fade-up`}
                   style={{
                     animationDelay: `${(idx % 6) * 0.07}s`,
-                    background: "#141414",
-                    border: "1px solid #222",
+                    background: "#fff",
+                    border: "1px solid #eee",
                     borderRadius: 18,
                     overflow: "hidden",
                     display: "flex", flexDirection: "column",
@@ -553,7 +524,7 @@ function PublicStore() {
                   onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
                 >
                   {/* Image */}
-                  <div style={{ position: "relative", height: 220, overflow: "hidden", background: "#0d0d0d" }}>
+                  <div style={{ position: "relative", height: 220, overflow: "hidden", background: "#fff" }}>
                     <img
                       src={img}
                       alt={product.name}
@@ -577,7 +548,7 @@ function PublicStore() {
                         background: "rgba(0,0,0,.65)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
-                        <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 12, padding: "6px 18px", borderRadius: 99 }}>
+                        <span style={{ background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, padding: "6px 18px", borderRadius: 99 }}>
                           نفد من المخزون
                         </span>
                       </div>
@@ -594,7 +565,7 @@ function PublicStore() {
 
                   {/* Info */}
                   <div style={{ padding: "16px 16px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#e5e5e5", margin: "0 0 6px", lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: "0 0 6px", lineHeight: 1.4 }}>
                       {product.name}
                     </p>
                     <p style={{ fontSize: 12, color: "#555", margin: "0 0 14px", lineHeight: 1.6, flex: 1 }}>
@@ -603,11 +574,11 @@ function PublicStore() {
 
                     {/* Price */}
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>
-                        {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: "#666" }}>د.ج</span>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: "#111" }}>
+                        {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>د.ج</span>
                       </span>
                       {product.oldPrice && (
-                        <span style={{ fontSize: 13, color: "#444", textDecoration: "line-through" }}>
+                        <span style={{ fontSize: 13, color: "#888", textDecoration: "line-through" }}>
                           {product.oldPrice.toLocaleString()}
                         </span>
                       )}
@@ -639,7 +610,7 @@ function PublicStore() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: "#080808", borderTop: "1px solid #1a1a1a", padding: "40px 24px 32px" }}>
+      <footer style={{ background: "#f9fafb", borderTop: "1px solid #1a1a1a", padding: "40px 24px 32px" }}>
         <div style={{ maxWidth: 980, margin: "0 auto" }}>
           {/* Top */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
@@ -649,7 +620,7 @@ function PublicStore() {
             }
             <div>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#fff" }}>{storeName}</p>
-              <p style={{ margin: 0, fontSize: 12, color: "#444" }}>متجر إلكتروني معتمد 🇩🇿</p>
+              <p style={{ margin: 0, fontSize: 12, color: "#888" }}>متجر إلكتروني معتمد 🇩🇿</p>
             </div>
           </div>
 
@@ -657,19 +628,19 @@ function PublicStore() {
           <div style={{ display: "flex", gap: 24, marginBottom: 28 }}>
             {[
               { label: "الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-              { label: "التصنيفات", action: () => document.getElementById("ps-categories")?.scrollIntoView({ behavior: "smooth" }) },
+              { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
               { label: "المنتجات",  action: () => productsRef.current?.scrollIntoView({ behavior: "smooth" }) },
               ...(phone ? [{ label: "اتصل بنا", action: () => window.open(`https://wa.me/${phone}`, "_blank") }] : []),
             ].map((item, i) => (
               <button key={i} onClick={item.action} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", fontSize: 13, fontFamily: "inherit", padding: 0, transition: "color .2s" }}
-                onMouseEnter={e => e.target.style.color = "#aaa"}
-                onMouseLeave={e => e.target.style.color = "#555"}
+                onMouseEnter={e => e.target.style.color = "#888"}
+                onMouseLeave={e => e.target.style.color = "#888"}
               >{item.label}</button>
             ))}
           </div>
 
           <div style={{ borderTop: "1px solid #161616", paddingTop: 20 }}>
-            <p style={{ color: "#333", fontSize: 12, margin: 0, textAlign: "center" }}>
+            <p style={{ color: "#aaa", fontSize: 12, margin: 0, textAlign: "center" }}>
               © {new Date().getFullYear()} {storeName} · جميع الحقوق محفوظة
             </p>
           </div>

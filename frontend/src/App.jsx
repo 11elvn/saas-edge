@@ -12,8 +12,10 @@ import Dashboard        from "./pages/Dashboard";
 import OverviewPage     from "./pages/OverviewPage";
 import ProductsPage     from "./pages/ProductsPage";
 import CategoriesPage   from "./pages/CategoriesPage";
-import PublicStore      from "./pages/PublicStore";
-import ProductDetails   from "./pages/ProductDetails";
+import PublicStore        from "./pages/PublicStore";
+import ProductDetails     from "./pages/ProductDetails";
+import StoreCollections   from "./pages/StoreCollections";
+import CategoryProducts   from "./pages/CategoryProducts";
 import OrdersManagement from "./pages/OrdersManagement";
 import Theme            from "./pages/Theme";
 import OrderSuccess     from "./pages/OrderSuccess";
@@ -58,8 +60,10 @@ function App() {
           element={<DashPage component={Theme}            title="Themes" />} />
 
         {/* ── صفحات الزبائن ── */}
-        <Route path="/store/:slug"                      element={<PublicStore />} />
-        <Route path="/store/:slug/product/:productId"   element={<ProductDetails />} />
+        <Route path="/store/:slug"                                   element={<PublicStore />} />
+        <Route path="/store/:slug/product/:productId"                element={<ProductDetails />} />
+        <Route path="/store/:slug/collections"                       element={<StoreCollections />} />
+        <Route path="/store/:slug/collections/:categoryId"           element={<CategoryProducts />} />
       </Routes>
     </BrowserRouter>
   );
