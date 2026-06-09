@@ -4,6 +4,7 @@
 // ============================================================
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import StoreNavbar from "../components/StoreNavbar";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -68,39 +69,14 @@ export default function StoreCollections() {
     <div dir="rtl" style={{ minHeight: "100vh", background: "#fff", fontFamily: `'${font}','Cairo',sans-serif`, color: "#111" }}>
 
       {/* ── Navbar ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,.95)", backdropFilter: "blur(12px)",
-        borderBottom: "1px solid #f0f0f0",
-        height: 64, padding: "0 24px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div
-          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
-          onClick={() => navigate(`/store/${slug}`)}
-        >
-          {logo
-            ? <img src={logo} alt="logo" style={{ height: 36, width: 36, borderRadius: 8, objectFit: "cover" }} />
-            : <div style={{ height: 36, width: 36, borderRadius: 8, background: primary, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 18 }}>{storeName.charAt(0)}</div>
-          }
-          <span style={{ fontWeight: 800, fontSize: 17, color: "#111" }}>{storeName}</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 4 }}>
-          {[
-            { label: "الرئيسية",   action: () => navigate(`/store/${slug}`) },
-            { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
-          ].map((item, i) => (
-            <button key={i} onClick={item.action} style={{
-              background: i === 1 ? `${primary}15` : "none",
-              border: i === 1 ? `1px solid ${primary}30` : "none",
-              borderRadius: 8, padding: "7px 14px",
-              color: i === 1 ? primary : "#666",
-              fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer",
-            }}>{item.label}</button>
-          ))}
-        </div>
-      </nav>
+      <StoreNavbar
+        store={store}
+        slug={slug}
+        links={[
+          { label: "الرئيسية",   action: () => navigate(`/store/${slug}`) },
+          { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
+        ]}
+      />
 
       {/* ── Hero text ── */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "52px 24px 36px", textAlign: "center" }}>

@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
+import StoreNavbar from "../components/StoreNavbar";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
@@ -168,25 +169,14 @@ function ProductDetails() {
       `}</style>
 
       {/* ── Navbar ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(13,13,13,.92)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #1f1f1f",
-        padding: "0 24px", height: 60,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <button
-          onClick={() => navigate(`/store/${slug}`)}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#888", fontFamily: "inherit", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-          العودة للمتجر
-        </button>
-        <span style={{ fontWeight: 800, fontSize: 15, color: "#fff" }}>
-          {store?.name || "المتجر"}
-        </span>
-        <div style={{ width: 80 }} />
-      </nav>
+      <StoreNavbar
+        store={store}
+        slug={slug}
+        links={[
+          { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
+          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+        ]}
+      />
 
       {/* ── Content ── */}
       <div

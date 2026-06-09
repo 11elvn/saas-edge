@@ -4,6 +4,7 @@
 // ============================================================
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import StoreNavbar from "../components/StoreNavbar";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
@@ -91,25 +92,14 @@ export default function CategoryProducts() {
     <div dir="rtl" style={{ minHeight: "100vh", background: "#fff", fontFamily: `'${font}','Cairo',sans-serif`, color: "#111" }}>
 
       {/* ── Navbar ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,.95)", backdropFilter: "blur(12px)",
-        borderBottom: "1px solid #f0f0f0",
-        height: 64, padding: "0 24px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => navigate(`/store/${slug}`)}>
-          {logo
-            ? <img src={logo} alt="logo" style={{ height: 36, width: 36, borderRadius: 8, objectFit: "cover" }} />
-            : <div style={{ height: 36, width: 36, borderRadius: 8, background: primary, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 18 }}>{storeName.charAt(0)}</div>
-          }
-          <span style={{ fontWeight: 800, fontSize: 17, color: "#111" }}>{storeName}</span>
-        </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={() => navigate(`/store/${slug}`)} style={{ background: "none", border: "none", borderRadius: 8, padding: "7px 14px", color: "#666", fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>الرئيسية</button>
-          <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: `${primary}15`, border: `1px solid ${primary}30`, borderRadius: 8, padding: "7px 14px", color: primary, fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>التصنيفات</button>
-        </div>
-      </nav>
+      <StoreNavbar
+        store={store}
+        slug={slug}
+        links={[
+          { label: "الرئيسية",   action: () => navigate(`/store/${slug}`) },
+          { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
+        ]}
+      />
 
       {/* ── Breadcrumb ── */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", alignItems: "center", gap: 8 }}>

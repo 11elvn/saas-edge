@@ -5,6 +5,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ALGERIAN_CITIES } from "../constants/algerianCities";
+import StoreNavbar from "../components/StoreNavbar";
+import StoreFooter from "../components/StoreFooter";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
@@ -287,16 +289,6 @@ function PublicStore() {
   return (
     <div style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif`, direction: "rtl" }}>
 
-      {/* ── Drawer ── */}
-      <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        logo={logo}
-        storeName={storeName}
-        primaryColor={primary}
-        onNavigate={handleDrawerNav}
-      />
-
       {/* ── Announcement Bar ── */}
       <div style={{ background: "#111", borderBottom: "1px solid #222", overflow: "hidden", padding: "9px 0" }}>
         <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
@@ -309,57 +301,15 @@ function PublicStore() {
       </div>
 
       {/* ── Navbar ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,.95)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #f0f0f0",
-        padding: "0 24px", height: 64,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {logo
-            ? <img src={logo} alt="logo" style={{ height: 38, width: 38, borderRadius: 8, objectFit: "cover" }} />
-            : (
-              <div style={{
-                height: 38, width: 38, borderRadius: 8,
-                background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, color: "#fff", fontSize: 18,
-              }}>{storeName.charAt(0)}</div>
-            )
-          }
-          <span style={{ fontWeight: 800, fontSize: 17, color: "#111", letterSpacing: .5 }}>{storeName}</span>
-        </div>
-
-        {/* Desktop nav links */}
-        <div className="ps-desktop-nav" style={{ display: "flex", gap: 4 }}>
-          {[
-            { label: "الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-            { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
-            { label: "المنتجات",  action: () => productsRef.current?.scrollIntoView({ behavior: "smooth" }) },
-          ].map((item, i) => (
-            <button key={i} onClick={item.action} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#555", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
-              padding: "8px 14px", borderRadius: 8,
-              transition: "color .2s, background .2s",
-            }}
-            onMouseEnter={e => { e.target.style.color = "#111"; e.target.style.background = "#f3f4f6"; }}
-            onMouseLeave={e => { e.target.style.color = "#888"; e.target.style.background = "none"; }}
-            >{item.label}</button>
-          ))}
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="ps-mobile-menu"
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", padding: 6, borderRadius: 8, display: "none" }}
-        >
-          <IconMenu />
-        </button>
-      </nav>
+      <StoreNavbar
+        store={store}
+        slug={slug}
+        links={[
+          { label: "الصفحة الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+          { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
+        ]}
+      />
 
       {/* ── Hero / Banner ── */}
       <section style={{ position: "relative", height: "clamp(300px, 52vw, 580px)", overflow: "hidden" }}>
@@ -610,42 +560,7 @@ function PublicStore() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: "#f9fafb", borderTop: "1px solid #1a1a1a", padding: "40px 24px 32px" }}>
-        <div style={{ maxWidth: 980, margin: "0 auto" }}>
-          {/* Top */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-            {logo
-              ? <img src={logo} alt="logo" style={{ width: 42, height: 42, borderRadius: 10, objectFit: "cover" }} />
-              : <div style={{ width: 42, height: 42, borderRadius: 10, background: `linear-gradient(135deg, ${primary}, ${secondary})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 20 }}>{storeName.charAt(0)}</div>
-            }
-            <div>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#fff" }}>{storeName}</p>
-              <p style={{ margin: 0, fontSize: 12, color: "#888" }}>متجر إلكتروني معتمد 🇩🇿</p>
-            </div>
-          </div>
-
-          {/* Links */}
-          <div style={{ display: "flex", gap: 24, marginBottom: 28 }}>
-            {[
-              { label: "الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-              { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
-              { label: "المنتجات",  action: () => productsRef.current?.scrollIntoView({ behavior: "smooth" }) },
-              ...(phone ? [{ label: "اتصل بنا", action: () => window.open(`https://wa.me/${phone}`, "_blank") }] : []),
-            ].map((item, i) => (
-              <button key={i} onClick={item.action} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", fontSize: 13, fontFamily: "inherit", padding: 0, transition: "color .2s" }}
-                onMouseEnter={e => e.target.style.color = "#888"}
-                onMouseLeave={e => e.target.style.color = "#888"}
-              >{item.label}</button>
-            ))}
-          </div>
-
-          <div style={{ borderTop: "1px solid #161616", paddingTop: 20 }}>
-            <p style={{ color: "#aaa", fontSize: 12, margin: 0, textAlign: "center" }}>
-              © {new Date().getFullYear()} {storeName} · جميع الحقوق محفوظة
-            </p>
-          </div>
-        </div>
-      </footer>
+      <StoreFooter store={store} slug={slug} />
 
       {/* ── WhatsApp Floating ── */}
       {phone && (
