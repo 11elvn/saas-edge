@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
+import StoreFooter from "../components/StoreFooter";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -73,8 +74,9 @@ export default function StoreCollections() {
         store={store}
         slug={slug}
         links={[
-          { label: "الرئيسية",   action: () => navigate(`/store/${slug}`) },
-          { label: "التصنيفات", action: () => navigate(`/store/${slug}/collections`) },
+          { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
+          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+          { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
         ]}
       />
 
@@ -138,6 +140,9 @@ export default function StoreCollections() {
           </div>
         )}
       </div>
+
+      {/* ── Footer ── */}
+      <StoreFooter store={store} slug={slug} />
 
       {/* WhatsApp */}
       {phone && (

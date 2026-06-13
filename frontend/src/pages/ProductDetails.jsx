@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
+import StoreFooter from "../components/StoreFooter";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
@@ -26,13 +27,13 @@ const PD_CSS = `
 .pd-thumb.active { border-color: var(--pd-primary); }
 .pd-input {
   width:100%; padding:12px 14px; border-radius:12px;
-  border:1px solid #2a2a2a; background:#111;
-  color:#e5e5e5; font-family:inherit; font-size:14px;
+  border:1px solid #e5e7eb; background:#f9fafb;
+  color:#111; font-family:inherit; font-size:14px;
   outline:none; transition: border-color .2s, background .2s;
   text-align:right; box-sizing:border-box;
 }
-.pd-input:focus { border-color: var(--pd-primary); background:#161616; }
-.pd-input::placeholder { color:#444; }
+.pd-input:focus { border-color: var(--pd-primary); background:#fff; }
+.pd-input::placeholder { color:#aaa; }
 .pd-btn-order {
   position:relative; overflow:hidden;
   transition: transform .15s, box-shadow .15s, opacity .2s;
@@ -137,13 +138,13 @@ function ProductDetails() {
 
   // ── Loading ───────────────────────────────────────────────
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="pd-spinner" style={{ width: 36, height: 36, border: "3px solid #2a2a2a", borderTopColor: "#fff", borderRadius: "50%" }} />
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="pd-spinner" style={{ width: 36, height: 36, border: "3px solid #eee", borderTopColor: "#111", borderRadius: "50%" }} />
     </div>
   );
 
   if (!product) return (
-    <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} dir="rtl">
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} dir="rtl">
       <p style={{ color: "#ef4444", fontSize: 16 }}>المنتج غير موجود ❌</p>
       <button onClick={() => navigate(`/store/${slug}`)} style={{ background: primary, color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
         العودة للمتجر
@@ -158,7 +159,7 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
-      style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0", fontFamily: `'${font}', 'Cairo', sans-serif` }}
+      style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif` }}
     >
       <style>{`
         @media (max-width: 768px) {
@@ -175,6 +176,7 @@ function ProductDetails() {
         links={[
           { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
           { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+          { label: "اتصل بنا",        action: () => store?.whatsappNumber && window.open(`https://wa.me/${store.whatsappNumber}`, "_blank") },
         ]}
       />
 
@@ -203,7 +205,7 @@ function ProductDetails() {
           )}
 
           {/* Main image */}
-          <div style={{ flex: 1, borderRadius: 18, overflow: "hidden", background: "#111", border: "1px solid #1f1f1f", position: "relative", aspectRatio: "1/1" }}>
+          <div style={{ flex: 1, borderRadius: 18, overflow: "hidden", background: "#f9fafb", border: "1px solid #eee", position: "relative", aspectRatio: "1/1" }}>
             <img
               src={images[activeImg] || DEFAULT_IMG}
               alt={product.name}
@@ -222,22 +224,22 @@ function ProductDetails() {
         <div className="pd-fade pd-d1" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
           {/* Product Info */}
-          <div style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 18, padding: "24px 22px" }}>
+          <div style={{ background: "#f9fafb", border: "1px solid #eee", borderRadius: 18, padding: "24px 22px" }}>
             {product.oldPrice && (
               <span style={{ background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
                 خصم {Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
               </span>
             )}
-            <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", lineHeight: 1.3 }}>
+            <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: "#111", margin: "0 0 12px", lineHeight: 1.3 }}>
               {product.name}
             </h1>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
-              <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#fff" }}>
+              <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#111" }}>
                 {product.currentPrice.toLocaleString()}
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#555", marginRight: 4 }}>د.ج</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#888", marginRight: 4 }}>د.ج</span>
               </span>
               {product.oldPrice && (
-                <span style={{ fontSize: 15, color: "#444", textDecoration: "line-through" }}>
+                <span style={{ fontSize: 15, color: "#bbb", textDecoration: "line-through" }}>
                   {product.oldPrice.toLocaleString()} د.ج
                 </span>
               )}
@@ -251,8 +253,8 @@ function ProductDetails() {
           </div>
 
           {/* Order Form */}
-          <div className="pd-fade pd-d2" style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 18, padding: "24px 22px" }}>
-            <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="pd-fade pd-d2" style={{ background: "#f9fafb", border: "1px solid #eee", borderRadius: 18, padding: "24px 22px" }}>
+            <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: "#111", display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 18 }}>🛒</span> تأكيد الطلب
             </h3>
 
@@ -290,18 +292,18 @@ function ProductDetails() {
 
               {/* Price breakdown */}
               {selectedCity && (
-                <div style={{ background: "#0d0d0d", border: "1px solid #1f1f1f", borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "14px 16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, color: "#555" }}>سعر المنتج</span>
-                    <span style={{ fontSize: 13, color: "#888" }}>{product.currentPrice.toLocaleString()} د.ج</span>
+                    <span style={{ fontSize: 13, color: "#888" }}>سعر المنتج</span>
+                    <span style={{ fontSize: 13, color: "#555" }}>{product.currentPrice.toLocaleString()} د.ج</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid #1f1f1f" }}>
-                    <span style={{ fontSize: 13, color: "#555" }}>التوصيل إلى {selectedCity}</span>
-                    <span style={{ fontSize: 13, color: "#888" }}>{shippingPrice.toLocaleString()} د.ج</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid #eee" }}>
+                    <span style={{ fontSize: 13, color: "#888" }}>التوصيل إلى {selectedCity}</span>
+                    <span style={{ fontSize: 13, color: "#555" }}>{shippingPrice.toLocaleString()} د.ج</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e5e5e5" }}>المجموع</span>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: "#fff" }}>{total.toLocaleString()} د.ج</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#333" }}>المجموع</span>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: "#111" }}>{total.toLocaleString()} د.ج</span>
                   </div>
                 </div>
               )}
@@ -313,8 +315,8 @@ function ProductDetails() {
                 style={{
                   width: "100%", padding: "15px 0", borderRadius: 14,
                   border: "none", cursor: outOfStock || ordering ? "not-allowed" : "pointer",
-                  background: outOfStock ? "#1a1a1a" : `linear-gradient(135deg, ${primary}, ${secondary})`,
-                  color: outOfStock ? "#444" : "#fff",
+                  background: outOfStock ? "#f3f4f6" : `linear-gradient(135deg, ${primary}, ${secondary})`,
+                  color: outOfStock ? "#aaa" : "#fff",
                   fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                   opacity: ordering ? 0.7 : 1,
                   boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
@@ -326,6 +328,9 @@ function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* ── Footer ── */}
+      <StoreFooter store={store} slug={slug} light />
     </div>
   );
 }

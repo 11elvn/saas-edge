@@ -26,7 +26,7 @@ const IconFB = () => (
   </svg>
 );
 
-export default function StoreFooter({ store, slug, links }) {
+export default function StoreFooter({ store, slug, links, light = false }) {
   const navigate = useNavigate();
 
   const logo      = store?.logo || "";
@@ -36,10 +36,14 @@ export default function StoreFooter({ store, slug, links }) {
   const phone     = store?.whatsappNumber || "";
   const initial   = storeName.charAt(0);
 
+  const colors = light
+    ? { bg: "#ffffff", border: "#eee", title: "#111", muted: "#888", mutedHover: "#111", social: "#f5f5f5", socialBorder: "#eee", socialColor: "#111", copy: "#999" }
+    : { bg: "#0d0d0d", border: "#1a1a1a", title: "#fff", muted: "#888", mutedHover: "#fff", social: "#111", socialBorder: "#222", socialColor: "#fff", copy: "#444" };
+
   return (
     <footer style={{
-      background: "#0d0d0d",
-      borderTop: "1px solid #1a1a1a",
+      background: colors.bg,
+      borderTop: `1px solid ${colors.border}`,
       padding: "48px 24px 32px",
       direction: "rtl",
     }}>
@@ -50,7 +54,7 @@ export default function StoreFooter({ store, slug, links }) {
           {logo ? (
             <img src={logo} alt={storeName} style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", filter: "brightness(1.05)" }} />
           ) : (
-            <div style={{ height: 80, width: 80, borderRadius: 20, background: `linear-gradient(135deg, ${primary}, ${secondary})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 34 }}>{initial}</div>
+            <div style={{ height: 80, width: 80, borderRadius: 20, background: `linear-gradient(135deg, ${primary}, ${secondary})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 34, filter: light ? "none" : "none" }}>{initial}</div>
           )}
         </div>
 
@@ -73,12 +77,12 @@ export default function StoreFooter({ store, slug, links }) {
             ]},
           ].map((col, ci) => (
             <div key={ci} style={{ minWidth: 160, padding: "0 16px", textAlign: "center" }}>
-              <p style={{ margin: "0 0 12px", fontWeight: 700, fontSize: 14, color: "#fff", letterSpacing: .5 }}>{col.title}</p>
+              <p style={{ margin: "0 0 12px", fontWeight: 700, fontSize: 14, color: colors.title, letterSpacing: .5 }}>{col.title}</p>
               <div style={{ width: 32, height: 2, background: primary, margin: "0 auto 14px", borderRadius: 2 }} />
               {col.items.map((item, ii) => (
-                <button key={ii} onClick={item.action} style={{ display: "block", width: "100%", background: "none", border: "none", cursor: "pointer", color: "#888", fontFamily: "inherit", fontSize: 13, padding: "5px 0", textAlign: "center", transition: "color .2s" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                  onMouseLeave={e => e.currentTarget.style.color = "#888"}
+                <button key={ii} onClick={item.action} style={{ display: "block", width: "100%", background: "none", border: "none", cursor: "pointer", color: colors.muted, fontFamily: "inherit", fontSize: 13, padding: "5px 0", textAlign: "center", transition: "color .2s" }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.mutedHover}
+                  onMouseLeave={e => e.currentTarget.style.color = colors.muted}
                 >{item.label}</button>
               ))}
             </div>
@@ -93,16 +97,16 @@ export default function StoreFooter({ store, slug, links }) {
             { icon: <IconFB />,      href: "#",                                          hover: "#1877f2" },
             ...(phone ? [{ icon: <IconWA />, href: `https://wa.me/${phone}`, hover: "#25d366" }] : []),
           ].map((s, i) => (
-            <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ width: 44, height: 44, borderRadius: "50%", background: "#111", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", textDecoration: "none", transition: "background .2s, transform .2s" }}
+            <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ width: 44, height: 44, borderRadius: "50%", background: colors.social, border: `1px solid ${colors.socialBorder}`, display: "flex", alignItems: "center", justifyContent: "center", color: colors.socialColor, textDecoration: "none", transition: "background .2s, transform .2s" }}
               onMouseEnter={e => { e.currentTarget.style.background = s.hover; e.currentTarget.style.transform = "scale(1.1)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#111";  e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = colors.social;  e.currentTarget.style.transform = "scale(1)"; }}
             >{s.icon}</a>
           ))}
         </div>
 
         {/* Copyright */}
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 20 }}>
-          <p style={{ color: "#444", fontSize: 12, margin: 0, textAlign: "center" }}>
+        <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: 20 }}>
+          <p style={{ color: colors.copy, fontSize: 12, margin: 0, textAlign: "center" }}>
             © {new Date().getFullYear()} {storeName} · جميع الحقوق محفوظة
           </p>
         </div>
