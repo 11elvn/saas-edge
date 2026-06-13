@@ -560,7 +560,7 @@ function PublicStore() {
       </section>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} />
+      <StoreFooter store={store} slug={slug} light />
 
       {/* ── WhatsApp Floating ── */}
       {phone && (
