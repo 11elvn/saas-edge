@@ -142,7 +142,7 @@ export default function StoreCollections() {
       </div>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} />
+      <StoreFooter store={store} slug={slug} light />
 
       {/* WhatsApp */}
       {phone && (

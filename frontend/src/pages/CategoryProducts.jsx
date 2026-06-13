@@ -220,7 +220,7 @@ export default function CategoryProducts() {
       </div>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} />
+      <StoreFooter store={store} slug={slug} light />
 
       {/* WhatsApp */}
       {phone && (
