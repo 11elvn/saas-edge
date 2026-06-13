@@ -96,10 +96,77 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
   );
 }
 
+// ── Search Box ──────────────────────────────────────────────
+function SearchBox({ open, onClose, slug, primaryColor }) {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+
+  if (!open) return null;
+
+  const submit = (e) => {
+    e.preventDefault();
+    const query = q.trim();
+    if (!query) return;
+    navigate(`/store/${slug}/search?q=${encodeURIComponent(query)}`);
+    onClose();
+  };
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0,
+          background: "rgba(0,0,0,.45)",
+          zIndex: 998,
+          backdropFilter: "blur(2px)",
+        }}
+      />
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0,
+        zIndex: 999,
+        background: "#fff",
+        borderBottom: "1px solid #f0f0f0",
+        boxShadow: "0 8px 30px rgba(0,0,0,.08)",
+        padding: "18px 24px",
+        animation: "sn-search-drop .25s ease both",
+        direction: "rtl",
+      }}>
+        <form onSubmit={submit} style={{ maxWidth: 640, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
+          <IconSearch />
+          <input
+            autoFocus
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="ابحث عن منتج..."
+            style={{
+              flex: 1, border: "none", outline: "none",
+              fontSize: 16, fontFamily: "inherit",
+              background: "none", color: "#111",
+              textAlign: "right",
+            }}
+          />
+          <button type="submit" style={{
+            background: primaryColor, color: "#fff",
+            border: "none", borderRadius: 10,
+            padding: "9px 18px", fontSize: 14, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit",
+          }}>بحث</button>
+          <button type="button" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#888", padding: 6 }}>
+            <IconX />
+          </button>
+        </form>
+      </div>
+      <style>{`@keyframes sn-search-drop { from{transform:translateY(-100%)} to{transform:translateY(0)} }`}</style>
+    </>
+  );
+}
+
 // ── Main Component ───────────────────────────────────────────
 export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links }) {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const logo      = store?.logo || "";
   const storeName = store?.name || "المتجر";
@@ -122,6 +189,13 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         primaryColor={primary}
         secondaryColor={secondary}
         links={navLinks}
+      />
+
+      <SearchBox
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        slug={slug}
+        primaryColor={primary}
       />
 
       <nav style={{
@@ -170,18 +244,16 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {onSearchClick && (
-            <button onClick={onSearchClick} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#555", padding: 8, borderRadius: 8,
-              transition: "background .2s, color .2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#f3f4f6"; e.currentTarget.style.color = "#111"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#555"; }}
-            >
-              <IconSearch />
-            </button>
-          )}
+          <button onClick={() => { onSearchClick ? onSearchClick() : setSearchOpen(true); }} style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: "#555", padding: 8, borderRadius: 8,
+            transition: "background .2s, color .2s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "#f3f4f6"; e.currentTarget.style.color = "#111"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#555"; }}
+          >
+            <IconSearch />
+          </button>
 
           {onCartClick && (
             <button onClick={onCartClick} style={{

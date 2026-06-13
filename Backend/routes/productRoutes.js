@@ -27,6 +27,12 @@ router.get(
   productController.getProductsByStore
 );
 
+// public search ✅
+router.get(
+  "/search/:storeId",
+  productController.searchProducts
+);
+
 // update
 router.put(
   "/update/:id",

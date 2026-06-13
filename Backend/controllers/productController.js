@@ -295,3 +295,31 @@ exports.getProductById =
       });
     }
   };
+
+// ======================
+// SEARCH PRODUCTS (PUBLIC)
+// ======================
+exports.searchProducts =
+  async (req, res) => {
+    try {
+      const { storeId } = req.params;
+      const q = (req.query.q || "").trim();
+
+      if (!q) {
+        return res.status(200).json([]);
+      }
+
+      const products = await Product.find({
+        storeId,
+        name: { $regex: q, $options: "i" },
+      }).populate("categoryId");
+
+      res.status(200).json(products);
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          "Server error ❌",
+      });
+    }
+  };

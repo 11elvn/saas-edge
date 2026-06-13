@@ -16,6 +16,7 @@ import PublicStore        from "./pages/PublicStore";
 import ProductDetails     from "./pages/ProductDetails";
 import StoreCollections   from "./pages/StoreCollections";
 import CategoryProducts   from "./pages/CategoryProducts";
+import SearchResults    from "./pages/SearchResults";
 import OrdersManagement from "./pages/OrdersManagement";
 import Theme            from "./pages/Theme";
 import OrderSuccess     from "./pages/OrderSuccess";
@@ -64,6 +65,7 @@ function App() {
         <Route path="/store/:slug/product/:productId"                element={<ProductDetails />} />
         <Route path="/store/:slug/collections"                       element={<StoreCollections />} />
         <Route path="/store/:slug/collections/:categoryId"           element={<CategoryProducts />} />
+        <Route path="/store/:slug/search"                             element={<SearchResults />} />
       </Routes>
     </BrowserRouter>
   );
