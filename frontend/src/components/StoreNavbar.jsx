@@ -1,13 +1,14 @@
 // ============================================================
 // 📁 components/StoreNavbar.jsx
-// Desktop: navbar عريضة — لوجو يمين كبير + nav وسط + بحث يسار
-// Mobile:  بحث يسار + لوجو وسط + hamburger يمين
+// Desktop LTR: [Search]  [Nav Links]  [Logo]
+//              يسار        وسط         يمين
+// Mobile  LTR: [Hamburger]  [Logo]  [Search]
+//              يمين          وسط      يسار
 // ============================================================
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ── Icons ────────────────────────────────────────────────────
 const IconMenu = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -24,11 +25,9 @@ const IconSearch = () => (
   </svg>
 );
 
-// ── Mobile Drawer ────────────────────────────────────────────
 function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links }) {
   if (!open) return null;
   const initial = storeName?.charAt(0) || "م";
-
   return (
     <>
       <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.55)", zIndex:998, backdropFilter:"blur(2px)" }} />
@@ -68,12 +67,10 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
   );
 }
 
-// ── Search Box ───────────────────────────────────────────────
 function SearchBox({ open, onClose, slug, primaryColor }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   if (!open) return null;
-
   const submit = (e) => {
     e.preventDefault();
     const query = q.trim();
@@ -81,7 +78,6 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
     navigate(`/store/${slug}/search?q=${encodeURIComponent(query)}`);
     onClose();
   };
-
   return (
     <>
       <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:998, backdropFilter:"blur(2px)" }} />
@@ -108,7 +104,6 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
   );
 }
 
-// ── Main Component ───────────────────────────────────────────
 export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links }) {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -128,6 +123,17 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
 
   const handleSearch = () => { onSearchClick ? onSearchClick() : setSearchOpen(true); };
 
+  const LogoEl = ({ height = 68 }) => logo ? (
+    <img src={logo} alt={storeName} style={{ height, width:"auto", maxWidth:200, objectFit:"contain" }} />
+  ) : (
+    <div style={{
+      height, width:height, borderRadius:14,
+      background:`linear-gradient(135deg, ${primary}, ${secondary})`,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      fontWeight:900, color:"#fff", fontSize: height * 0.38,
+    }}>{initial}</div>
+  );
+
   return (
     <>
       <MobileDrawer
@@ -138,158 +144,92 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       />
       <SearchBox open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary} />
 
-      <nav className="sn-nav">
-
-        {/* ══ DESKTOP LAYOUT ══════════════════════════════════ */}
+      {/* ══════════════ DESKTOP NAV (LTR layout) ══════════════ */}
+      {/* يسار=search  |  وسط=links  |  يمين=logo */}
+      <nav className="sn-desktop" style={{
+        position:"sticky", top:0, zIndex:100,
+        background:"rgba(255,255,255,.97)",
+        backdropFilter:"blur(16px)",
+        borderBottom:"1px solid #f0f0f0",
+        height:80,
+        display:"flex",
+        alignItems:"center",
+        padding:"0 40px",
+        direction:"ltr",           /* LTR: left=search, right=logo */
+      }}>
         {/* يسار: بحث */}
-        <div className="sn-desktop-left">
-          <button className="sn-icon-btn" onClick={handleSearch}>
-            <IconSearch />
-          </button>
+        <div style={{ flex:1, display:"flex", alignItems:"center" }}>
+          <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
         </div>
 
-        {/* وسط: روابط nav */}
-        <div className="sn-desktop-center">
+        {/* وسط: روابط */}
+        <div style={{ flex:2, display:"flex", alignItems:"center", justifyContent:"center", gap:4, direction:"rtl" }}>
           {navLinks.map((item, i) => (
             <button key={i} onClick={item.action} className="sn-nav-link">{item.label}</button>
           ))}
         </div>
 
-        {/* يمين: لوجو كبير */}
-        <div className="sn-desktop-right" onClick={() => navigate(`/store/${slug}`)} style={{ cursor:"pointer" }}>
-          {logo ? (
-            <img src={logo} alt={storeName} className="sn-logo-img" />
-          ) : (
-            <div className="sn-logo-fallback" style={{ background:`linear-gradient(135deg, ${primary}, ${secondary})` }}>
-              {initial}
-            </div>
-          )}
+        {/* يمين: لوجو */}
+        <div style={{ flex:1, display:"flex", justifyContent:"flex-end", alignItems:"center", cursor:"pointer" }}
+          onClick={() => navigate(`/store/${slug}`)}>
+          <LogoEl height={68} />
         </div>
+      </nav>
 
-        {/* ══ MOBILE LAYOUT ═══════════════════════════════════ */}
-        {/* يسار: بحث */}
-        <button className="sn-mobile-search sn-icon-btn" onClick={handleSearch}>
-          <IconSearch />
-        </button>
+      {/* ══════════════ MOBILE NAV ══════════════ */}
+      {/* LTR: [Hamburger(left)] ... [Logo(center)] ... [Search(right)] */}
+      <nav className="sn-mobile" style={{
+        position:"sticky", top:0, zIndex:100,
+        background:"rgba(255,255,255,.97)",
+        backdropFilter:"blur(16px)",
+        borderBottom:"1px solid #f0f0f0",
+        height:60,
+        display:"flex",
+        alignItems:"center",
+        padding:"0 16px",
+        direction:"ltr",           /* LTR: left=hamburger, right=search */
+      }}>
+        {/* يسار الشاشة: hamburger */}
+        <button className="sn-icon-btn" onClick={() => setDrawerOpen(true)}><IconMenu /></button>
 
         {/* وسط: لوجو */}
-        <div className="sn-mobile-logo" onClick={() => navigate(`/store/${slug}`)} style={{ cursor:"pointer" }}>
-          {logo ? (
-            <img src={logo} alt={storeName} style={{ height:44, width:"auto", maxWidth:120, objectFit:"contain" }} />
-          ) : (
-            <div style={{ height:44, width:44, borderRadius:10, background:`linear-gradient(135deg, ${primary}, ${secondary})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, color:"#fff", fontSize:20 }}>{initial}</div>
-          )}
+        <div style={{
+          position:"absolute", left:"50%", transform:"translateX(-50%)",
+          display:"flex", alignItems:"center", cursor:"pointer",
+        }} onClick={() => navigate(`/store/${slug}`)}>
+          <LogoEl height={44} />
         </div>
 
-        {/* يمين: hamburger */}
-        <button className="sn-mobile-menu sn-icon-btn" onClick={() => setDrawerOpen(true)}>
-          <IconMenu />
-        </button>
-
+        {/* يمين الشاشة: بحث */}
+        <div style={{ marginLeft:"auto" }}>
+          <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+        </div>
       </nav>
 
       <style>{`
-        /* ── Base nav ── */
-        .sn-nav {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: rgba(255,255,255,.97);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid #f0f0f0;
-          direction: rtl;
-        }
-
-        /* ── Icon button shared ── */
         .sn-icon-btn {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #555;
-          padding: 8px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
+          background: none; border: none; cursor: pointer;
+          color: #555; padding: 8px; border-radius: 8px;
+          display: flex; align-items: center;
           transition: background .2s, color .2s;
         }
         .sn-icon-btn:hover { background: #f3f4f6; color: #111; }
 
-        /* ── Nav link ── */
         .sn-nav-link {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #444;
-          font-family: inherit;
-          font-size: 15px;
-          font-weight: 600;
-          padding: 8px 18px;
-          border-radius: 8px;
-          transition: color .2s, background .2s;
-          white-space: nowrap;
+          background: none; border: none; cursor: pointer;
+          color: #444; font-family: inherit; font-size: 15px; font-weight: 600;
+          padding: 8px 18px; border-radius: 8px;
+          transition: color .2s, background .2s; white-space: nowrap;
         }
         .sn-nav-link:hover { color: #111; background: #f3f4f6; }
 
-        /* ══════════════════════════════
-           DESKTOP  (> 768px)
-        ══════════════════════════════ */
-        @media (min-width: 769px) {
-          .sn-nav {
-            height: 80px;
-            padding: 0 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
+        /* Desktop يظهر فوق 768 */
+        .sn-desktop { display: flex !important; }
+        .sn-mobile  { display: none  !important; }
 
-          /* يسار */
-          .sn-desktop-left  { display: flex; align-items: center; gap: 8px; flex: 1; }
-
-          /* وسط */
-          .sn-desktop-center {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex: 2;
-            justify-content: center;
-          }
-
-          /* يمين: لوجو */
-          .sn-desktop-right { display: flex; align-items: center; flex: 1; justify-content: flex-end; }
-          .sn-logo-img      { height: 68px; width: auto; max-width: 200px; object-fit: contain; }
-          .sn-logo-fallback {
-            height: 60px; width: 60px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; color: #fff; font-size: 26px;
-          }
-
-          /* إخفاء عناصر الموبايل */
-          .sn-mobile-search,
-          .sn-mobile-logo,
-          .sn-mobile-menu   { display: none !important; }
-        }
-
-        /* ══════════════════════════════
-           MOBILE  (≤ 768px)
-        ══════════════════════════════ */
         @media (max-width: 768px) {
-          .sn-nav {
-            height: 60px;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
-
-          /* إخفاء عناصر الديسكتوب */
-          .sn-desktop-left,
-          .sn-desktop-center,
-          .sn-desktop-right { display: none !important; }
-
-          /* موبايل */
-          .sn-mobile-search { display: flex !important; }
-          .sn-mobile-logo   { display: flex !important; position: absolute; left: 50%; transform: translateX(-50%); }
-          .sn-mobile-menu   { display: flex !important; }
+          .sn-desktop { display: none  !important; }
+          .sn-mobile  { display: flex  !important; }
         }
       `}</style>
     </>
