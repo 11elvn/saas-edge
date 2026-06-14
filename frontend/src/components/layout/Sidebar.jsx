@@ -187,6 +187,8 @@ function Sidebar({ store, onLogout }) {
           letter-spacing: 1px;
           padding: 8px 10px 4px;
           text-transform: uppercase;
+          direction: ltr;
+          text-align: left;
         }
 
         /* item: أيقونة + نص من يسار لين يمين */

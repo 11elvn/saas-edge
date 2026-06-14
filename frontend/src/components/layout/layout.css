@@ -11,7 +11,7 @@
 :root {
   /* ألوان الداشبورد */
   --layout-bg:        #f8f9fa;
-  --sidebar-bg:       #4a3aff;
+  --sidebar-bg:       #894bf4;
   --sidebar-border:   rgba(255,255,255,0.12);
   --sidebar-width:    220px;
   --topbar-height:    60px;
@@ -31,7 +31,7 @@
   --sidebar-label:       rgba(255,255,255,0.45);
 
   /* accent */
-  --accent:           #4a3aff;
+  --accent:           #894bf4;
   --accent-light:     #ede9ff;
   --red:              #ef4444;
   --green:            #10b981;
