@@ -1,12 +1,13 @@
 // ============================================================
-// 📁 components/StoreNavbar.jsx — Shared navbar for all store pages
-// لوغو كبير فقط بدون اسم المتجر، ثابت في كل الصفحات
+// 📁 components/StoreNavbar.jsx
+// Desktop: navbar عريضة — لوجو يمين كبير + nav وسط + بحث يسار
+// Mobile:  بحث يسار + لوجو وسط + hamburger يمين
 // ============================================================
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ── Icons ───────────────────────────────────────────────────
+// ── Icons ────────────────────────────────────────────────────
 const IconMenu = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -15,11 +16,6 @@ const IconMenu = () => (
 const IconX = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-);
-const IconCart = () => (
-  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
   </svg>
 );
 const IconSearch = () => (
@@ -35,72 +31,47 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
 
   return (
     <>
-      <div
-        onClick={onClose}
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(0,0,0,.55)",
-          zIndex: 998,
-          backdropFilter: "blur(2px)",
-        }}
-      />
+      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.55)", zIndex:998, backdropFilter:"blur(2px)" }} />
       <div style={{
-        position: "fixed", top: 0, right: 0,
-        width: "75%", maxWidth: 300,
-        height: "100%",
-        background: "#fff",
-        zIndex: 999,
-        padding: "24px 20px",
-        display: "flex", flexDirection: "column",
-        animation: "sn-slide-in .28s cubic-bezier(.32,.72,0,1) both",
-        direction: "rtl",
+        position:"fixed", top:0, right:0,
+        width:"75%", maxWidth:300, height:"100%",
+        background:"#fff", zIndex:999,
+        padding:"24px 20px",
+        display:"flex", flexDirection:"column",
+        animation:"sn-slide-in .28s cubic-bezier(.32,.72,0,1) both",
+        direction:"rtl",
       }}>
-        <button
-          onClick={onClose}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#111", alignSelf: "flex-end", padding: 4 }}
-        >
+        <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:"#111", alignSelf:"flex-end", padding:4 }}>
           <IconX />
         </button>
-
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "20px 0 32px" }}>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"20px 0 32px" }}>
           {logo
-            ? <img src={logo} alt="logo" style={{ width: 80, height: 80, objectFit: "contain", borderRadius: 16 }} />
-            : (
-              <div style={{
-                width: 80, height: 80, borderRadius: 16,
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor || "#0f172a"})`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, color: "#fff", fontSize: 32,
-              }}>{initial}</div>
-            )
+            ? <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius:16 }} />
+            : <div style={{ width:80, height:80, borderRadius:16, background:`linear-gradient(135deg, ${primaryColor}, ${secondaryColor||"#0f172a"})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, color:"#fff", fontSize:32 }}>{initial}</div>
           }
         </div>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <nav style={{ display:"flex", flexDirection:"column", gap:4 }}>
           {links.map((item, i) => (
             <button key={i} onClick={() => { item.action(); onClose(); }} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#333", fontFamily: "inherit", fontSize: 15, fontWeight: 600,
-              padding: "12px 16px", borderRadius: 10, textAlign: "right",
-              transition: "background .2s",
+              background:"none", border:"none", cursor:"pointer",
+              color:"#333", fontFamily:"inherit", fontSize:15, fontWeight:600,
+              padding:"12px 16px", borderRadius:10, textAlign:"right", transition:"background .2s",
             }}
-            onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}
+            onMouseEnter={e => e.currentTarget.style.background="#f5f5f5"}
+            onMouseLeave={e => e.currentTarget.style.background="none"}
             >{item.label}</button>
           ))}
         </nav>
       </div>
-
       <style>{`@keyframes sn-slide-in { from{transform:translateX(100%)} to{transform:translateX(0)} }`}</style>
     </>
   );
 }
 
-// ── Search Box ──────────────────────────────────────────────
+// ── Search Box ───────────────────────────────────────────────
 function SearchBox({ open, onClose, slug, primaryColor }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-
   if (!open) return null;
 
   const submit = (e) => {
@@ -113,48 +84,23 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
 
   return (
     <>
-      <div
-        onClick={onClose}
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(0,0,0,.45)",
-          zIndex: 998,
-          backdropFilter: "blur(2px)",
-        }}
-      />
+      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:998, backdropFilter:"blur(2px)" }} />
       <div style={{
-        position: "fixed", top: 0, left: 0, right: 0,
-        zIndex: 999,
-        background: "#fff",
-        borderBottom: "1px solid #f0f0f0",
-        boxShadow: "0 8px 30px rgba(0,0,0,.08)",
-        padding: "18px 24px",
-        animation: "sn-search-drop .25s ease both",
-        direction: "rtl",
+        position:"fixed", top:0, left:0, right:0, zIndex:999,
+        background:"#fff", borderBottom:"1px solid #f0f0f0",
+        boxShadow:"0 8px 30px rgba(0,0,0,.08)",
+        padding:"18px 24px",
+        animation:"sn-search-drop .25s ease both",
+        direction:"rtl",
       }}>
-        <form onSubmit={submit} style={{ maxWidth: 640, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
+        <form onSubmit={submit} style={{ maxWidth:640, margin:"0 auto", display:"flex", alignItems:"center", gap:10 }}>
           <IconSearch />
-          <input
-            autoFocus
-            value={q}
-            onChange={e => setQ(e.target.value)}
+          <input autoFocus value={q} onChange={e => setQ(e.target.value)}
             placeholder="ابحث عن منتج..."
-            style={{
-              flex: 1, border: "none", outline: "none",
-              fontSize: 16, fontFamily: "inherit",
-              background: "none", color: "#111",
-              textAlign: "right",
-            }}
+            style={{ flex:1, border:"none", outline:"none", fontSize:16, fontFamily:"inherit", background:"none", color:"#111", textAlign:"right" }}
           />
-          <button type="submit" style={{
-            background: primaryColor, color: "#fff",
-            border: "none", borderRadius: 10,
-            padding: "9px 18px", fontSize: 14, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit",
-          }}>بحث</button>
-          <button type="button" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#888", padding: 6 }}>
-            <IconX />
-          </button>
+          <button type="submit" style={{ background:primaryColor, color:"#fff", border:"none", borderRadius:10, padding:"9px 18px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>بحث</button>
+          <button type="button" onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", padding:6 }}><IconX /></button>
         </form>
       </div>
       <style>{`@keyframes sn-search-drop { from{transform:translateY(-100%)} to{transform:translateY(0)} }`}</style>
@@ -177,121 +123,173 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
   const navLinks = links || [
     { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
     { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+    { label: "اتصل بنا",        action: () => {} },
   ];
+
+  const handleSearch = () => { onSearchClick ? onSearchClick() : setSearchOpen(true); };
 
   return (
     <>
       <MobileDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        logo={logo}
-        storeName={storeName}
-        primaryColor={primary}
-        secondaryColor={secondary}
+        open={drawerOpen} onClose={() => setDrawerOpen(false)}
+        logo={logo} storeName={storeName}
+        primaryColor={primary} secondaryColor={secondary}
         links={navLinks}
       />
+      <SearchBox open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary} />
 
-      <SearchBox
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        slug={slug}
-        primaryColor={primary}
-      />
+      <nav className="sn-nav">
 
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,.96)",
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #f0f0f0",
-        padding: "0 24px",
-        height: 68,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        direction: "rtl",
-      }}>
-
-        <div
-          onClick={() => navigate(`/store/${slug}`)}
-          style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-        >
-          {logo ? (
-            <img
-              src={logo}
-              alt={storeName}
-              style={{ height: 52, width: "auto", maxWidth: 160, objectFit: "contain" }}
-            />
-          ) : (
-            <div style={{
-              height: 52, width: 52, borderRadius: 12,
-              background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 900, color: "#fff", fontSize: 22,
-            }}>{initial}</div>
-          )}
+        {/* ══ DESKTOP LAYOUT ══════════════════════════════════ */}
+        {/* يسار: بحث */}
+        <div className="sn-desktop-left">
+          <button className="sn-icon-btn" onClick={handleSearch}>
+            <IconSearch />
+          </button>
         </div>
 
-        <div style={{ display: "flex", gap: 4 }} className="sn-desktop-nav">
+        {/* وسط: روابط nav */}
+        <div className="sn-desktop-center">
           {navLinks.map((item, i) => (
-            <button key={i} onClick={item.action} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#555", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
-              padding: "8px 14px", borderRadius: 8,
-              transition: "color .2s, background .2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = "#111"; e.currentTarget.style.background = "#f3f4f6"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "#555"; e.currentTarget.style.background = "none"; }}
-            >{item.label}</button>
+            <button key={i} onClick={item.action} className="sn-nav-link">{item.label}</button>
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => { onSearchClick ? onSearchClick() : setSearchOpen(true); }} style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: "#555", padding: 8, borderRadius: 8,
-            transition: "background .2s, color .2s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "#f3f4f6"; e.currentTarget.style.color = "#111"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#555"; }}
-          >
-            <IconSearch />
-          </button>
-
-          {onCartClick && (
-            <button onClick={onCartClick} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#555", padding: 8, borderRadius: 8,
-              position: "relative",
-              transition: "background .2s, color .2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#f3f4f6"; e.currentTarget.style.color = "#111"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#555"; }}
-            >
-              <IconCart />
-              {cartCount > 0 && (
-                <span style={{
-                  position: "absolute", top: 2, right: 2,
-                  width: 16, height: 16, borderRadius: "50%",
-                  background: primary, color: "#fff",
-                  fontSize: 9, fontWeight: 800,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>{cartCount}</span>
-              )}
-            </button>
+        {/* يمين: لوجو كبير */}
+        <div className="sn-desktop-right" onClick={() => navigate(`/store/${slug}`)} style={{ cursor:"pointer" }}>
+          {logo ? (
+            <img src={logo} alt={storeName} className="sn-logo-img" />
+          ) : (
+            <div className="sn-logo-fallback" style={{ background:`linear-gradient(135deg, ${primary}, ${secondary})` }}>
+              {initial}
+            </div>
           )}
-
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="sn-mobile-menu"
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#111", padding: 6, borderRadius: 8, display: "none" }}
-          >
-            <IconMenu />
-          </button>
         </div>
+
+        {/* ══ MOBILE LAYOUT ═══════════════════════════════════ */}
+        {/* يسار: بحث */}
+        <button className="sn-mobile-search sn-icon-btn" onClick={handleSearch}>
+          <IconSearch />
+        </button>
+
+        {/* وسط: لوجو */}
+        <div className="sn-mobile-logo" onClick={() => navigate(`/store/${slug}`)} style={{ cursor:"pointer" }}>
+          {logo ? (
+            <img src={logo} alt={storeName} style={{ height:44, width:"auto", maxWidth:120, objectFit:"contain" }} />
+          ) : (
+            <div style={{ height:44, width:44, borderRadius:10, background:`linear-gradient(135deg, ${primary}, ${secondary})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, color:"#fff", fontSize:20 }}>{initial}</div>
+          )}
+        </div>
+
+        {/* يمين: hamburger */}
+        <button className="sn-mobile-menu sn-icon-btn" onClick={() => setDrawerOpen(true)}>
+          <IconMenu />
+        </button>
+
       </nav>
 
       <style>{`
+        /* ── Base nav ── */
+        .sn-nav {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          background: rgba(255,255,255,.97);
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid #f0f0f0;
+          direction: rtl;
+        }
+
+        /* ── Icon button shared ── */
+        .sn-icon-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #555;
+          padding: 8px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          transition: background .2s, color .2s;
+        }
+        .sn-icon-btn:hover { background: #f3f4f6; color: #111; }
+
+        /* ── Nav link ── */
+        .sn-nav-link {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #444;
+          font-family: inherit;
+          font-size: 15px;
+          font-weight: 600;
+          padding: 8px 18px;
+          border-radius: 8px;
+          transition: color .2s, background .2s;
+          white-space: nowrap;
+        }
+        .sn-nav-link:hover { color: #111; background: #f3f4f6; }
+
+        /* ══════════════════════════════
+           DESKTOP  (> 768px)
+        ══════════════════════════════ */
+        @media (min-width: 769px) {
+          .sn-nav {
+            height: 80px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+
+          /* يسار */
+          .sn-desktop-left  { display: flex; align-items: center; gap: 8px; flex: 1; }
+
+          /* وسط */
+          .sn-desktop-center {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 2;
+            justify-content: center;
+          }
+
+          /* يمين: لوجو */
+          .sn-desktop-right { display: flex; align-items: center; flex: 1; justify-content: flex-end; }
+          .sn-logo-img      { height: 68px; width: auto; max-width: 200px; object-fit: contain; }
+          .sn-logo-fallback {
+            height: 60px; width: 60px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; color: #fff; font-size: 26px;
+          }
+
+          /* إخفاء عناصر الموبايل */
+          .sn-mobile-search,
+          .sn-mobile-logo,
+          .sn-mobile-menu   { display: none !important; }
+        }
+
+        /* ══════════════════════════════
+           MOBILE  (≤ 768px)
+        ══════════════════════════════ */
         @media (max-width: 768px) {
-          .sn-desktop-nav { display: none !important; }
-          .sn-mobile-menu { display: flex !important; }
+          .sn-nav {
+            height: 60px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+
+          /* إخفاء عناصر الديسكتوب */
+          .sn-desktop-left,
+          .sn-desktop-center,
+          .sn-desktop-right { display: none !important; }
+
+          /* موبايل */
+          .sn-mobile-search { display: flex !important; }
+          .sn-mobile-logo   { display: flex !important; position: absolute; left: 50%; transform: translateX(-50%); }
+          .sn-mobile-menu   { display: flex !important; }
         }
       `}</style>
     </>
