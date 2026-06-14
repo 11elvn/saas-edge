@@ -11,8 +11,8 @@
 :root {
   /* ألوان الداشبورد */
   --layout-bg:        #f8f9fa;
-  --sidebar-bg:       #ffffff;
-  --sidebar-border:   #f0f0f0;
+  --sidebar-bg:       #4a3aff;
+  --sidebar-border:   rgba(255,255,255,0.12);
   --sidebar-width:    220px;
   --topbar-height:    60px;
   --topbar-bg:        #ffffff;
@@ -23,9 +23,16 @@
   --text-secondary:   #6b7280;
   --text-muted:       #9ca3af;
 
+  /* sidebar نصوص */
+  --sidebar-text:        rgba(255,255,255,0.75);
+  --sidebar-text-active: #ffffff;
+  --sidebar-item-active: rgba(255,255,255,0.18);
+  --sidebar-item-hover:  rgba(255,255,255,0.10);
+  --sidebar-label:       rgba(255,255,255,0.45);
+
   /* accent */
-  --accent:           #111827;
-  --accent-light:     #f3f4f6;
+  --accent:           #4a3aff;
+  --accent-light:     #ede9ff;
   --red:              #ef4444;
   --green:            #10b981;
 
@@ -54,7 +61,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  margin-right: var(--sidebar-width); /* RTL: sidebar على اليمين */
+  margin-left: var(--sidebar-width); /* sidebar على اليسار */
 }
 
 .app-layout__content {
@@ -68,11 +75,11 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .sidebar {
   position: fixed;
-  top: 0; right: 0;           /* RTL: على اليمين */
+  top: 0; left: 0;            /* على اليسار */
   width: var(--sidebar-width);
   height: 100vh;
   background: var(--sidebar-bg);
-  border-left: 1px solid var(--sidebar-border);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
@@ -118,7 +125,7 @@ body {
 .sidebar__store-name {
   font-size: .85rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -126,7 +133,7 @@ body {
 
 .sidebar__store-slug {
   font-size: .72rem;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.55);
 }
 
 /* Divider */
@@ -153,7 +160,7 @@ body {
   display: block;
   font-size: .65rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.45);
   letter-spacing: .8px;
   padding: 6px 8px 4px;
   text-transform: uppercase;
@@ -167,7 +174,7 @@ body {
   border-radius: var(--radius-sm);
   font-size: .82rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
   transition: all .15s ease;
   position: relative;
@@ -175,13 +182,13 @@ body {
 }
 
 .sidebar__item:hover {
-  background: var(--accent-light);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.10);
+  color: #ffffff;
 }
 
 .sidebar__item--active {
-  background: var(--accent-light);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.18);
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -197,14 +204,14 @@ body {
 .sidebar__item-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #ffffff;
   flex-shrink: 0;
 }
 
 /* Footer */
 .sidebar__footer {
   padding: 16px 10px 0;
-  border-top: 1px solid var(--sidebar-border);
+  border-top: 1px solid rgba(255,255,255,0.15);
   margin-top: auto;
   display: flex;
   flex-direction: column;
@@ -218,20 +225,20 @@ body {
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   font-size: .82rem;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
   transition: all .15s;
 }
 
 .sidebar__store-link:hover {
-  background: var(--accent-light);
-  color: var(--text-primary);
+  background: rgba(255,255,255,0.10);
+  color: #ffffff;
 }
 
 .sidebar__store-link-arrow {
   margin-right: auto;
   font-size: .75rem;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.45);
 }
 
 .sidebar__logout {
@@ -241,7 +248,7 @@ body {
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   font-size: .82rem;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.75);
   background: none;
   border: none;
   cursor: pointer;
@@ -251,8 +258,8 @@ body {
 }
 
 .sidebar__logout:hover {
-  background: #fef2f2;
-  color: var(--red);
+  background: rgba(239,68,68,0.25);
+  color: #fca5a5;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -358,7 +365,7 @@ body {
   :root { --sidebar-width: 0px; }
 
   .sidebar {
-    transform: translateX(100%);
+    transform: translateX(-100%);
     transition: transform .25s ease;
   }
 
@@ -367,7 +374,7 @@ body {
   }
 
   .app-layout__main {
-    margin-right: 0;
+    margin-left: 0;
   }
 
   .app-layout__content {
