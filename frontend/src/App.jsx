@@ -60,8 +60,9 @@ function App() {
           element={<DashPage component={CategoriesPage}   title="Categories" />} />
         <Route path="/theme"
           element={<DashPage component={Theme}            title="Themes" />} />
+        {/* ThemeEdit = fullscreen page builder بدون AppLayout */}
         <Route path="/theme/edit"
-          element={<DashPage component={ThemeEdit}        title="Edit Theme" />} />
+          element={<ProtectedRoute><ThemeEdit /></ProtectedRoute>} />
 
         {/* ── صفحات الزبائن ── */}
         <Route path="/store/:slug"                                   element={<PublicStore />} />
