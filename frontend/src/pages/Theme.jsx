@@ -37,11 +37,11 @@ const CSS = `
   flex: 1;
   display: flex;
   flex-direction: row;
-  gap: 0;
+  gap: 16px;
   overflow: hidden;
   background: #f5f5f7;
-  padding: 24px 24px 0 24px;
-  align-items: flex-end;
+  padding: 32px 32px 32px 32px;
+  align-items: stretch;
 }
 
 /* ══ DESKTOP BROWSER ══ */
@@ -50,11 +50,10 @@ const CSS = `
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 10px 10px 0 0;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 -4px 32px rgba(0,0,0,.12);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
   overflow: hidden;
   min-height: 0;
-  height: 480px;
 }
 
 /* Chrome bar */
@@ -89,37 +88,36 @@ const CSS = `
 
 /* ══ MOBILE FRAME ══ */
 .th-mobile-wrap {
-  width: 160px;
+  width: 200px;
   flex-shrink: 0;
-  margin-left: 16px;
-  align-self: flex-end;
-  position: relative;
-  z-index: 2;
+  display: flex;
+  flex-direction: column;
 }
 .th-mobile-device {
-  width: 160px;
-  background: #1c1c1e;
-  border-radius: 30px 30px 0 0;
-  padding: 12px 8px 0;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.08) inset,
-    -4px 0 30px rgba(0,0,0,.25),
-    0 -4px 20px rgba(0,0,0,.15);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
+  overflow: hidden;
 }
 .th-mobile-status {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 6px 6px;
+  padding: 8px 12px 6px;
+  background: #ebebeb;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
 }
-.th-mobile-time { color: #fff; font-size: 9px; font-weight: 700; }
+.th-mobile-time { color: #555; font-size: 9px; font-weight: 700; font-family: monospace; }
 .th-mobile-icons { display: flex; gap: 3px; align-items: center; }
 .th-mobile-screen {
-  border-radius: 22px 22px 0 0;
-  overflow: hidden;
-  background: #fff;
-  height: 340px;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
   direction: rtl;
 }
 .th-mobile-screen::-webkit-scrollbar { display: none; }
@@ -553,23 +551,12 @@ function Theme() {
           {/* ── Mobile Frame ── */}
           <div className="th-mobile-wrap">
             <div className="th-mobile-device">
-              {/* Status bar */}
+              {/* Mobile chrome bar - like desktop */}
               <div className="th-mobile-status">
-                <span className="th-mobile-time">9:41</span>
+                <span className="th-mobile-time">{store?.slug || "my-store"}</span>
                 <div className="th-mobile-icons">
-                  {/* Signal */}
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="white">
-                    <rect x="0" y="5" width="2" height="3" rx="0.5" opacity=".4"/>
-                    <rect x="2.5" y="3.5" width="2" height="4.5" rx="0.5" opacity=".6"/>
-                    <rect x="5" y="2" width="2" height="6" rx="0.5" opacity=".8"/>
-                    <rect x="7.5" y="0" width="2" height="8" rx="0.5"/>
-                  </svg>
-                  {/* Battery */}
-                  <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
-                    <rect x="0.5" y="0.5" width="11" height="6" rx="1.5" stroke="white" strokeOpacity=".5"/>
-                    <rect x="1.5" y="1.5" width="8" height="4" rx="0.5" fill="white"/>
-                    <path d="M12.5 2.5v2" stroke="white" strokeOpacity=".5" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
+                  <svg width="10" height="10" fill="none" stroke="#666" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <svg width="10" height="10" fill="none" stroke="#666" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
                 </div>
               </div>
               {/* Screen */}
