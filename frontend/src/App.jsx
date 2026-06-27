@@ -19,6 +19,7 @@ import CategoryProducts   from "./pages/CategoryProducts";
 import SearchResults    from "./pages/SearchResults";
 import OrdersManagement from "./pages/OrdersManagement";
 import Theme            from "./pages/Theme";
+import ThemeEdit        from "./pages/ThemeEdit";
 import OrderSuccess     from "./pages/OrderSuccess";
 
 // ── Layout + Auth ───────────────────────────────────────────
@@ -59,6 +60,8 @@ function App() {
           element={<DashPage component={CategoriesPage}   title="Categories" />} />
         <Route path="/theme"
           element={<DashPage component={Theme}            title="Themes" />} />
+        <Route path="/theme/edit"
+          element={<DashPage component={ThemeEdit}        title="Edit Theme" />} />
 
         {/* ── صفحات الزبائن ── */}
         <Route path="/store/:slug"                                   element={<PublicStore />} />
