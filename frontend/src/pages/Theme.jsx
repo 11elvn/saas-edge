@@ -79,12 +79,14 @@ const CSS = `
 /* Desktop scroll content */
 .th-desktop-store {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   direction: rtl;
 }
-.th-desktop-store::-webkit-scrollbar { width: 4px; }
-.th-desktop-store::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+.th-desktop-store::-webkit-scrollbar { width: 6px; }
+.th-desktop-store::-webkit-scrollbar-track { background: #f1f1f1; }
+.th-desktop-store::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
+.th-desktop-store::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
 /* ══ MOBILE FRAME ══ */
 .th-mobile-wrap {
@@ -115,12 +117,15 @@ const CSS = `
 .th-mobile-icons { display: flex; gap: 3px; align-items: center; }
 .th-mobile-screen {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   background: #fff;
   direction: rtl;
 }
-.th-mobile-screen::-webkit-scrollbar { display: none; }
+.th-mobile-screen::-webkit-scrollbar { width: 4px; }
+.th-mobile-screen::-webkit-scrollbar-track { background: #f1f1f1; }
+.th-mobile-screen::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
+.th-mobile-screen::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
 /* ══ STORE CONTENT SHARED ══ */
 
