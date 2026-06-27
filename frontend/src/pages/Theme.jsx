@@ -17,10 +17,10 @@ const CSS = `
 .th-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  height: calc(100vh - 60px);
   background: #f5f5f7;
   padding: 0;
+  overflow: hidden;
 }
 
 /* ══ MAIN PREVIEW CARD ══ */
@@ -28,8 +28,8 @@ const CSS = `
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   overflow: hidden;
+  height: 100%;
 }
 
 /* ══ PREVIEW AREA ══ */
@@ -41,7 +41,7 @@ const CSS = `
   overflow: hidden;
   background: #f5f5f7;
   padding: 32px 32px 32px 32px;
-  align-items: stretch;
+  min-height: 0;
 }
 
 /* ══ DESKTOP BROWSER ══ */
@@ -54,6 +54,7 @@ const CSS = `
   box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
   overflow: hidden;
   min-height: 0;
+  max-height: 100%;
 }
 
 /* Chrome bar */
@@ -94,6 +95,8 @@ const CSS = `
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
 }
 .th-mobile-device {
   flex: 1;
@@ -103,6 +106,7 @@ const CSS = `
   border-radius: 10px;
   box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
   overflow: hidden;
+  min-height: 0;
 }
 .th-mobile-status {
   display: flex;
