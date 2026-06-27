@@ -104,10 +104,16 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
   );
 }
 
-export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links }) {
+// ✦ أضفنا headerSettings كـ prop جديد
+export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links, headerSettings }) {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // ✦ استخراج الإعدادات من headerSettings مع قيم افتراضية
+  const showSearch = headerSettings?.showSearch ?? true;
+  const showCart   = headerSettings?.showCart   ?? true;
+  const sticky     = headerSettings?.sticky     ?? true;
 
   const logo      = store?.logo || "";
   const storeName = store?.name || "المتجر";
@@ -134,6 +140,9 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
     }}>{initial}</div>
   );
 
+  // ✦ position يتغير حسب sticky
+  const navPosition = sticky ? "sticky" : "relative";
+
   return (
     <>
       <MobileDrawer
@@ -142,12 +151,14 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         primaryColor={primary} secondaryColor={secondary}
         links={navLinks}
       />
-      <SearchBox open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary} />
+      {/* ✦ SearchBox تظهر فقط إذا showSearch مفعّل */}
+      {showSearch && (
+        <SearchBox open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary} />
+      )}
 
       {/* ══════════════ DESKTOP NAV (LTR layout) ══════════════ */}
-      {/* يسار=search  |  وسط=links  |  يمين=logo */}
       <nav className="sn-desktop" style={{
-        position:"sticky", top:0, zIndex:100,
+        position: navPosition, top:0, zIndex:100,
         background:"rgba(255,255,255,.97)",
         backdropFilter:"blur(16px)",
         borderBottom:"1px solid #f0f0f0",
@@ -155,11 +166,13 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         display:"flex",
         alignItems:"center",
         padding:"0 40px",
-        direction:"ltr",           /* LTR: left=search, right=logo */
+        direction:"ltr",
       }}>
-        {/* يسار: بحث */}
+        {/* يسار: بحث — يظهر فقط إذا showSearch */}
         <div style={{ flex:1, display:"flex", alignItems:"center" }}>
-          <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+          {showSearch && (
+            <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+          )}
         </div>
 
         {/* وسط: روابط */}
@@ -177,9 +190,8 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       </nav>
 
       {/* ══════════════ MOBILE NAV ══════════════ */}
-      {/* LTR: [Hamburger(left)] ... [Logo(center)] ... [Search(right)] */}
       <nav className="sn-mobile" style={{
-        position:"sticky", top:0, zIndex:100,
+        position: navPosition, top:0, zIndex:100,
         background:"rgba(255,255,255,.97)",
         backdropFilter:"blur(16px)",
         borderBottom:"1px solid #f0f0f0",
@@ -187,7 +199,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         display:"flex",
         alignItems:"center",
         padding:"0 16px",
-        direction:"ltr",           /* LTR: left=hamburger, right=search */
+        direction:"ltr",
       }}>
         {/* يسار الشاشة: hamburger */}
         <button className="sn-icon-btn" onClick={() => setDrawerOpen(true)}><IconMenu /></button>
@@ -200,9 +212,11 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           <LogoEl height={44} />
         </div>
 
-        {/* يمين الشاشة: بحث */}
+        {/* يمين الشاشة: بحث — يظهر فقط إذا showSearch */}
         <div style={{ marginLeft:"auto" }}>
-          <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+          {showSearch && (
+            <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+          )}
         </div>
       </nav>
 

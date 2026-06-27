@@ -353,6 +353,7 @@ function PublicStore() {
       <StoreNavbar
         store={store}
         slug={slug}
+        headerSettings={sec(tc, "header")?.settings}
         links={[
           { label: "الصفحة الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
           { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
