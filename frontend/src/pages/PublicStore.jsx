@@ -201,6 +201,23 @@ function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
   );
 }
 
+// ── DEFAULT THEME CONFIG (fallback) ──────────────────────────
+const DEFAULT_TC = {
+  sections: [
+    { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
+    { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
+    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", overlayOpacity:50, height:"large" } },
+    { id:"trust",        type:"trust",        enabled:true,  settings:{ badges:[ {icon:"🚚",title:"توصيل سريع وآمن",sub:"لجميع الولايات الـ 58"}, {icon:"✅",title:"جودة مضمونة",sub:"فحص شامل لكل منتج"}, {icon:"🎧",title:"خدمة العملاء",sub:"دعم على مدار 24 ساعة"} ], bgColor:"#f8f9fa" } },
+    { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", columns:3, showViewAll:true, viewAllText:"عرض الكل" } },
+    { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", showIcons:true, maxItems:6 } },
+    { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"", showSocials:false, bgColor:"#111827", textColor:"#ffffff" } },
+  ],
+  styles: { primaryColor:"#2563eb", secondaryColor:"#0f172a", fontFamily:"Cairo", borderRadius:"medium", buttonStyle:"filled" },
+};
+
+// helper — بحث في sections
+const sec = (tc, type) => tc?.sections?.find(s => s.type === type);
+
 // ── MAIN ─────────────────────────────────────────────────────
 function PublicStore() {
   const { slug } = useParams();
@@ -212,13 +229,29 @@ function PublicStore() {
   const [activeCat,  setActiveCat]  = useState("all");
   const [loading,    setLoading]    = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // ✦ themeConfig — يُحدَّث live من postMessage (page builder)
+  const [themeConfig, setThemeConfig] = useState(null);
 
   const productsRef = useRef(null);
 
-  // derived theme values
-  const primary   = store?.primaryColor   || "#111827";
-  const secondary = store?.secondaryColor || "#1f2937";
-  const font      = store?.fontFamily     || "Cairo";
+  // ✦ Listen for live updates from ThemeEdit (iframe postMessage)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) {
+        setThemeConfig(e.data.themeConfig);
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // ✦ الـ config الفعلي — إذا وصل من postMessage استعمله، وإلا استعمل ما في store
+  const tc = themeConfig || (store?.themeConfig?.sections ? store.themeConfig : DEFAULT_TC);
+
+  // derived theme values (من styles أو من store مباشرة كـ fallback)
+  const primary   = tc?.styles?.primaryColor   || store?.primaryColor   || "#111827";
+  const secondary = tc?.styles?.secondaryColor || store?.secondaryColor || "#1f2937";
+  const font      = tc?.styles?.fontFamily     || store?.fontFamily     || "Cairo";
 
   useEffect(() => {
     injectCSS();
@@ -290,17 +323,33 @@ function PublicStore() {
     <div style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif`, direction: "rtl" }}>
 
       {/* ── Announcement Bar ── */}
-      <div style={{ background: "#111", borderBottom: "1px solid #222", overflow: "hidden", padding: "9px 0" }}>
-        <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
-          {[...Array(6)].map((_, i) => (
-            <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: "#555", whiteSpace: "nowrap" }}>
-              توصيل لـ 58 ولاية 🇩🇿 &nbsp;·&nbsp; الدفع عند الاستلام 💰 &nbsp;·&nbsp; جودة مضمونة ✅
-            </span>
-          ))}
-        </div>
-      </div>
+      {(() => {
+        const s = sec(tc, "announcement");
+        if (!s?.enabled) return null;
+        const { message, bgColor, textColor, animation, showClose } = s.settings;
+        return (
+          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
+            {animation ? (
+              <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+                {[...Array(6)].map((_, i) => (
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap" }}>
+                    {message}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: textColor, margin: 0, letterSpacing: 1 }}>{message}</p>
+            )}
+            {showClose && (
+              <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
+                style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── Navbar ── */}
+      {sec(tc, "header")?.enabled !== false && (
       <StoreNavbar
         store={store}
         slug={slug}
@@ -310,74 +359,95 @@ function PublicStore() {
           { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
         ]}
       />
+      )}
 
       {/* ── Hero / Banner ── */}
-      <section style={{ position: "relative", height: "clamp(300px, 52vw, 580px)", overflow: "hidden" }}>
-        {banner ? (
-          <img src={banner} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <div style={{
-            width: "100%", height: "100%",
-            background: `linear-gradient(135deg, #f8f9fa 0%, ${primary}18 50%, ${secondary}28 100%)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
-                {storeName}
-              </p>
-              <p style={{ color: "#555", fontSize: 16, marginTop: 12, letterSpacing: 1 }}>اكتشف أفضل المنتجات</p>
+      {(() => {
+        const s = sec(tc, "hero");
+        if (!s?.enabled) return null;
+        const hs = s.settings;
+        const heroBanner = hs.image || banner;
+        const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
+        const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
+        return (
+        <section style={{ position: "relative", height: heroHeight, overflow: "hidden" }}>
+          {heroBanner ? (
+            <img src={heroBanner} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{
+              width: "100%", height: "100%",
+              background: `linear-gradient(135deg, #f8f9fa 0%, ${primary}18 50%, ${secondary}28 100%)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
+                  {hs.title || storeName}
+                </p>
+                <p style={{ color: "#aaa", fontSize: 16, marginTop: 12, letterSpacing: 1 }}>{hs.subtitle}</p>
+              </div>
             </div>
+          )}
+          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayAlpha})` }} />
+          {(hs.title || hs.subtitle) && heroBanner && (
+            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, transform: "translateY(-50%)", textAlign: "center", padding: "0 24px" }}>
+              {hs.title && <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: -1 }}>{hs.title}</p>}
+              {hs.subtitle && <p style={{ color: "rgba(255,255,255,.8)", fontSize: 16, margin: 0 }}>{hs.subtitle}</p>}
+            </div>
+          )}
+          <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, textAlign: "center" }}>
+            <button
+              onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
+              className="ps-btn-order"
+              style={{
+                background: primary, color: "#fff",
+                border: "none", borderRadius: 50, padding: "13px 32px",
+                fontSize: 15, fontWeight: 700, cursor: "pointer",
+                fontFamily: "inherit", letterSpacing: .5,
+                boxShadow: `0 4px 24px ${primary}55`,
+              }}
+            >
+              <span style={{ marginLeft: 8 }}>🛍️</span> {hs.ctaText || "تسوق الآن"}
+            </button>
           </div>
-        )}
-        {/* Dark overlay gradient */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,.55) 100%)" }} />
-
-        {/* CTA */}
-        <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, textAlign: "center" }}>
-          <button
-            onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
-            className="ps-btn-order"
-            style={{
-              background: primary, color: "#fff",
-              border: "none", borderRadius: 50, padding: "13px 32px",
-              fontSize: 15, fontWeight: 700, cursor: "pointer",
-              fontFamily: "inherit", letterSpacing: .5,
-              boxShadow: `0 4px 24px ${primary}55`,
-            }}
-          >
-            <span style={{ marginLeft: 8 }}>🛍️</span> تسوق الآن
-          </button>
-        </div>
-      </section>
+        </section>
+        );
+      })()}
 
       {/* ── Trust Badges ── */}
-      <section style={{ background: "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-          {[
-            { icon: <IconTruck />,   title: "توصيل سريع وآمن",   sub: "لجميع الولايات الـ 58" },
-            { icon: <IconShield />,  title: "جودة مضمونة",        sub: "فحص شامل لكل منتج"    },
-            { icon: <IconHeadset />, title: "خدمة العملاء",       sub: "دعم على مدار 24 ساعة" },
-          ].map((b, i) => (
-            <div key={i} className={`ps-fade-up ps-delay-${i+1}`} style={{
-              background: "#161616", border: "1px solid #eee",
-              borderRadius: 14, padding: "20px 18px",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center",
-            }}>
-              <div style={{ color: primary }}>{b.icon}</div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: 0 }}>{b.title}</p>
-              <p style={{ fontSize: 12, color: "#555", margin: 0 }}>{b.sub}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {(() => {
+        const s = sec(tc, "trust");
+        if (!s?.enabled) return null;
+        const { badges, bgColor } = s.settings;
+        return (
+        <section style={{ background: bgColor || "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            {badges.map((b, i) => (
+              <div key={i} className={`ps-fade-up ps-delay-${i+1}`} style={{
+                background: "#161616", border: "1px solid #eee",
+                borderRadius: 14, padding: "20px 18px",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center",
+              }}>
+                <div style={{ color: primary, fontSize: 28 }}>{b.icon}</div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: 0 }}>{b.title}</p>
+                <p style={{ fontSize: 12, color: "#555", margin: 0 }}>{b.sub}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+        );
+      })()}
 
       {/* ── Categories ── */}
-      {categories.length > 0 && (
+      {sec(tc, "categories")?.enabled !== false && categories.length > 0 && (() => {
+        const s = sec(tc, "categories");
+        const catTitle = s?.settings?.title || "التصنيفات";
+        const maxItems = s?.settings?.maxItems || 6;
+        return (
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
             <div>
-              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>التصنيفات</h2>
+              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>{catTitle}</h2>
               <p style={{ color: "#888", fontSize: 13, margin: 0 }}>اعثر على كل ما تريد</p>
             </div>
             <button
@@ -396,7 +466,7 @@ function PublicStore() {
             gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
             gap: 16,
           }}>
-            {categories.slice(0, 6).map(cat => (
+            {categories.slice(0, maxItems).map(cat => (
               <div
                 key={cat._id}
                 onClick={() => navigate(`/store/${slug}/collections/${cat._id}`)}
@@ -430,13 +500,17 @@ function PublicStore() {
             ))}
           </div>
         </section>
-      )}
+        );
+      })()}
 
       {/* ── Products Grid ── */}
+      {sec(tc, "collection")?.enabled !== false && (
       <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: "#fff", margin: 0 }}>
-            {activeCat === "all" ? "جميع المنتجات" : categories.find(c => c._id === activeCat)?.name || "المنتجات"}
+            {activeCat === "all"
+              ? (sec(tc,"collection")?.settings?.title || "جميع المنتجات")
+              : categories.find(c => c._id === activeCat)?.name || "المنتجات"}
           </h2>
           <span style={{ fontSize: 13, color: "#555", background: "#161616", border: "1px solid #eee", padding: "5px 14px", borderRadius: 50 }}>
             {filteredProducts.length} منتج
@@ -558,9 +632,12 @@ function PublicStore() {
           </div>
         )}
       </section>
+      )}
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} light />
+      {sec(tc, "footer")?.enabled !== false && (
+        <StoreFooter store={store} slug={slug} light />
+      )}
 
       {/* ── WhatsApp Floating ── */}
       {phone && (

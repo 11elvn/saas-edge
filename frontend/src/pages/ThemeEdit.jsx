@@ -930,18 +930,35 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose }) {
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
 function PreviewFrame({ slug, isMobile, themeConfig }) {
-  const iframeRef = useRef(null);
+  const iframeRef  = useRef(null);
+  const loadedRef  = useRef(false);
+  const pendingRef = useRef(null);
 
-  // send updated config to iframe via postMessage
-  useEffect(() => {
-    if (!iframeRef.current) return;
+  const sendConfig = (cfg) => {
     try {
-      iframeRef.current.contentWindow?.postMessage(
-        { type: "THEME_UPDATE", themeConfig },
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "THEME_UPDATE", themeConfig: cfg },
         "*"
       );
     } catch (_) {}
+  };
+
+  // عند تغيير themeConfig — إذا الـ iframe محمّل أرسل مباشرة، وإلا احفظه كـ pending
+  useEffect(() => {
+    if (!themeConfig) return;
+    if (loadedRef.current) {
+      sendConfig(themeConfig);
+    } else {
+      pendingRef.current = themeConfig;
+    }
   }, [themeConfig]);
+
+  const handleLoad = () => {
+    loadedRef.current = true;
+    // أرسل أي config كان معلّق
+    const cfg = pendingRef.current || themeConfig;
+    if (cfg) sendConfig(cfg);
+  };
 
   if (!slug) return (
     <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
@@ -959,6 +976,7 @@ function PreviewFrame({ slug, isMobile, themeConfig }) {
         <iframe
           ref={iframeRef}
           src={src}
+          onLoad={handleLoad}
           className="pb-preview-iframe"
           title="Mobile Preview"
         />
@@ -980,6 +998,7 @@ function PreviewFrame({ slug, isMobile, themeConfig }) {
       <iframe
         ref={iframeRef}
         src={src}
+        onLoad={handleLoad}
         className="pb-preview-iframe"
         title="Desktop Preview"
       />
