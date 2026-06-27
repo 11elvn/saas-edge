@@ -24,6 +24,11 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
+const IconCart = () => (
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+);
 
 function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links }) {
   if (!open) return null;
@@ -168,10 +173,13 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         padding:"0 40px",
         direction:"ltr",
       }}>
-        {/* يسار: بحث — يظهر فقط إذا showSearch */}
-        <div style={{ flex:1, display:"flex", alignItems:"center" }}>
+        {/* يسار: بحث + cart */}
+        <div style={{ flex:1, display:"flex", alignItems:"center", gap:4 }}>
           {showSearch && (
             <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
+          )}
+          {showCart && (
+            <button className="sn-icon-btn" onClick={onCartClick}><IconCart /></button>
           )}
         </div>
 
@@ -212,8 +220,11 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           <LogoEl height={44} />
         </div>
 
-        {/* يمين الشاشة: بحث — يظهر فقط إذا showSearch */}
-        <div style={{ marginLeft:"auto" }}>
+        {/* يمين الشاشة: cart + بحث */}
+        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:2 }}>
+          {showCart && (
+            <button className="sn-icon-btn" onClick={onCartClick}><IconCart /></button>
+          )}
           {showSearch && (
             <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
           )}

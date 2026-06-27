@@ -627,7 +627,7 @@ function AnnouncementSettings({ settings, onChange }) {
   );
 }
 
-function HeaderSettings({ settings, onChange, store }) {
+function HeaderSettings({ settings, onChange, store, onLogoChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
@@ -639,8 +639,7 @@ function HeaderSettings({ settings, onChange, store }) {
         </div>
         <div className="pb-field">
           <div className="pb-label">Logo image</div>
-          <ImageUploader value={store?.logo || ""} onChange={() => {}} label="Logo" dark={false} />
-          <div style={{ fontSize: ".7rem", color: "#9ca3af", marginTop: 4 }}>لتغيير اللوجو اذهب لـ إعدادات المتجر</div>
+          <ImageUploader value={store?.logo || ""} onChange={onLogoChange} label="Logo" dark={false} />
         </div>
       </div>
       <div className="pb-group">
@@ -888,13 +887,13 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
     switch (section.type) {
       case "announcement": return <AnnouncementSettings settings={section.settings} onChange={updateSettings} />;
-      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} />;
+      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
@@ -1072,6 +1071,29 @@ function ThemeEdit() {
     setThemeConfig(prev => ({ ...prev, styles: newStyles }));
     setIsDirty(true);
   }, []);
+
+  // ── Save Logo ────────────────────────────────────────────
+  const saveLogo = async (url) => {
+    try {
+      const res = await fetch(`${API()}/api/stores/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token()}`,
+        },
+        body: JSON.stringify({ name: store.name, logo: url }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStore(data.store);
+        notify("تم حفظ اللوجو ✅");
+      } else {
+        notify(data.message || "فشل حفظ اللوجو ❌", "error");
+      }
+    } catch {
+      notify("تعذر الاتصال ❌", "error");
+    }
+  };
 
   // ── Save ─────────────────────────────────────────────────
   const save = async () => {
@@ -1265,6 +1287,7 @@ function ThemeEdit() {
             store={store}
             onUpdate={updateSectionSettings}
             onClose={() => setActiveSection(null)}
+            onLogoChange={saveLogo}
           />
         ) : (
           <div className="pb-right">
