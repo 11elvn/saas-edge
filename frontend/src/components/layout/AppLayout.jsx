@@ -8,7 +8,7 @@ import { useNavigate }                  from "react-router-dom";
 import Sidebar                          from "./Sidebar";
 import TopBar                           from "./TopBar";
 
-function AppLayout({ children, title }) {
+function AppLayout({ children, title, flush = false }) {
   const navigate  = useNavigate();
   const token     = localStorage.getItem("token");
 
@@ -104,7 +104,7 @@ function AppLayout({ children, title }) {
           newOrdersCount={newOrdersCount}
           onBellClick={handleBellClick}
         />
-        <div className="app-layout__content">
+        <div className={`app-layout__content${flush ? " app-layout__content--flush" : ""}`}>
           {children}
         </div>
       </div>
