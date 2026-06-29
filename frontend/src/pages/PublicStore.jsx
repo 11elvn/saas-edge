@@ -244,10 +244,10 @@ const PREVIEW_CSS = `
 
 /* Label اسم الـ section */
 .ps-section-label {
-  position: absolute;
+  position: fixed;
   top: 8px;
   left: 8px;
-  z-index: 100;
+  z-index: 9999;
   background: #2563eb;
   color: #fff;
   font-size: 11px;
