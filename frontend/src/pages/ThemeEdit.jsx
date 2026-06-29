@@ -354,7 +354,7 @@ const CSS = `
     0 24px 60px rgba(0,0,0,.55),
     0 6px 16px rgba(0,0,0,.35);
   pointer-events: none;
-  z-index: 20;
+  z-index: 5;
 }
 .pb-iphone__screen-wrap {
   position: absolute;
@@ -362,7 +362,7 @@ const CSS = `
   border-radius: 36px;
   overflow: hidden;
   background: #000;
-  z-index: 15;
+  z-index: 10;
 }
 .pb-iphone__island {
   position: absolute;
@@ -432,8 +432,10 @@ const CSS = `
   overflow: hidden;
 }
 .pb-iphone__iframe {
+  position: absolute;
+  top: 0; left: 0;
   width: 390px;
-  height: 180%;
+  height: 844px;
   border: none;
   display: block;
   transform-origin: top left;

@@ -116,7 +116,7 @@ const CSS = `
     0 24px 60px rgba(0,0,0,.55),
     0 6px 16px rgba(0,0,0,.35);
   pointer-events: none;
-  z-index: 20;
+  z-index: 5;
 }
 /* الشاشة الداخلية */
 .th-iphone__screen-wrap {
@@ -125,7 +125,7 @@ const CSS = `
   border-radius: 36px;
   overflow: hidden;
   background: #000;
-  z-index: 15;
+  z-index: 10;
 }
 /* Dynamic Island */
 .th-iphone__island {
