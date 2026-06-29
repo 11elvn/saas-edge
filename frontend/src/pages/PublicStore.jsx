@@ -234,21 +234,15 @@ const PREVIEW_CSS = `
 .ps-section-wrapper {
   position: relative;
 }
+
+/* Border أزرق كامل حول الـ section المختار فقط */
 .ps-section-wrapper--highlighted {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
   position: relative;
 }
-.ps-section-wrapper--highlighted::before,
-.ps-section-wrapper--highlighted::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #2563eb;
-  z-index: 99;
-}
-.ps-section-wrapper--highlighted::before { left: 0; }
-.ps-section-wrapper--highlighted::after  { right: 0; }
+
+/* Label اسم الـ section */
 .ps-section-label {
   position: absolute;
   top: 8px;
@@ -265,50 +259,38 @@ const PREVIEW_CSS = `
   letter-spacing: .3px;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(37,99,235,.35);
-  opacity: 0;
-  transition: opacity .15s;
 }
 .ps-section-label--active {
-  opacity: 1;
   background: #2563eb;
 }
-.ps-between-add {
-  position: relative;
-  height: 0;
+
+/* زر + أسفل الـ section المختار */
+.ps-add-below {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 101;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
-  pointer-events: none;
 }
-.ps-between-add__btn {
-  pointer-events: all;
-  width: 24px; height: 24px;
+.ps-add-below__btn {
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: #2563eb;
   border: 2px solid #fff;
   color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1;
   display: flex; align-items: center; justify-content: center;
   cursor: not-allowed;
-  box-shadow: 0 2px 8px rgba(37,99,235,.4);
-  transition: transform .15s;
-  position: relative;
-  z-index: 51;
-}
-.ps-between-add__line {
-  position: absolute;
-  left: 0; right: 0; top: 50%;
-  height: 2px;
-  background: #2563eb;
-  transform: translateY(-50%);
-  opacity: .35;
+  box-shadow: 0 2px 8px rgba(37,99,235,.45);
 }
 `;
 
-// ── SectionWrapper — يلف كل section بـ label + border في preview mode ──
+// ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
   if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
 
@@ -324,24 +306,26 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }
       onClick={handleClick}
       className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
     >
-      {/* ── Label — اسم الـ section ── */}
-      <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
-        {SECTION_LABELS[type] || type}
-      </div>
+      {/* ── Label — اسم الـ section (يظهر فقط عند highlight) ── */}
+      {isHighlighted && (
+        <div className="ps-section-label ps-section-label--active">
+          {SECTION_LABELS[type] || type}
+        </div>
+      )}
       {children}
+      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) ── */}
+      {isHighlighted && (
+        <div className="ps-add-below">
+          <button className="ps-add-below__btn" title="Add section" disabled>+</button>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── AddBetween — زر + بين sections في preview ──
+// ── AddBetween — محذوف من الـ preview (لا يظهر شي بين sections) ──
 function AddBetween({ isPreview }) {
-  if (!isPreview) return null;
-  return (
-    <div className="ps-between-add">
-      <div className="ps-between-add__line" />
-      <button className="ps-between-add__btn" title="Add section" disabled>+</button>
-    </div>
-  );
+  return null;
 }
 
 // ── MAIN ─────────────────────────────────────────────────────
@@ -494,7 +478,6 @@ function PublicStore() {
 
       {/* ── Navbar ── */}
       {sec(tc, "header")?.enabled !== false && (
-      <><AddBetween isPreview={isPreview} />
       <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
       <StoreNavbar
         store={store}
@@ -506,7 +489,7 @@ function PublicStore() {
           { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
         ]}
       />
-      </SectionWrapper></>
+      </SectionWrapper>
       )}
 
       {/* ── Hero / Banner ── */}
@@ -518,7 +501,6 @@ function PublicStore() {
         const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
         const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
         return (
-        <><AddBetween isPreview={isPreview} />
         <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden" }}>
           {heroBanner ? (
@@ -560,7 +542,7 @@ function PublicStore() {
             </button>
           </div>
         </section>
-        </SectionWrapper></>
+        </SectionWrapper>
         );
       })()}
 
@@ -570,7 +552,6 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { badges, bgColor } = s.settings;
         return (
-        <><AddBetween isPreview={isPreview} />
         <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
         <section style={{ background: bgColor || "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
@@ -587,7 +568,7 @@ function PublicStore() {
             ))}
           </div>
         </section>
-        </SectionWrapper></>
+        </SectionWrapper>
         );
       })()}
 
@@ -597,7 +578,6 @@ function PublicStore() {
         const catTitle = s?.settings?.title || "التصنيفات";
         const maxItems = s?.settings?.maxItems || 6;
         return (
-        <><AddBetween isPreview={isPreview} />
         <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
@@ -656,13 +636,12 @@ function PublicStore() {
             ))}
           </div>
         </section>
-        </SectionWrapper></>
+        </SectionWrapper>
         );
       })()}
 
       {/* ── Products Grid ── */}
       {sec(tc, "collection")?.enabled !== false && (
-      <><AddBetween isPreview={isPreview} />
       <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"}>
       <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
@@ -791,15 +770,14 @@ function PublicStore() {
           </div>
         )}
       </section>
-      </SectionWrapper></>
+      </SectionWrapper>
       )}
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
-        <><AddBetween isPreview={isPreview} />
         <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
           <StoreFooter store={store} slug={slug} light />
-        </SectionWrapper></>
+        </SectionWrapper>
       )}
 
       {/* ── WhatsApp Floating ── */}

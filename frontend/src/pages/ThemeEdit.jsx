@@ -304,37 +304,7 @@ const CSS = `
 .pb-toggle input:checked + .pb-toggle__slider { background: #894bf4; }
 .pb-toggle input:checked + .pb-toggle__slider::after { transform: translateX(13px); }
 
-.pb-between-add {
-  display: flex; align-items: center; justify-content: center;
-  height: 20px; position: relative; margin: 0 8px;
-  opacity: 0; transition: opacity .15s;
-}
-.pb-between-add:hover, .pb-sections-list:has(.pb-section-item--active) .pb-between-add {
-  opacity: 1;
-}
-.pb-between-add__line {
-  position: absolute; left: 0; right: 0; top: 50%;
-  height: 1.5px; background: #2563eb; transform: translateY(-50%);
-}
-.pb-between-add__btn {
-  position: relative; z-index: 1;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #2563eb; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 14px; font-weight: 700;
-  line-height: 1;
-  box-shadow: 0 1px 4px rgba(37,99,235,.35);
-  transition: transform .15s, box-shadow .15s;
-  flex-shrink: 0;
-}
-.pb-between-add__btn:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(37,99,235,.5);
-}
-/* دايما نظهرها عند hover على القائمة */
-.pb-sections-list:hover .pb-between-add {
-  opacity: 1;
-}
+
 
 .pb-add-section {
   padding: 10px 10px 12px;
@@ -1289,14 +1259,6 @@ function ThemeEdit() {
                   const meta = SECTION_META[sec.type] || {};
                   return (
                     <div key={sec.id}>
-                      {/* ── + button فوق كل section (أول واحد فقط) ── */}
-                      {idx === 0 && (
-                        <div className="pb-between-add">
-                          <div className="pb-between-add__line" />
-                          <button className="pb-between-add__btn" title="Add section here" disabled>+</button>
-                        </div>
-                      )}
-
                       {/* ── Section Item ── */}
                       <div
                         className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""}`}
@@ -1330,11 +1292,6 @@ function ThemeEdit() {
                         </span>
                       </div>
 
-                      {/* ── + button بعد كل section ── */}
-                      <div className="pb-between-add">
-                        <div className="pb-between-add__line" />
-                        <button className="pb-between-add__btn" title="Add section here" disabled>+</button>
-                      </div>
                     </div>
                   );
                 })}
