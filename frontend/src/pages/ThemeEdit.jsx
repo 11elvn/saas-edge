@@ -338,8 +338,12 @@ const CSS = `
 
 .pb-iphone {
   position: relative;
-  width: 320px;
-  height: 693px;
+  /* نسبة 15 Pro Max: 393 × 852 = 0.4613 */
+  aspect-ratio: 393 / 852;
+  height: calc(100vh - 140px);
+  max-height: 760px;
+  min-height: 500px;
+  width: auto;
   flex-shrink: 0;
   margin: auto;
 }
@@ -445,12 +449,12 @@ const CSS = `
 .pb-iphone__iframe {
   position: absolute;
   top: 0; left: 0;
-  width: 430px;
-  height: 932px;
+  width: 393px;
+  height: 852px;
   border: none;
   display: block;
   transform-origin: top left;
-  transform: scale(0.698);
+  /* scale يتحسب بـ JS */
 }
 
 .pb-chrome-bar {
@@ -1031,6 +1035,22 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
+  const phoneRef   = useRef(null);
+
+  // ✦ حساب scale ديناميكي باش الـ iframe يتناسب مع حجم الإطار
+  useEffect(() => {
+    if (!isMobile) return;
+    const calcScale = () => {
+      if (!phoneRef.current || !iframeRef.current) return;
+      const screenW = phoneRef.current.clientWidth - 20; // 10px padding كل جهة
+      const scale = screenW / 393;
+      iframeRef.current.style.transform = `scale(${scale})`;
+    };
+    calcScale();
+    const ro = new ResizeObserver(calcScale);
+    if (phoneRef.current) ro.observe(phoneRef.current);
+    return () => ro.disconnect();
+  }, [isMobile]);
 
   const sendConfig = (cfg) => {
     try {
@@ -1080,7 +1100,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
 
   if (isMobile) return (
     <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="pb-iphone">
+      <div className="pb-iphone" ref={phoneRef}>
         {/* الإطار الخارجي */}
         <div className="pb-iphone__frame" />
         {/* أزرار جانبية */}
