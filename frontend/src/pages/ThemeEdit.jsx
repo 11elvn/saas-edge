@@ -338,108 +338,106 @@ const CSS = `
 
 .pb-iphone {
   position: relative;
-  width: 218px;
-  height: 100%;
-  max-height: 700px;
+  width: 260px;
+  height: 564px;
   flex-shrink: 0;
   margin: auto;
 }
 .pb-iphone__frame {
   position: absolute;
   inset: 0;
-  border-radius: 36px;
-  background: transparent;
+  border-radius: 44px;
+  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 40%, #111 60%, #1e1e1e 100%);
   box-shadow:
-    0 0 0 8px #c9a96e,
-    0 0 0 9px rgba(0,0,0,.25),
-    inset 0 0 0 1.5px rgba(255,255,255,.3),
-    0 20px 60px rgba(0,0,0,.4),
-    0 4px 12px rgba(0,0,0,.2);
+    inset 0 0 0 1px rgba(255,255,255,.12),
+    0 0 0 1px rgba(0,0,0,.8),
+    0 24px 60px rgba(0,0,0,.55),
+    0 6px 16px rgba(0,0,0,.35);
   pointer-events: none;
   z-index: 20;
 }
 .pb-iphone__screen-wrap {
   position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border-radius: 28px;
+  top: 10px; left: 10px; right: 10px; bottom: 10px;
+  border-radius: 36px;
   overflow: hidden;
   background: #000;
   z-index: 15;
 }
 .pb-iphone__island {
   position: absolute;
-  top: 10px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  width: 72px; height: 20px;
+  width: 88px; height: 26px;
   background: #000;
   border-radius: 20px;
-  z-index: 20;
+  z-index: 25;
   pointer-events: none;
 }
 .pb-iphone__status {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 38px;
+  height: 46px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 16px 4px;
-  z-index: 15;
+  padding: 0 20px 6px;
+  z-index: 22;
   pointer-events: none;
   background: transparent;
 }
 .pb-iphone__time {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   color: #fff; font-family: -apple-system, sans-serif;
-  letter-spacing: -.2px;
+  letter-spacing: -.3px;
 }
-.pb-iphone__signals { display: flex; align-items: center; gap: 3px; }
+.pb-iphone__signals { display: flex; align-items: center; gap: 4px; }
 .pb-iphone__btn-right {
   position: absolute;
-  right: -3px; top: 90px;
-  width: 3px; height: 48px;
-  background: linear-gradient(to right, #b8914a, #c9a96e);
+  right: -3px; top: 110px;
+  width: 3px; height: 58px;
+  background: linear-gradient(to right, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 0 2px 2px 0;
-  z-index: 11; pointer-events: none;
+  z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left1 {
   position: absolute;
-  left: -3px; top: 70px;
-  width: 3px; height: 28px;
-  background: linear-gradient(to left, #b8914a, #c9a96e);
+  left: -3px; top: 85px;
+  width: 3px; height: 34px;
+  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
-  z-index: 11; pointer-events: none;
+  z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left2 {
   position: absolute;
-  left: -3px; top: 114px;
-  width: 3px; height: 44px;
-  background: linear-gradient(to left, #b8914a, #c9a96e);
+  left: -3px; top: 138px;
+  width: 3px; height: 54px;
+  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
-  z-index: 11; pointer-events: none;
+  z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left3 {
   position: absolute;
-  left: -3px; top: 168px;
-  width: 3px; height: 44px;
-  background: linear-gradient(to left, #b8914a, #c9a96e);
+  left: -3px; top: 204px;
+  width: 3px; height: 54px;
+  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
-  z-index: 11; pointer-events: none;
+  z-index: 21; pointer-events: none;
 }
 .pb-iphone__content {
   position: absolute;
-  top: 38px;
+  top: 46px;
   left: 0; right: 0; bottom: 0;
   overflow: hidden;
 }
 .pb-iphone__iframe {
   width: 390px;
-  height: 193%;
+  height: 180%;
   border: none;
   display: block;
   transform-origin: top left;
-  transform: scale(0.518);
+  transform: scale(0.615);
 }
 
 .pb-chrome-bar {
