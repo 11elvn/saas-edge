@@ -378,21 +378,23 @@ const CSS = `
 .pb-iphone__status {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 46px;
+  height: 50px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 20px 6px;
+  padding: 0 20px 8px;
   z-index: 22;
   pointer-events: none;
-  background: transparent;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .pb-iphone__time {
-  font-size: 11px; font-weight: 700;
-  color: #fff; font-family: -apple-system, sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: #000; font-family: -apple-system, sans-serif;
   letter-spacing: -.3px;
 }
-.pb-iphone__signals { display: flex; align-items: center; gap: 4px; }
+.pb-iphone__signals { display: flex; align-items: center; gap: 5px; }
 .pb-iphone__btn-right {
   position: absolute;
   right: -3px; top: 110px;
@@ -427,7 +429,7 @@ const CSS = `
 }
 .pb-iphone__content {
   position: absolute;
-  top: 46px;
+  top: 50px;
   left: 0; right: 0; bottom: 0;
   overflow: hidden;
 }
@@ -1085,19 +1087,19 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
           <div className="pb-iphone__status">
             <span className="pb-iphone__time">9:41</span>
             <div className="pb-iphone__signals">
-              <svg width="12" height="9" viewBox="0 0 17 12" fill="#fff">
+              <svg width="13" height="10" viewBox="0 0 17 12" fill="#000">
                 <rect x="0" y="7" width="3" height="5" rx=".5"/>
                 <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
                 <rect x="9" y="2" width="3" height="10" rx=".5"/>
                 <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
               </svg>
-              <svg width="11" height="9" viewBox="0 0 16 12" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round">
+              <svg width="13" height="10" viewBox="0 0 16 12" fill="none" stroke="#000" strokeWidth="1.8" strokeLinecap="round">
                 <path d="M8 10h.01"/><path d="M5.5 7.5a3.5 3.5 0 015 0"/>
                 <path d="M3 5a7 7 0 0110 0"/><path d="M1 2.5a11 11 0 0114 0"/>
               </svg>
-              <svg width="17" height="9" viewBox="0 0 25 12" fill="#fff">
-                <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#fff" strokeWidth="1" fill="none"/>
-                <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#fff" opacity=".4"/>
+              <svg width="19" height="10" viewBox="0 0 25 12" fill="#000">
+                <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#000" strokeWidth="1" fill="none"/>
+                <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#000" opacity=".4"/>
                 <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
               </svg>
             </div>
