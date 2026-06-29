@@ -338,15 +338,15 @@ const CSS = `
 
 .pb-iphone {
   position: relative;
-  width: 260px;
-  height: 564px;
+  width: 320px;
+  height: 693px;
   flex-shrink: 0;
   margin: auto;
 }
 .pb-iphone__frame {
   position: absolute;
   inset: 0;
-  border-radius: 44px;
+  border-radius: 54px;
   background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 40%, #111 60%, #1e1e1e 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,.12),
@@ -359,7 +359,7 @@ const CSS = `
 .pb-iphone__screen-wrap {
   position: absolute;
   top: 10px; left: 10px; right: 10px; bottom: 10px;
-  border-radius: 36px;
+  border-radius: 46px;
   overflow: hidden;
   background: #000;
   z-index: 10;
@@ -406,32 +406,32 @@ const CSS = `
 }
 .pb-iphone__btn-right {
   position: absolute;
-  right: -3px; top: 110px;
-  width: 3px; height: 58px;
+  right: -3px; top: 140px;
+  width: 3px; height: 72px;
   background: linear-gradient(to right, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 0 2px 2px 0;
   z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left1 {
   position: absolute;
-  left: -3px; top: 85px;
-  width: 3px; height: 34px;
+  left: -3px; top: 105px;
+  width: 3px; height: 42px;
   background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
   z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left2 {
   position: absolute;
-  left: -3px; top: 138px;
-  width: 3px; height: 54px;
+  left: -3px; top: 170px;
+  width: 3px; height: 66px;
   background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
   z-index: 21; pointer-events: none;
 }
 .pb-iphone__btn-left3 {
   position: absolute;
-  left: -3px; top: 204px;
-  width: 3px; height: 54px;
+  left: -3px; top: 252px;
+  width: 3px; height: 66px;
   background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
   border-radius: 2px 0 0 2px;
   z-index: 21; pointer-events: none;
@@ -445,12 +445,12 @@ const CSS = `
 .pb-iphone__iframe {
   position: absolute;
   top: 0; left: 0;
-  width: 390px;
-  height: 844px;
+  width: 430px;
+  height: 932px;
   border: none;
   display: block;
   transform-origin: top left;
-  transform: scale(0.615);
+  transform: scale(0.698);
 }
 
 .pb-chrome-bar {
