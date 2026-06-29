@@ -54,12 +54,15 @@ const DEFAULT_CONFIG = {
       type: "trust",
       enabled: true,
       settings: {
+        layout: "row",
         badges: [
-          { icon: "🚚", title: "توصيل سريع وآمن",  sub: "لجميع الولايات الـ 58" },
-          { icon: "✅", title: "جودة مضمونة",       sub: "فحص شامل لكل منتج"    },
-          { icon: "🎧", title: "خدمة العملاء",      sub: "دعم على مدار 24 ساعة" },
+          { id: "cod",      enabled: true, title: "دفع عند الاستلام", sub: "دفع آمن وسهل" },
+          { id: "shipping", enabled: true, title: "توصيل سريع",       sub: "لجميع ولايات الجزائر" },
+          { id: "return",   enabled: true, title: "إرجاع مجاني",      sub: "خلال 7 أيام" },
+          { id: "support",  enabled: true, title: "دعم 24/7",         sub: "نحن هنا لمساعدتك" },
+          { id: "secure",   enabled: true, title: "متجر موثوق",       sub: "آلاف العملاء الراضين" },
         ],
-        bgColor: "#f8f9fa",
+        bgColor: "#ffffff",
       },
     },
     {
@@ -595,11 +598,11 @@ const CSS = `
 /* Badge card */
 .pb-badge-card {
   background: #f9fafb; border: 1.5px solid #f0f0f0;
-  border-radius: 8px; padding: 10px 10px; display:flex; flex-direction:column; gap:6px;
+  border-radius: 8px; padding: 10px 10px; display:flex; flex-direction:column; gap:8px;
 }
 .pb-badge-card__header {
-  font-size: .72rem; font-weight: 700; color: #9ca3af;
-  text-transform: uppercase; letter-spacing: .06em;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .8rem; font-weight: 600; color: #111;
 }
 
 /* Styles tab */
@@ -815,16 +818,35 @@ function TrustSettings({ settings, onChange }) {
     const badges = settings.badges.map((b, idx) => idx === i ? { ...b, [field]: val } : b);
     s("badges", badges);
   };
+
+  const BADGE_LABELS = {
+    cod:      "دفع عند الاستلام",
+    shipping: "توصيل سريع",
+    return:   "إرجاع مجاني",
+    support:  "دعم 24/7",
+    secure:   "متجر موثوق",
+  };
+
   return (
     <>
       <div className="pb-group">
+        <div className="pb-group__label">Layout</div>
+        <div className="pb-field">
+          <div className="pb-label">Display Style</div>
+          <select className="pb-input" value={settings.layout || "row"} onChange={e => s("layout", e.target.value)}>
+            <option value="row">Row</option>
+            <option value="grid">Grid</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="pb-group">
         <div className="pb-group__label">Badges</div>
-        {settings.badges.map((badge, i) => (
+        {(settings.badges || []).map((badge, i) => (
           <div key={i} className="pb-badge-card">
-            <div className="pb-badge-card__header">Badge {i + 1}</div>
-            <div className="pb-field">
-              <div className="pb-label">Icon (emoji)</div>
-              <input className="pb-input" value={badge.icon}  onChange={e => updateBadge(i, "icon",  e.target.value)} maxLength={4} />
+            <div className="pb-badge-card__header">
+              <span>{BADGE_LABELS[badge.id] || badge.title}</span>
+              <Toggle checked={badge.enabled !== false} onChange={v => updateBadge(i, "enabled", v)} />
             </div>
             <div className="pb-field">
               <div className="pb-label">Title</div>
@@ -832,14 +854,10 @@ function TrustSettings({ settings, onChange }) {
             </div>
             <div className="pb-field">
               <div className="pb-label">Subtitle</div>
-              <input className="pb-input" value={badge.sub}   onChange={e => updateBadge(i, "sub",   e.target.value)} />
+              <input className="pb-input" value={badge.sub} onChange={e => updateBadge(i, "sub", e.target.value)} />
             </div>
           </div>
         ))}
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Styles</div>
-        <ColorField label="Background color" value={settings.bgColor} onChange={v => s("bgColor", v)} />
       </div>
     </>
   );

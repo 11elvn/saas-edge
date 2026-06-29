@@ -207,7 +207,7 @@ const DEFAULT_TC = {
     { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
     { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
     { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", overlayOpacity:50, height:"large" } },
-    { id:"trust",        type:"trust",        enabled:true,  settings:{ badges:[ {icon:"🚚",title:"توصيل سريع وآمن",sub:"لجميع الولايات الـ 58"}, {icon:"✅",title:"جودة مضمونة",sub:"فحص شامل لكل منتج"}, {icon:"🎧",title:"خدمة العملاء",sub:"دعم على مدار 24 ساعة"} ], bgColor:"#f8f9fa" } },
+    { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", columns:3, showViewAll:true, viewAllText:"عرض الكل" } },
     { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", showIcons:true, maxItems:6 } },
     { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"", showSocials:false, bgColor:"#111827", textColor:"#ffffff" } },
@@ -550,24 +550,81 @@ function PublicStore() {
       {(() => {
         const s = sec(tc, "trust");
         if (!s?.enabled) return null;
-        const { badges, bgColor } = s.settings;
+        const { badges, bgColor, layout } = s.settings;
+        const activeBadges = (badges || []).filter(b => b.enabled !== false);
+        if (!activeBadges.length) return null;
+
+        // أيقونات SVG لكل نوع
+        const ICONS = {
+          cod: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.33 12a19.79 19.79 0 01-3.07-8.67A2 2 0 013.24 1.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          ),
+          shipping: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          ),
+          return: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+          ),
+          support: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>
+            </svg>
+          ),
+          secure: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+          ),
+        };
+
+        const isRow = (layout || "row") === "row";
+        const cols = isRow
+          ? `repeat(${activeBadges.length}, 1fr)`
+          : `repeat(${Math.min(activeBadges.length, 2)}, 1fr)`;
+
         return (
         <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
-        <section style={{ background: bgColor || "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-            {badges.map((b, i) => (
-              <div key={i} className={`ps-fade-up ps-delay-${i+1}`} style={{
-                background: "#161616", border: "1px solid #eee",
-                borderRadius: 14, padding: "20px 18px",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center",
-              }}>
-                <div style={{ color: primary, fontSize: 28 }}>{b.icon}</div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: 0 }}>{b.title}</p>
-                <p style={{ fontSize: 12, color: "#555", margin: 0 }}>{b.sub}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+          <section style={{ background: bgColor || "#fff", padding: "24px 16px" }}>
+            <div style={{
+              maxWidth: 900, margin: "0 auto",
+              display: "grid",
+              gridTemplateColumns: cols,
+              gap: isRow ? 8 : 12,
+            }}>
+              {activeBadges.map((b, i) => (
+                <div key={i} style={{
+                  display: "flex",
+                  flexDirection: isRow ? "column" : "row",
+                  alignItems: "center",
+                  gap: isRow ? 8 : 12,
+                  textAlign: isRow ? "center" : "right",
+                  background: "#f5f5f7",
+                  borderRadius: 14,
+                  padding: isRow ? "16px 10px" : "14px 16px",
+                }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: "50%",
+                    background: "#ebebed",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, color: "#1a1a1a",
+                  }}>
+                    {ICONS[b.id] || ICONS.secure}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#111", margin: "0 0 3px", direction: "rtl" }}>{b.title}</p>
+                    <p style={{ fontSize: 11, color: "#666", margin: 0, direction: "rtl" }}>{b.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </SectionWrapper>
         );
       })()}
