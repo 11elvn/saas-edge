@@ -274,7 +274,7 @@ const CSS = `
   position: relative;
 }
 .pb-section-item:hover   { background: #f9fafb; }
-.pb-section-item--active { background: #eff6ff; border-color: #2563eb; }
+.pb-section-item--active { background: #f0f0ff; border-color: #894bf4; }
 .pb-section-item--disabled { opacity: .45; }
 
 .pb-section-item__drag {

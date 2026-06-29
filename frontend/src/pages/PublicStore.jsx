@@ -255,8 +255,14 @@ const PREVIEW_CSS = `
   letter-spacing: .3px;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(37,99,235,.35);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.ps-section-wrapper:hover .ps-section-label {
+  opacity: 1;
 }
 .ps-section-label--active {
+  opacity: 1 !important;
   background: #1d4ed8;
 }
 .ps-between-add {
