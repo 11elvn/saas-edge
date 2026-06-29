@@ -98,6 +98,7 @@ const CSS = `
   align-items: center;
   justify-content: center;
   min-height: 0;
+  height: 100%;
   max-height: 100%;
 }
 .th-iphone {
@@ -165,12 +166,12 @@ const CSS = `
 /* الشاشة القابلة للتمرير */
 .th-mobile-screen {
   position: absolute;
-  inset: 0;
+  top: 38px;
+  left: 0; right: 0; bottom: 0;
   overflow-y: scroll;
   overflow-x: hidden;
   background: #fff;
   direction: rtl;
-  padding-top: 38px;
 }
 .th-mobile-screen::-webkit-scrollbar { display: none; }
 /* أزرار جانبية */
