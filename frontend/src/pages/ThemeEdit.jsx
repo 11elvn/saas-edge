@@ -428,14 +428,17 @@ const CSS = `
 }
 .pb-iphone__content {
   position: absolute;
-  inset: 0;
-  padding-top: 38px;
+  top: 38px;
+  left: 0; right: 0; bottom: 0;
   overflow: hidden;
 }
 .pb-iphone__iframe {
-  width: 100%; height: 100%;
+  width: 390px;
+  height: 193%;
   border: none;
   display: block;
+  transform-origin: top left;
+  transform: scale(0.518);
 }
 
 .pb-chrome-bar {
