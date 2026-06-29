@@ -348,14 +348,15 @@ const CSS = `
   position: absolute;
   inset: 0;
   border-radius: 36px;
-  background: linear-gradient(145deg, #e8d5b0 0%, #c9a96e 40%, #b8914a 60%, #d4aa70 100%);
+  background: transparent;
   box-shadow:
-    0 0 0 1px rgba(0,0,0,.25),
+    0 0 0 8px #c9a96e,
+    0 0 0 9px rgba(0,0,0,.25),
     inset 0 0 0 1.5px rgba(255,255,255,.3),
     0 20px 60px rgba(0,0,0,.4),
     0 4px 12px rgba(0,0,0,.2);
   pointer-events: none;
-  z-index: 10;
+  z-index: 20;
 }
 .pb-iphone__screen-wrap {
   position: absolute;
@@ -363,7 +364,7 @@ const CSS = `
   border-radius: 28px;
   overflow: hidden;
   background: #000;
-  z-index: 5;
+  z-index: 15;
 }
 .pb-iphone__island {
   position: absolute;
