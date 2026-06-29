@@ -378,23 +378,31 @@ const CSS = `
 .pb-iphone__status {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 50px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 0 20px 8px;
+  height: 54px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+  padding-top: 10px;
   z-index: 22;
   pointer-events: none;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .pb-iphone__time {
   font-size: 13px; font-weight: 700;
   color: #000; font-family: -apple-system, sans-serif;
   letter-spacing: -.3px;
+  justify-self: start;
 }
-.pb-iphone__signals { display: flex; align-items: center; gap: 5px; }
+.pb-iphone__island-spacer {
+  width: 90px; height: 28px;
+}
+.pb-iphone__signals {
+  display: flex; align-items: center; gap: 5px;
+  justify-self: end;
+}
 .pb-iphone__btn-right {
   position: absolute;
   right: -3px; top: 110px;
@@ -429,7 +437,7 @@ const CSS = `
 }
 .pb-iphone__content {
   position: absolute;
-  top: 50px;
+  top: 54px;
   left: 0; right: 0; bottom: 0;
   overflow: hidden;
 }
@@ -1081,11 +1089,12 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
         <div className="pb-iphone__btn-left3" />
         {/* الشاشة */}
         <div className="pb-iphone__screen-wrap">
-          {/* Dynamic Island */}
+          {/* Dynamic Island — absolute فوق كل شي */}
           <div className="pb-iphone__island" />
-          {/* Status Bar */}
+          {/* Status Bar — 3 columns: time | island-spacer | signals */}
           <div className="pb-iphone__status">
             <span className="pb-iphone__time">9:41</span>
+            <div className="pb-iphone__island-spacer" />
             <div className="pb-iphone__signals">
               <svg width="13" height="10" viewBox="0 0 17 12" fill="#000">
                 <rect x="0" y="7" width="3" height="5" rx=".5"/>
