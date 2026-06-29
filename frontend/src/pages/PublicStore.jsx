@@ -297,13 +297,26 @@ const PREVIEW_CSS = `
 
 // ── SectionWrapper — يلف كل section بـ label + border في preview mode ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
-  if (!isPreview) return <div style={style}>{children}</div>;
+  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
+
+  // ✦ عند كليك على الـ label أو الـ section → نرسل للـ ThemeEdit باش يفتح settings
+  const handleClick = (e) => {
+    e.stopPropagation();
+    window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
+  };
+
   return (
     <div
-      style={style}
+      style={{ ...style, position: "relative" }}
+      data-section={type}
       className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
     >
-      <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
+      {/* ── Label — كليك يفتح settings ── */}
+      <div
+        className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}
+        onClick={handleClick}
+        style={{ pointerEvents: "all", cursor: "pointer" }}
+      >
         {SECTION_LABELS[type] || type}
       </div>
       {children}
@@ -352,6 +365,13 @@ function PublicStore() {
       // ✦ Highlight section في الـ preview
       if (e.data?.type === "HIGHLIGHT_SECTION") {
         setHighlightedSection(e.data.sectionType || null);
+      }
+      // ✦ Scroll لـ section معين من الـ left panel
+      if (e.data?.type === "SCROLL_TO_SECTION") {
+        const type = e.data.sectionType;
+        // كل section عنده data-section attribute نحوسو عليه
+        const el = document.querySelector(`[data-section="${type}"]`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     };
     window.addEventListener("message", handler);

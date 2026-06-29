@@ -1089,6 +1089,22 @@ function ThemeEdit() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح settings الـ section المختار
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type !== "SECTION_CLICK") return;
+      const sectionType = e.data.sectionType;
+      // نلقى الـ section اللي type ديالو يطابق
+      const matched = themeConfig?.sections?.find(s => s.type === sectionType);
+      if (matched) {
+        setActiveSection(matched.id);
+        setRightTab("sections");
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [themeConfig]);
+
   // ── Update section settings ──────────────────────────────
   const updateSectionSettings = useCallback((id, newSettings) => {
     setThemeConfig(prev => ({
@@ -1284,7 +1300,18 @@ function ThemeEdit() {
                       {/* ── Section Item ── */}
                       <div
                         className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""}`}
-                        onClick={() => setActiveSection(activeSection === sec.id ? null : sec.id)}
+                        onClick={() => {
+                          const newActive = activeSection === sec.id ? null : sec.id;
+                          setActiveSection(newActive);
+                          // ✦ نطلب من الـ iframe يعمل scroll لهذا الـ section
+                          if (newActive) {
+                            try {
+                              document.querySelector("iframe")?.contentWindow?.postMessage(
+                                { type: "SCROLL_TO_SECTION", sectionType: sec.type }, "*"
+                              );
+                            } catch (_) {}
+                          }
+                        }}
                       >
                         <span className="pb-section-item__drag">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
