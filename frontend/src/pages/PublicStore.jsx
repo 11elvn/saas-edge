@@ -299,24 +299,20 @@ const PREVIEW_CSS = `
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
   if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
 
-  // ✦ عند كليك على الـ label أو الـ section → نرسل للـ ThemeEdit باش يفتح settings
-  const handleClick = (e) => {
-    e.stopPropagation();
+  // ✦ عند كليك على أي مكان في الـ section → نرسل للـ ThemeEdit باش يفتح settings
+  const handleClick = () => {
     window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   };
 
   return (
     <div
-      style={{ ...style, position: "relative" }}
+      style={{ ...style, position: "relative", cursor: "pointer" }}
       data-section={type}
+      onClick={handleClick}
       className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
     >
-      {/* ── Label — كليك يفتح settings ── */}
-      <div
-        className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}
-        onClick={handleClick}
-        style={{ pointerEvents: "all", cursor: "pointer" }}
-      >
+      {/* ── Label — اسم الـ section ── */}
+      <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
         {SECTION_LABELS[type] || type}
       </div>
       {children}
