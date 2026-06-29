@@ -218,6 +218,12 @@ const DEFAULT_TC = {
 // helper — بحث في sections
 const sec = (tc, type) => tc?.sections?.find(s => s.type === type);
 
+// helper — يرجع style الـ highlight إذا كان هذا الـ section مختار
+const hlStyle = (highlightedSection, type) =>
+  highlightedSection === type
+    ? { outline: "2.5px solid #2563eb", outlineOffset: "-2px", position: "relative", zIndex: 1 }
+    : {};
+
 // ── MAIN ─────────────────────────────────────────────────────
 function PublicStore() {
   const { slug } = useParams();
@@ -231,6 +237,8 @@ function PublicStore() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   // ✦ themeConfig — يُحدَّث live من postMessage (page builder)
   const [themeConfig, setThemeConfig] = useState(null);
+  // ✦ highlighted section type من page builder
+  const [highlightedSection, setHighlightedSection] = useState(null);
 
   const productsRef = useRef(null);
 
@@ -239,6 +247,10 @@ function PublicStore() {
     const handler = (e) => {
       if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) {
         setThemeConfig(e.data.themeConfig);
+      }
+      // ✦ Highlight section في الـ preview
+      if (e.data?.type === "HIGHLIGHT_SECTION") {
+        setHighlightedSection(e.data.sectionType || null);
       }
     };
     window.addEventListener("message", handler);
@@ -328,7 +340,7 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
-          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
+          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative", ...hlStyle(highlightedSection, "announcement") }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
                 {[...Array(6)].map((_, i) => (
@@ -350,6 +362,7 @@ function PublicStore() {
 
       {/* ── Navbar ── */}
       {sec(tc, "header")?.enabled !== false && (
+      <div style={{ ...hlStyle(highlightedSection, "header") }}>
       <StoreNavbar
         store={store}
         slug={slug}
@@ -360,6 +373,7 @@ function PublicStore() {
           { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
         ]}
       />
+      </div>
       )}
 
       {/* ── Hero / Banner ── */}
@@ -371,7 +385,7 @@ function PublicStore() {
         const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
         const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
         return (
-        <section style={{ position: "relative", height: heroHeight, overflow: "hidden" }}>
+        <section style={{ position: "relative", height: heroHeight, overflow: "hidden", ...hlStyle(highlightedSection, "hero") }}>
           {heroBanner ? (
             <img src={heroBanner} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
@@ -420,7 +434,7 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { badges, bgColor } = s.settings;
         return (
-        <section style={{ background: bgColor || "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222" }}>
+        <section style={{ background: bgColor || "#fff", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #222", ...hlStyle(highlightedSection, "trust") }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {badges.map((b, i) => (
               <div key={i} className={`ps-fade-up ps-delay-${i+1}`} style={{
@@ -444,7 +458,7 @@ function PublicStore() {
         const catTitle = s?.settings?.title || "التصنيفات";
         const maxItems = s?.settings?.maxItems || 6;
         return (
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
+        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0", ...hlStyle(highlightedSection, "categories") }}>
           {/* Header row */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
             <div>
@@ -506,7 +520,7 @@ function PublicStore() {
 
       {/* ── Products Grid ── */}
       {sec(tc, "collection")?.enabled !== false && (
-      <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px", ...hlStyle(highlightedSection, "collection") }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: "#fff", margin: 0 }}>
             {activeCat === "all"
@@ -637,7 +651,9 @@ function PublicStore() {
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
-        <StoreFooter store={store} slug={slug} light />
+        <div style={{ ...hlStyle(highlightedSection, "footer") }}>
+          <StoreFooter store={store} slug={slug} light />
+        </div>
       )}
 
       {/* ── WhatsApp Floating ── */}

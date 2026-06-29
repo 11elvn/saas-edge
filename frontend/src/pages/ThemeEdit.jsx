@@ -274,7 +274,7 @@ const CSS = `
   position: relative;
 }
 .pb-section-item:hover   { background: #f9fafb; }
-.pb-section-item--active { background: #f0f0ff; border-color: #894bf4; }
+.pb-section-item--active { background: #eff6ff; border-color: #2563eb; }
 .pb-section-item--disabled { opacity: .45; }
 
 .pb-section-item__drag {
@@ -303,6 +303,38 @@ const CSS = `
 }
 .pb-toggle input:checked + .pb-toggle__slider { background: #894bf4; }
 .pb-toggle input:checked + .pb-toggle__slider::after { transform: translateX(13px); }
+
+.pb-between-add {
+  display: flex; align-items: center; justify-content: center;
+  height: 20px; position: relative; margin: 0 8px;
+  opacity: 0; transition: opacity .15s;
+}
+.pb-between-add:hover, .pb-sections-list:has(.pb-section-item--active) .pb-between-add {
+  opacity: 1;
+}
+.pb-between-add__line {
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 1.5px; background: #2563eb; transform: translateY(-50%);
+}
+.pb-between-add__btn {
+  position: relative; z-index: 1;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #2563eb; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 14px; font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(37,99,235,.35);
+  transition: transform .15s, box-shadow .15s;
+  flex-shrink: 0;
+}
+.pb-between-add__btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(37,99,235,.5);
+}
+/* دايما نظهرها عند hover على القائمة */
+.pb-sections-list:hover .pb-between-add {
+  opacity: 1;
+}
 
 .pb-add-section {
   padding: 10px 10px 12px;
@@ -928,7 +960,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange 
 // ─────────────────────────────────────────────
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig }) {
+function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
@@ -941,6 +973,17 @@ function PreviewFrame({ slug, isMobile, themeConfig }) {
       );
     } catch (_) {}
   };
+
+  // ✦ عند تغيير activeSection — نرسل highlight للـ iframe
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+        "*"
+      );
+    } catch (_) {}
+  }, [activeSection]);
 
   // عند تغيير themeConfig — إذا الـ iframe محمّل أرسل مباشرة، وإلا احفظه كـ pending
   useEffect(() => {
@@ -1226,29 +1269,45 @@ function ThemeEdit() {
           {rightTab === "sections" ? (
             <>
               <div className="pb-sections-list">
-                {themeConfig?.sections?.map((sec) => {
+                {themeConfig?.sections?.map((sec, idx) => {
                   const meta = SECTION_META[sec.type] || {};
                   return (
-                    <div
-                      key={sec.id}
-                      className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""}`}
-                      onClick={() => setActiveSection(activeSection === sec.id ? null : sec.id)}
-                    >
-                      <span className="pb-section-item__drag">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="9" cy="7" r="1" fill="currentColor"/>
-                          <circle cx="9" cy="12" r="1" fill="currentColor"/>
-                          <circle cx="9" cy="17" r="1" fill="currentColor"/>
-                          <circle cx="15" cy="7" r="1" fill="currentColor"/>
-                          <circle cx="15" cy="12" r="1" fill="currentColor"/>
-                          <circle cx="15" cy="17" r="1" fill="currentColor"/>
-                        </svg>
-                      </span>
-                      <span className="pb-section-item__icon">{meta.icon}</span>
-                      <span className="pb-section-item__label">{meta.label}</span>
-                      <span onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}>
-                        <Toggle checked={sec.enabled} onChange={v => toggleSection(sec.id, v)} />
-                      </span>
+                    <div key={sec.id}>
+                      {/* ── + button فوق كل section (أول واحد فقط) ── */}
+                      {idx === 0 && (
+                        <div className="pb-between-add">
+                          <div className="pb-between-add__line" />
+                          <button className="pb-between-add__btn" title="Add section here" disabled>+</button>
+                        </div>
+                      )}
+
+                      {/* ── Section Item ── */}
+                      <div
+                        className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""}`}
+                        onClick={() => setActiveSection(activeSection === sec.id ? null : sec.id)}
+                      >
+                        <span className="pb-section-item__drag">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="9" cy="7" r="1" fill="currentColor"/>
+                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
+                            <circle cx="9" cy="17" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="7" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="17" r="1" fill="currentColor"/>
+                          </svg>
+                        </span>
+                        <span className="pb-section-item__icon">{meta.icon}</span>
+                        <span className="pb-section-item__label">{meta.label}</span>
+                        <span onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}>
+                          <Toggle checked={sec.enabled} onChange={v => toggleSection(sec.id, v)} />
+                        </span>
+                      </div>
+
+                      {/* ── + button بعد كل section ── */}
+                      <div className="pb-between-add">
+                        <div className="pb-between-add__line" />
+                        <button className="pb-between-add__btn" title="Add section here" disabled>+</button>
+                      </div>
                     </div>
                   );
                 })}
@@ -1277,6 +1336,7 @@ function ThemeEdit() {
             slug={store.slug}
             isMobile={isMobile}
             themeConfig={themeConfig}
+            activeSection={activeSection}
           />
         </div>
 
