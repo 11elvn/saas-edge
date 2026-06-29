@@ -89,47 +89,127 @@ const CSS = `
 .th-desktop-store::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
 .th-desktop-store::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
-/* ══ MOBILE FRAME ══ */
+/* ══ MOBILE FRAME — iPhone 15 Pro ══ */
 .th-mobile-wrap {
-  width: 200px;
+  width: 218px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
   max-height: 100%;
 }
-.th-mobile-device {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
-  overflow: hidden;
-  min-height: 0;
-}
-.th-mobile-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px 6px;
-  background: #ebebeb;
-  border-bottom: 1px solid #ddd;
+.th-iphone {
+  position: relative;
+  width: 218px;
+  height: 100%;
+  max-height: 460px;
   flex-shrink: 0;
 }
-.th-mobile-time { color: #555; font-size: 9px; font-weight: 700; font-family: monospace; }
-.th-mobile-icons { display: flex; gap: 3px; align-items: center; }
+/* الإطار الخارجي للهاتف */
+.th-iphone__frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 36px;
+  background: linear-gradient(145deg, #e8d5b0 0%, #c9a96e 40%, #b8914a 60%, #d4aa70 100%);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.25),
+    inset 0 0 0 1.5px rgba(255,255,255,.3),
+    0 20px 60px rgba(0,0,0,.4),
+    0 4px 12px rgba(0,0,0,.2);
+  pointer-events: none;
+  z-index: 10;
+}
+/* الشاشة الداخلية */
+.th-iphone__screen-wrap {
+  position: absolute;
+  top: 8px; left: 8px; right: 8px; bottom: 8px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: #000;
+  z-index: 5;
+}
+/* Dynamic Island */
+.th-iphone__island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px; height: 20px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 20;
+  pointer-events: none;
+}
+/* Status bar */
+.th-iphone__status {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 38px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 16px 4px;
+  z-index: 15;
+  pointer-events: none;
+}
+.th-iphone__time {
+  font-size: 9px; font-weight: 700;
+  color: #111; font-family: -apple-system, sans-serif;
+  letter-spacing: -.2px;
+}
+.th-iphone__signals {
+  display: flex; align-items: center; gap: 3px;
+}
+/* الشاشة القابلة للتمرير */
 .th-mobile-screen {
-  flex: 1;
+  position: absolute;
+  inset: 0;
   overflow-y: scroll;
   overflow-x: hidden;
   background: #fff;
   direction: rtl;
+  padding-top: 38px;
 }
-.th-mobile-screen::-webkit-scrollbar { width: 4px; }
-.th-mobile-screen::-webkit-scrollbar-track { background: #f1f1f1; }
-.th-mobile-screen::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
-.th-mobile-screen::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+.th-mobile-screen::-webkit-scrollbar { display: none; }
+/* أزرار جانبية */
+.th-iphone__btn-right {
+  position: absolute;
+  right: -3px; top: 90px;
+  width: 3px; height: 48px;
+  background: linear-gradient(to right, #b8914a, #c9a96e);
+  border-radius: 0 2px 2px 0;
+  z-index: 11;
+  pointer-events: none;
+}
+.th-iphone__btn-left1 {
+  position: absolute;
+  left: -3px; top: 70px;
+  width: 3px; height: 28px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11;
+  pointer-events: none;
+}
+.th-iphone__btn-left2 {
+  position: absolute;
+  left: -3px; top: 114px;
+  width: 3px; height: 44px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11;
+  pointer-events: none;
+}
+.th-iphone__btn-left3 {
+  position: absolute;
+  left: -3px; top: 168px;
+  width: 3px; height: 44px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11;
+  pointer-events: none;
+}
 
 /* ══ STORE CONTENT SHARED ══ */
 
@@ -557,20 +637,50 @@ function Theme() {
             </div>
           </div>
 
-          {/* ── Mobile Frame ── */}
+          {/* ── iPhone 15 Pro Frame ── */}
           <div className="th-mobile-wrap">
-            <div className="th-mobile-device">
-              {/* Mobile chrome bar - like desktop */}
-              <div className="th-mobile-status">
-                <span className="th-mobile-time">{store?.slug || "my-store"}</span>
-                <div className="th-mobile-icons">
-                  <svg width="10" height="10" fill="none" stroke="#666" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                  <svg width="10" height="10" fill="none" stroke="#666" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+            <div className="th-iphone">
+              {/* الإطار الخارجي */}
+              <div className="th-iphone__frame" />
+              {/* أزرار جانبية */}
+              <div className="th-iphone__btn-right" />
+              <div className="th-iphone__btn-left1" />
+              <div className="th-iphone__btn-left2" />
+              <div className="th-iphone__btn-left3" />
+              {/* الشاشة */}
+              <div className="th-iphone__screen-wrap">
+                {/* Dynamic Island */}
+                <div className="th-iphone__island" />
+                {/* Status Bar */}
+                <div className="th-iphone__status">
+                  <span className="th-iphone__time">9:41</span>
+                  <div className="th-iphone__signals">
+                    {/* Signal bars */}
+                    <svg width="12" height="9" viewBox="0 0 17 12" fill="#111">
+                      <rect x="0" y="7" width="3" height="5" rx=".5"/>
+                      <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
+                      <rect x="9" y="2" width="3" height="10" rx=".5"/>
+                      <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
+                    </svg>
+                    {/* WiFi */}
+                    <svg width="11" height="9" viewBox="0 0 16 12" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M8 10h.01"/>
+                      <path d="M5.5 7.5a3.5 3.5 0 015 0"/>
+                      <path d="M3 5a7 7 0 0110 0"/>
+                      <path d="M1 2.5a11 11 0 0114 0"/>
+                    </svg>
+                    {/* Battery */}
+                    <svg width="17" height="9" viewBox="0 0 25 12" fill="#111">
+                      <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#111" strokeWidth="1" fill="none"/>
+                      <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#111" opacity=".4"/>
+                      <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
+                    </svg>
+                  </div>
                 </div>
-              </div>
-              {/* Screen */}
-              <div className="th-mobile-screen">
-                <MobileStore store={store} products={products} categories={categories} />
+                {/* Store content */}
+                <div className="th-mobile-screen">
+                  <MobileStore store={store} products={products} categories={categories} />
+                </div>
               </div>
             </div>
           </div>

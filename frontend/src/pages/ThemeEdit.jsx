@@ -336,24 +336,106 @@ const CSS = `
   display: flex; flex-direction: column;
 }
 
-.pb-preview-mobile {
-  width: 375px; height: 100%;
-  max-height: 780px;
-  background: #1c1c1e; border-radius: 40px;
-  padding: 14px 10px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+.pb-iphone {
+  position: relative;
+  width: 218px;
+  height: 100%;
+  max-height: 700px;
+  flex-shrink: 0;
+  margin: auto;
 }
-
-.pb-preview-mobile__notch {
-  width: 60px; height: 6px;
-  background: #3a3a3c; border-radius: 3px;
-  margin: 0 auto 10px;
+.pb-iphone__frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 36px;
+  background: linear-gradient(145deg, #e8d5b0 0%, #c9a96e 40%, #b8914a 60%, #d4aa70 100%);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.25),
+    inset 0 0 0 1.5px rgba(255,255,255,.3),
+    0 20px 60px rgba(0,0,0,.4),
+    0 4px 12px rgba(0,0,0,.2);
+  pointer-events: none;
+  z-index: 10;
 }
-
-.pb-preview-mobile__screen {
-  width: 100%; height: calc(100% - 22px);
-  background: #fff; border-radius: 28px;
+.pb-iphone__screen-wrap {
+  position: absolute;
+  top: 8px; left: 8px; right: 8px; bottom: 8px;
+  border-radius: 28px;
   overflow: hidden;
+  background: #000;
+  z-index: 5;
+}
+.pb-iphone__island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px; height: 20px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 20;
+  pointer-events: none;
+}
+.pb-iphone__status {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 38px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 16px 4px;
+  z-index: 15;
+  pointer-events: none;
+  background: transparent;
+}
+.pb-iphone__time {
+  font-size: 9px; font-weight: 700;
+  color: #fff; font-family: -apple-system, sans-serif;
+  letter-spacing: -.2px;
+}
+.pb-iphone__signals { display: flex; align-items: center; gap: 3px; }
+.pb-iphone__btn-right {
+  position: absolute;
+  right: -3px; top: 90px;
+  width: 3px; height: 48px;
+  background: linear-gradient(to right, #b8914a, #c9a96e);
+  border-radius: 0 2px 2px 0;
+  z-index: 11; pointer-events: none;
+}
+.pb-iphone__btn-left1 {
+  position: absolute;
+  left: -3px; top: 70px;
+  width: 3px; height: 28px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11; pointer-events: none;
+}
+.pb-iphone__btn-left2 {
+  position: absolute;
+  left: -3px; top: 114px;
+  width: 3px; height: 44px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11; pointer-events: none;
+}
+.pb-iphone__btn-left3 {
+  position: absolute;
+  left: -3px; top: 168px;
+  width: 3px; height: 44px;
+  background: linear-gradient(to left, #b8914a, #c9a96e);
+  border-radius: 2px 0 0 2px;
+  z-index: 11; pointer-events: none;
+}
+.pb-iphone__content {
+  position: absolute;
+  inset: 0;
+  padding-top: 38px;
+  overflow: hidden;
+}
+.pb-iphone__iframe {
+  width: 100%; height: 100%;
+  border: none;
+  display: block;
 }
 
 .pb-chrome-bar {
@@ -982,16 +1064,51 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
   const src = `/store/${slug}?preview=1`;
 
   if (isMobile) return (
-    <div className="pb-preview-mobile">
-      <div className="pb-preview-mobile__notch" />
-      <div className="pb-preview-mobile__screen">
-        <iframe
-          ref={iframeRef}
-          src={src}
-          onLoad={handleLoad}
-          className="pb-preview-iframe"
-          title="Mobile Preview"
-        />
+    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="pb-iphone">
+        {/* الإطار الخارجي */}
+        <div className="pb-iphone__frame" />
+        {/* أزرار جانبية */}
+        <div className="pb-iphone__btn-right" />
+        <div className="pb-iphone__btn-left1" />
+        <div className="pb-iphone__btn-left2" />
+        <div className="pb-iphone__btn-left3" />
+        {/* الشاشة */}
+        <div className="pb-iphone__screen-wrap">
+          {/* Dynamic Island */}
+          <div className="pb-iphone__island" />
+          {/* Status Bar */}
+          <div className="pb-iphone__status">
+            <span className="pb-iphone__time">9:41</span>
+            <div className="pb-iphone__signals">
+              <svg width="12" height="9" viewBox="0 0 17 12" fill="#fff">
+                <rect x="0" y="7" width="3" height="5" rx=".5"/>
+                <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
+                <rect x="9" y="2" width="3" height="10" rx=".5"/>
+                <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
+              </svg>
+              <svg width="11" height="9" viewBox="0 0 16 12" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M8 10h.01"/><path d="M5.5 7.5a3.5 3.5 0 015 0"/>
+                <path d="M3 5a7 7 0 0110 0"/><path d="M1 2.5a11 11 0 0114 0"/>
+              </svg>
+              <svg width="17" height="9" viewBox="0 0 25 12" fill="#fff">
+                <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#fff" strokeWidth="1" fill="none"/>
+                <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#fff" opacity=".4"/>
+                <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
+              </svg>
+            </div>
+          </div>
+          {/* iframe */}
+          <div className="pb-iphone__content">
+            <iframe
+              ref={iframeRef}
+              src={src}
+              onLoad={handleLoad}
+              className="pb-iphone__iframe"
+              title="Mobile Preview"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
