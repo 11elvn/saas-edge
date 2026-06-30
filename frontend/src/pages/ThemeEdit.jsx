@@ -1224,26 +1224,23 @@ function ThemeEdit() {
           // إذا عنده themeConfig محفوظ استعمله، وإلا استعمل default
           let cfg = d.store.themeConfig;
           if (cfg && cfg.sections) {
-            // merge trust badges — نضيف الـ badges الجديدة إذا ما كانوش
-            const DEFAULT_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
+            // نفرض الـ 5 badges الثابتة (نحافظ فقط على enabled/title/sub لو كانت موجودة بنفس id)
+            const FIXED_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
             cfg = {
               ...cfg,
               sections: cfg.sections.map(sec => {
                 if (sec.type !== "trust") return sec;
-                const existingIds = (sec.settings?.badges || []).map(b => b.id || b.icon);
-                const missingBadges = DEFAULT_BADGES.filter(b => !existingIds.includes(b.id));
-                // نحول الـ badges القديمة (بدون id) لـ format جديد
-                const updatedBadges = (sec.settings?.badges || []).map(b => {
-                  if (b.id) return b;
-                  // badge قديم بـ emoji — نحوله
-                  return { id: "secure", enabled: true, title: b.title, sub: b.sub };
+                const oldBadges = sec.settings?.badges || [];
+                const badges = FIXED_BADGES.map(fb => {
+                  const old = oldBadges.find(b => b.id === fb.id);
+                  return old ? { ...fb, enabled: old.enabled, title: old.title, sub: old.sub } : fb;
                 });
                 return {
                   ...sec,
                   settings: {
                     layout: sec.settings?.layout || "row",
                     bgColor: sec.settings?.bgColor || "#ffffff",
-                    badges: [...updatedBadges, ...missingBadges],
+                    badges,
                   }
                 };
               })

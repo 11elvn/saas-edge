@@ -372,7 +372,25 @@ function PublicStore() {
   }, []);
 
   // ✦ الـ config الفعلي — إذا وصل من postMessage استعمله، وإلا استعمل ما في store
-  const tc = themeConfig || (store?.themeConfig?.sections ? store.themeConfig : DEFAULT_TC);
+  const rawTc = themeConfig || (store?.themeConfig?.sections ? store.themeConfig : DEFAULT_TC);
+
+  // نفرض الـ 5 badges الثابتة على Trust Badges (نحافظ على enabled/title/sub القديمة لو متطابقة بالـ id)
+  const tc = (() => {
+    if (!rawTc?.sections) return rawTc;
+    const FIXED_BADGES = DEFAULT_TC.sections.find(s => s.type === "trust")?.settings?.badges || [];
+    return {
+      ...rawTc,
+      sections: rawTc.sections.map(sec => {
+        if (sec.type !== "trust") return sec;
+        const oldBadges = sec.settings?.badges || [];
+        const badges = FIXED_BADGES.map(fb => {
+          const old = oldBadges.find(b => b.id === fb.id);
+          return old ? { ...fb, enabled: old.enabled, title: old.title, sub: old.sub } : fb;
+        });
+        return { ...sec, settings: { ...sec.settings, badges } };
+      })
+    };
+  })();
 
   // derived theme values (من styles أو من store مباشرة كـ fallback)
   const primary   = tc?.styles?.primaryColor   || store?.primaryColor   || "#111827";
