@@ -104,9 +104,15 @@ const DEFAULT_CONFIG = {
   styles: {
     primaryColor: "#2563eb",
     secondaryColor: "#0f172a",
+    backgroundColor: "#ffffff",
+    surfaceColor: "#fafafa",
+    textColor: "#111111",
+    mutedTextColor: "#666666",
+    borderColor: "#ebebeb",
     fontFamily: "Cairo",
     borderRadius: "medium",
     buttonStyle: "filled",
+    direction: "rtl",
   },
 };
 
@@ -1088,11 +1094,26 @@ function StylesPanel({ styles, onChange }) {
     <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
       <div className="pb-group">
         <div className="pb-group__label">Colors</div>
-        <ColorField label="Primary color"   value={styles.primaryColor}   onChange={v => s("primaryColor",   v)} />
-        <ColorField label="Secondary color" value={styles.secondaryColor} onChange={v => s("secondaryColor", v)} />
+        <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
+        <ColorField label="Secondary"  value={styles.secondaryColor}  onChange={v => s("secondaryColor",  v)} />
+        <ColorField label="Background" value={styles.backgroundColor} onChange={v => s("backgroundColor", v)} />
+        <ColorField label="Surface"    value={styles.surfaceColor}    onChange={v => s("surfaceColor",    v)} />
+        <ColorField label="Text"       value={styles.textColor}       onChange={v => s("textColor",       v)} />
+        <ColorField label="Muted text" value={styles.mutedTextColor}  onChange={v => s("mutedTextColor",  v)} />
+        <ColorField label="Border"     value={styles.borderColor}     onChange={v => s("borderColor",     v)} />
       </div>
       <div className="pb-group">
         <div className="pb-group__label">Typography</div>
+        <div className="pb-field">
+          <div className="pb-label">Direction</div>
+          <div className="pb-segment">
+            {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("direction", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
         <div className="pb-font-grid">
           {FONTS.map(f => (
             <button key={f}
