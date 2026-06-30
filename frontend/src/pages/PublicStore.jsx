@@ -547,7 +547,7 @@ function PublicStore() {
           ) : (
             <div style={{
               width: "100%", height: "100%",
-              background: `linear-gradient(135deg, #f8f9fa 0%, ${primary}18 50%, ${secondary}28 100%)`,
+              background: `linear-gradient(135deg, ${secondary} 0%, ${secondary}cc 100%)`,
               display: "flex", alignItems: "center", justifyContent: justify,
             }}>
               <div style={{ textAlign: align, padding: "0 24px" }}>
@@ -871,7 +871,7 @@ function PublicStore() {
                       style={{
                         width: "100%", padding: "11px 0", borderRadius: 12,
                         border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
-                        background: outOfStock ? "#1f1f1f" : `linear-gradient(135deg, ${primary}, ${secondary})`,
+                        background: outOfStock ? "#1f1f1f" : primary,
                         color: outOfStock ? "#444" : "#fff",
                         fontSize: 13, fontWeight: 700, fontFamily: "inherit",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 7,

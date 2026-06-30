@@ -65,9 +65,12 @@ function ProductDetails() {
   const [selectedCity, setSelectedCity] = useState("");
   const [shippingPrice,setShippingPrice]= useState(0);
 
-  const primary   = store?.primaryColor   || "#6366f1";
-  const secondary = store?.secondaryColor || "#4f46e5";
-  const font      = store?.fontFamily     || "Cairo";
+  const themeStyles = store?.themeConfig?.styles || {};
+  const primary   = themeStyles.primaryColor   || store?.primaryColor   || "#6366f1";
+  const secondary = themeStyles.secondaryColor || store?.secondaryColor || "#4f46e5";
+  const font      = themeStyles.fontFamily     || store?.fontFamily     || "Cairo";
+  const bgColor   = themeStyles.backgroundColor || "#ffffff";
+  const textColor = themeStyles.textColor       || "#111111";
 
   useEffect(() => {
     injectCSS();
@@ -159,7 +162,7 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
-      style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif` }}
+      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif` }}
     >
       <style>{`
         @media (max-width: 768px) {
@@ -315,7 +318,7 @@ function ProductDetails() {
                 style={{
                   width: "100%", padding: "15px 0", borderRadius: 14,
                   border: "none", cursor: outOfStock || ordering ? "not-allowed" : "pointer",
-                  background: outOfStock ? "#f3f4f6" : `linear-gradient(135deg, ${primary}, ${secondary})`,
+                  background: outOfStock ? "#f3f4f6" : primary,
                   color: outOfStock ? "#aaa" : "#fff",
                   fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                   opacity: ordering ? 0.7 : 1,
