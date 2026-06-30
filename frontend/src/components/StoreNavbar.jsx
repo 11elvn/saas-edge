@@ -110,20 +110,22 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
 }
 
 // ✦ أضفنا headerSettings كـ prop جديد
-export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links, headerSettings }) {
+export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, onSearchClick, links, headerSettings, themeColors = {} }) {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // ✦ استخراج الإعدادات من headerSettings مع قيم افتراضية
   const showSearch = headerSettings?.showSearch ?? true;
   const showCart   = headerSettings?.showCart   ?? true;
   const sticky     = headerSettings?.sticky     ?? true;
 
   const logo      = store?.logo || "";
   const storeName = store?.name || "المتجر";
-  const primary   = store?.primaryColor   || "#2563eb";
-  const secondary = store?.secondaryColor || "#0f172a";
+  const primary   = themeColors.primary   || store?.primaryColor   || "#2563eb";
+  const secondary = themeColors.secondary || store?.secondaryColor || "#0f172a";
+  const navBg     = themeColors.bgColor      || "#ffffff";
+  const navBorder = themeColors.borderColor  || "#f0f0f0";
+  const navText   = themeColors.textColor    || "#111";
   const initial   = storeName.charAt(0);
 
   const navLinks = links || [
@@ -164,9 +166,9 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       {/* ══════════════ DESKTOP NAV (LTR layout) ══════════════ */}
       <nav className="sn-desktop" style={{
         position: navPosition, top:0, zIndex:100,
-        background:"rgba(255,255,255,.97)",
+        background: navBg,
         backdropFilter:"blur(16px)",
-        borderBottom:"1px solid #f0f0f0",
+        borderBottom:`1px solid ${navBorder}`,
         height:80,
         display:"flex",
         alignItems:"center",
@@ -200,9 +202,9 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       {/* ══════════════ MOBILE NAV ══════════════ */}
       <nav className="sn-mobile" style={{
         position: navPosition, top:0, zIndex:100,
-        background:"rgba(255,255,255,.97)",
+        background: navBg,
         backdropFilter:"blur(16px)",
-        borderBottom:"1px solid #f0f0f0",
+        borderBottom:`1px solid ${navBorder}`,
         height:60,
         display:"flex",
         alignItems:"center",

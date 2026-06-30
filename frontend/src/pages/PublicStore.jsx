@@ -393,9 +393,15 @@ function PublicStore() {
   })();
 
   // derived theme values (من styles أو من store مباشرة كـ fallback)
-  const primary   = tc?.styles?.primaryColor   || store?.primaryColor   || "#111827";
-  const secondary = tc?.styles?.secondaryColor || store?.secondaryColor || "#1f2937";
-  const font      = tc?.styles?.fontFamily     || store?.fontFamily     || "Cairo";
+  const primary         = tc?.styles?.primaryColor    || store?.primaryColor   || "#111827";
+  const secondary       = tc?.styles?.secondaryColor  || store?.secondaryColor || "#1f2937";
+  const font            = tc?.styles?.fontFamily      || store?.fontFamily     || "Cairo";
+  const bgColor         = tc?.styles?.backgroundColor || "#ffffff";
+  const surfaceColor    = tc?.styles?.surfaceColor    || "#fafafa";
+  const textColor       = tc?.styles?.textColor       || "#111111";
+  const mutedTextColor  = tc?.styles?.mutedTextColor  || "#666666";
+  const borderColor     = tc?.styles?.borderColor     || "#ebebeb";
+  const direction       = tc?.styles?.direction       || "rtl";
 
   useEffect(() => {
     injectCSS();
@@ -464,7 +470,7 @@ function PublicStore() {
   const phone     = store?.whatsappNumber || "";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fff", color: "#111", fontFamily: `'${font}', 'Cairo', sans-serif`, direction: "rtl" }}>
+    <div style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction }}>
 
       {/* ── Announcement Bar ── */}
       {(() => {
@@ -501,6 +507,7 @@ function PublicStore() {
         store={store}
         slug={slug}
         headerSettings={sec(tc, "header")?.settings}
+        themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
         links={[
           { label: "الصفحة الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
           { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
@@ -785,8 +792,8 @@ function PublicStore() {
                   className={`ps-card ps-fade-up`}
                   style={{
                     animationDelay: `${(idx % 6) * 0.07}s`,
-                    background: "#fff",
-                    border: "1px solid #eee",
+                    background: surfaceColor,
+                    border: `1px solid ${borderColor}`,
                     borderRadius: 18,
                     overflow: "hidden",
                     display: "flex", flexDirection: "column",
@@ -796,7 +803,7 @@ function PublicStore() {
                   onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
                 >
                   {/* Image */}
-                  <div style={{ position: "relative", height: 220, overflow: "hidden", background: "#fff" }}>
+                  <div style={{ position: "relative", height: 220, overflow: "hidden", background: surfaceColor }}>
                     <img
                       src={img}
                       alt={product.name}
@@ -837,16 +844,16 @@ function PublicStore() {
 
                   {/* Info */}
                   <div style={{ padding: "16px 16px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#111", margin: "0 0 6px", lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: textColor, margin: "0 0 6px", lineHeight: 1.4 }}>
                       {product.name}
                     </p>
-                    <p style={{ fontSize: 12, color: "#555", margin: "0 0 14px", lineHeight: 1.6, flex: 1 }}>
+                    <p style={{ fontSize: 12, color: mutedTextColor, margin: "0 0 14px", lineHeight: 1.6, flex: 1 }}>
                       {product.description?.slice(0, 80)}{product.description?.length > 80 ? "..." : ""}
                     </p>
 
                     {/* Price */}
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: "#111" }}>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: textColor }}>
                         {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>د.ج</span>
                       </span>
                       {product.oldPrice && (
