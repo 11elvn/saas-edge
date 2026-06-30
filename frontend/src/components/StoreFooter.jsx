@@ -26,7 +26,20 @@ const IconFB = () => (
   </svg>
 );
 
-export default function StoreFooter({ store, slug, links, light = false }) {
+// ✦ يحسب إذا اللون فاتح ولا غامق باش نختارو ألوان نص/حدود تبقى مقروءة فوقو
+function isLightColor(hex) {
+  if (!hex) return true;
+  const c = hex.replace("#", "");
+  const full = c.length === 3 ? c.split("").map(ch => ch + ch).join("") : c;
+  const r = parseInt(full.substring(0, 2), 16);
+  const g = parseInt(full.substring(2, 4), 16);
+  const b = parseInt(full.substring(4, 6), 16);
+  if ([r, g, b].some(Number.isNaN)) return true;
+  // معادلة luminance قياسية
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
+}
+
+export default function StoreFooter({ store, slug, links, light = false, bgColor, textColor }) {
   const navigate = useNavigate();
 
   const logo      = store?.logo || "";
@@ -36,9 +49,13 @@ export default function StoreFooter({ store, slug, links, light = false }) {
   const phone     = store?.whatsappNumber || "";
   const initial   = storeName.charAt(0);
 
-  const colors = light
-    ? { bg: "#ffffff", border: "#eee", title: "#111", muted: "#888", mutedHover: "#111", social: "#f5f5f5", socialBorder: "#eee", socialColor: "#111", copy: "#999" }
-    : { bg: "#0d0d0d", border: "#1a1a1a", title: "#fff", muted: "#888", mutedHover: "#fff", social: "#111", socialBorder: "#222", socialColor: "#fff", copy: "#444" };
+  // ✦ إذا توصل لون من الـ theme نستعملوه، وإلا نرجعو لـ light/dark القديمة
+  const resolvedBg = bgColor || (light ? "#ffffff" : "#0d0d0d");
+  const useLight   = bgColor ? isLightColor(resolvedBg) : light;
+
+  const colors = useLight
+    ? { bg: resolvedBg, border: "#00000014", title: textColor || "#111", muted: "#888", mutedHover: textColor || "#111", social: "#ffffff1a", socialBorder: "#00000014", socialColor: textColor || "#111", copy: "#999" }
+    : { bg: resolvedBg, border: "#ffffff1f", title: textColor || "#fff", muted: "#aaa", mutedHover: textColor || "#fff", social: "#ffffff14", socialBorder: "#ffffff26", socialColor: textColor || "#fff", copy: "#888" };
 
   return (
     <footer style={{

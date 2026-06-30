@@ -589,7 +589,7 @@ function PublicStore() {
       {(() => {
         const s = sec(tc, "trust");
         if (!s?.enabled) return null;
-        const { badges, bgColor, layout } = s.settings;
+        const { badges, layout } = s.settings; // ✦ bgColor تاع القسم تشال — Trust يتبع لون الـ Background الرئيسي ديما
         const activeBadges = (badges || []).filter(b => b.enabled !== false);
         if (!activeBadges.length) return null;
 
@@ -893,7 +893,7 @@ function PublicStore() {
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
         <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-          <StoreFooter store={store} slug={slug} light />
+          <StoreFooter store={store} slug={slug} bgColor={bgColor} textColor={textColor} light={bgColor === "#ffffff"} />
         </SectionWrapper>
       )}
 
