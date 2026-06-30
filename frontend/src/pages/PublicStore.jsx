@@ -206,7 +206,7 @@ const DEFAULT_TC = {
   sections: [
     { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
     { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
-    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", overlayOpacity:50, height:"large" } },
+    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", overlayOpacity:50, height:"large", textAlign:"center" } },
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", columns:3, showViewAll:true, viewAllText:"عرض الكل" } },
     { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", showIcons:true, maxItems:6 } },
@@ -518,6 +518,18 @@ function PublicStore() {
         const heroBanner = hs.image || banner;
         const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
         const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
+        const align = hs.textAlign || "center";
+        const justify = align === "right" ? "flex-end" : align === "left" ? "flex-start" : "center";
+        const handleCtaClick = () => {
+          const link = hs.ctaLink || "#products";
+          if (link.startsWith("#")) {
+            const id = link.slice(1);
+            if (id === "products") { productsRef.current?.scrollIntoView({ behavior: "smooth" }); return; }
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            window.open(link, "_blank");
+          }
+        };
         return (
         <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden" }}>
@@ -527,9 +539,9 @@ function PublicStore() {
             <div style={{
               width: "100%", height: "100%",
               background: `linear-gradient(135deg, #f8f9fa 0%, ${primary}18 50%, ${secondary}28 100%)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex", alignItems: "center", justifyContent: justify,
             }}>
-              <div style={{ textAlign: "center" }}>
+              <div style={{ textAlign: align, padding: "0 24px" }}>
                 <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
                   {hs.title || storeName}
                 </p>
@@ -539,14 +551,14 @@ function PublicStore() {
           )}
           <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayAlpha})` }} />
           {(hs.title || hs.subtitle) && heroBanner && (
-            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, transform: "translateY(-50%)", textAlign: "center", padding: "0 24px" }}>
+            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, transform: "translateY(-50%)", textAlign: align, padding: "0 24px" }}>
               {hs.title && <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: -1 }}>{hs.title}</p>}
               {hs.subtitle && <p style={{ color: "rgba(255,255,255,.8)", fontSize: 16, margin: 0 }}>{hs.subtitle}</p>}
             </div>
           )}
-          <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, textAlign: "center" }}>
+          <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, display: "flex", justifyContent: justify, padding: "0 24px" }}>
             <button
-              onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
+              onClick={handleCtaClick}
               className="ps-btn-order"
               style={{
                 background: primary, color: "#fff",

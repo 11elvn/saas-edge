@@ -45,8 +45,10 @@ const DEFAULT_CONFIG = {
         title: "",
         subtitle: "اكتشف أفضل المنتجات",
         ctaText: "تسوق الآن",
+        ctaLink: "#products",
         overlayOpacity: 50,
         height: "large",
+        textAlign: "center",
       },
     },
     {
@@ -595,6 +597,53 @@ const CSS = `
 /* Range */
 .pb-range { width: 100%; accent-color: #894bf4; }
 
+/* Link input (Button link field) */
+.pb-link-input {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  padding: 8px 12px; background: #fff;
+  color: #9ca3af;
+}
+.pb-link-input__field {
+  flex: 1; border: none; outline: none; font-size: .82rem;
+  color: #111; background: transparent;
+}
+
+/* Background image row */
+.pb-img-row { display: flex; gap: 10px; }
+.pb-img-thumb {
+  position: relative; width: 64px; height: 64px;
+  border-radius: 10px; overflow: hidden; flex-shrink: 0;
+  border: 1.5px solid #e5e7eb;
+}
+.pb-img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pb-img-thumb__remove {
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(0,0,0,.6); color: #fff; border: none;
+  font-size: 10px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.pb-img-add {
+  width: 64px; height: 64px; border-radius: 10px;
+  border: 1.5px dashed #d1d5db; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #9ca3af; cursor: pointer; transition: all .15s;
+}
+.pb-img-add:hover { border-color: #894bf4; color: #894bf4; background: #faf8ff; }
+
+/* Text alignment row */
+.pb-align-row { display: flex; gap: 6px; }
+.pb-align-btn {
+  flex: 1; padding: 10px; border-radius: 8px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: #6b7280; cursor: pointer; transition: all .15s;
+}
+.pb-align-btn--active {
+  border-color: #111; background: #111; color: #fff;
+}
+
 /* Badge card */
 .pb-badge-card {
   background: #f9fafb; border: 1.5px solid #f0f0f0;
@@ -769,43 +818,112 @@ function HeaderSettings({ settings, onChange, store, onLogoChange }) {
 
 function HeroSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
+
+  const handleFile = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const CLOUDINARY_CLOUD  = "dbcbkly4w";
+    const CLOUDINARY_PRESET = "saas_edge";
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", CLOUDINARY_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.secure_url) s("image", data.secure_url);
+    } catch (_) {}
+  };
+
   return (
     <>
       <div className="pb-group">
-        <div className="pb-group__label">Image</div>
+        <div className="pb-group__label">Content</div>
+
         <div className="pb-field">
-          <div className="pb-label">Hero image</div>
-          <ImageUploader value={settings.image} onChange={v => s("image", v)} label="Hero Banner" dark={false} />
+          <div className="pb-label">Headline</div>
+          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} placeholder="مرحباً بك في متجرنا" />
         </div>
+
         <div className="pb-field">
-          <div className="pb-label">Height</div>
-          <div className="pb-segment">
-            {[{v:"small",l:"صغير"},{v:"large",l:"كبير"},{v:"full",l:"كامل"}].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${settings.height === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("height", o.v)}>{o.l}</button>
-            ))}
+          <div className="pb-label">Subheading</div>
+          <input className="pb-input" value={settings.subtitle} onChange={e => s("subtitle", e.target.value)} />
+        </div>
+
+        <div className="pb-field">
+          <div className="pb-label">Button text</div>
+          <input className="pb-input" value={settings.ctaText} onChange={e => s("ctaText", e.target.value)} />
+        </div>
+
+        <div className="pb-field">
+          <div className="pb-label">Button link</div>
+          <div className="pb-link-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.43"/>
+              <path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.57"/>
+            </svg>
+            <input className="pb-link-input__field" value={settings.ctaLink || ""} onChange={e => s("ctaLink", e.target.value)} placeholder="#products" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
           </div>
         </div>
+
+        <div className="pb-field">
+          <div className="pb-label">Background image</div>
+          <div className="pb-img-row">
+            {settings.image && (
+              <div className="pb-img-thumb">
+                <img src={settings.image} alt="" />
+                <button type="button" className="pb-img-thumb__remove" onClick={() => s("image", "")}>✕</button>
+              </div>
+            )}
+            <label className="pb-img-add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+            </label>
+          </div>
+        </div>
+
         <div className="pb-field">
           <div className="pb-label">Overlay opacity <span>{settings.overlayOpacity}%</span></div>
           <input type="range" className="pb-range" min={0} max={90} step={5}
             value={settings.overlayOpacity} onChange={e => s("overlayOpacity", +e.target.value)} />
         </div>
       </div>
+
       <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+        <div className="pb-group__label">Layout</div>
+
         <div className="pb-field">
-          <div className="pb-label">Title <span>اختياري</span></div>
-          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} placeholder="عنوان كبير..." />
+          <div className="pb-label">Text alignment</div>
+          <div className="pb-align-row">
+            {[
+              { v: "right",  icon: "M21 6H3M21 12H9M21 18H3" },
+              { v: "center", icon: "M21 6H3M17 12H7M21 18H3" },
+              { v: "left",   icon: "M21 6H3M21 12H9M21 18H3" },
+            ].map((o, i) => (
+              <button key={o.v} type="button"
+                className={`pb-align-btn ${settings.textAlign === o.v ? "pb-align-btn--active" : ""}`}
+                onClick={() => s("textAlign", o.v)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                  style={{ transform: i === 2 ? "scaleX(-1)" : "none" }}>
+                  <path d={o.icon}/>
+                </svg>
+              </button>
+            ))}
+          </div>
         </div>
+
         <div className="pb-field">
-          <div className="pb-label">Subtitle</div>
-          <input className="pb-input" value={settings.subtitle} onChange={e => s("subtitle", e.target.value)} />
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">CTA button text</div>
-          <input className="pb-input" value={settings.ctaText} onChange={e => s("ctaText", e.target.value)} />
+          <div className="pb-label">Height</div>
+          <div className="pb-segment">
+            {[{v:"small",l:"Small"},{v:"large",l:"Medium"},{v:"full",l:"Large"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${settings.height === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("height", o.v)}>{o.l}</button>
+            ))}
+          </div>
         </div>
       </div>
     </>
