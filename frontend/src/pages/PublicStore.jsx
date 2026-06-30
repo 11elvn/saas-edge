@@ -657,22 +657,20 @@ function PublicStore() {
 
         const renderGrid = () => (
           <div style={{
-            maxWidth: 900, margin: "0 auto", background: surfaceColor, borderRadius: 20, overflow: "hidden",
-            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+            maxWidth: 900, margin: "0 auto",
+            display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
           }}>
             {activeBadges.map((b, i) => (
               <div key={i} style={{
-                display: "flex", flexDirection: "row", alignItems: "center", gap: 12, padding: "16px 18px",
-                borderInlineStart: i % 2 !== 0 ? `1px solid ${borderColor}` : "none",
-                borderTop: i >= 2 ? `1px solid ${borderColor}` : "none",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                textAlign: "center", padding: "20px 12px",
+                background: surfaceColor, borderRadius: 18, border: `1px solid ${borderColor}`,
               }}>
-                <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: primary }}>
+                <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                   {ICONS[b.id] || ICONS.secure}
                 </div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 3px", direction: "rtl" }}>{b.title}</p>
-                  <p style={{ fontSize: 11, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
-                </div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
+                <p style={{ fontSize: 11, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
               </div>
             ))}
           </div>
