@@ -1222,7 +1222,33 @@ function ThemeEdit() {
         if (d.hasStore) {
           setStore(d.store);
           // إذا عنده themeConfig محفوظ استعمله، وإلا استعمل default
-          const cfg = d.store.themeConfig;
+          let cfg = d.store.themeConfig;
+          if (cfg && cfg.sections) {
+            // merge trust badges — نضيف الـ badges الجديدة إذا ما كانوش
+            const DEFAULT_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
+            cfg = {
+              ...cfg,
+              sections: cfg.sections.map(sec => {
+                if (sec.type !== "trust") return sec;
+                const existingIds = (sec.settings?.badges || []).map(b => b.id || b.icon);
+                const missingBadges = DEFAULT_BADGES.filter(b => !existingIds.includes(b.id));
+                // نحول الـ badges القديمة (بدون id) لـ format جديد
+                const updatedBadges = (sec.settings?.badges || []).map(b => {
+                  if (b.id) return b;
+                  // badge قديم بـ emoji — نحوله
+                  return { id: "secure", enabled: true, title: b.title, sub: b.sub };
+                });
+                return {
+                  ...sec,
+                  settings: {
+                    layout: sec.settings?.layout || "row",
+                    bgColor: sec.settings?.bgColor || "#ffffff",
+                    badges: [...updatedBadges, ...missingBadges],
+                  }
+                };
+              })
+            };
+          }
           setThemeConfig(cfg && cfg.sections ? cfg : DEFAULT_CONFIG);
         }
       })
