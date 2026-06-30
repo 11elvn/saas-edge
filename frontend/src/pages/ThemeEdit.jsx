@@ -74,9 +74,18 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         title: "أحدث المنتجات",
-        columns: 3,
+        titleAlign: "right",        // right | center | left
+        selectionMode: "all",       // حاليا All Products فقط
+        productsShown: 8,           // 4 | 8 | 12
+        carouselMode: false,
+        columns: 3,                 // 2 | 3 | 4
+        imageRatio: "1:1",          // 1:1 | 3:4 | adapt
+        showBadge: true,
+        showRating: false,
         showViewAll: true,
         viewAllText: "عرض الكل",
+        viewAllStyle: "link",       // link | filled | outline
+        infiniteScroll: false,
       },
     },
     {
@@ -995,24 +1004,49 @@ function CollectionSettings({ settings, onChange }) {
   return (
     <>
       <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+        <div className="pb-group__label">General</div>
         <div className="pb-field">
           <div className="pb-label">Section title</div>
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
         </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show "View All" link</span>
-          <Toggle checked={settings.showViewAll} onChange={v => s("showViewAll", v)} />
-        </div>
-        {settings.showViewAll && (
-          <div className="pb-field">
-            <div className="pb-label">View All text</div>
-            <input className="pb-input" value={settings.viewAllText} onChange={e => s("viewAllText", e.target.value)} />
+        <div className="pb-field">
+          <div className="pb-label">Title alignment</div>
+          <div className="pb-segment">
+            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Product Source</div>
+        <div className="pb-field">
+          <div className="pb-label">Selection Mode</div>
+          <select className="pb-input" value={settings.selectionMode || "all"} onChange={e => s("selectionMode", e.target.value)}>
+            <option value="all">All Products</option>
+          </select>
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Products shown</div>
+          <div className="pb-segment">
+            {[4,8,12].map(n => (
+              <button key={n}
+                className={`pb-seg-btn ${(settings.productsShown || 8) === n ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("productsShown", n)}>{n}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="pb-group">
         <div className="pb-group__label">Layout</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Carousel mode</span>
+          <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
+        </div>
         <div className="pb-field">
           <div className="pb-label">Columns</div>
           <div className="pb-segment">
@@ -1023,6 +1057,58 @@ function CollectionSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Product Cards</div>
+        <div className="pb-field">
+          <div className="pb-label">Image ratio</div>
+          <div className="pb-segment">
+            {[{v:"1:1",l:"1:1"},{v:"3:4",l:"3:4"},{v:"adapt",l:"Adapt"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.imageRatio || "1:1") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("imageRatio", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show badge</span>
+          <Toggle checked={settings.showBadge !== false} onChange={v => s("showBadge", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show rating</span>
+          <Toggle checked={!!settings.showRating} onChange={v => s("showRating", v)} />
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Footer</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show "View all" link</span>
+          <Toggle checked={settings.showViewAll} onChange={v => s("showViewAll", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Enable Infinite Scroll</span>
+          <Toggle checked={!!settings.infiniteScroll} onChange={v => s("infiniteScroll", v)} />
+        </div>
+        {settings.showViewAll && (
+          <>
+            <div className="pb-field">
+              <div className="pb-label">View All text</div>
+              <input className="pb-input" value={settings.viewAllText} onChange={e => s("viewAllText", e.target.value)} />
+            </div>
+            <div className="pb-field">
+              <div className="pb-label">View all style</div>
+              <div className="pb-segment">
+                {[{v:"link",l:"Link"},{v:"filled",l:"Filled"},{v:"outline",l:"Outline"}].map(o => (
+                  <button key={o.v}
+                    className={`pb-seg-btn ${(settings.viewAllStyle || "link") === o.v ? "pb-seg-btn--active" : ""}`}
+                    onClick={() => s("viewAllStyle", o.v)}>{o.l}</button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   );
