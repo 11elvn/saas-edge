@@ -625,32 +625,23 @@ function PublicStore() {
 
         const isRow = (layout || "row") === "row";
 
-        // توزيع row: صف 1 = أول 4، صف 2 = الباقي في المنتصف
+        // بطاقة واحدة مدورة لكل مجموعة (4 بالأقصى) فيها فواصل بين الأعمدة
         const renderRow = () => {
-          const first = activeBadges.slice(0, 4);
-          const rest  = activeBadges.slice(4);
-          const cardStyle = (b) => ({
-            display: "flex", flexDirection: "column",
-            alignItems: "center", gap: 8, textAlign: "center",
-            background: surfaceColor, borderRadius: 14, padding: "16px 8px",
-          });
+          const groups = [];
+          for (let i = 0; i < activeBadges.length; i += 4) groups.push(activeBadges.slice(i, i + 4));
           return (
-            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${first.length}, 1fr)`, gap: 8 }}>
-                {first.map((b, i) => (
-                  <div key={i} style={cardStyle(b)}>
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
-                      {ICONS[b.id] || ICONS.secure}
-                    </div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
-                    <p style={{ fontSize: 10, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
-                  </div>
-                ))}
-              </div>
-              {rest.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-                  {rest.map((b, i) => (
-                    <div key={i} style={{ ...cardStyle(b), width: `calc(${100 / first.length}% - ${8 * (first.length - 1) / first.length}px)` }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
+              {groups.map((group, gi) => (
+                <div key={gi} style={{
+                  background: surfaceColor, borderRadius: 20, overflow: "hidden",
+                  display: "grid", gridTemplateColumns: `repeat(${group.length}, 1fr)`,
+                }}>
+                  {group.map((b, i) => (
+                    <div key={i} style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                      textAlign: "center", padding: "22px 10px",
+                      borderInlineStart: i !== 0 ? `1px solid ${borderColor}` : "none",
+                    }}>
                       <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                         {ICONS[b.id] || ICONS.secure}
                       </div>
@@ -659,15 +650,22 @@ function PublicStore() {
                     </div>
                   ))}
                 </div>
-              )}
+              ))}
             </div>
           );
         };
 
         const renderGrid = () => (
-          <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+          <div style={{
+            maxWidth: 900, margin: "0 auto", background: surfaceColor, borderRadius: 20, overflow: "hidden",
+            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+          }}>
             {activeBadges.map((b, i) => (
-              <div key={i} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, background: surfaceColor, borderRadius: 14, padding: "14px 16px" }}>
+              <div key={i} style={{
+                display: "flex", flexDirection: "row", alignItems: "center", gap: 12, padding: "16px 18px",
+                borderInlineStart: i % 2 !== 0 ? `1px solid ${borderColor}` : "none",
+                borderTop: i >= 2 ? `1px solid ${borderColor}` : "none",
+              }}>
                 <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: primary }}>
                   {ICONS[b.id] || ICONS.secure}
                 </div>
@@ -682,7 +680,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
-          <section style={{ background: surfaceColor, padding: "24px 16px" }}>
+          <section style={{ background: bgColor, padding: "24px 16px" }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
         </SectionWrapper>
