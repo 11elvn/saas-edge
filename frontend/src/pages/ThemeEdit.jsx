@@ -46,6 +46,7 @@ const DEFAULT_CONFIG = {
         subtitle: "اكتشف أفضل المنتجات",
         ctaText: "تسوق الآن",
         ctaLink: "#products",
+        ctaColor: "",
         overlayOpacity: 50,
         height: "large",
         textAlign: "center",
@@ -866,6 +867,8 @@ function HeroSettings({ settings, onChange }) {
             </svg>
           </div>
         </div>
+
+        <ColorField label="Button color" value={settings.ctaColor || "#111827"} onChange={v => s("ctaColor", v)} />
 
         <div className="pb-field">
           <div className="pb-label">Background image</div>

@@ -206,7 +206,7 @@ const DEFAULT_TC = {
   sections: [
     { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
     { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
-    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", overlayOpacity:50, height:"large", textAlign:"center" } },
+    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center" } },
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", columns:3, showViewAll:true, viewAllText:"عرض الكل" } },
     { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", showIcons:true, maxItems:6 } },
@@ -519,7 +519,9 @@ function PublicStore() {
         const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
         const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
         const align = hs.textAlign || "center";
-        const justify = align === "right" ? "flex-end" : align === "left" ? "flex-start" : "center";
+        // ⚠️ الصفحة فيها direction:rtl، فـ flex-end/flex-start ينعكسوا بصرياً.
+        // نستعمل قيم بصرية صريحة باش "يمين" يطلع يمين فعلاً.
+        const justify = align === "right" ? "flex-start" : align === "left" ? "flex-end" : "center";
         const handleCtaClick = () => {
           const link = hs.ctaLink || "#products";
           if (link.startsWith("#")) {
@@ -561,14 +563,14 @@ function PublicStore() {
               onClick={handleCtaClick}
               className="ps-btn-order"
               style={{
-                background: primary, color: "#fff",
+                background: hs.ctaColor || primary, color: "#fff",
                 border: "none", borderRadius: 50, padding: "13px 32px",
                 fontSize: 15, fontWeight: 700, cursor: "pointer",
                 fontFamily: "inherit", letterSpacing: .5,
-                boxShadow: `0 4px 24px ${primary}55`,
+                boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
               }}
             >
-              <span style={{ marginLeft: 8 }}>🛍️</span> {hs.ctaText || "تسوق الآن"}
+              {hs.ctaText || "تسوق الآن"}
             </button>
           </div>
         </section>
