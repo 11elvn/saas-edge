@@ -632,18 +632,18 @@ function PublicStore() {
           const cardStyle = (b) => ({
             display: "flex", flexDirection: "column",
             alignItems: "center", gap: 8, textAlign: "center",
-            background: "#f5f5f7", borderRadius: 14, padding: "16px 8px",
+            background: surfaceColor, borderRadius: 14, padding: "16px 8px",
           });
           return (
             <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${first.length}, 1fr)`, gap: 8 }}>
                 {first.map((b, i) => (
                   <div key={i} style={cardStyle(b)}>
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ebebed", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1a1a" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                       {ICONS[b.id] || ICONS.secure}
                     </div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#111", margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
-                    <p style={{ fontSize: 10, color: "#666", margin: 0, direction: "rtl" }}>{b.sub}</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
+                    <p style={{ fontSize: 10, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
                   </div>
                 ))}
               </div>
@@ -651,11 +651,11 @@ function PublicStore() {
                 <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
                   {rest.map((b, i) => (
                     <div key={i} style={{ ...cardStyle(b), width: `calc(${100 / first.length}% - ${8 * (first.length - 1) / first.length}px)` }}>
-                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ebebed", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1a1a" }}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                         {ICONS[b.id] || ICONS.secure}
                       </div>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: "#111", margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
-                      <p style={{ fontSize: 10, color: "#666", margin: 0, direction: "rtl" }}>{b.sub}</p>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
+                      <p style={{ fontSize: 10, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
                     </div>
                   ))}
                 </div>
@@ -667,13 +667,13 @@ function PublicStore() {
         const renderGrid = () => (
           <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             {activeBadges.map((b, i) => (
-              <div key={i} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, background: "#f5f5f7", borderRadius: 14, padding: "14px 16px" }}>
-                <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ebebed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#1a1a1a" }}>
+              <div key={i} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, background: surfaceColor, borderRadius: 14, padding: "14px 16px" }}>
+                <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: primary }}>
                   {ICONS[b.id] || ICONS.secure}
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#111", margin: "0 0 3px", direction: "rtl" }}>{b.title}</p>
-                  <p style={{ fontSize: 11, color: "#666", margin: 0, direction: "rtl" }}>{b.sub}</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 3px", direction: "rtl" }}>{b.title}</p>
+                  <p style={{ fontSize: 11, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
                 </div>
               </div>
             ))}
@@ -682,7 +682,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
-          <section style={{ background: bgColor || "#fff", padding: "24px 16px" }}>
+          <section style={{ background: surfaceColor, padding: "24px 16px" }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
         </SectionWrapper>
@@ -893,7 +893,7 @@ function PublicStore() {
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
         <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-          <StoreFooter store={store} slug={slug} bgColor={bgColor} textColor={textColor} light={bgColor === "#ffffff"} />
+          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} />
         </SectionWrapper>
       )}
 

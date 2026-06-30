@@ -66,11 +66,14 @@ function ProductDetails() {
   const [shippingPrice,setShippingPrice]= useState(0);
 
   const themeStyles = store?.themeConfig?.styles || {};
-  const primary   = themeStyles.primaryColor   || store?.primaryColor   || "#6366f1";
-  const secondary = themeStyles.secondaryColor || store?.secondaryColor || "#4f46e5";
-  const font      = themeStyles.fontFamily     || store?.fontFamily     || "Cairo";
-  const bgColor   = themeStyles.backgroundColor || "#ffffff";
-  const textColor = themeStyles.textColor       || "#111111";
+  const primary        = themeStyles.primaryColor    || store?.primaryColor   || "#6366f1";
+  const secondary      = themeStyles.secondaryColor  || store?.secondaryColor || "#4f46e5";
+  const font           = themeStyles.fontFamily      || store?.fontFamily     || "Cairo";
+  const bgColor        = themeStyles.backgroundColor || "#ffffff";
+  const surfaceColor   = themeStyles.surfaceColor    || "#f9fafb";
+  const textColor      = themeStyles.textColor       || "#111111";
+  const mutedTextColor = themeStyles.mutedTextColor  || "#888888";
+  const borderColor    = themeStyles.borderColor     || "#eeeeee";
 
   useEffect(() => {
     injectCSS();
@@ -208,7 +211,7 @@ function ProductDetails() {
           )}
 
           {/* Main image */}
-          <div style={{ flex: 1, borderRadius: 18, overflow: "hidden", background: "#f9fafb", border: "1px solid #eee", position: "relative", aspectRatio: "1/1" }}>
+          <div style={{ flex: 1, borderRadius: 18, overflow: "hidden", background: surfaceColor, border: `1px solid ${borderColor}`, position: "relative", aspectRatio: "1/1" }}>
             <img
               src={images[activeImg] || DEFAULT_IMG}
               alt={product.name}
@@ -227,27 +230,27 @@ function ProductDetails() {
         <div className="pd-fade pd-d1" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
           {/* Product Info */}
-          <div style={{ background: "#f9fafb", border: "1px solid #eee", borderRadius: 18, padding: "24px 22px" }}>
+          <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
             {product.oldPrice && (
               <span style={{ background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
                 خصم {Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
               </span>
             )}
-            <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: "#111", margin: "0 0 12px", lineHeight: 1.3 }}>
+            <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: textColor, margin: "0 0 12px", lineHeight: 1.3 }}>
               {product.name}
             </h1>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
-              <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#111" }}>
+              <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: textColor }}>
                 {product.currentPrice.toLocaleString()}
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#888", marginRight: 4 }}>د.ج</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: mutedTextColor, marginRight: 4 }}>د.ج</span>
               </span>
               {product.oldPrice && (
-                <span style={{ fontSize: 15, color: "#bbb", textDecoration: "line-through" }}>
+                <span style={{ fontSize: 15, color: mutedTextColor, textDecoration: "line-through" }}>
                   {product.oldPrice.toLocaleString()} د.ج
                 </span>
               )}
             </div>
-            <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: 0 }}>{product.description}</p>
+            <p style={{ fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0 }}>{product.description}</p>
             {product.stock > 0 && product.stock <= 5 && (
               <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>
                 ⚠️ بقي {product.stock} قطعة فقط
@@ -256,8 +259,8 @@ function ProductDetails() {
           </div>
 
           {/* Order Form */}
-          <div className="pd-fade pd-d2" style={{ background: "#f9fafb", border: "1px solid #eee", borderRadius: 18, padding: "24px 22px" }}>
-            <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: "#111", display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="pd-fade pd-d2" style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
+            <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: textColor, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 18 }}>🛒</span> تأكيد الطلب
             </h3>
 
@@ -295,18 +298,18 @@ function ProductDetails() {
 
               {/* Price breakdown */}
               {selectedCity && (
-                <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 12, padding: "14px 16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, color: "#888" }}>سعر المنتج</span>
-                    <span style={{ fontSize: 13, color: "#555" }}>{product.currentPrice.toLocaleString()} د.ج</span>
+                    <span style={{ fontSize: 13, color: mutedTextColor }}>سعر المنتج</span>
+                    <span style={{ fontSize: 13, color: textColor }}>{product.currentPrice.toLocaleString()} د.ج</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid #eee" }}>
-                    <span style={{ fontSize: 13, color: "#888" }}>التوصيل إلى {selectedCity}</span>
-                    <span style={{ fontSize: 13, color: "#555" }}>{shippingPrice.toLocaleString()} د.ج</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: `1px solid ${borderColor}` }}>
+                    <span style={{ fontSize: 13, color: mutedTextColor }}>التوصيل إلى {selectedCity}</span>
+                    <span style={{ fontSize: 13, color: textColor }}>{shippingPrice.toLocaleString()} د.ج</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#333" }}>المجموع</span>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: "#111" }}>{total.toLocaleString()} د.ج</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: textColor }}>المجموع</span>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: textColor }}>{total.toLocaleString()} د.ج</span>
                   </div>
                 </div>
               )}
@@ -333,7 +336,7 @@ function ProductDetails() {
       </div>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} light />
+      <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} />
     </div>
   );
 }
