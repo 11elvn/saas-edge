@@ -127,23 +127,47 @@ const DEFAULT_CONFIG = {
 };
 
 // ─────────────────────────────────────────────
+// ICON LIB — رموز SVG بدل الإيموجي
+// ─────────────────────────────────────────────
+function Icon({ path, size = 14, viewBox = "0 0 24 24" }) {
+  return (
+    <svg width={size} height={size} viewBox={viewBox} fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {path}
+    </svg>
+  );
+}
+
+const ICON_PATHS = {
+  announcement: <><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></>,
+  header:       <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></>,
+  hero:         <><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></>,
+  trust:        <><path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/></>,
+  collection:   <><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></>,
+  categories:   <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></>,
+  footer:       <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></>,
+  home:         <><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></>,
+  search:       <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+};
+
+// ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
 const SECTION_META = {
-  announcement: { label: "Announcement Bar", icon: "📢" },
-  header:       { label: "Header",           icon: "🔝" },
-  hero:         { label: "Hero Banner",      icon: "🖼️" },
-  trust:        { label: "Trust Badges",     icon: "🛡️" },
-  collection:   { label: "Collection",       icon: "📦" },
-  categories:   { label: "Categories",       icon: "🗂️" },
-  footer:       { label: "Footer",           icon: "📋" },
+  announcement: { label: "Announcement Bar", icon: <Icon path={ICON_PATHS.announcement} /> },
+  header:       { label: "Header",           icon: <Icon path={ICON_PATHS.header} /> },
+  hero:         { label: "Hero Banner",      icon: <Icon path={ICON_PATHS.hero} /> },
+  trust:        { label: "Trust Badges",     icon: <Icon path={ICON_PATHS.trust} /> },
+  collection:   { label: "Collection",       icon: <Icon path={ICON_PATHS.collection} /> },
+  categories:   { label: "Categories",       icon: <Icon path={ICON_PATHS.categories} /> },
+  footer:       { label: "Footer",           icon: <Icon path={ICON_PATHS.footer} /> },
 };
 
 const PAGES = [
-  { id: "home",     label: "Home",     icon: "🏠" },
-  { id: "product",  label: "Product",  icon: "📦" },
-  { id: "category", label: "Category", icon: "🗂️" },
-  { id: "search",   label: "Search",   icon: "🔍" },
+  { id: "home",     label: "Home",     icon: <Icon path={ICON_PATHS.home} size={13} /> },
+  { id: "product",  label: "Product",  icon: <Icon path={ICON_PATHS.collection} size={13} /> },
+  { id: "category", label: "Category", icon: <Icon path={ICON_PATHS.categories} size={13} /> },
+  { id: "search",   label: "Search",   icon: <Icon path={ICON_PATHS.search} size={13} /> },
 ];
 
 const FONTS     = ["Cairo","Inter","Poppins","Roboto"];
@@ -259,11 +283,12 @@ const CSS = `
 
 .pb-preview-btn {
   padding: 9px 18px; border-radius: 11px;
-  border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.7);
-  font-size: .84rem; font-weight: 600; cursor: pointer;
-  font-family: inherit; color: #374151; transition: all .18s;
+  border: none; background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
+  font-size: .84rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; color: #fff; transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 8px 20px rgba(108,79,224,.32);
 }
-.pb-preview-btn:hover { border-color: rgba(15,23,42,.18); background: #fff; }
+.pb-preview-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(108,79,224,.4); }
 
 /* ── BODY (below topbar) ── */
 .pb-body {
@@ -1388,7 +1413,13 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
 
   if (!slug) return (
     <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
-      <div style={{ fontSize:"2rem" }}>🏪</div>
+      <div style={{ color:"#9ca3af" }}>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9.5 12 3l9 6.5" />
+          <path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" />
+          <path d="M9 20v-6h6v6" />
+        </svg>
+      </div>
       <div style={{ fontSize:".85rem" }}>لا يوجد متجر مرتبط</div>
     </div>
   );
@@ -1588,12 +1619,12 @@ function ThemeEdit() {
       const data = await res.json();
       if (res.ok) {
         setStore(data.store);
-        notify("تم حفظ اللوجو ✅");
+        notify("تم حفظ اللوجو");
       } else {
-        notify(data.message || "فشل حفظ اللوجو ❌", "error");
+        notify(data.message || "فشل حفظ اللوجو", "error");
       }
     } catch {
-      notify("تعذر الاتصال ❌", "error");
+      notify("تعذر الاتصال", "error");
     }
   };
 
@@ -1612,12 +1643,12 @@ function ThemeEdit() {
       const data = await res.json();
       if (res.ok) {
         setIsDirty(false);
-        notify("تم نشر الثيم ✅");
+        notify("تم نشر الثيم");
       } else {
-        notify(data.message || "حدث خطأ ❌", "error");
+        notify(data.message || "حدث خطأ", "error");
       }
     } catch {
-      notify("تعذر الاتصال ❌", "error");
+      notify("تعذر الاتصال", "error");
     } finally {
       setSaving(false);
     }
@@ -1705,7 +1736,13 @@ function ThemeEdit() {
           </button>
           <button className="pb-publish-btn" onClick={save} disabled={saving}>
             {saving
-              ? <><span style={{ display:"inline-block", animation:"pb-spin .7s linear infinite" }}>⏳</span> Saving...</>
+              ? <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
+                    strokeLinecap="round" style={{ animation:"pb-spin .7s linear infinite" }}>
+                    <circle cx="12" cy="12" r="9" strokeDasharray="42 100" opacity=".9" />
+                  </svg>
+                  Saving...
+                </>
               : <>Publish</>
             }
           </button>
@@ -1809,7 +1846,11 @@ function ThemeEdit() {
         ) : (
           <div className="pb-right">
             <div className="pb-no-selection">
-              <div className="pb-no-selection__icon">👈</div>
+              <div className="pb-no-selection__icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
+                </svg>
+              </div>
               <div className="pb-no-selection__text">
                 اختر section من القائمة على اليسار لتعديل إعداداته
               </div>
