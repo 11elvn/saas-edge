@@ -60,6 +60,18 @@ const CSS = `
   white-space: nowrap;
   cursor: pointer;
 }
+.ps-card-cta {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.ps-card:hover .ps-card-cta {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (hover: none) {
+  .ps-card-cta { opacity: 1; transform: translateY(0); }
+}
 .ps-btn-order {
   position: relative;
   overflow: hidden;
@@ -783,6 +795,7 @@ function PublicStore() {
         const carouselMode   = !!collSettings.carouselMode;
         const columns        = collSettings.columns || 3;
         const imageRatio     = collSettings.imageRatio || "1:1";
+        const cardStyle      = collSettings.cardStyle || "default";
         const showBadge      = collSettings.showBadge !== false;
         const showRating     = !!collSettings.showRating;
         const showViewAll    = collSettings.showViewAll;
@@ -793,6 +806,14 @@ function PublicStore() {
         const effectiveCount = infiniteScroll ? (visibleCount || productsShown) : productsShown;
         const visibleProducts = carouselMode ? filteredProducts : filteredProducts.slice(0, effectiveCount);
         const aspectMap = { "1:1": "1/1", "3:4": "3/4" };
+
+        // ✦ Card style presets — Default | Minimal | Bordered
+        const CARD_STYLE_MAP = {
+          default:  { cardBorder: "none", cardPadding: 0,  imgRadius: 14, titleSize: 14, priceSize: 16, gap: 8  },
+          minimal:  { cardBorder: "none", cardPadding: 0,  imgRadius: 6,  titleSize: 13, priceSize: 14, gap: 6  },
+          bordered: { cardBorder: `1px solid ${borderColor}`, cardPadding: 8, imgRadius: 12, titleSize: 14, priceSize: 16, gap: 8 },
+        };
+        const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
 
         const viewAllBtnStyle = {
           link:    { background: "none", color: primary, border: "none", textDecoration: "underline" },
@@ -845,10 +866,10 @@ function PublicStore() {
                     className="ps-card ps-fade-up"
                     style={{
                       animationDelay: `${(idx % 6) * 0.07}s`,
-                      background: surfaceColor,
-                      border: `1px solid ${borderColor}`,
-                      borderRadius: 18,
-                      overflow: "hidden",
+                      background: "transparent",
+                      border: cardStyleCfg.cardBorder,
+                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
+                      padding: cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: "pointer",
                       opacity: outOfStock ? 0.6 : 1,
@@ -856,9 +877,10 @@ function PublicStore() {
                     }}
                     onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
                   >
-                    {/* Image */}
+                    {/* Image (with hover/touch CTA overlay) */}
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
+                      borderRadius: cardStyleCfg.imgRadius,
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
                       <img
@@ -892,57 +914,52 @@ function PublicStore() {
                       {/* Stock warning */}
                       {!outOfStock && product.stock <= 5 && (
                         <span style={{
-                          position: "absolute", bottom: 10, right: 10,
+                          position: "absolute", top: 12, left: 12,
                           background: "rgba(245,158,11,.9)", color: "#fff",
                           fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
                         }}>⚠️ آخر {product.stock} قطع</span>
                       )}
+
+                      {/* CTA overlay — appears on hover (desktop) / always on touch devices */}
+                      {!outOfStock && (
+                        <div
+                          className="ps-card-cta"
+                          onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
+                          style={{
+                            position: "absolute", left: 0, right: 0, bottom: 0,
+                            padding: "22px 10px 10px",
+                            background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                            cursor: "pointer", color: "#fff",
+                          }}
+                        >
+                          <IconCart />
+                          <span style={{ fontSize: 12.5, fontWeight: 700 }}>أضف للسلة</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Info */}
-                    <div style={{ padding: "16px 16px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: textColor, margin: "0 0 6px", lineHeight: 1.4 }}>
+                    {/* Info — simple, no background box */}
+                    <div style={{ padding: `${cardStyleCfg.gap}px 2px 0`, display: "flex", flexDirection: "column" }}>
+                      <p style={{ fontSize: cardStyleCfg.titleSize, fontWeight: 700, color: textColor, margin: `0 0 ${cardStyleCfg.gap - 2}px`, lineHeight: 1.4 }}>
                         {product.name}
                       </p>
                       {showRating && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
                           <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>5.0</span>
                           <span style={{ fontSize: 12, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</span>
                         </div>
                       )}
-                      <p style={{ fontSize: 12, color: mutedTextColor, margin: "0 0 14px", lineHeight: 1.6, flex: 1 }}>
-                        {product.description?.slice(0, 80)}{product.description?.length > 80 ? "..." : ""}
-                      </p>
-
-                      {/* Price */}
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
-                        <span style={{ fontSize: 18, fontWeight: 800, color: textColor }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                        <span style={{ fontSize: cardStyleCfg.priceSize, fontWeight: 800, color: textColor }}>
                           {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
                         </span>
                         {product.oldPrice && (
-                          <span style={{ fontSize: 13, color: mutedTextColor, textDecoration: "line-through" }}>
+                          <span style={{ fontSize: 12.5, color: mutedTextColor, textDecoration: "line-through" }}>
                             {product.oldPrice.toLocaleString()}
                           </span>
                         )}
                       </div>
-
-                      {/* CTA */}
-                      <button
-                        className="ps-btn-order"
-                        disabled={outOfStock}
-                        onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
-                        style={{
-                          width: "100%", padding: "11px 0", borderRadius: 12,
-                          border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
-                          background: outOfStock ? "#1f1f1f" : primary,
-                          color: outOfStock ? "#444" : "#fff",
-                          fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                        }}
-                      >
-                        <IconCart />
-                        {outOfStock ? "نفد المخزون" : "اطلب الآن"}
-                      </button>
                     </div>
                   </div>
                 );

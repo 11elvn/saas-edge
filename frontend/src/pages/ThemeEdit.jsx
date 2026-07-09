@@ -79,6 +79,7 @@ const DEFAULT_CONFIG = {
         productsShown: 8,           // 4 | 8 | 12
         carouselMode: false,
         columns: 3,                 // 2 | 3 | 4
+        cardStyle: "default",       // default | minimal | bordered
         imageRatio: "1:1",          // 1:1 | 3:4 | adapt
         showBadge: true,
         showRating: false,
@@ -1061,6 +1062,16 @@ function CollectionSettings({ settings, onChange }) {
 
       <div className="pb-group">
         <div className="pb-group__label">Product Cards</div>
+        <div className="pb-field">
+          <div className="pb-label">Card style</div>
+          <div className="pb-segment">
+            {[{v:"default",l:"Default"},{v:"minimal",l:"Minimal"},{v:"bordered",l:"Bordered"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.cardStyle || "default") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("cardStyle", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
         <div className="pb-field">
           <div className="pb-label">Image ratio</div>
           <div className="pb-segment">
