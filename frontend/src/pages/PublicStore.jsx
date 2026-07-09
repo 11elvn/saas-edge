@@ -924,17 +924,24 @@ function PublicStore() {
                       {!outOfStock && (
                         <div
                           className="ps-card-cta"
-                          onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
                           style={{
-                            position: "absolute", left: 0, right: 0, bottom: 0,
-                            padding: "22px 10px 10px",
-                            background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))",
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                            cursor: "pointer", color: "#fff",
+                            position: "absolute", left: 10, right: 10, bottom: 10,
                           }}
                         >
-                          <IconCart />
-                          <span style={{ fontSize: 12.5, fontWeight: 700 }}>أضف للسلة</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
+                            style={{
+                              width: "100%", border: "none", cursor: "pointer",
+                              borderRadius: 12, padding: "12px 0",
+                              background: primary, color: "#fff",
+                              fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
+                              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                              boxShadow: "0 4px 16px rgba(0,0,0,.25)",
+                            }}
+                          >
+                            <IconCart />
+                            أضف للسلة
+                          </button>
                         </div>
                       )}
                     </div>
