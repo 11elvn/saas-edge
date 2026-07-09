@@ -1,6 +1,6 @@
 // ============================================================
-// 📁 pages/ThemeEdit.jsx — Page Builder (Tassyir-style)
-// 3 columns: Sections List | Live Preview | Settings Panel
+// 📁 pages/ThemeEdit.jsx — Page Builder (edge — unified panel)
+// 2 zones: Unified Panel (sections + inline settings) | Canvas
 // ============================================================
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -74,18 +74,18 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         title: "أحدث المنتجات",
-        titleAlign: "right",        // right | center | left
-        selectionMode: "all",       // حاليا All Products فقط
-        productsShown: 8,           // 4 | 8 | 12
+        titleAlign: "right",
+        selectionMode: "all",
+        productsShown: 8,
         carouselMode: false,
-        columns: 3,                 // 2 | 3 | 4
-        cardStyle: "default",       // default | minimal | bordered
-        imageRatio: "1:1",          // 1:1 | 3:4 | adapt
+        columns: 3,
+        cardStyle: "default",
+        imageRatio: "1:1",
         showBadge: true,
         showRating: false,
         showViewAll: true,
         viewAllText: "عرض الكل",
-        viewAllStyle: "link",       // link | filled | outline
+        viewAllStyle: "link",
         infiniteScroll: false,
       },
     },
@@ -148,6 +148,15 @@ const ICON_PATHS = {
   footer:       <><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></>,
   home:         <><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></>,
   search:       <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+  chevron:      <path d="m6 9 6 6 6-6"/>,
+  arrowLeft:    <><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></>,
+  desktop:      <><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></>,
+  mobile:       <><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></>,
+  external:     <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></>,
+  drag:         <><circle cx="9" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="17" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="1" fill="currentColor" stroke="none"/></>,
+  plus:         <><path d="M12 5v14"/><path d="M5 12h14"/></>,
+  close:        <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+  store:        <><path d="M3 9.5 12 3l9 6.5"/><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-10"/><path d="M9 20v-6h6v6"/></>,
 };
 
 // ─────────────────────────────────────────────
@@ -175,677 +184,381 @@ const RADII     = [{ v:"small", l:"صغير" },{ v:"medium", l:"متوسط" },{ 
 const BTN_STYLE = [{ v:"filled", l:"ممتلئ" },{ v:"outline", l:"مخطط" },{ v:"ghost", l:"شفاف" }];
 
 // ─────────────────────────────────────────────
-// CSS
+// CSS — بنية جديدة: Unified Panel + Floating Canvas Toolbar
 // ─────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS — "Workbench" system
-   عدّل هاد المتغيرات فقط باش تبدل الهوية اللونية بالكامل.
-   ═══════════════════════════════════════════════════════════ */
-.pb-shell {
-  --pb-ink:        #0f1115;
-  --pb-ink-soft:   #4b4f57;
-  --pb-muted:      #8b8f98;
-  --pb-line:       #e4e4e7;
-  --pb-line-soft:  #edeef1;
-  --pb-bg:         #f4f4f5;
-  --pb-surface:    #ffffff;
-  --pb-surface-2:  #fafafa;
-  --pb-accent:     #111318;      /* اللون الأساسي — بدّلو هنا */
-  --pb-accent-ink: #ffffff;
-  --pb-accent-soft: rgba(17,19,24,.06);
-  --pb-danger:     #dc2626;
-  --pb-r-sm: 6px;
-  --pb-r-md: 9px;
-  --pb-r-lg: 13px;
-  --pb-sans: 'Inter', sans-serif;
-  --pb-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
-}
+@keyframes ed-spin  { to { transform:rotate(360deg); } }
+@keyframes ed-toast { from { opacity:0; transform:translateX(-50%) translateY(10px); } }
+@keyframes ed-fade  { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes ed-open  { from { opacity:0; max-height:0; } to { opacity:1; max-height:600px; } }
 
-@keyframes pb-spin   { to { transform:rotate(360deg); } }
-@keyframes pb-toast  { from { opacity:0; transform:translateX(-50%) translateY(10px); } }
-@keyframes pb-panel  { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
-@keyframes pb-fade   { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-@keyframes pb-line-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+* { box-sizing: border-box; }
 
 /* ── SHELL ── */
-.pb-shell {
+.ed-shell {
   display: flex;
-  height: calc(100vh - 60px);
-  background: var(--pb-bg);
+  height: 100vh;
+  background: #eef0f6;
   overflow: hidden;
-  font-family: var(--pb-sans);
-  color: var(--pb-ink);
+  font-family: 'Inter', sans-serif;
 }
 
-/* ══════════════════ TOP BAR ══════════════════
-   شريط أوامر رفيع بدل الـ glass bar — breadcrumb يوضّح
-   وين راك (Store ▸ Page ▸ Section) بدل مجرد أزرار عائمة. */
-.pb-topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 60px;
-  background: var(--pb-surface);
-  border-bottom: 1px solid var(--pb-line);
+/* ── LEFT: UNIFIED PANEL ── */
+.ed-panel {
+  width: 352px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid rgba(15,23,42,.07);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  z-index: 100;
-  gap: 14px;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 20;
 }
-.pb-topbar__left  { display:flex; align-items:center; gap:10px; min-width: 0; }
-.pb-topbar__mid   { display:flex; align-items:center; gap:8px; position:relative; }
-.pb-topbar__right { display:flex; align-items:center; gap:8px; }
 
-.pb-back-btn {
+.ed-panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 12px;
+  flex-shrink: 0;
+}
+.ed-panel__brand { display:flex; align-items:center; gap:10px; }
+.ed-panel__logo {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:800; font-size:.8rem; flex-shrink:0;
+}
+.ed-panel__store-name { font-size: .86rem; font-weight: 700; color:#111827; line-height:1.2; }
+.ed-panel__draft { font-size:.64rem; font-weight:700; color:#92600e; }
+
+.ed-back-btn {
   display: flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; color: var(--pb-ink-soft);
+  font-size: .76rem; font-weight: 600; color: #94a3b8;
   background: none; border: none; cursor: pointer;
-  font-family: inherit; padding: 6px 10px; border-radius: var(--pb-r-sm);
-  transition: background .15s, color .15s;
+  font-family: inherit; padding: 6px 4px;
+  transition: color .18s;
 }
-.pb-back-btn:hover { background: var(--pb-line-soft); color: var(--pb-ink); }
+.ed-back-btn:hover { color: #5b3fd6; }
 
-.pb-crumb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: .78rem; color: var(--pb-muted); font-weight: 500;
-  padding-inline-start: 8px; border-inline-start: 1px solid var(--pb-line);
-  white-space: nowrap;
-}
-.pb-crumb b { color: var(--pb-ink); font-weight: 700; }
-.pb-crumb__sep { color: var(--pb-line); }
-
-.pb-draft-badge {
-  display: flex; align-items: center; gap: 5px;
-  font-size: .68rem; font-weight: 700; font-family: var(--pb-mono);
-  padding: 4px 9px 4px 7px; border-radius: 99px;
-  background: #fff7ed; color: #9a5b0a; border: 1px solid #fde3bd;
-}
-.pb-draft-badge::before {
-  content: ""; width: 5px; height: 5px; border-radius: 50%;
-  background: #ea8b1c; flex-shrink: 0;
-}
-
-.pb-view-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: var(--pb-r-sm); border: 1px solid var(--pb-line);
-  background: var(--pb-surface); cursor: pointer; color: var(--pb-muted);
-  transition: all .15s;
-}
-.pb-view-btn:hover       { border-color: var(--pb-ink-soft); color: var(--pb-ink); }
-.pb-view-btn--active     {
-  border-color: var(--pb-accent);
-  background: var(--pb-accent);
-  color: var(--pb-accent-ink);
-}
-
-.pb-page-select {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 12px; border-radius: var(--pb-r-sm); border: 1px solid var(--pb-line);
-  font-size: .8rem; font-weight: 600; background: var(--pb-surface); cursor: pointer;
-  color: var(--pb-ink); font-family: inherit; transition: all .15s;
-}
-.pb-page-select:hover { border-color: var(--pb-ink-soft); }
-
-.pb-page-dropdown {
-  position: absolute;
-  top: 42px; left: 50%; transform: translateX(-50%);
-  background: var(--pb-surface);
-  border: 1px solid var(--pb-line);
-  border-radius: var(--pb-r-md); padding: 5px;
-  box-shadow: 0 16px 40px rgba(15,17,21,.14);
-  z-index: 999; min-width: 180px;
-}
-.pb-page-option {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 10px; border-radius: var(--pb-r-sm); cursor: pointer;
-  font-size: .82rem; font-weight: 500; color: var(--pb-ink-soft);
-  transition: background .12s;
-}
-.pb-page-option:hover    { background: var(--pb-line-soft); }
-.pb-page-option--active  { background: var(--pb-accent-soft); font-weight: 700; color: var(--pb-ink); }
-
-.pb-publish-btn {
-  padding: 8px 18px; border-radius: var(--pb-r-sm); border: none;
-  background: var(--pb-accent); color: var(--pb-accent-ink);
-  font-size: .8rem; font-weight: 700; cursor: pointer;
-  font-family: inherit; transition: opacity .15s;
-  display: flex; align-items: center; gap: 7px;
-}
-.pb-publish-btn:hover:not(:disabled) { opacity: .85; }
-.pb-publish-btn:disabled { opacity: .45; cursor: not-allowed; }
-
-.pb-preview-btn {
-  padding: 8px 14px; border-radius: var(--pb-r-sm);
-  border: 1px solid var(--pb-line); background: var(--pb-surface);
-  font-size: .8rem; font-weight: 600; cursor: pointer;
-  font-family: inherit; color: var(--pb-ink); transition: all .15s;
-}
-.pb-preview-btn:hover { border-color: var(--pb-ink-soft); background: var(--pb-line-soft); }
-
-/* ── BODY ── */
-.pb-body {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  padding-top: 60px;
-}
-
-/* ══════════════════ LEFT — Outline rail ══════════════════
-   قائمة الـ sections كـ "outline" مرقّم بخط رابط عمودي —
-   الرقم هنا معلومة حقيقية (ترتيب الظهور في الصفحة). */
-.pb-left {
-  width: 250px;
+.ed-panel__tabs {
+  display:flex; gap:4px; margin: 4px 18px 12px;
+  background: rgba(15,23,42,.035); padding: 4px; border-radius: 11px;
   flex-shrink: 0;
-  background: var(--pb-surface);
-  border-right: 1px solid var(--pb-line);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
-
-.pb-left__header {
-  padding: 14px 16px 8px;
+.ed-tab {
+  flex: 1; padding: 8px 10px; font-size: .8rem; font-weight: 600;
+  color: #64748b; border: none; background: none; cursor: pointer;
+  font-family: inherit; border-radius: 8px; transition: all .18s;
 }
+.ed-tab--active { background: #fff; color: #5b3fd6; font-weight: 700; box-shadow: 0 2px 8px rgba(15,23,42,.1); }
 
-.pb-left__title {
-  font-size: .68rem; font-weight: 700; font-family: var(--pb-mono);
-  color: var(--pb-muted); text-transform: uppercase;
-  letter-spacing: .09em;
-}
+.ed-panel__body { flex:1; overflow-y:auto; padding: 4px 12px 16px; }
 
-.pb-sections-list {
-  flex: 1; overflow-y: auto; padding: 6px 12px 12px;
-  position: relative;
-}
-
-.pb-section-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 8px; border-radius: var(--pb-r-md); cursor: pointer;
-  transition: background .14s, border-color .14s;
+/* ── SECTION CARD (accordion — settings expand inline) ── */
+.ed-section-card {
+  border-radius: 14px; margin-bottom: 6px; overflow: hidden;
   border: 1px solid transparent;
-  position: relative;
-  animation: pb-fade .2s ease both;
+  transition: border-color .16s, background .16s;
+  animation: ed-fade .2s ease both;
 }
-.pb-section-item:hover   { background: var(--pb-line-soft); }
-.pb-section-item--active {
-  background: var(--pb-accent-soft);
-  border-color: rgba(17,19,24,.14);
+.ed-section-card--open {
+  border-color: rgba(124,109,242,.3);
+  background: rgba(124,109,242,.035);
 }
-.pb-section-item--disabled { opacity: .4; }
-.pb-section-item--dragging { opacity: .35; }
-.pb-section-item--drop-target::before {
-  content: "";
-  position: absolute; left: 34px; right: 8px; top: -2px;
-  height: 2px; background: var(--pb-accent); border-radius: 2px;
+.ed-section-card__head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 11px 10px; cursor: pointer;
+}
+.ed-section-card__head:hover { background: rgba(124,109,242,.05); }
+.ed-section-card--disabled .ed-section-card__label { opacity: .4; }
+.ed-section-card__drag { color: #d4d8e2; flex-shrink: 0; cursor: grab; display:flex; }
+.ed-section-card__icon {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(15,23,42,.045); color: #64748b;
+}
+.ed-section-card--open .ed-section-card__icon { background: rgba(124,109,242,.14); color:#6c4fe0; }
+.ed-section-card__label { flex: 1; font-size: .84rem; font-weight: 600; color: #334155; }
+.ed-section-card__chevron {
+  color: #94a3b8; display:flex; transition: transform .2s; flex-shrink:0;
+}
+.ed-section-card--open .ed-section-card__chevron { transform: rotate(180deg); color:#6c4fe0; }
+
+.ed-section-card__body {
+  padding: 4px 16px 18px 44px;
+  display: flex; flex-direction: column; gap: 18px;
+  animation: ed-open .18s ease;
+  overflow: hidden;
 }
 
-.pb-section-item__drag {
-  cursor: grab; color: var(--pb-line); flex-shrink: 0;
-  width: 14px; display: flex; align-items: center; justify-content: center;
-}
-.pb-section-item:hover .pb-section-item__drag { color: var(--pb-muted); }
-
-.pb-section-item__index {
-  font-family: var(--pb-mono); font-size: .68rem; font-weight: 600;
-  color: var(--pb-muted); width: 16px; flex-shrink: 0; text-align: center;
-}
-.pb-section-item--active .pb-section-item__index { color: var(--pb-ink); }
-
-.pb-section-item__icon  {
-  width: 26px; height: 26px; border-radius: var(--pb-r-sm);
-  display:flex; align-items:center; justify-content:center; flex-shrink: 0;
-  background: var(--pb-line-soft); color: var(--pb-ink-soft);
-}
-.pb-section-item--active .pb-section-item__icon { background: var(--pb-accent); color: var(--pb-accent-ink); }
-
-.pb-section-item__label { flex: 1; font-size: .82rem; font-weight: 600; color: var(--pb-ink); min-width: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.pb-toggle {
-  position: relative;
-  width: 30px; height: 17px; flex-shrink: 0;
-}
-.pb-toggle input { opacity: 0; width: 0; height: 0; }
-.pb-toggle__slider {
-  position: absolute; inset: 0;
-  background: var(--pb-line); border-radius: 99px;
-  transition: background .18s; cursor: pointer;
-}
-.pb-toggle__slider::after {
-  content: "";
-  position: absolute;
-  left: 2px; top: 2px;
-  width: 13px; height: 13px;
-  border-radius: 50%; background: #fff;
-  box-shadow: 0 1px 2px rgba(15,17,21,.25);
-  transition: transform .18s;
-}
-.pb-toggle input:checked + .pb-toggle__slider { background: var(--pb-accent); }
-.pb-toggle input:checked + .pb-toggle__slider::after { transform: translateX(13px); }
-
-.pb-add-section {
-  padding: 10px 12px 14px;
-  border-top: 1px solid var(--pb-line-soft);
-}
-.pb-add-btn {
-  width: 100%; padding: 9px;
-  border: 1px dashed var(--pb-line); border-radius: var(--pb-r-md);
-  background: none; cursor: pointer; color: var(--pb-muted);
-  font-size: .78rem; font-weight: 600; font-family: inherit;
+.ed-add-section {
+  width: 100%; padding: 12px; margin-top: 6px;
+  border: 1.5px dashed rgba(124,109,242,.3); border-radius: 12px;
+  background: none; cursor: pointer; color: #94a3b8;
+  font-size: .8rem; font-weight: 600; font-family: inherit;
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: all .15s;
+  transition: all .18s;
 }
-.pb-add-btn:hover { border-color: var(--pb-ink-soft); color: var(--pb-ink); }
+.ed-add-section:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
 
-/* ══════════════════ CENTER — Preview ══════════════════
-   ruler حقيقي فوق المعاينة يبيّن العرض بالـ px — بدل chrome bar
-   مزخرف. هذا معلومة مفيدة فعلا للـ builder (زي DevTools). */
-.pb-center {
-  flex: 1; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background:
-    linear-gradient(var(--pb-line-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pb-line-soft) 1px, transparent 1px);
-  background-size: 22px 22px;
-  background-color: var(--pb-bg);
-  padding: 20px;
-  position: relative;
+/* ── RIGHT: CANVAS ── */
+.ed-canvas {
+  flex: 1; position: relative; overflow: hidden;
+  background: radial-gradient(circle at 25% 10%, #f3f4fc 0%, #e7e9f2 60%, #e2e4ee 100%);
+  display: flex; align-items: center; justify-content: center;
 }
 
-.pb-ruler {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--pb-mono); font-size: .68rem; font-weight: 600;
-  color: var(--pb-muted);
-  background: var(--pb-surface); border: 1px solid var(--pb-line);
-  padding: 5px 12px; border-radius: 99px; margin-bottom: 12px;
-  flex-shrink: 0;
-}
-.pb-ruler b { color: var(--pb-ink); font-weight: 700; }
-.pb-ruler__dot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; }
-
-.pb-preview-desktop {
-  width: 100%; height: 100%;
-  background: var(--pb-surface); border-radius: var(--pb-r-lg);
-  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(15,17,21,.04);
-  border: 1px solid var(--pb-line);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-}
-
-/* — Mobile frame: simplifié, ماشي phone bezel واقعي — */
-.pb-iphone {
-  position: relative;
-  aspect-ratio: 375 / 812;
-  height: calc(100vh - 190px);
-  max-height: 720px;
-  min-height: 460px;
-  width: auto;
-  flex-shrink: 0;
-  margin: auto;
-}
-.pb-iphone__frame {
-  position: absolute;
-  inset: 0;
-  border-radius: 32px;
-  background: var(--pb-ink);
-  box-shadow: 0 20px 48px rgba(15,17,21,.22);
-  pointer-events: none;
-  z-index: 5;
-}
-.pb-iphone__screen-wrap {
-  position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border-radius: 26px;
-  overflow: hidden;
-  background: #000;
-  z-index: 10;
-}
-.pb-iphone__island {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64px; height: 5px;
-  background: #000;
-  border-radius: 99px;
-  z-index: 25;
-  pointer-events: none;
-}
-.pb-iphone__status {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 30px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 0 16px;
-  z-index: 22;
-  pointer-events: none;
-  background: rgba(255,255,255,0.96);
-}
-.pb-iphone__time {
-  font-size: 11px; font-weight: 600;
-  color: #000; font-family: var(--pb-mono);
-  justify-self: start;
-}
-.pb-iphone__island-spacer { width: 64px; height: 5px; }
-.pb-iphone__signals {
+.ed-toolbar {
+  position: absolute; top: 18px; left: 18px;
   display: flex; align-items: center; gap: 4px;
-  justify-self: end;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(15,23,42,.06);
+  border-radius: 14px; padding: 6px; z-index: 50;
+  box-shadow: 0 10px 30px rgba(15,23,42,.1);
 }
-.pb-iphone__btn-right, .pb-iphone__btn-left1, .pb-iphone__btn-left2, .pb-iphone__btn-left3 { display: none; }
-.pb-iphone__content {
-  position: absolute;
-  top: 30px;
-  left: 0; right: 0; bottom: 0;
-  overflow: hidden;
+.ed-toolbar__select {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 9px; border: none;
+  font-size: .8rem; font-weight: 600; background: transparent; cursor: pointer;
+  color: #374151; font-family: inherit;
 }
-.pb-iphone__iframe {
-  position: absolute;
-  top: 0; left: 0;
-  width: 375px;
-  height: 812px;
-  border: none;
-  display: block;
-  transform-origin: top left;
+.ed-toolbar__select:hover { background: rgba(15,23,42,.045); }
+.ed-toolbar__divider { width: 1px; height: 20px; background: rgba(15,23,42,.08); margin: 0 2px; }
+.ed-toolbar__btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px; border: none;
+  background: transparent; cursor: pointer; color: #6b7280;
 }
+.ed-toolbar__btn:hover      { background: rgba(15,23,42,.045); color: #111; }
+.ed-toolbar__btn--active    { background: #1f2937; color: #fff; }
 
-.pb-chrome-bar {
-  background: var(--pb-surface-2); padding: 8px 12px;
+.ed-page-dropdown {
+  position: absolute; top: 46px; left: 0;
+  background: rgba(255,255,255,.96); backdrop-filter: blur(20px);
+  border: 1px solid rgba(15,23,42,.06);
+  border-radius: 14px; padding: 6px;
+  box-shadow: 0 24px 64px rgba(15,23,42,.18);
+  z-index: 999; min-width: 170px;
+}
+.ed-page-option {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 11px; border-radius: 9px; cursor: pointer;
+  font-size: .82rem; font-weight: 500; color: #374151;
+}
+.ed-page-option:hover    { background: rgba(124,109,242,.08); }
+.ed-page-option--active  { background: rgba(124,109,242,.12); font-weight: 700; color: #5b3fd6; }
+
+.ed-actions {
+  position: absolute; top: 18px; right: 18px;
+  display: flex; align-items: center; gap: 8px; z-index: 50;
+}
+.ed-btn-preview {
+  display: flex; align-items:center; gap:6px;
+  padding: 10px 16px; border-radius: 12px;
+  border: none; background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; color: #fff; transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 10px 24px rgba(108,79,224,.34);
+}
+.ed-btn-preview:hover { transform: translateY(-1px); }
+.ed-btn-publish {
+  padding: 10px 20px; border-radius: 12px; border: none;
+  background: #1f2937; color: #fff;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: transform .15s;
   display: flex; align-items: center; gap: 7px;
-  border-bottom: 1px solid var(--pb-line); flex-shrink: 0;
+  box-shadow: 0 10px 24px rgba(15,23,42,.24);
 }
-.pb-chrome-dot { display: none; }
-.pb-chrome-url {
-  flex:1; margin: 0;
-  background: var(--pb-surface); border:1px solid var(--pb-line);
-  border-radius: var(--pb-r-sm); padding:5px 12px;
-  font-size:11px; color: var(--pb-muted); font-family: var(--pb-mono);
-  display:flex; align-items:center; gap:6px;
-}
+.ed-btn-publish:hover:not(:disabled) { transform: translateY(-1px); }
+.ed-btn-publish:disabled { opacity: .5; cursor: not-allowed; transform:none; }
 
-.pb-preview-iframe {
-  width: 100%; height: 100%; border: none;
-  flex: 1;
-}
-
-.pb-preview-section-highlight {
-  outline: 2px solid var(--pb-accent);
-  outline-offset: -2px;
-}
-
-/* ══════════════════ RIGHT — Inspector ══════════════════ */
-.pb-right {
-  width: 330px;
-  flex-shrink: 0;
-  background: var(--pb-surface);
-  border-left: 1px solid var(--pb-line);
-  display: flex;
-  flex-direction: column;
+/* ── DESKTOP STAGE ── */
+.ed-stage-desktop {
+  width: calc(100% - 36px); height: calc(100% - 36px);
+  background: #fff; border-radius: 20px;
+  box-shadow: 0 30px 70px rgba(15,23,42,.16), 0 0 0 1px rgba(15,23,42,.05);
   overflow: hidden;
-  animation: pb-panel .18s ease;
+}
+.ed-stage-iframe { width: 100%; height: 100%; border: none; }
+
+/* ── MOBILE (iPhone) STAGE ── */
+.ed-iphone {
+  position: relative;
+  aspect-ratio: 393 / 852;
+  height: calc(100vh - 90px);
+  max-height: 760px; min-height: 500px; width: auto; margin: auto;
+}
+.ed-iphone__frame {
+  position: absolute; inset: 0; border-radius: 54px;
+  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 40%, #111 60%, #1e1e1e 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 0 0 1px rgba(0,0,0,.8),
+    0 24px 60px rgba(0,0,0,.55), 0 6px 16px rgba(0,0,0,.35);
+  pointer-events: none; z-index: 5;
+}
+.ed-iphone__screen {
+  position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+  border-radius: 46px; overflow: hidden; background: #000; z-index: 10;
+}
+.ed-iphone__island {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 86px; height: 24px; background: #000; border-radius: 20px; z-index: 25; pointer-events:none;
+}
+.ed-iphone__status {
+  position: absolute; top: 0; left: 0; right: 0; height: 44px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 0 16px; z-index: 22; pointer-events: none;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(10px);
+}
+.ed-iphone__time { font-size: 12px; font-weight: 600; color:#000; font-family: -apple-system,sans-serif; justify-self:start; padding-top:8px; }
+.ed-iphone__spacer { width: 86px; height: 24px; }
+.ed-iphone__signals { display:flex; align-items:center; gap:4px; justify-self:end; padding-top:8px; }
+.ed-iphone__content { position: absolute; top: 44px; left:0; right:0; bottom:0; overflow: hidden; }
+.ed-iphone__iframe { position: absolute; top:0; left:0; width: 393px; height: 852px; border: none; transform-origin: top left; }
+
+/* ── EMPTY / LOADING ── */
+.ed-empty {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; color:#9ca3af; text-align:center; padding: 30px;
+}
+.ed-loading {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:16px; color:#94a3b8; font-size:.86rem;
+  font-family:'Inter',sans-serif; background:#eef0f6; height:100vh;
+}
+.ed-spinner {
+  width:32px; height:32px; border:3px solid rgba(124,109,242,.15);
+  border-top-color:#7c6df2; border-radius:50%; animation: ed-spin .7s linear infinite;
 }
 
-.pb-right__header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--pb-line);
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px;
-}
-
-.pb-right__title {
-  font-size: .86rem; font-weight: 700; color: var(--pb-ink);
-  display: flex; align-items: center; gap: 10px;
-  min-width: 0;
-}
-.pb-right__title-icon {
-  width: 28px; height: 28px; border-radius: var(--pb-r-sm);
-  background: var(--pb-accent); color: var(--pb-accent-ink);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.pb-right__title-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.pb-right__title-text span:first-child {
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.pb-right__eyebrow {
-  font-size: .64rem; font-weight: 600; font-family: var(--pb-mono);
-  color: var(--pb-muted); text-transform: uppercase; letter-spacing: .07em;
-}
-
-.pb-right__close {
-  width: 26px; height: 26px; border-radius: var(--pb-r-sm);
-  border: 1px solid var(--pb-line); background: var(--pb-surface);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--pb-muted); transition: all .15s;
-  flex-shrink: 0;
-}
-.pb-right__close:hover { background: var(--pb-line-soft); color: var(--pb-ink); }
-
-.pb-right__body { flex:1; overflow-y:auto; padding: 16px; display:flex; flex-direction:column; gap:18px; }
-
-/* ── FIELD GROUPS — كارت بدل خطوط فراغ بسيطة ── */
-.pb-group {
-  display:flex; flex-direction:column; gap:12px;
-  background: var(--pb-surface-2);
-  border: 1px solid var(--pb-line-soft);
-  border-radius: var(--pb-r-md);
-  padding: 13px;
-}
-
-.pb-group__label {
-  font-size: .66rem; font-weight: 700; font-family: var(--pb-mono);
-  color: var(--pb-muted); text-transform: uppercase; letter-spacing: .08em;
-}
-
-.pb-field { display:flex; flex-direction:column; gap:6px; }
-
-.pb-label {
-  font-size: .76rem; font-weight: 600; color: var(--pb-ink-soft);
-  display: flex; justify-content: space-between;
-}
-.pb-label span { font-weight: 400; font-family: var(--pb-mono); color: var(--pb-muted); font-size: .7rem; }
-
-.pb-input {
-  width: 100%; padding: 8px 10px;
-  border: 1px solid var(--pb-line); border-radius: var(--pb-r-sm);
-  font-size: .82rem; color: var(--pb-ink); font-family: inherit;
-  background: var(--pb-surface); outline: none; box-sizing: border-box;
-  transition: border-color .15s;
-}
-.pb-input:focus { border-color: var(--pb-accent); }
-
-.pb-textarea {
-  width: 100%; padding: 8px 10px; min-height: 72px; resize: vertical;
-  border: 1px solid var(--pb-line); border-radius: var(--pb-r-sm);
-  font-size: .82rem; color: var(--pb-ink); font-family: inherit;
-  background: var(--pb-surface); outline: none; box-sizing: border-box;
-  transition: border-color .15s;
-}
-.pb-textarea:focus { border-color: var(--pb-accent); }
-
-/* Color field */
-.pb-color-row { display:flex; align-items:center; gap:8px; }
-.pb-color-swatch {
-  width: 34px; height: 34px; border-radius: var(--pb-r-sm);
-  border: 1px solid var(--pb-line); overflow: hidden; position: relative;
-  cursor: pointer; flex-shrink: 0;
-}
-.pb-color-swatch input[type=color] {
-  position: absolute; inset: -4px; width: calc(100% + 8px);
-  height: calc(100% + 8px); opacity: 0; cursor: pointer;
-}
-.pb-color-hex {
-  flex: 1; padding: 8px 10px;
-  border: 1px solid var(--pb-line); border-radius: var(--pb-r-sm);
-  font-size: .8rem; font-family: var(--pb-mono); color: var(--pb-ink-soft);
-  background: var(--pb-surface); outline: none;
-  transition: border-color .15s;
-}
-.pb-color-hex:focus { border-color: var(--pb-accent); }
-
-/* Toggle row */
-.pb-toggle-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 3px 0;
-}
-.pb-toggle-row__label { font-size: .81rem; font-weight: 500; color: var(--pb-ink-soft); }
-
-/* Segment */
-.pb-segment {
-  display:flex; gap:3px;
-  background: var(--pb-line-soft);
-  padding: 3px; border-radius: var(--pb-r-sm);
-}
-.pb-seg-btn {
-  flex: 1; padding: 7px 6px; border-radius: 5px;
-  border: none; background: transparent;
-  font-size: .74rem; font-weight: 600; cursor: pointer;
-  font-family: inherit; color: var(--pb-muted); transition: all .15s;
-  text-align: center;
-}
-.pb-seg-btn:hover      { color: var(--pb-ink); }
-.pb-seg-btn--active    { background: var(--pb-surface); color: var(--pb-ink); font-weight: 700; box-shadow: 0 1px 2px rgba(15,17,21,.12); }
-
-/* Range */
-.pb-range { width: 100%; accent-color: var(--pb-accent); }
-
-/* Link input */
-.pb-link-input {
-  display: flex; align-items: center; gap: 8px;
-  border: 1px solid var(--pb-line); border-radius: var(--pb-r-sm);
-  padding: 8px 10px; background: var(--pb-surface);
-  color: var(--pb-muted); transition: border-color .15s;
-}
-.pb-link-input__field {
-  flex: 1; border: none; outline: none; font-size: .8rem;
-  color: var(--pb-ink); background: transparent; font-family: var(--pb-mono);
-}
-
-/* Background image row */
-.pb-img-row { display: flex; gap: 9px; }
-.pb-img-thumb {
-  position: relative; width: 60px; height: 60px;
-  border-radius: var(--pb-r-sm); overflow: hidden; flex-shrink: 0;
-  border: 1px solid var(--pb-line);
-}
-.pb-img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pb-img-thumb__remove {
-  position: absolute; top: 3px; right: 3px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(15,17,21,.7); color: #fff; border: none;
-  font-size: 10px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.pb-img-add {
-  width: 60px; height: 60px; border-radius: var(--pb-r-sm);
-  border: 1px dashed var(--pb-line); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--pb-muted); cursor: pointer; transition: all .15s;
-}
-.pb-img-add:hover { border-color: var(--pb-ink-soft); color: var(--pb-ink); }
-
-/* Text alignment row */
-.pb-align-row { display: flex; gap: 5px; }
-.pb-align-btn {
-  flex: 1; padding: 9px; border-radius: var(--pb-r-sm);
-  border: 1px solid var(--pb-line); background: var(--pb-surface);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--pb-muted); cursor: pointer; transition: all .15s;
-}
-.pb-align-btn--active {
-  border-color: var(--pb-accent);
-  background: var(--pb-accent); color: var(--pb-accent-ink);
-}
-
-/* Badge card */
-.pb-badge-card {
-  background: var(--pb-surface); border: 1px solid var(--pb-line);
-  border-radius: var(--pb-r-sm); padding: 11px; display:flex; flex-direction:column; gap:9px;
-  transition: border-color .15s;
-}
-.pb-badge-card:hover { border-color: var(--pb-ink-soft); }
-.pb-badge-card__header {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: .8rem; font-weight: 700; color: var(--pb-ink);
-}
-
-/* No-selection state */
-.pb-no-selection {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:12px; color: var(--pb-muted);
-  padding: 36px;
-  text-align: center;
-}
-.pb-no-selection__icon {
-  width: 44px; height: 44px; border-radius: var(--pb-r-md);
-  background: var(--pb-line-soft); display: flex; align-items: center; justify-content: center;
-}
-.pb-no-selection__text { font-size: .82rem; line-height: 1.6; max-width: 190px; }
-
-/* Tabs */
-.pb-tabs {
-  display:flex; gap:3px;
-  padding: 10px; margin: 0;
-  background: var(--pb-surface);
-  border-bottom: 1px solid var(--pb-line);
-}
-.pb-tab {
-  flex: 1;
-  padding: 8px 12px; font-size: .8rem; font-weight: 600;
-  color: var(--pb-muted); border: none; background: var(--pb-line-soft); cursor: pointer;
-  font-family: inherit; border-radius: var(--pb-r-sm);
-  transition: all .15s;
-}
-.pb-tab--active { background: var(--pb-accent); color: var(--pb-accent-ink); font-weight: 700; }
+/* ── NO-SELECTION HINT (styles tab empty state not needed, kept for parity) ── */
+.ed-no-selection { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:#94a3b8; padding: 30px; text-align:center; }
 
 /* ── TOAST ── */
-.pb-toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  padding: 10px 20px; border-radius: var(--pb-r-md);
-  font-size: .82rem; font-weight: 600; z-index: 9999;
-  box-shadow: 0 16px 40px rgba(15,17,21,.2); white-space: nowrap;
-  animation: pb-toast .2s ease; font-family: var(--pb-sans);
+.ed-toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  padding: 11px 22px; border-radius: 13px;
+  font-size: .84rem; font-weight: 600; z-index: 9999;
+  box-shadow: 0 20px 50px rgba(15,23,42,.25); white-space: nowrap;
+  animation: ed-toast .25s ease; font-family: 'Inter', sans-serif;
+  backdrop-filter: blur(10px);
 }
-.pb-toast--success { background: var(--pb-ink); color:#fff; }
-.pb-toast--error   { background: var(--pb-danger); color:#fff; }
+.ed-toast--success { background: rgba(17,24,39,.94); color:#fff; }
+.ed-toast--error   { background: rgba(239,68,68,.94); color:#fff; }
 
-/* Loading */
-.pb-loading {
-  flex:1; display:flex; align-items:center; justify-content:center;
-  flex-direction:column; gap:14px; color: var(--pb-muted, #8b8f98); font-size:.84rem;
-  font-family: var(--pb-sans, 'Inter', sans-serif);
-  background: var(--pb-bg, #f4f4f5);
+/* ══════════════════════════════════════════════
+   FORM CONTROLS — عام لكل settings (نفس المستوى القديم)
+   ══════════════════════════════════════════════ */
+.pb-group { display:flex; flex-direction:column; gap:11px; }
+.pb-group__label {
+  font-size: .7rem; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .08em;
+  padding-bottom: 7px; border-bottom: 1px solid rgba(15,23,42,.06);
 }
-.pb-spinner {
-  width:26px; height:26px; border:2.5px solid var(--pb-line-soft, #edeef1);
-  border-top-color: var(--pb-ink, #0f1115); border-radius:50%;
-  animation: pb-spin .7s linear infinite;
-}
+.pb-field { display:flex; flex-direction:column; gap:6px; }
+.pb-label { font-size: .78rem; font-weight: 600; color: #475569; display: flex; justify-content: space-between; }
+.pb-label span { font-weight: 400; color: #94a3b8; }
 
-/* font options */
-.pb-font-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.pb-input {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid rgba(15,23,42,.09); border-radius: 10px;
+  font-size: .84rem; color: #111827; font-family: inherit;
+  background: rgba(248,249,252,.85); outline: none; box-sizing: border-box;
+  transition: all .18s;
+}
+.pb-input:focus { border-color: #7c6df2; background: #fff; box-shadow: 0 0 0 3px rgba(124,109,242,.12); }
+
+.pb-textarea {
+  width: 100%; padding: 9px 12px; min-height: 76px; resize: vertical;
+  border: 1px solid rgba(15,23,42,.09); border-radius: 10px;
+  font-size: .84rem; color: #111827; font-family: inherit;
+  background: rgba(248,249,252,.85); outline: none; box-sizing: border-box;
+  transition: all .18s;
+}
+.pb-textarea:focus { border-color: #7c6df2; background: #fff; box-shadow: 0 0 0 3px rgba(124,109,242,.12); }
+
+.pb-color-row { display:flex; align-items:center; gap:9px; }
+.pb-color-swatch {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid rgba(15,23,42,.09); overflow: hidden; position: relative;
+  cursor: pointer; flex-shrink: 0; box-shadow: 0 1px 3px rgba(15,23,42,.08);
+}
+.pb-color-swatch input[type=color] { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); opacity: 0; cursor: pointer; }
+.pb-color-hex {
+  flex: 1; padding: 9px 12px;
+  border: 1px solid rgba(15,23,42,.09); border-radius: 10px;
+  font-size: .82rem; font-family: monospace; color: #374151;
+  background: rgba(248,249,252,.85); outline: none; transition: all .18s;
+}
+.pb-color-hex:focus { border-color: #7c6df2; box-shadow: 0 0 0 3px rgba(124,109,242,.12); }
+
+.pb-toggle { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+.pb-toggle input { opacity: 0; width: 0; height: 0; }
+.pb-toggle__slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 99px; transition: background .2s; cursor: pointer; }
+.pb-toggle__slider::after {
+  content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.2); transition: transform .2s;
+}
+.pb-toggle input:checked + .pb-toggle__slider { background: linear-gradient(135deg,#8b7cf6,#6c4fe0); }
+.pb-toggle input:checked + .pb-toggle__slider::after { transform: translateX(14px); }
+
+.pb-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+.pb-toggle-row__label { font-size: .83rem; font-weight: 500; color: #374151; }
+
+.pb-segment { display:flex; gap:4px; background: rgba(15,23,42,.035); padding: 4px; border-radius: 11px; }
+.pb-seg-btn {
+  flex: 1; padding: 8px 6px; border-radius: 8px; border: none; background: transparent;
+  font-size: .76rem; font-weight: 600; cursor: pointer; font-family: inherit; color: #64748b;
+  transition: all .18s; text-align: center;
+}
+.pb-seg-btn:hover      { color: #111; }
+.pb-seg-btn--active    { background: #fff; color: #5b3fd6; font-weight: 700; box-shadow: 0 2px 8px rgba(15,23,42,.1); }
+
+.pb-range { width: 100%; accent-color: #7c6df2; }
+
+.pb-link-input {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(15,23,42,.09); border-radius: 10px;
+  padding: 9px 12px; background: rgba(248,249,252,.85); color: #94a3b8; transition: border-color .18s;
+}
+.pb-link-input__field { flex: 1; border: none; outline: none; font-size: .82rem; color: #111; background: transparent; }
+
+.pb-img-row { display: flex; gap: 10px; }
+.pb-img-thumb { position: relative; width: 64px; height: 64px; border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(15,23,42,.09); box-shadow: 0 1px 3px rgba(15,23,42,.08); }
+.pb-img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pb-img-thumb__remove {
+  position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(15,23,42,.65); color: #fff; border: none; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px);
+}
+.pb-img-add {
+  width: 64px; height: 64px; border-radius: 12px; border: 1.5px dashed rgba(124,109,242,.3); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; transition: all .18s;
+}
+.pb-img-add:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
+
+.pb-align-row { display: flex; gap: 6px; }
+.pb-align-btn {
+  flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(15,23,42,.09); background: rgba(248,249,252,.6);
+  display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all .18s;
+}
+.pb-align-btn--active { border-color: transparent; background: linear-gradient(135deg,#1f2937,#0f172a); color: #fff; box-shadow: 0 4px 14px rgba(15,23,42,.22); }
+
+.pb-badge-card { background: rgba(248,249,252,.7); border: 1px solid rgba(15,23,42,.06); border-radius: 12px; padding: 12px; display:flex; flex-direction:column; gap:9px; transition: border-color .18s; }
+.pb-badge-card:hover { border-color: rgba(124,109,242,.22); }
+.pb-badge-card__header { display: flex; align-items: center; justify-content: space-between; font-size: .82rem; font-weight: 700; color: #1e293b; }
+
+.pb-font-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
 .pb-font-btn {
-  padding: 8px 6px; border-radius: var(--pb-r-sm);
-  border: 1px solid var(--pb-line); background: var(--pb-surface);
-  font-size: .78rem; font-weight: 600; cursor: pointer;
-  font-family: inherit; color: var(--pb-ink-soft);
-  transition: all .15s; text-align: center;
+  padding: 9px 6px; border-radius: 10px; border: 1px solid rgba(15,23,42,.09); background: rgba(248,249,252,.7);
+  font-size: .8rem; font-weight: 600; cursor: pointer; font-family: inherit; color: #374151; transition: all .18s; text-align: center;
 }
-.pb-font-btn:hover   { border-color: var(--pb-ink-soft); }
-.pb-font-btn--active {
-  border-color: var(--pb-accent);
-  background: var(--pb-accent); color: var(--pb-accent-ink);
-}
+.pb-font-btn:hover   { border-color: rgba(124,109,242,.3); }
+.pb-font-btn--active { border-color: transparent; background: linear-gradient(135deg,#8b7cf6,#6c4fe0); color: #fff; box-shadow: 0 6px 16px rgba(108,79,224,.3); }
 `;
 
 // ─────────────────────────────────────────────
-// TOGGLE COMPONENT
+// TOGGLE / COLOR FIELD
 // ─────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
   return (
@@ -856,9 +569,6 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// COLOR FIELD
-// ─────────────────────────────────────────────
 function ColorField({ label, value, onChange }) {
   return (
     <div className="pb-field">
@@ -867,19 +577,14 @@ function ColorField({ label, value, onChange }) {
         <div className="pb-color-swatch" style={{ background: value }}>
           <input type="color" value={value} onChange={e => onChange(e.target.value)} />
         </div>
-        <input
-          className="pb-color-hex"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          maxLength={7}
-        />
+        <input className="pb-color-hex" value={value} onChange={e => onChange(e.target.value)} maxLength={7} />
       </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────
-// SECTION SETTINGS PANELS
+// SECTION SETTINGS PANELS (نفس المنطق القديم بلا تغيير)
 // ─────────────────────────────────────────────
 function AnnouncementSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
@@ -967,22 +672,18 @@ function HeroSettings({ settings, onChange }) {
     <>
       <div className="pb-group">
         <div className="pb-group__label">Content</div>
-
         <div className="pb-field">
           <div className="pb-label">Headline</div>
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} placeholder="مرحباً بك في متجرنا" />
         </div>
-
         <div className="pb-field">
           <div className="pb-label">Subheading</div>
           <input className="pb-input" value={settings.subtitle} onChange={e => s("subtitle", e.target.value)} />
         </div>
-
         <div className="pb-field">
           <div className="pb-label">Button text</div>
           <input className="pb-input" value={settings.ctaText} onChange={e => s("ctaText", e.target.value)} />
         </div>
-
         <div className="pb-field">
           <div className="pb-label">Button link</div>
           <div className="pb-link-input">
@@ -996,9 +697,7 @@ function HeroSettings({ settings, onChange }) {
             </svg>
           </div>
         </div>
-
         <ColorField label="Button color" value={settings.ctaColor || "#111827"} onChange={v => s("ctaColor", v)} />
-
         <div className="pb-field">
           <div className="pb-label">Background image</div>
           <div className="pb-img-row">
@@ -1016,7 +715,6 @@ function HeroSettings({ settings, onChange }) {
             </label>
           </div>
         </div>
-
         <div className="pb-field">
           <div className="pb-label">Overlay opacity <span>{settings.overlayOpacity}%</span></div>
           <input type="range" className="pb-range" min={0} max={90} step={5}
@@ -1026,7 +724,6 @@ function HeroSettings({ settings, onChange }) {
 
       <div className="pb-group">
         <div className="pb-group__label">Layout</div>
-
         <div className="pb-field">
           <div className="pb-label">Text alignment</div>
           <div className="pb-align-row">
@@ -1046,7 +743,6 @@ function HeroSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
-
         <div className="pb-field">
           <div className="pb-label">Height</div>
           <div className="pb-segment">
@@ -1068,15 +764,9 @@ function TrustSettings({ settings, onChange }) {
     const badges = settings.badges.map((b, idx) => idx === i ? { ...b, [field]: val } : b);
     s("badges", badges);
   };
-
   const BADGE_LABELS = {
-    cod:      "دفع عند الاستلام",
-    shipping: "توصيل سريع",
-    return:   "إرجاع مجاني",
-    support:  "دعم 24/7",
-    secure:   "متجر موثوق",
+    cod: "دفع عند الاستلام", shipping: "توصيل سريع", return: "إرجاع مجاني", support: "دعم 24/7", secure: "متجر موثوق",
   };
-
   return (
     <>
       <div className="pb-group">
@@ -1089,7 +779,6 @@ function TrustSettings({ settings, onChange }) {
           </select>
         </div>
       </div>
-
       <div className="pb-group">
         <div className="pb-group__label">Badges</div>
         {(settings.badges || []).map((badge, i) => (
@@ -1134,7 +823,6 @@ function CollectionSettings({ settings, onChange }) {
           </div>
         </div>
       </div>
-
       <div className="pb-group">
         <div className="pb-group__label">Product Source</div>
         <div className="pb-field">
@@ -1154,7 +842,6 @@ function CollectionSettings({ settings, onChange }) {
           </div>
         </div>
       </div>
-
       <div className="pb-group">
         <div className="pb-group__label">Layout</div>
         <div className="pb-toggle-row">
@@ -1172,7 +859,6 @@ function CollectionSettings({ settings, onChange }) {
           </div>
         </div>
       </div>
-
       <div className="pb-group">
         <div className="pb-group__label">Product Cards</div>
         <div className="pb-field">
@@ -1204,7 +890,6 @@ function CollectionSettings({ settings, onChange }) {
           <Toggle checked={!!settings.showRating} onChange={v => s("showRating", v)} />
         </div>
       </div>
-
       <div className="pb-group">
         <div className="pb-group__label">Footer</div>
         <div className="pb-toggle-row">
@@ -1301,7 +986,7 @@ function FooterSettings({ settings, onChange }) {
 function StylesPanel({ styles, onChange }) {
   const s = (k, v) => onChange({ ...styles, [k]: v });
   return (
-    <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
+    <div style={{ padding: "8px 6px 16px", display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="pb-group">
         <div className="pb-group__label">Colors</div>
         <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
@@ -1358,67 +1043,62 @@ function StylesPanel({ styles, onChange }) {
 }
 
 // ─────────────────────────────────────────────
-// SETTINGS PANEL ROUTER
+// SETTINGS ROUTER — يرجع الفورم المناسب لنوع الـ section
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange }) {
+function SectionSettingsInner({ section, store, onUpdate, onLogoChange }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
+  switch (section.type) {
+    case "announcement": return <AnnouncementSettings settings={section.settings} onChange={updateSettings} />;
+    case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} />;
+    case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
+    case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
+    case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
+    case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
+    case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
+    default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
+  }
+}
 
-  const inner = () => {
-    switch (section.type) {
-      case "announcement": return <AnnouncementSettings settings={section.settings} onChange={updateSettings} />;
-      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} />;
-      case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
-      case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
-      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
-      case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
-      case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
-      default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
-    }
-  };
-
+// ─────────────────────────────────────────────
+// SECTION CARD — accordion: الإعدادات كتتفتح جوة نفس البانل
+// ─────────────────────────────────────────────
+function SectionCard({ section, isOpen, onToggleOpen, onToggleEnabled, store, onUpdate, onLogoChange }) {
   const meta = SECTION_META[section.type] || {};
-
   return (
-    <div className="pb-right">
-      <div className="pb-right__header">
-        <div className="pb-right__title">
-          <span className="pb-right__title-icon">{meta.icon}</span>
-          <span className="pb-right__title-text">
-            <span>{meta.label}</span>
-            <span className="pb-right__eyebrow">Inspector</span>
-          </span>
+    <div className={`ed-section-card ${isOpen ? "ed-section-card--open" : ""} ${!section.enabled ? "ed-section-card--disabled" : ""}`}>
+      <div className="ed-section-card__head" onClick={onToggleOpen}>
+        <span className="ed-section-card__drag"><Icon path={ICON_PATHS.drag} size={13} /></span>
+        <span className="ed-section-card__icon">{meta.icon}</span>
+        <span className="ed-section-card__label">{meta.label}</span>
+        <span onClick={e => { e.stopPropagation(); onToggleEnabled(!section.enabled); }}>
+          <Toggle checked={section.enabled} onChange={onToggleEnabled} />
+        </span>
+        <span className="ed-section-card__chevron"><Icon path={ICON_PATHS.chevron} size={15} /></span>
+      </div>
+      {isOpen && (
+        <div className="ed-section-card__body">
+          <SectionSettingsInner section={section} store={store} onUpdate={onUpdate} onLogoChange={onLogoChange} />
         </div>
-        <button className="pb-right__close" onClick={onClose} title="Close (Esc)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-      <div className="pb-right__body">
-        {inner()}
-      </div>
+      )}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────
-// MINI PREVIEW (iframe-based)
+// CANVAS — preview + floating toolbar
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
+function PreviewStage({ slug, isMobile, themeConfig, activeSection }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
   const phoneRef   = useRef(null);
-  const desktopWrapRef = useRef(null);
-  const [desktopWidth, setDesktopWidth] = useState(null);
 
-  // ✦ حساب scale ديناميكي باش الـ iframe يتناسب مع حجم الإطار
   useEffect(() => {
     if (!isMobile) return;
     const calcScale = () => {
       if (!phoneRef.current || !iframeRef.current) return;
-      const screenW = phoneRef.current.clientWidth - 16; // 8px padding كل جهة
-      const scale = screenW / 375;
+      const screenW = phoneRef.current.clientWidth - 20;
+      const scale = screenW / 393;
       iframeRef.current.style.transform = `scale(${scale})`;
     };
     calcScale();
@@ -1427,64 +1107,34 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
     return () => ro.disconnect();
   }, [isMobile]);
 
-  // ✦ تتبّع العرض الحقيقي لمعاينة الديسكتوب — يتعرض فالـ ruler
-  useEffect(() => {
-    if (isMobile) return;
-    const el = desktopWrapRef.current;
-    if (!el) return;
-    const update = () => setDesktopWidth(Math.round(el.clientWidth));
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isMobile]);
-
   const sendConfig = (cfg) => {
     try {
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: "THEME_UPDATE", themeConfig: cfg },
-        "*"
-      );
+      iframeRef.current?.contentWindow?.postMessage({ type: "THEME_UPDATE", themeConfig: cfg }, "*");
     } catch (_) {}
   };
 
-  // ✦ عند تغيير activeSection — نرسل highlight للـ iframe
   useEffect(() => {
     if (!loadedRef.current) return;
     try {
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
-        "*"
-      );
+      iframeRef.current?.contentWindow?.postMessage({ type: "HIGHLIGHT_SECTION", sectionType: activeSection }, "*");
     } catch (_) {}
   }, [activeSection]);
 
-  // عند تغيير themeConfig — إذا الـ iframe محمّل أرسل مباشرة، وإلا احفظه كـ pending
   useEffect(() => {
     if (!themeConfig) return;
-    if (loadedRef.current) {
-      sendConfig(themeConfig);
-    } else {
-      pendingRef.current = themeConfig;
-    }
+    if (loadedRef.current) sendConfig(themeConfig);
+    else pendingRef.current = themeConfig;
   }, [themeConfig]);
 
   const handleLoad = () => {
     loadedRef.current = true;
-    // أرسل أي config كان معلّق
     const cfg = pendingRef.current || themeConfig;
     if (cfg) sendConfig(cfg);
   };
 
   if (!slug) return (
-    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
-      <div style={{ color:"#9ca3af" }}>
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 9.5 12 3l9 6.5" />
-          <path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" />
-          <path d="M9 20v-6h6v6" />
-        </svg>
-      </div>
+    <div className="ed-empty">
+      <Icon path={ICON_PATHS.store} size={30} />
       <div style={{ fontSize:".85rem" }}>لا يوجد متجر مرتبط</div>
     </div>
   );
@@ -1492,72 +1142,38 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
   const src = `/store/${slug}?preview=1`;
 
   if (isMobile) return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-      <div className="pb-ruler">
-        <span className="pb-ruler__dot" />
-        <b>375</b>&nbsp;×&nbsp;812
-      </div>
-      <div className="pb-iphone" ref={phoneRef}>
-        {/* الإطار الخارجي */}
-        <div className="pb-iphone__frame" />
-        {/* الشاشة */}
-        <div className="pb-iphone__screen-wrap">
-          {/* Dynamic Island — absolute فوق كل شي */}
-          <div className="pb-iphone__island" />
-          {/* Status Bar — 3 columns: time | island-spacer | signals */}
-          <div className="pb-iphone__status">
-            <span className="pb-iphone__time">9:41</span>
-            <div className="pb-iphone__island-spacer" />
-            <div className="pb-iphone__signals">
-              <svg width="10" height="8" viewBox="0 0 17 12" fill="#000">
-                <rect x="0" y="7" width="3" height="5" rx=".5"/>
-                <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
-                <rect x="9" y="2" width="3" height="10" rx=".5"/>
-                <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
-              </svg>
-              <svg width="10" height="8" viewBox="0 0 16 12" fill="none" stroke="#000" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M8 10h.01"/><path d="M5.5 7.5a3.5 3.5 0 015 0"/>
-                <path d="M3 5a7 7 0 0110 0"/><path d="M1 2.5a11 11 0 0114 0"/>
-              </svg>
-              <svg width="15" height="8" viewBox="0 0 25 12" fill="#000">
-                <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#000" strokeWidth="1" fill="none"/>
-                <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#000" opacity=".4"/>
-                <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
-              </svg>
-            </div>
+    <div className="ed-iphone" ref={phoneRef}>
+      <div className="ed-iphone__frame" />
+      <div className="ed-iphone__screen">
+        <div className="ed-iphone__island" />
+        <div className="ed-iphone__status">
+          <span className="ed-iphone__time">9:41</span>
+          <div className="ed-iphone__spacer" />
+          <div className="ed-iphone__signals">
+            <svg width="10" height="8" viewBox="0 0 17 12" fill="#000">
+              <rect x="0" y="7" width="3" height="5" rx=".5"/><rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
+              <rect x="9" y="2" width="3" height="10" rx=".5"/><rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
+            </svg>
+            <svg width="10" height="8" viewBox="0 0 16 12" fill="none" stroke="#000" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M8 10h.01"/><path d="M5.5 7.5a3.5 3.5 0 015 0"/><path d="M3 5a7 7 0 0110 0"/><path d="M1 2.5a11 11 0 0114 0"/>
+            </svg>
+            <svg width="15" height="8" viewBox="0 0 25 12" fill="#000">
+              <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#000" strokeWidth="1" fill="none"/>
+              <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#000" opacity=".4"/>
+              <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
+            </svg>
           </div>
-          {/* iframe */}
-          <div className="pb-iphone__content">
-            <iframe
-              ref={iframeRef}
-              src={src}
-              onLoad={handleLoad}
-              className="pb-iphone__iframe"
-              title="Mobile Preview"
-            />
-          </div>
+        </div>
+        <div className="ed-iphone__content">
+          <iframe ref={iframeRef} src={src} onLoad={handleLoad} className="ed-iphone__iframe" title="Mobile Preview" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div className="pb-ruler">
-        <span className="pb-ruler__dot" />
-        <span>/store/{slug}</span>
-        <span style={{ opacity: .35 }}>·</span>
-        <b>{desktopWidth || "—"}px</b>
-      </div>
-      <div className="pb-preview-desktop" ref={desktopWrapRef} style={{ width: "100%", flex: 1, minHeight: 0 }}>
-        <iframe
-          ref={iframeRef}
-          src={src}
-          onLoad={handleLoad}
-          className="pb-preview-iframe"
-          title="Desktop Preview"
-        />
-      </div>
+    <div className="ed-stage-desktop">
+      <iframe ref={iframeRef} src={src} onLoad={handleLoad} className="ed-stage-iframe" title="Desktop Preview" />
     </div>
   );
 }
@@ -1573,14 +1189,12 @@ function ThemeEdit() {
   const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(false);
   const [notif,         setNotif]         = useState(null);
-  const [activeSection, setActiveSection] = useState(null); // section id
-  const [rightTab,      setRightTab]      = useState("sections"); // "sections" | "styles"
+  const [openSection,   setOpenSection]   = useState(null); // section id المفتوح فالـ accordion
+  const [panelTab,      setPanelTab]      = useState("sections"); // "sections" | "styles"
   const [isMobile,      setIsMobile]      = useState(false);
   const [currentPage,   setCurrentPage]   = useState("home");
   const [pageDropdown,  setPageDropdown]  = useState(false);
   const [isDirty,       setIsDirty]       = useState(false);
-  const [dragId,        setDragId]        = useState(null);   // section.id قيد السحب
-  const [dropOverId,    setDropOverId]    = useState(null);   // section.id تحته مؤشر الإفلات
 
   const notify = (msg, type = "success") => {
     setNotif({ msg, type });
@@ -1589,17 +1203,13 @@ function ThemeEdit() {
 
   // ── Fetch store ──────────────────────────────────────────
   useEffect(() => {
-    fetch(`${API()}/api/stores/my-store`, {
-      headers: { Authorization: `Bearer ${token()}` },
-    })
+    fetch(`${API()}/api/stores/my-store`, { headers: { Authorization: `Bearer ${token()}` } })
       .then(r => r.json())
       .then(d => {
         if (d.hasStore) {
           setStore(d.store);
-          // إذا عنده themeConfig محفوظ استعمله، وإلا استعمل default
           let cfg = d.store.themeConfig;
           if (cfg && cfg.sections) {
-            // نفرض الـ 5 badges الثابتة (نحافظ فقط على enabled/title/sub لو كانت موجودة بنفس id)
             const FIXED_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
             cfg = {
               ...cfg,
@@ -1610,14 +1220,7 @@ function ThemeEdit() {
                   const old = oldBadges.find(b => b.id === fb.id);
                   return old ? { ...fb, enabled: old.enabled, title: old.title, sub: old.sub } : fb;
                 });
-                return {
-                  ...sec,
-                  settings: {
-                    layout: sec.settings?.layout || "row",
-                    bgColor: sec.settings?.bgColor || "#ffffff",
-                    badges,
-                  }
-                };
+                return { ...sec, settings: { layout: sec.settings?.layout || "row", bgColor: sec.settings?.bgColor || "#ffffff", badges } };
               })
             };
           }
@@ -1628,191 +1231,160 @@ function ThemeEdit() {
       .finally(() => setLoading(false));
   }, []);
 
-  // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح settings الـ section المختار
+  // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح الـ section جوة الـ accordion
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type !== "SECTION_CLICK") return;
       const sectionType = e.data.sectionType;
-      // نلقى الـ section اللي type ديالو يطابق
       const matched = themeConfig?.sections?.find(s => s.type === sectionType);
       if (matched) {
-        setActiveSection(matched.id);
-        setRightTab("sections");
+        setOpenSection(matched.id);
+        setPanelTab("sections");
       }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, [themeConfig]);
 
-  // ── Update section settings ──────────────────────────────
   const updateSectionSettings = useCallback((id, newSettings) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.map(s =>
-        s.id === id ? { ...s, settings: newSettings } : s
-      ),
-    }));
+    setThemeConfig(prev => ({ ...prev, sections: prev.sections.map(s => s.id === id ? { ...s, settings: newSettings } : s) }));
     setIsDirty(true);
   }, []);
 
-  // ── Reorder sections (drag & drop) ───────────────────────
-  const reorderSections = useCallback((fromId, toId) => {
-    if (!fromId || !toId || fromId === toId) return;
-    setThemeConfig(prev => {
-      const list = [...prev.sections];
-      const fromIdx = list.findIndex(s => s.id === fromId);
-      const toIdx = list.findIndex(s => s.id === toId);
-      if (fromIdx === -1 || toIdx === -1) return prev;
-      const [moved] = list.splice(fromIdx, 1);
-      list.splice(toIdx, 0, moved);
-      return { ...prev, sections: list };
-    });
-    setIsDirty(true);
-  }, []);
-
-  // ── Toggle section enabled ───────────────────────────────
   const toggleSection = useCallback((id, enabled) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s),
-    }));
+    setThemeConfig(prev => ({ ...prev, sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s) }));
     setIsDirty(true);
   }, []);
 
-  // ── Update global styles ─────────────────────────────────
   const updateStyles = useCallback((newStyles) => {
     setThemeConfig(prev => ({ ...prev, styles: newStyles }));
     setIsDirty(true);
   }, []);
 
-  // ── Save Logo ────────────────────────────────────────────
   const saveLogo = async (url) => {
     try {
       const res = await fetch(`${API()}/api/stores/update`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token()}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ name: store.name, logo: url }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setStore(data.store);
-        notify("تم حفظ اللوجو");
-      } else {
-        notify(data.message || "فشل حفظ اللوجو", "error");
-      }
-    } catch {
-      notify("تعذر الاتصال", "error");
-    }
+      if (res.ok) { setStore(data.store); notify("تم حفظ اللوجو"); }
+      else notify(data.message || "فشل حفظ اللوجو", "error");
+    } catch { notify("تعذر الاتصال", "error"); }
   };
 
-  // ── Save ─────────────────────────────────────────────────
   const save = async () => {
     setSaving(true);
     try {
       const res = await fetch(`${API()}/api/stores/theme-config`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token()}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ themeConfig }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setIsDirty(false);
-        notify("تم نشر الثيم");
-      } else {
-        notify(data.message || "حدث خطأ", "error");
-      }
-    } catch {
-      notify("تعذر الاتصال", "error");
-    } finally {
-      setSaving(false);
-    }
+      if (res.ok) { setIsDirty(false); notify("تم نشر الثيم"); }
+      else notify(data.message || "حدث خطأ", "error");
+    } catch { notify("تعذر الاتصال", "error"); }
+    finally { setSaving(false); }
   };
-
-  const activeSectionObj = themeConfig?.sections?.find(s => s.id === activeSection);
 
   // ── Loading ──────────────────────────────────────────────
   if (loading) return (
-    <div className="pb-loading">
+    <div className="ed-loading">
       <style>{CSS}</style>
-      <div className="pb-spinner" />
+      <div className="ed-spinner" />
       <p>جاري التحميل...</p>
     </div>
   );
 
   if (!store) return (
-    <div className="pb-loading">
+    <div className="ed-loading">
       <style>{CSS}</style>
       <p>لا يوجد متجر. <button onClick={() => navigate("/dashboard")} style={{ color:"#894bf4", background:"none", border:"none", cursor:"pointer", fontWeight:700 }}>العودة</button></p>
     </div>
   );
 
   return (
-    <div className="pb-shell" dir="ltr">
+    <div className="ed-shell" dir="ltr">
       <style>{CSS}</style>
-      {notif && <div className={`pb-toast pb-toast--${notif.type}`}>{notif.msg}</div>}
+      {notif && <div className={`ed-toast ed-toast--${notif.type}`}>{notif.msg}</div>}
 
-      {/* ══ TOP BAR ══ */}
-      <div className="pb-topbar">
-        {/* Left */}
-        <div className="pb-topbar__left">
-          <button className="pb-back-btn" onClick={() => navigate("/theme")}>
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
+      {/* ══ LEFT: UNIFIED PANEL ══ */}
+      <div className="ed-panel">
+        <div className="ed-panel__header">
+          <button className="ed-back-btn" onClick={() => navigate("/theme")}>
+            <Icon path={ICON_PATHS.arrowLeft} size={13} />
             Back
           </button>
-          <span className="pb-crumb">
-            <b>{store?.name || "Store"}</b>
-            <span className="pb-crumb__sep">/</span>
-            {PAGES.find(p => p.id === currentPage)?.label}
-            {activeSectionObj && (
-              <>
-                <span className="pb-crumb__sep">/</span>
-                {SECTION_META[activeSectionObj.type]?.label}
-              </>
-            )}
-          </span>
-          {isDirty && <span className="pb-draft-badge">Draft</span>}
+          {isDirty && <span className="ed-panel__draft">● Draft</span>}
         </div>
 
-        {/* Mid — page switcher */}
-        <div className="pb-topbar__mid" style={{ position: "relative" }}>
-          <button className="pb-page-select" onClick={() => setPageDropdown(p => !p)}>
-            <span>{PAGES.find(p => p.id === currentPage)?.icon}</span>
+        <div className="ed-panel__tabs">
+          <button className={`ed-tab ${panelTab === "sections" ? "ed-tab--active" : ""}`} onClick={() => setPanelTab("sections")}>Sections</button>
+          <button className={`ed-tab ${panelTab === "styles" ? "ed-tab--active" : ""}`} onClick={() => { setPanelTab("styles"); setOpenSection(null); }}>Styles</button>
+        </div>
+
+        <div className="ed-panel__body">
+          {panelTab === "sections" ? (
+            <>
+              {themeConfig?.sections?.map(sec => (
+                <SectionCard
+                  key={sec.id}
+                  section={sec}
+                  isOpen={openSection === sec.id}
+                  onToggleOpen={() => {
+                    const next = openSection === sec.id ? null : sec.id;
+                    setOpenSection(next);
+                    if (next) {
+                      try {
+                        document.querySelector("iframe")?.contentWindow?.postMessage({ type: "SCROLL_TO_SECTION", sectionType: sec.type }, "*");
+                      } catch (_) {}
+                    }
+                  }}
+                  onToggleEnabled={v => toggleSection(sec.id, v)}
+                  store={store}
+                  onUpdate={updateSectionSettings}
+                  onLogoChange={saveLogo}
+                />
+              ))}
+              <button className="ed-add-section" disabled>
+                <Icon path={ICON_PATHS.plus} size={13} />
+                Add Section
+              </button>
+            </>
+          ) : (
+            <StylesPanel styles={themeConfig?.styles || DEFAULT_CONFIG.styles} onChange={updateStyles} />
+          )}
+        </div>
+      </div>
+
+      {/* ══ RIGHT: CANVAS ══ */}
+      <div className="ed-canvas">
+        {/* floating toolbar — يسار */}
+        <div className="ed-toolbar" style={{ position: "relative" }}>
+          <button className="ed-toolbar__select" onClick={() => setPageDropdown(p => !p)}>
+            {PAGES.find(p => p.id === currentPage)?.icon}
             {PAGES.find(p => p.id === currentPage)?.label}
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon path={ICON_PATHS.chevron} size={11} />
+          </button>
+          <div className="ed-toolbar__divider" />
+          <button className={`ed-toolbar__btn ${!isMobile ? "ed-toolbar__btn--active" : ""}`} onClick={() => setIsMobile(false)} title="Desktop">
+            <Icon path={ICON_PATHS.desktop} size={15} />
+          </button>
+          <button className={`ed-toolbar__btn ${isMobile ? "ed-toolbar__btn--active" : ""}`} onClick={() => setIsMobile(true)} title="Mobile">
+            <Icon path={ICON_PATHS.mobile} size={13} />
           </button>
 
-          {/* View toggle */}
-          <button className={`pb-view-btn ${!isMobile ? "pb-view-btn--active" : ""}`} onClick={() => setIsMobile(false)} title="Desktop">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-          </button>
-          <button className={`pb-view-btn ${isMobile ? "pb-view-btn--active" : ""}`} onClick={() => setIsMobile(true)} title="Mobile">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-          </button>
-
-          {/* Page dropdown */}
           {pageDropdown && (
             <>
               <div style={{ position:"fixed", inset:0, zIndex:998 }} onClick={() => setPageDropdown(false)} />
-              <div className="pb-page-dropdown">
+              <div className="ed-page-dropdown">
                 {PAGES.map(p => (
                   <div key={p.id}
-                    className={`pb-page-option ${currentPage === p.id ? "pb-page-option--active" : ""}`}
+                    className={`ed-page-option ${currentPage === p.id ? "ed-page-option--active" : ""}`}
                     onClick={() => { setCurrentPage(p.id); setPageDropdown(false); }}>
-                    <span>{p.icon}</span> {p.label}
+                    {p.icon} {p.label}
                   </div>
                 ))}
               </div>
@@ -1820,16 +1392,16 @@ function ThemeEdit() {
           )}
         </div>
 
-        {/* Right */}
-        <div className="pb-topbar__right">
-          <button className="pb-preview-btn" onClick={() => window.open(`/store/${store.slug}`, "_blank")}>
-            Preview ↗
+        {/* floating actions — يمين */}
+        <div className="ed-actions">
+          <button className="ed-btn-preview" onClick={() => window.open(`/store/${store.slug}`, "_blank")}>
+            Preview <Icon path={ICON_PATHS.external} size={13} />
           </button>
-          <button className="pb-publish-btn" onClick={save} disabled={saving}>
+          <button className="ed-btn-publish" onClick={save} disabled={saving}>
             {saving
               ? <>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
-                    strokeLinecap="round" style={{ animation:"pb-spin .7s linear infinite" }}>
+                    strokeLinecap="round" style={{ animation:"ed-spin .7s linear infinite" }}>
                     <circle cx="12" cy="12" r="9" strokeDasharray="42 100" opacity=".9" />
                   </svg>
                   Saving...
@@ -1838,124 +1410,8 @@ function ThemeEdit() {
             }
           </button>
         </div>
-      </div>
 
-      {/* ══ BODY ══ */}
-      <div className="pb-body">
-
-        {/* ── LEFT: Sections List ── */}
-        <div className="pb-left">
-          {/* Tabs: Sections | Styles */}
-          <div className="pb-tabs">
-            <button className={`pb-tab ${rightTab === "sections" ? "pb-tab--active" : ""}`}
-              onClick={() => setRightTab("sections")}>Sections</button>
-            <button className={`pb-tab ${rightTab === "styles" ? "pb-tab--active" : ""}`}
-              onClick={() => { setRightTab("styles"); setActiveSection(null); }}>Styles</button>
-          </div>
-
-          {rightTab === "sections" ? (
-            <>
-              <div className="pb-sections-list">
-                {themeConfig?.sections?.map((sec, idx) => {
-                  const meta = SECTION_META[sec.type] || {};
-                  return (
-                    <div key={sec.id}>
-                      {/* ── Section Item ── */}
-                      <div
-                        draggable
-                        onDragStart={() => setDragId(sec.id)}
-                        onDragOver={(e) => { e.preventDefault(); if (dropOverId !== sec.id) setDropOverId(sec.id); }}
-                        onDragLeave={() => setDropOverId(prev => (prev === sec.id ? null : prev))}
-                        onDrop={(e) => { e.preventDefault(); reorderSections(dragId, sec.id); setDragId(null); setDropOverId(null); }}
-                        onDragEnd={() => { setDragId(null); setDropOverId(null); }}
-                        className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""} ${dragId === sec.id ? "pb-section-item--dragging" : ""} ${dropOverId === sec.id && dragId && dragId !== sec.id ? "pb-section-item--drop-target" : ""}`}
-                        onClick={() => {
-                          const newActive = activeSection === sec.id ? null : sec.id;
-                          setActiveSection(newActive);
-                          // ✦ نطلب من الـ iframe يعمل scroll لهذا الـ section
-                          if (newActive) {
-                            try {
-                              document.querySelector("iframe")?.contentWindow?.postMessage(
-                                { type: "SCROLL_TO_SECTION", sectionType: sec.type }, "*"
-                              );
-                            } catch (_) {}
-                          }
-                        }}
-                      >
-                        <span className="pb-section-item__drag">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="9" cy="7" r="1" fill="currentColor"/>
-                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
-                            <circle cx="9" cy="17" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="7" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="17" r="1" fill="currentColor"/>
-                          </svg>
-                        </span>
-                        <span className="pb-section-item__index">{String(idx + 1).padStart(2, "0")}</span>
-                        <span className="pb-section-item__icon">{meta.icon}</span>
-                        <span className="pb-section-item__label">{meta.label}</span>
-                        <span onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}>
-                          <Toggle checked={sec.enabled} onChange={v => toggleSection(sec.id, v)} />
-                        </span>
-                      </div>
-
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="pb-add-section">
-                <button className="pb-add-btn" disabled>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Add Section
-                </button>
-              </div>
-            </>
-          ) : (
-            /* Styles panel inside left column */
-            <StylesPanel
-              styles={themeConfig?.styles || DEFAULT_CONFIG.styles}
-              onChange={updateStyles}
-            />
-          )}
-        </div>
-
-        {/* ── CENTER: Preview ── */}
-        <div className="pb-center">
-          <PreviewFrame
-            slug={store.slug}
-            isMobile={isMobile}
-            themeConfig={themeConfig}
-            activeSection={activeSection}
-          />
-        </div>
-
-        {/* ── RIGHT: Section Settings ── */}
-        {activeSectionObj ? (
-          <SectionSettingsPanel
-            section={activeSectionObj}
-            store={store}
-            onUpdate={updateSectionSettings}
-            onClose={() => setActiveSection(null)}
-            onLogoChange={saveLogo}
-          />
-        ) : (
-          <div className="pb-right">
-            <div className="pb-no-selection">
-              <div className="pb-no-selection__icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
-                </svg>
-              </div>
-              <div className="pb-no-selection__text">
-                اختر section من القائمة على اليسار لتعديل إعداداته
-              </div>
-            </div>
-          </div>
-        )}
-
+        <PreviewStage slug={store.slug} isMobile={isMobile} themeConfig={themeConfig} activeSection={openSection ? themeConfig?.sections?.find(s => s.id === openSection)?.type : null} />
       </div>
     </div>
   );
