@@ -246,7 +246,7 @@ const CSS = `
 .pb-shell {
   display: flex;
   height: 100vh;
-  background: #f4f5f7;
+  background: #eaebef;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
 }
@@ -830,7 +830,7 @@ const CSS = `
   flex:1; display:flex; align-items:center; justify-content:center;
   flex-direction:column; gap:16px; color:#94a3b8; font-size:.86rem;
   font-family:'Inter',sans-serif;
-  background: #f4f5f7;
+  background: #eaebef;
 }
 .pb-spinner {
   width:32px; height:32px; border:3px solid rgba(124,109,242,.15);
