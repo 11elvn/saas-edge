@@ -245,7 +245,7 @@ const CSS = `
 /* ── BUILDER SHELL ── */
 .pb-shell {
   display: flex;
-  height: calc(100vh - 60px);
+  height: 100vh;
   background: linear-gradient(160deg, #eef1fb 0%, #f5f6fb 45%, #fbfaff 100%);
   overflow: hidden;
   font-family: 'Inter', sans-serif;
@@ -343,7 +343,10 @@ const CSS = `
   border: none; background: transparent;
   font-size: .84rem; font-weight: 600; cursor: pointer;
   font-family: inherit; color: #374151; transition: all .18s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  white-space: nowrap;
 }
+.pb-preview-btn svg { flex-shrink: 0; }
 .pb-preview-btn:hover { background: rgba(255,255,255,.6); }
 
 /* ── BODY (below topbar) ── */
@@ -1782,7 +1785,7 @@ function ThemeEdit() {
         {/* Right */}
         <div className="pb-topbar__right">
           <button className="pb-preview-btn" onClick={() => window.open(`/store/${store.slug}`, "_blank")}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginInlineEnd: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
             </svg>
             View
