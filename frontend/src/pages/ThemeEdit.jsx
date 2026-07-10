@@ -246,7 +246,7 @@ const CSS = `
 .pb-shell {
   display: flex;
   height: 100vh;
-  background: linear-gradient(160deg, #eef1fb 0%, #f5f6fb 45%, #fbfaff 100%);
+  background: #f4f5f7;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
 }
@@ -449,7 +449,7 @@ const CSS = `
 .pb-center {
   flex: 1; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 30% 15%, #eef1fc 0%, #e6e8f3 55%, #e1e3ee 100%);
+  background: #eaebef;
   padding: 22px;
 }
 
@@ -830,7 +830,7 @@ const CSS = `
   flex:1; display:flex; align-items:center; justify-content:center;
   flex-direction:column; gap:16px; color:#94a3b8; font-size:.86rem;
   font-family:'Inter',sans-serif;
-  background: linear-gradient(160deg, #eef1fb 0%, #f5f6fb 45%, #fbfaff 100%);
+  background: #f4f5f7;
 }
 .pb-spinner {
   width:32px; height:32px; border:3px solid rgba(124,109,242,.15);
