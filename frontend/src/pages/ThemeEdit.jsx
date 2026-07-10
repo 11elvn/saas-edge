@@ -130,21 +130,102 @@ const DEFAULT_CONFIG = {
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
 const SECTION_META = {
-  announcement: { label: "Announcement Bar", icon: "📢" },
-  header:       { label: "Header",           icon: "🔝" },
-  hero:         { label: "Hero Banner",      icon: "🖼️" },
-  trust:        { label: "Trust Badges",     icon: "🛡️" },
-  collection:   { label: "Collection",       icon: "📦" },
-  categories:   { label: "Categories",       icon: "🗂️" },
-  footer:       { label: "Footer",           icon: "📋" },
+  announcement: { label: "Announcement Bar", icon: "announcement" },
+  header:       { label: "Header",           icon: "header" },
+  hero:         { label: "Hero Banner",      icon: "hero" },
+  trust:        { label: "Trust Badges",     icon: "trust" },
+  collection:   { label: "Collection",       icon: "collection" },
+  categories:   { label: "Categories",       icon: "categories" },
+  footer:       { label: "Footer",           icon: "footer" },
 };
 
 const PAGES = [
-  { id: "home",     label: "Home",     icon: "🏠" },
-  { id: "product",  label: "Product",  icon: "📦" },
-  { id: "category", label: "Category", icon: "🗂️" },
-  { id: "search",   label: "Search",   icon: "🔍" },
+  { id: "home",     label: "Home",     icon: "home" },
+  { id: "product",  label: "Product",  icon: "collection" },
+  { id: "category", label: "Category", icon: "categories" },
+  { id: "search",   label: "Search",   icon: "search" },
 ];
+
+// ─────────────────────────────────────────────
+// SVG ICON SET (outline style, replaces emoji)
+// ─────────────────────────────────────────────
+function Icon({ name, size = 15 }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" };
+  switch (name) {
+    case "announcement":
+      return (
+        <svg {...common}>
+          <path d="M3 11v2a2 2 0 0 0 2 2h1l3 5h2l-1-5h7a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-7l-3-5H5a2 2 0 0 0-2 2v2Z" />
+          <path d="M14 8v8" />
+        </svg>
+      );
+    case "header":
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="7" y1="6.5" x2="9" y2="6.5" />
+        </svg>
+      );
+    case "hero":
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <circle cx="8.5" cy="9.5" r="1.5" />
+          <path d="M21 16l-5-5-9 9" />
+        </svg>
+      );
+    case "trust":
+      return (
+        <svg {...common}>
+          <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3Z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+      );
+    case "collection":
+      return (
+        <svg {...common}>
+          <path d="M21 8L12 3 3 8l9 5 9-5Z" />
+          <path d="M3 8v8l9 5 9-5V8" />
+          <path d="M12 13v8" />
+        </svg>
+      );
+    case "categories":
+      return (
+        <svg {...common}>
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+      );
+    case "footer":
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="3" y1="15" x2="21" y2="15" />
+          <line x1="7" y1="17.5" x2="9" y2="17.5" />
+        </svg>
+      );
+    case "home":
+      return (
+        <svg {...common}>
+          <path d="M3 11l9-8 9 8" />
+          <path d="M5 10v10h14V10" />
+          <path d="M10 20v-6h4v6" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 const FONTS     = ["Cairo","Inter","Poppins","Roboto"];
 const RADII     = [{ v:"small", l:"صغير" },{ v:"medium", l:"متوسط" },{ v:"large", l:"كبير" }];
@@ -170,51 +251,51 @@ const CSS = `
   font-family: 'Inter', sans-serif;
 }
 
-/* ── TOP BAR ── */
+/* ── TOP BAR — glass pill ── */
 .pb-topbar {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 60px;
-  background: rgba(255,255,255,.72);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(15,23,42,.06);
-  box-shadow: 0 4px 24px rgba(15,23,42,.04);
+  top: 14px; left: 20px; right: 20px;
+  height: 56px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 999px;
+  box-shadow: 0 8px 32px rgba(15,23,42,.10), inset 0 1px 0 rgba(255,255,255,.7);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 22px;
+  padding: 0 8px 0 22px;
   z-index: 100;
   gap: 14px;
 }
 .pb-topbar__left  { display:flex; align-items:center; gap:12px; }
-.pb-topbar__mid   { display:flex; align-items:center; gap:7px; }
-.pb-topbar__right { display:flex; align-items:center; gap:9px; }
+.pb-topbar__mid   { display:flex; align-items:center; gap:4px; background: rgba(15,23,42,.045); border-radius: 999px; padding: 5px; }
+.pb-topbar__right { display:flex; align-items:center; gap:6px; }
 
 .pb-back-btn {
   display: flex; align-items: center; gap: 7px;
   font-size: .82rem; font-weight: 600; color: #64748b;
   background: none; border: none; cursor: pointer;
-  font-family: inherit; padding: 7px 12px; border-radius: 10px;
+  font-family: inherit; padding: 8px 14px; border-radius: 999px;
   transition: background .18s, color .18s;
 }
-.pb-back-btn:hover { background: rgba(124,109,242,.08); color: #1e1b4b; }
+.pb-back-btn:hover { background: rgba(239,68,68,.1); color: #dc2626; }
 
 .pb-draft-badge {
   font-size: .68rem; font-weight: 700;
-  padding: 4px 10px; border-radius: 99px;
+  padding: 4px 10px; border-radius: 999px;
   background: linear-gradient(135deg,#fff3d6,#ffe7b0); color: #92600e;
 }
 
 .pb-view-btn {
   display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(15,23,42,.08);
-  background: rgba(255,255,255,.7); cursor: pointer; color: #6b7280;
+  width: 32px; height: 32px; border-radius: 999px; border: none;
+  background: transparent; cursor: pointer; color: #6b7280;
   transition: all .18s;
 }
-.pb-view-btn:hover       { border-color: rgba(15,23,42,.16); color: #111; }
+.pb-view-btn:hover       { background: rgba(255,255,255,.6); color: #111; }
 .pb-view-btn--active     {
-  border-color: transparent;
   background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
   color: #fff;
   box-shadow: 0 6px 16px rgba(108,79,224,.35);
@@ -222,15 +303,15 @@ const CSS = `
 
 .pb-page-select {
   display: flex; align-items: center; gap: 7px;
-  padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(15,23,42,.08);
+  padding: 7px 14px; border-radius: 999px; border: none;
   font-size: .82rem; font-weight: 600; background: rgba(255,255,255,.7); cursor: pointer;
   color: #374151; font-family: inherit; transition: all .18s;
 }
-.pb-page-select:hover { border-color: rgba(15,23,42,.16); box-shadow: 0 2px 10px rgba(15,23,42,.06); }
+.pb-page-select:hover { background: #fff; box-shadow: 0 2px 10px rgba(15,23,42,.06); }
 
 .pb-page-dropdown {
   position: absolute;
-  top: 60px; left: 50%; transform: translateX(-50%);
+  top: 66px; left: 50%; transform: translateX(-50%);
   background: rgba(255,255,255,.92); backdrop-filter: blur(20px);
   border: 1px solid rgba(15,23,42,.06);
   border-radius: 14px; padding: 7px;
@@ -247,30 +328,30 @@ const CSS = `
 .pb-page-option--active  { background: rgba(124,109,242,.12); font-weight: 700; color: #5b3fd6; }
 
 .pb-publish-btn {
-  padding: 9px 22px; border-radius: 11px; border: none;
-  background: linear-gradient(135deg,#1f2937,#0f172a); color: #fff;
+  padding: 9px 20px; border-radius: 999px; border: none;
+  background: linear-gradient(135deg,#8b7cf6,#6c4fe0); color: #fff;
   font-size: .84rem; font-weight: 700; cursor: pointer;
   font-family: inherit; transition: transform .15s, box-shadow .15s;
   display: flex; align-items: center; gap: 7px;
-  box-shadow: 0 8px 20px rgba(15,23,42,.28);
+  box-shadow: 0 8px 20px rgba(108,79,224,.32);
 }
-.pb-publish-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(15,23,42,.34); }
+.pb-publish-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(108,79,224,.4); }
 .pb-publish-btn:disabled { opacity: .5; cursor: not-allowed; transform:none; }
 
 .pb-preview-btn {
-  padding: 9px 18px; border-radius: 11px;
-  border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.7);
+  padding: 9px 16px; border-radius: 999px;
+  border: none; background: transparent;
   font-size: .84rem; font-weight: 600; cursor: pointer;
   font-family: inherit; color: #374151; transition: all .18s;
 }
-.pb-preview-btn:hover { border-color: rgba(15,23,42,.18); background: #fff; }
+.pb-preview-btn:hover { background: rgba(255,255,255,.6); }
 
 /* ── BODY (below topbar) ── */
 .pb-body {
   display: flex;
   width: 100%;
   height: 100%;
-  padding-top: 60px;
+  padding-top: 86px;
 }
 
 /* ── LEFT PANEL — Sections list ── */
@@ -1309,7 +1390,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange 
     <div className="pb-right">
       <div className="pb-right__header">
         <div className="pb-right__title">
-          <span>{meta.icon}</span>
+          <span style={{ display:"flex" }}><Icon name={meta.icon} size={16} /></span>
           {meta.label}
         </div>
         <button className="pb-right__close" onClick={onClose}>
@@ -1662,7 +1743,7 @@ function ThemeEdit() {
         {/* Mid — page switcher */}
         <div className="pb-topbar__mid" style={{ position: "relative" }}>
           <button className="pb-page-select" onClick={() => setPageDropdown(p => !p)}>
-            <span>{PAGES.find(p => p.id === currentPage)?.icon}</span>
+            <span style={{ display:"flex" }}><Icon name={PAGES.find(p => p.id === currentPage)?.icon} size={15} /></span>
             {PAGES.find(p => p.id === currentPage)?.label}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="6 9 12 15 18 9"/>
@@ -1690,7 +1771,7 @@ function ThemeEdit() {
                   <div key={p.id}
                     className={`pb-page-option ${currentPage === p.id ? "pb-page-option--active" : ""}`}
                     onClick={() => { setCurrentPage(p.id); setPageDropdown(false); }}>
-                    <span>{p.icon}</span> {p.label}
+                    <span style={{ display:"flex" }}><Icon name={p.icon} size={15} /></span> {p.label}
                   </div>
                 ))}
               </div>
@@ -1701,12 +1782,20 @@ function ThemeEdit() {
         {/* Right */}
         <div className="pb-topbar__right">
           <button className="pb-preview-btn" onClick={() => window.open(`/store/${store.slug}`, "_blank")}>
-            Preview ↗
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginInlineEnd: 5 }}>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            View
           </button>
           <button className="pb-publish-btn" onClick={save} disabled={saving}>
             {saving
               ? <><span style={{ display:"inline-block", animation:"pb-spin .7s linear infinite" }}>⏳</span> Saving...</>
-              : <>Publish</>
+              : <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Save
+                </>
             }
           </button>
         </div>
@@ -1758,7 +1847,9 @@ function ThemeEdit() {
                             <circle cx="15" cy="17" r="1" fill="currentColor"/>
                           </svg>
                         </span>
-                        <span className="pb-section-item__icon">{meta.icon}</span>
+                        <span className="pb-section-item__icon" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <Icon name={meta.icon} size={15} />
+                        </span>
                         <span className="pb-section-item__label">{meta.label}</span>
                         <span onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}>
                           <Toggle checked={sec.enabled} onChange={v => toggleSection(sec.id, v)} />
