@@ -221,7 +221,7 @@ const DEFAULT_TC = {
     { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center" } },
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", titleAlign:"right", selectionMode:"all", productsShown:8, carouselMode:false, columns:3, imageRatio:"1:1", showBadge:true, showRating:false, showViewAll:true, viewAllText:"عرض الكل", viewAllStyle:"link", infiniteScroll:false } },
-    { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", showIcons:true, maxItems:6 } },
+    { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", titleAlign:"right", displayStyle:"grid", showIcons:true, maxItems:6 } },
     { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"", showSocials:false, bgColor:"#111827", textColor:"#ffffff" } },
   ],
   styles: { primaryColor:"#2563eb", secondaryColor:"#0f172a", fontFamily:"Cairo", borderRadius:"medium", buttonStyle:"filled" },
@@ -724,29 +724,38 @@ function PublicStore() {
         const s = sec(tc, "categories");
         const catTitle = s?.settings?.title || "التصنيفات";
         const maxItems = s?.settings?.maxItems || 6;
+        const titleAlign = s?.settings?.titleAlign || "right";
+        const displayStyle = s?.settings?.displayStyle || "grid";
         return (
         <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-            <div>
+          <div style={{
+            display: "flex", alignItems: "flex-end", marginBottom: 28, gap: 12,
+            justifyContent: titleAlign === "center" ? "center" : "space-between",
+            flexDirection: titleAlign === "left" ? "row-reverse" : "row",
+          }}>
+            <div style={{ textAlign: titleAlign, width: titleAlign === "center" ? "100%" : "auto" }}>
               <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>{catTitle}</h2>
               <p style={{ color: "#888", fontSize: 13, margin: 0 }}>اعثر على كل ما تريد</p>
             </div>
-            <button
-              onClick={() => navigate(`/store/${slug}/collections`)}
-              style={{
-                background: "none", border: `1.5px solid ${primary}`,
-                color: primary, padding: "7px 16px", borderRadius: 99,
-                fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-              }}
-            >عرض الكل ←</button>
+            {titleAlign !== "center" && (
+              <button
+                onClick={() => navigate(`/store/${slug}/collections`)}
+                style={{
+                  background: "none", border: `1.5px solid ${primary}`,
+                  color: primary, padding: "7px 16px", borderRadius: 99,
+                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  whiteSpace: "nowrap",
+                }}
+              >عرض الكل ←</button>
+            )}
           </div>
 
-          {/* Big category cards — bat-caveee style */}
+          {/* Category cards — Grid (multi-column) or Row (single column, full width) */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gridTemplateColumns: displayStyle === "row" ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))",
             gap: 16,
           }}>
             {categories.slice(0, maxItems).map(cat => (
@@ -758,12 +767,18 @@ function PublicStore() {
                   border: "1px solid #eee", background: "#fff",
                   boxShadow: "0 2px 8px rgba(0,0,0,.05)",
                   transition: "transform .25s, box-shadow .25s",
+                  display: displayStyle === "row" ? "flex" : "block",
+                  alignItems: displayStyle === "row" ? "center" : undefined,
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.05)"; }}
               >
-                {/* Big image */}
-                <div style={{ height: 200, overflow: "hidden", background: "#f9fafb" }}>
+                {/* Image */}
+                <div style={{
+                  height: displayStyle === "row" ? 110 : 200,
+                  width: displayStyle === "row" ? 160 : "100%",
+                  flexShrink: 0, overflow: "hidden", background: "#f9fafb",
+                }}>
                   {cat.image ? (
                     <img
                       src={cat.image} alt={cat.name}

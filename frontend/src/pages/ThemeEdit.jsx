@@ -95,6 +95,8 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         title: "التصنيفات",
+        titleAlign: "right",
+        displayStyle: "grid",
         showIcons: true,
         maxItems: 6,
       },
@@ -220,6 +222,13 @@ function Icon({ name, size = 15 }) {
         <svg {...common}>
           <circle cx="11" cy="11" r="7" />
           <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+      );
+    case "rowLayout":
+      return (
+        <svg {...common}>
+          <rect x="3" y="5" width="18" height="5" rx="1.5" />
+          <rect x="3" y="14" width="18" height="5" rx="1.5" />
         </svg>
       );
     case "eye":
@@ -1362,6 +1371,38 @@ function CategoriesSettings({ settings, onChange }) {
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
         </div>
         <div className="pb-field">
+          <div className="pb-label">Title alignment</div>
+          <div className="pb-segment">
+            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="pb-group">
+        <div className="pb-group__label">Layout</div>
+        <div className="pb-field">
+          <div className="pb-label">Display style</div>
+          <div className="pb-segment">
+            <button
+              className={`pb-seg-btn ${(settings.displayStyle || "grid") === "row" ? "pb-seg-btn--active" : ""}`}
+              onClick={() => s("displayStyle", "row")}>
+              <span style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <Icon name="rowLayout" size={13} /> Row
+              </span>
+            </button>
+            <button
+              className={`pb-seg-btn ${(settings.displayStyle || "grid") === "grid" ? "pb-seg-btn--active" : ""}`}
+              onClick={() => s("displayStyle", "grid")}>
+              <span style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <Icon name="categories" size={13} /> Grid
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="pb-field">
           <div className="pb-label">Max items to show</div>
           <div className="pb-segment">
             {[4,6,8].map(n => (
@@ -1371,9 +1412,6 @@ function CategoriesSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Options</div>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show icons</span>
           <Toggle checked={settings.showIcons} onChange={v => s("showIcons", v)} />
