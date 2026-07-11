@@ -224,6 +224,24 @@ function Icon({ name, size = 15 }) {
           <line x1="21" y1="21" x2="16.5" y2="16.5" />
         </svg>
       );
+    case "alignRight":
+      return (
+        <svg {...common}>
+          <line x1="21" y1="6" x2="3" y2="6" /><line x1="21" y1="12" x2="9" y2="12" /><line x1="21" y1="18" x2="6" y2="18" />
+        </svg>
+      );
+    case "alignCenter":
+      return (
+        <svg {...common}>
+          <line x1="21" y1="6" x2="3" y2="6" /><line x1="18" y1="12" x2="6" y2="12" /><line x1="19" y1="18" x2="5" y2="18" />
+        </svg>
+      );
+    case "alignLeft":
+      return (
+        <svg {...common}>
+          <line x1="21" y1="6" x2="3" y2="6" /><line x1="15" y1="12" x2="3" y2="12" /><line x1="18" y1="18" x2="3" y2="18" />
+        </svg>
+      );
     case "rowLayout":
       return (
         <svg {...common}>
@@ -1373,10 +1391,12 @@ function CategoriesSettings({ settings, onChange }) {
         <div className="pb-field">
           <div className="pb-label">Title alignment</div>
           <div className="pb-segment">
-            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
+            {[{v:"right",i:"alignRight"},{v:"center",i:"alignCenter"},{v:"left",i:"alignLeft"}].map(o => (
               <button key={o.v}
                 className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+                onClick={() => s("titleAlign", o.v)}>
+                <Icon name={o.i} size={15} />
+              </button>
             ))}
           </div>
         </div>

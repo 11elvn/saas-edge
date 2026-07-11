@@ -752,11 +752,13 @@ function PublicStore() {
             )}
           </div>
 
-          {/* Category cards — Grid (multi-column) or Row (single column, full width) */}
+          {/* Category cards — Grid (wraps, multi-column) or Row (single line, horizontal scroll) — same fixed card size in both */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: displayStyle === "row" ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))",
+            display: displayStyle === "row" ? "flex" : "grid",
+            gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(auto-fill, minmax(240px, 1fr))",
+            overflowX: displayStyle === "row" ? "auto" : undefined,
             gap: 16,
+            paddingBottom: displayStyle === "row" ? 4 : 0,
           }}>
             {categories.slice(0, maxItems).map(cat => (
               <div
@@ -767,18 +769,14 @@ function PublicStore() {
                   border: "1px solid #eee", background: "#fff",
                   boxShadow: "0 2px 8px rgba(0,0,0,.05)",
                   transition: "transform .25s, box-shadow .25s",
-                  display: displayStyle === "row" ? "flex" : "block",
-                  alignItems: displayStyle === "row" ? "center" : undefined,
+                  flexShrink: displayStyle === "row" ? 0 : undefined,
+                  width: displayStyle === "row" ? 240 : "auto",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.05)"; }}
               >
-                {/* Image */}
-                <div style={{
-                  height: displayStyle === "row" ? 110 : 200,
-                  width: displayStyle === "row" ? 160 : "100%",
-                  flexShrink: 0, overflow: "hidden", background: "#f9fafb",
-                }}>
+                {/* Image — same size regardless of layout mode */}
+                <div style={{ height: 160, width: "100%", overflow: "hidden", background: "#f9fafb" }}>
                   {cat.image ? (
                     <img
                       src={cat.image} alt={cat.name}
