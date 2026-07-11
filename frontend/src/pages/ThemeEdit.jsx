@@ -131,12 +131,12 @@ const DEFAULT_CONFIG = {
 // ─────────────────────────────────────────────
 const SECTION_META = {
   announcement: { label: "Announcement Bar", icon: "announcement" },
-  header:       { label: "Header",           icon: "header" },
+  header:       { label: "Header",           icon: "header", locked: true },
   hero:         { label: "Hero Banner",      icon: "hero" },
   trust:        { label: "Trust Badges",     icon: "trust" },
   collection:   { label: "Collection",       icon: "collection" },
   categories:   { label: "Categories",       icon: "categories" },
-  footer:       { label: "Footer",           icon: "footer" },
+  footer:       { label: "Footer",           icon: "footer", locked: true },
 };
 
 const PAGES = [
@@ -220,6 +220,37 @@ function Icon({ name, size = 15 }) {
         <svg {...common}>
           <circle cx="11" cy="11" r="7" />
           <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+      );
+    case "eye":
+      return (
+        <svg {...common}>
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    case "eye-off":
+      return (
+        <svg {...common}>
+          <path d="M17.9 17.9A10.4 10.4 0 0 1 12 20c-6.4 0-10-8-10-8a18.6 18.6 0 0 1 4.2-5.2M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+          <path d="M12 4c6.4 0 10 8 10 8a18.6 18.6 0 0 1-2.2 3.2" />
+          <line x1="2" y1="2" x2="22" y2="22" />
+        </svg>
+      );
+    case "trash":
+      return (
+        <svg {...common}>
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+      );
+    case "lock":
+      return (
+        <svg {...common}>
+          <rect x="4" y="10" width="16" height="11" rx="2" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
         </svg>
       );
     default:
@@ -426,9 +457,29 @@ const CSS = `
 
 .pb-section-item__drag {
   cursor: grab; color: #cbd5e1; flex-shrink: 0; padding: 2px;
+  display: flex; align-items: center; justify-content: center;
 }
 .pb-section-item__icon  { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; }
 .pb-section-item__label { flex: 1; font-size: .84rem; font-weight: 600; color: #334155; }
+
+.pb-section-item__actions {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  opacity: 0; transition: opacity .12s ease;
+}
+.pb-section-item:hover .pb-section-item__actions,
+.pb-section-item--active .pb-section-item__actions {
+  opacity: 1;
+}
+.pb-section-item__action {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1px solid rgba(15,23,42,.08);
+  color: #475569; cursor: pointer; padding: 0;
+  box-shadow: 0 1px 3px rgba(15,23,42,.08);
+  transition: all .14s ease;
+}
+.pb-section-item__action:hover { background: #f5f3ff; color: #5b3fd6; border-color: rgba(124,109,242,.3); }
+.pb-section-item__action--danger:hover { background: #fef2f2; color: #dc2626; border-color: rgba(220,38,38,.25); }
 
 .pb-toggle {
   position: relative;
@@ -467,6 +518,31 @@ const CSS = `
   transition: all .18s;
 }
 .pb-add-btn:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
+
+.pb-add-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 11px; right: 11px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 12px 32px rgba(15,23,42,.16);
+  padding: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 40;
+  animation: pb-fade .16s ease both;
+}
+.pb-add-menu__item {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 9px; border: none; background: none;
+  font-family: inherit; font-size: .82rem; font-weight: 600; color: #334155;
+  cursor: pointer; text-align: right; transition: background .12s;
+}
+.pb-add-menu__item:hover { background: rgba(124,109,242,.08); color: #5b3fd6; }
+.pb-add-menu__empty {
+  padding: 12px 10px; font-size: .78rem; color: #94a3b8; text-align: center;
+}
 
 /* ── CENTER — Preview ── */
 .pb-center {
@@ -827,7 +903,7 @@ const CSS = `
 .pb-tabs {
   display:flex; gap:4px;
   padding: 12px; margin: 0 2px;
-  background: rgba(15,23,42,.035);
+  background: #ffffff;
   border-radius: 12px;
 }
 .pb-tab {
@@ -1597,6 +1673,7 @@ function ThemeEdit() {
   const [isDirty,       setIsDirty]       = useState(false);
   const [collapsedLeft,  setCollapsedLeft]  = useState(false);
   const [collapsedRight, setCollapsedRight] = useState(false);
+  const [showAddMenu,    setShowAddMenu]    = useState(false);
   const PANEL_W = 340; // نفس عرض الأعمدة كيف كيف (يسار ويمين)
 
   const notify = (msg, type = "success") => {
@@ -1679,6 +1756,28 @@ function ThemeEdit() {
       sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s),
     }));
     setIsDirty(true);
+  }, []);
+
+  // ── Delete section (non-locked only) ─────────────────────
+  const deleteSection = useCallback((id) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      sections: prev.sections.filter(s => s.id !== id),
+    }));
+    setActiveSection(prevActive => (prevActive === id ? null : prevActive));
+    setIsDirty(true);
+  }, []);
+
+  // ── Add a section back (only types not already present) ──
+  const addSection = useCallback((type) => {
+    const template = DEFAULT_CONFIG.sections.find(s => s.type === type);
+    if (!template) return;
+    setThemeConfig(prev => ({
+      ...prev,
+      sections: [...prev.sections, { ...template, id: `${type}-${Date.now()}` }],
+    }));
+    setIsDirty(true);
+    setShowAddMenu(false);
   }, []);
 
   // ── Update global styles ─────────────────────────────────
@@ -1870,30 +1969,64 @@ function ThemeEdit() {
                         }}
                       >
                         <span className="pb-section-item__drag">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="9" cy="7" r="1" fill="currentColor"/>
-                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
-                            <circle cx="9" cy="17" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="7" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="17" r="1" fill="currentColor"/>
-                          </svg>
+                          {meta.locked ? (
+                            <Icon name="lock" size={13} />
+                          ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="9" cy="7" r="1" fill="currentColor"/>
+                              <circle cx="9" cy="12" r="1" fill="currentColor"/>
+                              <circle cx="9" cy="17" r="1" fill="currentColor"/>
+                              <circle cx="15" cy="7" r="1" fill="currentColor"/>
+                              <circle cx="15" cy="12" r="1" fill="currentColor"/>
+                              <circle cx="15" cy="17" r="1" fill="currentColor"/>
+                            </svg>
+                          )}
                         </span>
                         <span className="pb-section-item__icon" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
                           <Icon name={meta.icon} size={15} />
                         </span>
                         <span className="pb-section-item__label">{meta.label}</span>
-                        <span onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}>
-                          <Toggle checked={sec.enabled} onChange={v => toggleSection(sec.id, v)} />
-                        </span>
+                        {!meta.locked && (
+                          <span className="pb-section-item__actions">
+                            <button
+                              className="pb-section-item__action"
+                              title={sec.enabled ? "إخفاء" : "إظهار"}
+                              onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}
+                            >
+                              <Icon name={sec.enabled ? "eye" : "eye-off"} size={14} />
+                            </button>
+                            <button
+                              className="pb-section-item__action pb-section-item__action--danger"
+                              title="حذف"
+                              onClick={e => { e.stopPropagation(); deleteSection(sec.id); }}
+                            >
+                              <Icon name="trash" size={14} />
+                            </button>
+                          </span>
+                        )}
                       </div>
 
                     </div>
                   );
                 })}
               </div>
-              <div className="pb-add-section">
-                <button className="pb-add-btn" disabled>
+              <div className="pb-add-section" style={{ position: "relative" }}>
+                {showAddMenu && (
+                  <div className="pb-add-menu">
+                    {Object.entries(SECTION_META)
+                      .filter(([type]) => !themeConfig?.sections?.some(s => s.type === type))
+                      .map(([type, meta]) => (
+                        <button key={type} className="pb-add-menu__item" onClick={() => addSection(type)}>
+                          <Icon name={meta.icon} size={15} />
+                          <span>{meta.label}</span>
+                        </button>
+                      ))}
+                    {Object.keys(SECTION_META).every(type => themeConfig?.sections?.some(s => s.type === type)) && (
+                      <div className="pb-add-menu__empty">كل الأقسام مضافة بالفعل</div>
+                    )}
+                  </div>
+                )}
+                <button className="pb-add-btn" onClick={() => setShowAddMenu(v => !v)}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>
@@ -1913,7 +2046,7 @@ function ThemeEdit() {
         {/* ── Collapse toggle: Left panel ── */}
         <button
           className="pb-collapse-btn"
-          style={{ left: (collapsedLeft ? 0 : PANEL_W) - 13 }}
+          style={{ left: collapsedLeft ? 8 : PANEL_W - 13 }}
           onClick={() => setCollapsedLeft(v => !v)}
           title={collapsedLeft ? "إظهار القائمة" : "إخفاء القائمة"}
         >
@@ -1937,7 +2070,7 @@ function ThemeEdit() {
         {/* ── Collapse toggle: Right panel ── */}
         <button
           className="pb-collapse-btn"
-          style={{ right: (collapsedRight ? 0 : PANEL_W) - 13 }}
+          style={{ right: collapsedRight ? 8 : PANEL_W - 13 }}
           onClick={() => setCollapsedRight(v => !v)}
           title={collapsedRight ? "إظهار الإعدادات" : "إخفاء الإعدادات"}
         >
