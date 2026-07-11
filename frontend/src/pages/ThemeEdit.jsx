@@ -95,9 +95,9 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         title: "التصنيفات",
+        subtitle: "اعثر على كل ما تريد",
         titleAlign: "right",
         displayStyle: "grid",
-        showIcons: true,
         maxItems: 6,
       },
     },
@@ -1389,6 +1389,10 @@ function CategoriesSettings({ settings, onChange }) {
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
         </div>
         <div className="pb-field">
+          <div className="pb-label">Subtitle</div>
+          <input className="pb-input" value={settings.subtitle ?? "اعثر على كل ما تريد"} onChange={e => s("subtitle", e.target.value)} />
+        </div>
+        <div className="pb-field">
           <div className="pb-label">Title alignment</div>
           <div className="pb-segment">
             {[{v:"right",i:"alignRight"},{v:"center",i:"alignCenter"},{v:"left",i:"alignLeft"}].map(o => (
@@ -1421,20 +1425,6 @@ function CategoriesSettings({ settings, onChange }) {
               </span>
             </button>
           </div>
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">Max items to show</div>
-          <div className="pb-segment">
-            {[4,6,8].map(n => (
-              <button key={n}
-                className={`pb-seg-btn ${settings.maxItems === n ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("maxItems", n)}>{n}</button>
-            ))}
-          </div>
-        </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show icons</span>
-          <Toggle checked={settings.showIcons} onChange={v => s("showIcons", v)} />
         </div>
       </div>
     </>
