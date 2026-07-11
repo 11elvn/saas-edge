@@ -355,11 +355,31 @@ const CSS = `
   width: 100%;
   height: 100%;
   padding-top: 86px;
+  position: relative;
 }
+
+/* ── COLLAPSE ARROW (toggles left/right panels) ── */
+.pb-collapse-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 2px 8px rgba(15,23,42,.14);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  z-index: 60;
+  padding: 0;
+  transition: left .25s ease, right .25s ease, background .15s, color .15s;
+}
+.pb-collapse-btn:hover { background: #f5f3ff; color: #5b3fd6; }
 
 /* ── LEFT PANEL — Sections list ── */
 .pb-left {
-  width: 280px;
+  width: 340px;
   flex-shrink: 0;
   margin: 14px 0;
   background: rgba(255,255,255,.72);
@@ -370,6 +390,7 @@ const CSS = `
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width .25s ease;
 }
 
 .pb-left__header {
@@ -610,7 +631,7 @@ const CSS = `
 
 /* ── RIGHT PANEL — Settings ── */
 .pb-right {
-  width: 380px;
+  width: 340px;
   flex-shrink: 0;
   margin: 14px 0;
   background: rgba(255,255,255,.75);
@@ -621,6 +642,7 @@ const CSS = `
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width .25s ease;
   animation: pb-panel .22s ease;
 }
 
@@ -1375,7 +1397,7 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, collapsed }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
@@ -1394,7 +1416,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange 
   const meta = SECTION_META[section.type] || {};
 
   return (
-    <div className="pb-right">
+    <div className="pb-right" style={{ width: collapsed ? 0 : 340 }}>
       <div className="pb-right__header">
         <div className="pb-right__title">
           <span style={{ display:"flex" }}><Icon name={meta.icon} size={16} /></span>
@@ -1573,6 +1595,9 @@ function ThemeEdit() {
   const [currentPage,   setCurrentPage]   = useState("home");
   const [pageDropdown,  setPageDropdown]  = useState(false);
   const [isDirty,       setIsDirty]       = useState(false);
+  const [collapsedLeft,  setCollapsedLeft]  = useState(false);
+  const [collapsedRight, setCollapsedRight] = useState(false);
+  const PANEL_W = 340; // نفس عرض الأعمدة كيف كيف (يسار ويمين)
 
   const notify = (msg, type = "success") => {
     setNotif({ msg, type });
@@ -1812,7 +1837,7 @@ function ThemeEdit() {
       <div className="pb-body">
 
         {/* ── LEFT: Sections List ── */}
-        <div className="pb-left">
+        <div className="pb-left" style={{ width: collapsedLeft ? 0 : PANEL_W }}>
           {/* Tabs: Sections | Styles */}
           <div className="pb-tabs">
             <button className={`pb-tab ${rightTab === "sections" ? "pb-tab--active" : ""}`}
@@ -1885,6 +1910,20 @@ function ThemeEdit() {
           )}
         </div>
 
+        {/* ── Collapse toggle: Left panel ── */}
+        <button
+          className="pb-collapse-btn"
+          style={{ left: (collapsedLeft ? 0 : PANEL_W) - 13 }}
+          onClick={() => setCollapsedLeft(v => !v)}
+          title={collapsedLeft ? "إظهار القائمة" : "إخفاء القائمة"}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {collapsedLeft
+              ? <polyline points="9 6 15 12 9 18" />
+              : <polyline points="15 6 9 12 15 18" />}
+          </svg>
+        </button>
+
         {/* ── CENTER: Preview ── */}
         <div className="pb-center">
           <PreviewFrame
@@ -1895,6 +1934,20 @@ function ThemeEdit() {
           />
         </div>
 
+        {/* ── Collapse toggle: Right panel ── */}
+        <button
+          className="pb-collapse-btn"
+          style={{ right: (collapsedRight ? 0 : PANEL_W) - 13 }}
+          onClick={() => setCollapsedRight(v => !v)}
+          title={collapsedRight ? "إظهار الإعدادات" : "إخفاء الإعدادات"}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {collapsedRight
+              ? <polyline points="15 6 9 12 15 18" />
+              : <polyline points="9 6 15 12 9 18" />}
+          </svg>
+        </button>
+
         {/* ── RIGHT: Section Settings ── */}
         {activeSectionObj ? (
           <SectionSettingsPanel
@@ -1903,9 +1956,10 @@ function ThemeEdit() {
             onUpdate={updateSectionSettings}
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
+            collapsed={collapsedRight}
           />
         ) : (
-          <div className="pb-right">
+          <div className="pb-right" style={{ width: collapsedRight ? 0 : PANEL_W }}>
             <div className="pb-no-selection">
               <div className="pb-no-selection__icon">👈</div>
               <div className="pb-no-selection__text">
