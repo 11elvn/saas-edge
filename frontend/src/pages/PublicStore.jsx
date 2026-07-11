@@ -765,32 +765,37 @@ function PublicStore() {
                 key={cat._id}
                 onClick={() => navigate(`/store/${slug}/collections/${cat._id}`)}
                 style={{
+                  position: "relative",
                   borderRadius: 16, overflow: "hidden", cursor: "pointer",
-                  border: "1px solid #eee", background: "#fff",
-                  boxShadow: "0 2px 8px rgba(0,0,0,.05)",
+                  height: 280,
+                  boxShadow: "0 2px 8px rgba(0,0,0,.08)",
                   transition: "transform .25s, box-shadow .25s",
                   flexShrink: displayStyle === "row" ? 0 : undefined,
                   width: displayStyle === "row" ? 240 : "auto",
+                  background: "#f1f1f3",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.05)"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 34px rgba(0,0,0,.14)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.08)"; }}
               >
-                {/* Image — same size regardless of layout mode */}
-                <div style={{ height: 160, width: "100%", overflow: "hidden", background: "#f9fafb" }}>
-                  {cat.image ? (
-                    <img
-                      src={cat.image} alt={cat.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s" }}
-                      onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                      onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                    />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, color: "#e5e7eb" }}>📁</div>
-                  )}
-                </div>
-                {/* Name */}
-                <div style={{ padding: "14px 16px" }}>
-                  <span style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>{cat.name}</span>
+                {/* Background image (fills the whole card) */}
+                {cat.image ? (
+                  <img
+                    src={cat.image} alt={cat.name}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s" }}
+                    onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
+                    onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                  />
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, color: "#cbd5e1", background: "linear-gradient(135deg,#e5e7eb,#f8fafc)" }}>📁</div>
+                )}
+                {/* Bottom gradient for text readability */}
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "62%", background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))" }} />
+                {/* Overlaid title + link */}
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "16px" }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "#fff", marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,.3)" }}>{cat.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,.85)" }}>
+                    تصفح المجموعة <span style={{ fontSize: 14 }}>←</span>
+                  </div>
                 </div>
               </div>
             ))}
