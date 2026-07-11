@@ -359,12 +359,14 @@ const CSS = `
 
 /* ── LEFT PANEL — Sections list ── */
 .pb-left {
-  width: 264px;
+  width: 280px;
   flex-shrink: 0;
-  background: rgba(255,255,255,.58);
+  margin: 14px 0;
+  background: rgba(255,255,255,.72);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(15,23,42,.06);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(15,23,42,.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -608,12 +610,14 @@ const CSS = `
 
 /* ── RIGHT PANEL — Settings ── */
 .pb-right {
-  width: 300px;
+  width: 380px;
   flex-shrink: 0;
-  background: rgba(255,255,255,.6);
+  margin: 14px 0;
+  background: rgba(255,255,255,.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(15,23,42,.06);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(15,23,42,.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
