@@ -752,10 +752,10 @@ function PublicStore() {
             )}
           </div>
 
-          {/* Category cards — Grid (wraps, multi-column) or Row (single line, horizontal scroll) — same fixed card size in both */}
+          {/* Category cards — Grid (ثابت 2 أعمدة ديما، mobile و desktop) أو Row (سطر واحد، سكرول أفقي) */}
           <div style={{
             display: displayStyle === "row" ? "flex" : "grid",
-            gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(auto-fill, minmax(240px, 1fr))",
+            gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(2, 1fr)",
             overflowX: displayStyle === "row" ? "auto" : undefined,
             gap: 16,
             paddingBottom: displayStyle === "row" ? 4 : 0,
