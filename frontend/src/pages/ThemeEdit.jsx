@@ -108,12 +108,9 @@ const DEFAULT_CONFIG = {
       settings: {
         copyright: "© 2025 اسم متجرك",
         showNewsletter: true,
-        showTerms: true,
         termsText: "الشروط والسياسات",
         showSocials: true,
         socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "", whatsapp: "" },
-        bgColor: "#111827",
-        textColor: "#ffffff",
       },
     },
   ],
@@ -1461,17 +1458,10 @@ function FooterSettings({ settings, onChange }) {
           <span className="pb-toggle-row__label">Show newsletter box</span>
           <Toggle checked={settings.showNewsletter} onChange={v => s("showNewsletter", v)} />
         </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show terms link</span>
-          <Toggle checked={settings.showTerms} onChange={v => s("showTerms", v)} />
+        <div className="pb-field">
+          <div className="pb-label">Terms link text <span>خوي الخانة باش تخفي الرابط</span></div>
+          <input className="pb-input" value={settings.termsText || ""} onChange={e => s("termsText", e.target.value)} />
         </div>
-        {settings.showTerms && (
-          <div className="pb-field">
-            <div className="pb-label">Terms link text</div>
-            <input className="pb-input" value={settings.termsText || ""} onChange={e => s("termsText", e.target.value)}
-              placeholder="الشروط والسياسات" />
-          </div>
-        )}
       </div>
 
       <div className="pb-group">
@@ -1492,12 +1482,6 @@ function FooterSettings({ settings, onChange }) {
             ))}
           </>
         )}
-      </div>
-
-      <div className="pb-group">
-        <div className="pb-group__label">Styles</div>
-        <ColorField label="Background color" value={settings.bgColor}   onChange={v => s("bgColor", v)} />
-        <ColorField label="Text color"       value={settings.textColor} onChange={v => s("textColor", v)} />
       </div>
     </>
   );
@@ -1807,13 +1791,14 @@ function ThemeEdit() {
                 };
               }
               if (sec.type === "footer") {
-                // ✦ copyright نص حقيقي مكتوب (ماشي placeholder فارغ) — كي ما يكونش محفوظ نحطو نص افتراضي حقيقي
+                // ✦ copyright وtermsText نصوص حقيقية مكتوبة (ماشي placeholder فارغ) — كي ما يكونوش محفوظين نحطو نص افتراضي حقيقي
                 const defaultCopyright = `© ${new Date().getFullYear()} ${d.store.name || "اسم متجرك"}`;
                 return {
                   ...sec,
                   settings: {
                     ...sec.settings,
                     copyright: sec.settings?.copyright || defaultCopyright,
+                    termsText: sec.settings?.termsText || "الشروط والسياسات",
                     showSocials: sec.settings?.showSocials !== false, // ديفولت مفعّل
                     socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "", whatsapp: "", ...(sec.settings?.socials || {}) },
                   }

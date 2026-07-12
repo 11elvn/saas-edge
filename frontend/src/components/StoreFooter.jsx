@@ -59,8 +59,7 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
   const {
     copyright        = "",
     showNewsletter   = true,
-    showTerms        = true,
-    termsText        = "الشروط والسياسات",
+    termsText        = "",
     showSocials      = true,
     socials          = {},
   } = resolvedSettings;
@@ -135,10 +134,10 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
             {copyright || `© ${new Date().getFullYear()} ${storeName}`}
           </p>
 
-          {showTerms && (
+          {termsText.trim() && (
             <button
               onClick={() => {}}
-              style={{ background: "none", border: "none", cursor: "pointer", color: colors.text, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: 0 }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: colors.muted, fontSize: 12.5, fontWeight: 400, fontFamily: "inherit", padding: 0 }}
             >{termsText}</button>
           )}
 
