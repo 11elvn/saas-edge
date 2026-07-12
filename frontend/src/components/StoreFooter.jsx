@@ -1,28 +1,38 @@
 // ============================================================
 // 📁 components/StoreFooter.jsx — Shared footer for all store pages
-// لوغو كبير في الوسط بدون اسم — نفس تصميم bat-caveee
+// ✦ تصميم بسيط: Newsletter + Copyright + Terms + Social Icons
 // ============================================================
 
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-const IconWA = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-);
 const IconTikTok = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.82a8.16 8.16 0 004.77 1.53V6.89a4.85 4.85 0 01-1-.2z"/>
   </svg>
 );
 const IconIG = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
   </svg>
 );
 const IconFB = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+  </svg>
+);
+const IconYT = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.6 31.6 0 000 12a31.6 31.6 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.6 31.6 0 0024 12a31.6 31.6 0 00-.5-5.8zM9.6 15.6V8.4L15.8 12z"/>
+  </svg>
+);
+const IconX = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.24 2h3.4l-7.44 8.5L23 22h-6.86l-5.37-7.03L4.6 22H1.2l7.96-9.1L1 2h7.03l4.86 6.42zm-1.2 18h1.89L7.05 3.9H5.02z"/>
+  </svg>
+);
+const IconWA = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 );
 
@@ -35,97 +45,111 @@ function isLightColor(hex) {
   const g = parseInt(full.substring(2, 4), 16);
   const b = parseInt(full.substring(4, 6), 16);
   if ([r, g, b].some(Number.isNaN)) return true;
-  // معادلة luminance قياسية
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 }
 
-export default function StoreFooter({ store, slug, links, light = false, bgColor, textColor }) {
-  const navigate = useNavigate();
-
-  const logo      = store?.logo || "";
+export default function StoreFooter({ store, slug, light = false, bgColor, textColor, settings }) {
   const storeName = store?.name || "المتجر";
-  const primary   = store?.primaryColor   || "#2563eb";
-  const secondary = store?.secondaryColor || "#0f172a";
+  const primary   = store?.primaryColor || "#2563eb";
   const phone     = store?.whatsappNumber || "";
-  const initial   = storeName.charAt(0);
 
-  // ✦ إذا توصل لون من الـ theme نستعملوه، وإلا نرجعو لـ light/dark القديمة
+  // ✦ إلا ما توصلاتش settings كـ prop مباشرة، نقراوها بروحنا من store.themeConfig
+  //   هكذا أي صفحة عطات لينا store فيه themeConfig، الفوتر يبان نفسو بلا ما نكرر الكود فكل صفحة
+  const resolvedSettings = settings || store?.themeConfig?.sections?.find(s => s.type === "footer")?.settings || {};
+
+  const {
+    copyright        = "",
+    showNewsletter   = true,
+    showTerms        = true,
+    termsText        = "الشروط والسياسات",
+    socials          = {},
+  } = resolvedSettings;
+
+  const [email, setEmail] = useState("");
+  const [sent,  setSent]  = useState(false);
+
   const resolvedBg = bgColor || (light ? "#ffffff" : "#0d0d0d");
   const useLight   = bgColor ? isLightColor(resolvedBg) : light;
 
   const colors = useLight
-    ? { bg: resolvedBg, border: "#00000014", title: textColor || "#111", muted: "#888", mutedHover: textColor || "#111", social: "#ffffff1a", socialBorder: "#00000014", socialColor: textColor || "#111", copy: "#999" }
-    : { bg: resolvedBg, border: "#ffffff1f", title: textColor || "#fff", muted: "#aaa", mutedHover: textColor || "#fff", social: "#ffffff14", socialBorder: "#ffffff26", socialColor: textColor || "#fff", copy: "#888" };
+    ? { bg: resolvedBg, border: "#00000022", text: textColor || "#111", muted: "#666", icon: "#555", input: "#ffffff", inputBorder: "#00000022" }
+    : { bg: resolvedBg, border: "#ffffff2a", text: textColor || "#fff", muted: "#aaa", icon: "#ccc", input: "#ffffff10", inputBorder: "#ffffff2a" };
+
+  const socialList = [
+    { key: "facebook",  url: socials.facebook,  icon: <IconFB />,     hover: "#1877f2" },
+    { key: "instagram", url: socials.instagram, icon: <IconIG />,     hover: "#c13584" },
+    { key: "youtube",   url: socials.youtube,   icon: <IconYT />,     hover: "#ff0000" },
+    { key: "tiktok",    url: socials.tiktok,    icon: <IconTikTok />, hover: "#111"    },
+    { key: "twitter",   url: socials.twitter,   icon: <IconX />,      hover: "#111"    },
+    ...(phone ? [{ key: "whatsapp", url: `https://wa.me/${phone}`, icon: <IconWA />, hover: "#25d366" }] : []),
+  ].filter(s => s.url);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSent(true);
+    setTimeout(() => { setSent(false); setEmail(""); }, 2500);
+  };
 
   return (
-    <footer style={{
-      background: colors.bg,
-      borderTop: `1px solid ${colors.border}`,
-      padding: "48px 24px 32px",
-      direction: "rtl",
-    }}>
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+    <footer style={{ background: colors.bg, padding: "40px 24px 32px", direction: "rtl" }}>
+      <div style={{ maxWidth: 560, margin: "0 auto" }}>
 
-        {/* اللوغو كبير في الوسط */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 36 }}>
-          {logo ? (
-            <img src={logo} alt={storeName} style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", filter: "brightness(1.05)" }} />
-          ) : (
-            <div style={{ height: 80, width: 80, borderRadius: 20, background: `linear-gradient(135deg, ${primary}, ${secondary})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 34, filter: light ? "none" : "none" }}>{initial}</div>
+        {/* Newsletter */}
+        {showNewsletter && (
+          <form onSubmit={handleSubscribe} style={{ marginBottom: 24 }}>
+            <div style={{
+              display: "flex", alignItems: "center", background: colors.input,
+              border: `1px solid ${colors.inputBorder}`, borderRadius: 999, padding: "4px 4px 4px 18px",
+            }}>
+              <input
+                type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="البريد الإلكتروني"
+                style={{
+                  flex: 1, border: "none", outline: "none", background: "transparent",
+                  color: colors.text, fontSize: 14, fontFamily: "inherit", padding: "10px 0",
+                }}
+              />
+              <button type="submit" aria-label="اشترك" style={{
+                width: 36, height: 36, borderRadius: "50%", border: "none", cursor: "pointer",
+                background: primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                </svg>
+              </button>
+            </div>
+            {sent && <p style={{ color: primary, fontSize: 12, margin: "8px 0 0", textAlign: "center" }}>تم الاشتراك بنجاح ✓</p>}
+          </form>
+        )}
+
+        {/* Bottom box: copyright + terms + socials */}
+        <div style={{
+          border: `1px solid ${colors.border}`, borderRadius: 14, padding: "20px 20px",
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+        }}>
+          <p style={{ color: colors.muted, fontSize: 12.5, margin: 0, textAlign: "center" }}>
+            {copyright || `© ${new Date().getFullYear()} ${storeName}`}
+          </p>
+
+          {showTerms && (
+            <button
+              onClick={() => {}}
+              style={{ background: "none", border: "none", cursor: "pointer", color: colors.text, fontSize: 13, fontWeight: 600, fontFamily: "inherit", padding: 0 }}
+            >{termsText}</button>
           )}
-        </div>
 
-        {/* 3 أعمدة */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 28 }}>
-          {[
-            { title: "عن المتجر", items: [
-              { label: "عن المتجر",       action: () => navigate(`/store/${slug}`) },
-              { label: "طرق الدفع",       action: () => {} },
-              { label: "الشحن والتسليم", action: () => {} },
-            ]},
-            { title: "اتصل بنا", items: [
-              { label: "اتصل بنا",         action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
-              { label: "الأسئلة المتكررة", action: () => {} },
-            ]},
-            { title: "الشروط والسياسات", items: [
-              { label: "شروط الاستخدام",             action: () => {} },
-              { label: "سياسة الاستبدال والاسترجاع", action: () => {} },
-              { label: "سياسة الخصوصية",             action: () => {} },
-            ]},
-          ].map((col, ci) => (
-            <div key={ci} style={{ minWidth: 160, padding: "0 16px", textAlign: "center" }}>
-              <p style={{ margin: "0 0 12px", fontWeight: 700, fontSize: 14, color: colors.title, letterSpacing: .5 }}>{col.title}</p>
-              <div style={{ width: 32, height: 2, background: primary, margin: "0 auto 14px", borderRadius: 2 }} />
-              {col.items.map((item, ii) => (
-                <button key={ii} onClick={item.action} style={{ display: "block", width: "100%", background: "none", border: "none", cursor: "pointer", color: colors.muted, fontFamily: "inherit", fontSize: 13, padding: "5px 0", textAlign: "center", transition: "color .2s" }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.mutedHover}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.muted}
-                >{item.label}</button>
+          {socialList.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+              {socialList.map(s => (
+                <a key={s.key} href={s.url} target="_blank" rel="noreferrer"
+                  style={{ color: colors.icon, display: "flex", transition: "color .2s" }}
+                  onMouseEnter={e => e.currentTarget.style.color = s.hover}
+                  onMouseLeave={e => e.currentTarget.style.color = colors.icon}
+                >{s.icon}</a>
               ))}
             </div>
-          ))}
-        </div>
-
-        {/* Social Icons */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 28 }}>
-          {[
-            { icon: <IconTikTok />,  href: "#",                                          hover: "#222"    },
-            { icon: <IconIG />,      href: "#",                                          hover: "#c13584" },
-            { icon: <IconFB />,      href: "#",                                          hover: "#1877f2" },
-            ...(phone ? [{ icon: <IconWA />, href: `https://wa.me/${phone}`, hover: "#25d366" }] : []),
-          ].map((s, i) => (
-            <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ width: 44, height: 44, borderRadius: "50%", background: colors.social, border: `1px solid ${colors.socialBorder}`, display: "flex", alignItems: "center", justifyContent: "center", color: colors.socialColor, textDecoration: "none", transition: "background .2s, transform .2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = s.hover; e.currentTarget.style.transform = "scale(1.1)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = colors.social;  e.currentTarget.style.transform = "scale(1)"; }}
-            >{s.icon}</a>
-          ))}
-        </div>
-
-        {/* Copyright */}
-        <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: 20 }}>
-          <p style={{ color: colors.copy, fontSize: 12, margin: 0, textAlign: "center" }}>
-            © {new Date().getFullYear()} {storeName} · جميع الحقوق محفوظة
-          </p>
+          )}
         </div>
       </div>
     </footer>

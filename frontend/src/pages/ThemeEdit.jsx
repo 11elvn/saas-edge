@@ -107,7 +107,10 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         copyright: "",
-        showSocials: false,
+        showNewsletter: true,
+        showTerms: true,
+        termsText: "الشروط والسياسات",
+        socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "" },
         bgColor: "#111827",
         textColor: "#ffffff",
       },
@@ -1433,6 +1436,17 @@ function CategoriesSettings({ settings, onChange }) {
 
 function FooterSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
+  const setSocial = (platform, url) => onChange({ ...settings, socials: { ...(settings.socials || {}), [platform]: url } });
+  const socials = settings.socials || {};
+
+  const SOCIAL_FIELDS = [
+    { key: "facebook",  label: "Facebook",  placeholder: "https://facebook.com/yourpage" },
+    { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourpage" },
+    { key: "youtube",   label: "YouTube",   placeholder: "https://youtube.com/@yourchannel" },
+    { key: "tiktok",    label: "TikTok",    placeholder: "https://tiktok.com/@yourpage" },
+    { key: "twitter",   label: "X (Twitter)", placeholder: "https://x.com/yourpage" },
+  ];
+
   return (
     <>
       <div className="pb-group">
@@ -1440,20 +1454,40 @@ function FooterSettings({ settings, onChange }) {
         <div className="pb-field">
           <div className="pb-label">Copyright text <span>اختياري</span></div>
           <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)}
-            placeholder="جميع الحقوق محفوظة © 2025" />
+            placeholder="© 2025 اسم متجرك" />
         </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show newsletter box</span>
+          <Toggle checked={settings.showNewsletter} onChange={v => s("showNewsletter", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show terms link</span>
+          <Toggle checked={settings.showTerms} onChange={v => s("showTerms", v)} />
+        </div>
+        {settings.showTerms && (
+          <div className="pb-field">
+            <div className="pb-label">Terms link text</div>
+            <input className="pb-input" value={settings.termsText || ""} onChange={e => s("termsText", e.target.value)}
+              placeholder="الشروط والسياسات" />
+          </div>
+        )}
       </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Social links <span>اترك الحقل فارغ باش تخفي الأيقونة</span></div>
+        {SOCIAL_FIELDS.map(f => (
+          <div className="pb-field" key={f.key}>
+            <div className="pb-label">{f.label}</div>
+            <input className="pb-input" value={socials[f.key] || ""} onChange={e => setSocial(f.key, e.target.value)}
+              placeholder={f.placeholder} />
+          </div>
+        ))}
+      </div>
+
       <div className="pb-group">
         <div className="pb-group__label">Styles</div>
         <ColorField label="Background color" value={settings.bgColor}   onChange={v => s("bgColor", v)} />
         <ColorField label="Text color"       value={settings.textColor} onChange={v => s("textColor", v)} />
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Options</div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show social links</span>
-          <Toggle checked={settings.showSocials} onChange={v => s("showSocials", v)} />
-        </div>
       </div>
     </>
   );
