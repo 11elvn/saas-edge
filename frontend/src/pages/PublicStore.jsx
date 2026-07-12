@@ -222,7 +222,7 @@ const DEFAULT_TC = {
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", titleAlign:"right", selectionMode:"all", productsShown:8, carouselMode:false, columns:3, imageRatio:"1:1", showBadge:true, showRating:false, showViewAll:true, viewAllText:"عرض الكل", viewAllStyle:"link", infiniteScroll:false } },
     { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", subtitle:"اعثر على كل ما تريد", titleAlign:"right", displayStyle:"grid", maxItems:6 } },
-    { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"", showSocials:false, bgColor:"#111827", textColor:"#ffffff" } },
+    { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"", showNewsletter:true, showTerms:true, termsText:"الشروط والسياسات", socials:{ facebook:"", instagram:"", youtube:"", tiktok:"", twitter:"" }, bgColor:"#111827", textColor:"#ffffff" } },
   ],
   styles: { primaryColor:"#2563eb", secondaryColor:"#0f172a", fontFamily:"Cairo", borderRadius:"medium", buttonStyle:"filled" },
 };
@@ -1010,7 +1010,7 @@ function PublicStore() {
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
         <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} />
+          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(tc, "footer")?.settings || {}} />
         </SectionWrapper>
       )}
 
