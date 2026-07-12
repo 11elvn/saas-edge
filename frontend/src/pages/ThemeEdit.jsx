@@ -106,11 +106,12 @@ const DEFAULT_CONFIG = {
       type: "footer",
       enabled: true,
       settings: {
-        copyright: "",
+        copyright: "© 2025 اسم متجرك",
         showNewsletter: true,
         showTerms: true,
         termsText: "الشروط والسياسات",
-        socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "" },
+        showSocials: true,
+        socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "", whatsapp: "" },
         bgColor: "#111827",
         textColor: "#ffffff",
       },
@@ -1440,11 +1441,12 @@ function FooterSettings({ settings, onChange }) {
   const socials = settings.socials || {};
 
   const SOCIAL_FIELDS = [
-    { key: "facebook",  label: "Facebook",  placeholder: "https://facebook.com/yourpage" },
-    { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourpage" },
-    { key: "youtube",   label: "YouTube",   placeholder: "https://youtube.com/@yourchannel" },
-    { key: "tiktok",    label: "TikTok",    placeholder: "https://tiktok.com/@yourpage" },
+    { key: "facebook",  label: "Facebook",    placeholder: "https://facebook.com/yourpage" },
+    { key: "instagram", label: "Instagram",   placeholder: "https://instagram.com/yourpage" },
+    { key: "youtube",   label: "YouTube",     placeholder: "https://youtube.com/@yourchannel" },
+    { key: "tiktok",    label: "TikTok",      placeholder: "https://tiktok.com/@yourpage" },
     { key: "twitter",   label: "X (Twitter)", placeholder: "https://x.com/yourpage" },
+    { key: "whatsapp",  label: "WhatsApp number", placeholder: "213XXXXXXXXX" },
   ];
 
   return (
@@ -1453,8 +1455,7 @@ function FooterSettings({ settings, onChange }) {
         <div className="pb-group__label">Content</div>
         <div className="pb-field">
           <div className="pb-label">Copyright text <span>اختياري</span></div>
-          <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)}
-            placeholder="© 2025 اسم متجرك" />
+          <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)} />
         </div>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show newsletter box</span>
@@ -1474,14 +1475,23 @@ function FooterSettings({ settings, onChange }) {
       </div>
 
       <div className="pb-group">
-        <div className="pb-group__label">Social links <span>اترك الحقل فارغ باش تخفي الأيقونة</span></div>
-        {SOCIAL_FIELDS.map(f => (
-          <div className="pb-field" key={f.key}>
-            <div className="pb-label">{f.label}</div>
-            <input className="pb-input" value={socials[f.key] || ""} onChange={e => setSocial(f.key, e.target.value)}
-              placeholder={f.placeholder} />
-          </div>
-        ))}
+        <div className="pb-group__label">Social links</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show social links</span>
+          <Toggle checked={settings.showSocials !== false} onChange={v => s("showSocials", v)} />
+        </div>
+        {settings.showSocials !== false && (
+          <>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", margin: "2px 0 10px" }}>اترك الحقل فارغ باش تخفي الأيقونة</div>
+            {SOCIAL_FIELDS.map(f => (
+              <div className="pb-field" key={f.key}>
+                <div className="pb-label">{f.label}</div>
+                <input className="pb-input" value={socials[f.key] || ""} onChange={e => setSocial(f.key, e.target.value)}
+                  placeholder={f.placeholder} />
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       <div className="pb-group">
@@ -1773,14 +1783,15 @@ function ThemeEdit() {
         if (d.hasStore) {
           setStore(d.store);
           // إذا عنده themeConfig محفوظ استعمله، وإلا استعمل default
-          let cfg = d.store.themeConfig;
-          if (cfg && cfg.sections) {
-            // نفرض الـ 5 badges الثابتة (نحافظ فقط على enabled/title/sub لو كانت موجودة بنفس id)
-            const FIXED_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
-            cfg = {
-              ...cfg,
-              sections: cfg.sections.map(sec => {
-                if (sec.type !== "trust") return sec;
+          let cfg = (d.store.themeConfig && d.store.themeConfig.sections) ? d.store.themeConfig : DEFAULT_CONFIG;
+
+          // نفرض الـ 5 badges الثابتة (نحافظ فقط على enabled/title/sub لو كانت موجودة بنفس id)
+          const FIXED_BADGES = DEFAULT_CONFIG.sections.find(s => s.type === "trust")?.settings?.badges || [];
+
+          cfg = {
+            ...cfg,
+            sections: cfg.sections.map(sec => {
+              if (sec.type === "trust") {
                 const oldBadges = sec.settings?.badges || [];
                 const badges = FIXED_BADGES.map(fb => {
                   const old = oldBadges.find(b => b.id === fb.id);
@@ -1794,10 +1805,25 @@ function ThemeEdit() {
                     badges,
                   }
                 };
-              })
-            };
-          }
-          setThemeConfig(cfg && cfg.sections ? cfg : DEFAULT_CONFIG);
+              }
+              if (sec.type === "footer") {
+                // ✦ copyright نص حقيقي مكتوب (ماشي placeholder فارغ) — كي ما يكونش محفوظ نحطو نص افتراضي حقيقي
+                const defaultCopyright = `© ${new Date().getFullYear()} ${d.store.name || "اسم متجرك"}`;
+                return {
+                  ...sec,
+                  settings: {
+                    ...sec.settings,
+                    copyright: sec.settings?.copyright || defaultCopyright,
+                    showSocials: sec.settings?.showSocials !== false, // ديفولت مفعّل
+                    socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "", whatsapp: "", ...(sec.settings?.socials || {}) },
+                  }
+                };
+              }
+              return sec;
+            })
+          };
+
+          setThemeConfig(cfg);
         }
       })
       .catch(console.error)

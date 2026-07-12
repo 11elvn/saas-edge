@@ -51,7 +51,6 @@ function isLightColor(hex) {
 export default function StoreFooter({ store, slug, light = false, bgColor, textColor, settings }) {
   const storeName = store?.name || "المتجر";
   const primary   = store?.primaryColor || "#2563eb";
-  const phone     = store?.whatsappNumber || "";
 
   // ✦ إلا ما توصلاتش settings كـ prop مباشرة، نقراوها بروحنا من store.themeConfig
   //   هكذا أي صفحة عطات لينا store فيه themeConfig، الفوتر يبان نفسو بلا ما نكرر الكود فكل صفحة
@@ -62,6 +61,7 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
     showNewsletter   = true,
     showTerms        = true,
     termsText        = "الشروط والسياسات",
+    showSocials      = true,
     socials          = {},
   } = resolvedSettings;
 
@@ -75,13 +75,16 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
     ? { bg: resolvedBg, border: "#00000022", text: textColor || "#111", muted: "#666", icon: "#555", input: "#ffffff", inputBorder: "#00000022" }
     : { bg: resolvedBg, border: "#ffffff2a", text: textColor || "#fff", muted: "#aaa", icon: "#ccc", input: "#ffffff10", inputBorder: "#ffffff2a" };
 
-  const socialList = [
+  // ✦ رقم واتساب مربوط بالإعدادات ديال الفوتر (Social links) — ماشي رقم المتجر العام تلقائي
+  const waDigits = (socials.whatsapp || "").replace(/[^0-9]/g, "");
+
+  const socialList = !showSocials ? [] : [
     { key: "facebook",  url: socials.facebook,  icon: <IconFB />,     hover: "#1877f2" },
     { key: "instagram", url: socials.instagram, icon: <IconIG />,     hover: "#c13584" },
     { key: "youtube",   url: socials.youtube,   icon: <IconYT />,     hover: "#ff0000" },
     { key: "tiktok",    url: socials.tiktok,    icon: <IconTikTok />, hover: "#111"    },
     { key: "twitter",   url: socials.twitter,   icon: <IconX />,      hover: "#111"    },
-    ...(phone ? [{ key: "whatsapp", url: `https://wa.me/${phone}`, icon: <IconWA />, hover: "#25d366" }] : []),
+    { key: "whatsapp",  url: waDigits ? `https://wa.me/${waDigits}` : "", icon: <IconWA />, hover: "#25d366" },
   ].filter(s => s.url);
 
   const handleSubscribe = (e) => {
