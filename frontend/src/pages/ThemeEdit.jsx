@@ -130,6 +130,57 @@ const DEFAULT_CONFIG = {
 };
 
 // ─────────────────────────────────────────────
+// DEFAULT PRODUCT PAGE CONFIG — نفس القيم بالضبط ديال
+// DEFAULT_PRODUCT_SECTIONS فـ ProductDetails.jsx (لازم يبقاو متطابقين)
+// ─────────────────────────────────────────────
+const DEFAULT_PRODUCT_CONFIG = {
+  sections: [
+    {
+      id: "gallery",
+      type: "gallery",
+      enabled: true,
+      settings: { carouselMode: false, layout: "stacked", imageRatio: "1:1", enableZoom: false, showArrows: true },
+    },
+    {
+      id: "productInfo",
+      type: "productInfo",
+      enabled: true,
+      settings: {
+        ctaButtonText: "اطلب الآن",
+        showQuantitySelector: true,
+        showAddToCartButton: true,
+        badgeText: "الأكثر مبيعاً",
+        showDeliveryNote: true,
+        deliveryNote: "توصيل خلال 3-5 أيام عمل لجميع ولايات الجزائر 🚚",
+      },
+    },
+    {
+      id: "checkout",
+      type: "checkout",
+      enabled: true,
+      settings: {
+        sectionTitle: "معلومات الطلب",
+        titleAlign: "right",
+        submitButtonText: "تأكيد الطلب",
+        formStyle: "default",
+        buttonAnimation: "none",
+        showFieldIcons: true,
+        showAddressField: false,
+        showNoteField: false,
+        stickyButton: true,
+        stickyButtonText: "اطلب الآن",
+        fields: {
+          fullName:     { enabled: true, required: true },
+          phone:        { enabled: true, required: true },
+          province:     { enabled: true, required: true },
+          municipality: { enabled: true, required: false },
+        },
+      },
+    },
+  ],
+};
+
+// ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
 const SECTION_META = {
@@ -140,7 +191,15 @@ const SECTION_META = {
   collection:   { label: "Collection",       icon: "collection" },
   categories:   { label: "Categories",       icon: "categories" },
   footer:       { label: "Footer",           icon: "footer", locked: true },
+  // ── Product page sections ──
+  gallery:      { label: "Gallery",          icon: "gallery" },
+  productInfo:  { label: "Product Info",     icon: "productInfo" },
+  checkout:     { label: "In-Page Checkout", icon: "checkout" },
 };
+
+// ── أنواع الأقسام الخاصة بصفحة المنتج فقط (غير مشتركة مع Home) ──
+const PRODUCT_ONLY_TYPES = ["gallery", "productInfo", "checkout"];
+const HOME_ADDABLE_TYPES = ["announcement", "hero", "trust", "collection", "categories"]; // بدون header/footer (locked) وبدون أقسام المنتج
 
 const PAGES = [
   { id: "home",     label: "Home",     icon: "home" },
@@ -279,6 +338,28 @@ function Icon({ name, size = 15 }) {
         <svg {...common}>
           <rect x="4" y="10" width="16" height="11" rx="2" />
           <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+        </svg>
+      );
+    case "gallery":
+      return (
+        <svg {...common}>
+          <rect x="3" y="3" width="13" height="13" rx="2" />
+          <rect x="8" y="8" width="13" height="13" rx="2" />
+        </svg>
+      );
+    case "productInfo":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+          <line x1="12" y1="11.5" x2="12" y2="16" />
+        </svg>
+      );
+    case "checkout":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         </svg>
       );
     default:
@@ -1549,8 +1630,209 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
+// ── Gallery (صفحة المنتج) ──────────────────────────────────
+function GallerySettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  return (
+    <>
+      <div className="pb-group">
+        <div className="pb-group__label">Display mode</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Carousel mode</span>
+          <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Layout</div>
+          <div className="pb-segment">
+            {[{ v: "stacked", l: "Stacked" }, { v: "bottom-rail", l: "Bottom rail" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.layout || "stacked") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("layout", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Image options</div>
+        <div className="pb-field">
+          <div className="pb-label">Image ratio</div>
+          <div className="pb-segment">
+            {[{ v: "1:1", l: "1:1" }, { v: "3:4", l: "3:4" }, { v: "4:3", l: "4:3" }, { v: "adapt", l: "Adapt" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.imageRatio || "1:1") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("imageRatio", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Enable zoom</span>
+          <Toggle checked={!!settings.enableZoom} onChange={v => s("enableZoom", v)} />
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Navigation</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show arrows</span>
+          <Toggle checked={settings.showArrows !== false} onChange={v => s("showArrows", v)} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Product Info (صفحة المنتج) ─────────────────────────────
+function ProductInfoSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  return (
+    <>
+      <div className="pb-group">
+        <div className="pb-group__label">Checkout options</div>
+        <div className="pb-field">
+          <div className="pb-label">CTA button text</div>
+          <input className="pb-input" value={settings.ctaButtonText} onChange={e => s("ctaButtonText", e.target.value)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show quantity selector</span>
+          <Toggle checked={settings.showQuantitySelector !== false} onChange={v => s("showQuantitySelector", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show Add to Cart button</span>
+          <Toggle checked={settings.showAddToCartButton !== false} onChange={v => s("showAddToCartButton", v)} />
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Badges & notes</div>
+        <div className="pb-field">
+          <div className="pb-label">Badge text</div>
+          <input className="pb-input" value={settings.badgeText} onChange={e => s("badgeText", e.target.value)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show delivery note</span>
+          <Toggle checked={settings.showDeliveryNote !== false} onChange={v => s("showDeliveryNote", v)} />
+        </div>
+        {settings.showDeliveryNote !== false && (
+          <div className="pb-field">
+            <div className="pb-label">Delivery note</div>
+            <input className="pb-input" value={settings.deliveryNote} onChange={e => s("deliveryNote", e.target.value)} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ── In-Page Checkout (صفحة المنتج) ─────────────────────────
+const CHECKOUT_FIELD_LABELS = {
+  fullName:     "Full name",
+  phone:        "Phone number",
+  province:     "Province (Wilaya)",
+  municipality: "Municipality (Commune)",
+};
+
+function CheckoutSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  const setField = (key, patch) => onChange({ ...settings, fields: { ...settings.fields, [key]: { ...(settings.fields?.[key] || {}), ...patch } } });
+
+  return (
+    <>
+      <div className="pb-group">
+        <div className="pb-group__label">General</div>
+        <div className="pb-field">
+          <div className="pb-label">Section title</div>
+          <input className="pb-input" value={settings.sectionTitle} onChange={e => s("sectionTitle", e.target.value)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Title alignment</div>
+          <div className="pb-segment">
+            {[{ v: "right", l: "⇥" }, { v: "center", l: "≡" }, { v: "left", l: "⇤" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Submit button text</div>
+          <input className="pb-input" value={settings.submitButtonText} onChange={e => s("submitButtonText", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Form fields</div>
+        {Object.keys(CHECKOUT_FIELD_LABELS).map(key => {
+          const f = settings.fields?.[key] || { enabled: true, required: true };
+          return (
+            <div key={key} style={{ border: "1px solid #ececec", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+              <div className="pb-label" style={{ marginBottom: 8, fontWeight: 700, color: "#111" }}>{CHECKOUT_FIELD_LABELS[key]}</div>
+              <div className="pb-toggle-row">
+                <span className="pb-toggle-row__label">Required</span>
+                <Toggle checked={f.required !== false} onChange={v => setField(key, { required: v })} />
+              </div>
+              <div className="pb-toggle-row">
+                <span className="pb-toggle-row__label">Enabled</span>
+                <Toggle checked={f.enabled !== false} onChange={v => setField(key, { enabled: v })} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Form style</div>
+        <div className="pb-field">
+          <div className="pb-label">Form style</div>
+          <select className="pb-input" value={settings.formStyle || "default"} onChange={e => s("formStyle", e.target.value)}>
+            <option value="default">Default</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Button animation</div>
+          <select className="pb-input" value={settings.buttonAnimation || "none"} onChange={e => s("buttonAnimation", e.target.value)}>
+            <option value="none">None</option>
+            <option value="pulse">Pulse</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Field options</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show field icons</span>
+          <Toggle checked={settings.showFieldIcons !== false} onChange={v => s("showFieldIcons", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show address field</span>
+          <Toggle checked={!!settings.showAddressField} onChange={v => s("showAddressField", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show note field</span>
+          <Toggle checked={!!settings.showNoteField} onChange={v => s("showNoteField", v)} />
+        </div>
+      </div>
+
+      <div className="pb-group">
+        <div className="pb-group__label">Sticky button</div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Sticky order button</span>
+          <Toggle checked={settings.stickyButton !== false} onChange={v => s("stickyButton", v)} />
+        </div>
+        {settings.stickyButton !== false && (
+          <div className="pb-field">
+            <div className="pb-label">Sticky button text</div>
+            <input className="pb-input" value={settings.stickyButtonText} onChange={e => s("stickyButtonText", e.target.value)} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, collapsed }) {
-  const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
+  const updateSettings = (newSettings) => onUpdate(section.id, newSettings, section.type);
 
   const inner = () => {
     switch (section.type) {
@@ -1561,6 +1843,9 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
+      case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} />;
+      case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
+      case "checkout":     return <CheckoutSettings     settings={section.settings} onChange={updateSettings} />;
       default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
     }
   };
@@ -1590,7 +1875,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
 // ─────────────────────────────────────────────
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
+function PreviewFrame({ slug, isMobile, themeConfig, activeSection, previewPath }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
@@ -1655,7 +1940,14 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection }) {
     </div>
   );
 
-  const src = `/store/${slug}?preview=1`;
+  if (!previewPath) return (
+    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
+      <div style={{ fontSize:"2rem" }}>📦</div>
+      <div style={{ fontSize:".85rem" }}>أضف منتج واحد على الأقل لمعاينة صفحة المنتج</div>
+    </div>
+  );
+
+  const src = previewPath;
 
   if (isMobile) return (
     <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1808,6 +2100,11 @@ function ThemeEdit() {
             })
           };
 
+          // ✦ إذا ماعندهش إعدادات صفحة المنتج محفوظة، نستعمل الديفولت
+          if (!cfg.product?.sections) {
+            cfg = { ...cfg, product: DEFAULT_PRODUCT_CONFIG };
+          }
+
           setThemeConfig(cfg);
         }
       })
@@ -1815,13 +2112,27 @@ function ThemeEdit() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ── Fetch products (لأخذ منتج عيّنة لمعاينة صفحة المنتج) ──
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    fetch(`${API()}/api/products/my-products`, {
+      headers: { Authorization: `Bearer ${token()}` },
+    })
+      .then(r => r.json())
+      .then(d => setProducts(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
+
   // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح settings الـ section المختار
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type !== "SECTION_CLICK") return;
       const sectionType = e.data.sectionType;
-      // نلقى الـ section اللي type ديالو يطابق
-      const matched = themeConfig?.sections?.find(s => s.type === sectionType);
+      // نلقى الـ section اللي type ديالو يطابق — من أقسام Home أو أقسام Product
+      const pool = PRODUCT_ONLY_TYPES.includes(sectionType)
+        ? (themeConfig?.product?.sections || [])
+        : (themeConfig?.sections || []);
+      const matched = pool.find(s => s.type === sectionType);
       if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
@@ -1831,44 +2142,69 @@ function ThemeEdit() {
     return () => window.removeEventListener("message", handler);
   }, [themeConfig]);
 
-  // ── Update section settings ──────────────────────────────
-  const updateSectionSettings = useCallback((id, newSettings) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.map(s =>
-        s.id === id ? { ...s, settings: newSettings } : s
-      ),
-    }));
+  // ── Update section settings (يفرّق بين أقسام Home وأقسام Product) ──
+  const updateSectionSettings = useCallback((id, newSettings, type) => {
+    setThemeConfig(prev => {
+      if (PRODUCT_ONLY_TYPES.includes(type)) {
+        return {
+          ...prev,
+          product: {
+            ...prev.product,
+            sections: (prev.product?.sections || []).map(s => s.id === id ? { ...s, settings: newSettings } : s),
+          },
+        };
+      }
+      return { ...prev, sections: prev.sections.map(s => s.id === id ? { ...s, settings: newSettings } : s) };
+    });
     setIsDirty(true);
   }, []);
 
   // ── Toggle section enabled ───────────────────────────────
-  const toggleSection = useCallback((id, enabled) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s),
-    }));
+  const toggleSection = useCallback((id, enabled, type) => {
+    setThemeConfig(prev => {
+      if (PRODUCT_ONLY_TYPES.includes(type)) {
+        return {
+          ...prev,
+          product: {
+            ...prev.product,
+            sections: (prev.product?.sections || []).map(s => s.id === id ? { ...s, enabled } : s),
+          },
+        };
+      }
+      return { ...prev, sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s) };
+    });
     setIsDirty(true);
   }, []);
 
   // ── Delete section (non-locked only) ─────────────────────
-  const deleteSection = useCallback((id) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.filter(s => s.id !== id),
-    }));
+  const deleteSection = useCallback((id, type) => {
+    setThemeConfig(prev => {
+      if (PRODUCT_ONLY_TYPES.includes(type)) {
+        return { ...prev, product: { ...prev.product, sections: (prev.product?.sections || []).filter(s => s.id !== id) } };
+      }
+      return { ...prev, sections: prev.sections.filter(s => s.id !== id) };
+    });
     setActiveSection(prevActive => (prevActive === id ? null : prevActive));
     setIsDirty(true);
   }, []);
 
   // ── Add a section back (only types not already present) ──
   const addSection = useCallback((type) => {
-    const template = DEFAULT_CONFIG.sections.find(s => s.type === type);
-    if (!template) return;
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: [...prev.sections, { ...template, id: `${type}-${Date.now()}` }],
-    }));
+    if (PRODUCT_ONLY_TYPES.includes(type)) {
+      const template = DEFAULT_PRODUCT_CONFIG.sections.find(s => s.type === type);
+      if (!template) return;
+      setThemeConfig(prev => ({
+        ...prev,
+        product: { ...prev.product, sections: [...(prev.product?.sections || []), { ...template, id: `${type}-${Date.now()}` }] },
+      }));
+    } else {
+      const template = DEFAULT_CONFIG.sections.find(s => s.type === type);
+      if (!template) return;
+      setThemeConfig(prev => ({
+        ...prev,
+        sections: [...prev.sections, { ...template, id: `${type}-${Date.now()}` }],
+      }));
+    }
     setIsDirty(true);
     setShowAddMenu(false);
   }, []);
@@ -1928,7 +2264,26 @@ function ThemeEdit() {
     }
   };
 
-  const activeSectionObj = themeConfig?.sections?.find(s => s.id === activeSection);
+  // ── الأقسام المعروضة حسب الصفحة الحالية (Home أو Product) ──
+  const productPageSections = themeConfig?.product?.sections || DEFAULT_PRODUCT_CONFIG.sections;
+  const displayedSections = currentPage === "product"
+    ? [
+        themeConfig?.sections?.find(s => s.type === "announcement"),
+        themeConfig?.sections?.find(s => s.type === "header"),
+        ...productPageSections,
+        themeConfig?.sections?.find(s => s.type === "footer"),
+      ].filter(Boolean)
+    : (themeConfig?.sections || []);
+
+  const activeSectionObj = displayedSections.find(s => s.id === activeSection);
+
+  // ── مسار المعاينة: صفحة المتجر أو صفحة أول منتج (للـ preview) ──
+  const previewSampleProductId = products?.[0]?._id;
+  const previewPath = store
+    ? (currentPage === "product"
+        ? (previewSampleProductId ? `/store/${store.slug}/product/${previewSampleProductId}?preview=1` : null)
+        : `/store/${store.slug}?preview=1`)
+    : null;
 
   // ── Loading ──────────────────────────────────────────────
   if (loading) return (
@@ -2041,7 +2396,7 @@ function ThemeEdit() {
           {rightTab === "sections" ? (
             <>
               <div className="pb-sections-list">
-                {themeConfig?.sections?.map((sec, idx) => {
+                {displayedSections.map((sec, idx) => {
                   const meta = SECTION_META[sec.type] || {};
                   return (
                     <div key={sec.id}>
@@ -2084,14 +2439,14 @@ function ThemeEdit() {
                             <button
                               className="pb-section-item__action"
                               title={sec.enabled ? "إخفاء" : "إظهار"}
-                              onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}
+                              onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled, sec.type); }}
                             >
                               <Icon name={sec.enabled ? "eye" : "eye-off"} size={14} />
                             </button>
                             <button
                               className="pb-section-item__action pb-section-item__action--danger"
                               title="حذف"
-                              onClick={e => { e.stopPropagation(); deleteSection(sec.id); }}
+                              onClick={e => { e.stopPropagation(); deleteSection(sec.id, sec.type); }}
                             >
                               <Icon name="trash" size={14} />
                             </button>
@@ -2106,15 +2461,16 @@ function ThemeEdit() {
               <div className="pb-add-section" style={{ position: "relative" }}>
                 {showAddMenu && (
                   <div className="pb-add-menu">
-                    {Object.entries(SECTION_META)
-                      .filter(([type]) => !themeConfig?.sections?.some(s => s.type === type))
-                      .map(([type, meta]) => (
+                    {(currentPage === "product" ? PRODUCT_ONLY_TYPES : HOME_ADDABLE_TYPES)
+                      .filter(type => !displayedSections.some(s => s.type === type))
+                      .map(type => (
                         <button key={type} className="pb-add-menu__item" onClick={() => addSection(type)}>
-                          <Icon name={meta.icon} size={15} />
-                          <span>{meta.label}</span>
+                          <Icon name={SECTION_META[type]?.icon} size={15} />
+                          <span>{SECTION_META[type]?.label}</span>
                         </button>
                       ))}
-                    {Object.keys(SECTION_META).every(type => themeConfig?.sections?.some(s => s.type === type)) && (
+                    {(currentPage === "product" ? PRODUCT_ONLY_TYPES : HOME_ADDABLE_TYPES)
+                      .every(type => displayedSections.some(s => s.type === type)) && (
                       <div className="pb-add-menu__empty">كل الأقسام مضافة بالفعل</div>
                     )}
                   </div>
@@ -2157,6 +2513,7 @@ function ThemeEdit() {
             isMobile={isMobile}
             themeConfig={themeConfig}
             activeSection={activeSection}
+            previewPath={previewPath}
           />
         </div>
 
