@@ -27,7 +27,7 @@ function loadFont(font) {
 // ── DEFAULTS — نفس القيم المبدئية ديال ThemeEdit (announcement/header/footer + styles) ──
 const DEFAULT_HOME_SECTIONS = [
   { id: "announcement", type: "announcement", enabled: true, settings: { message: "توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor: "#111827", textColor: "#ffffff", animation: true, showClose: false } },
-  { id: "header",       type: "header",       enabled: true, settings: { showSearch: true, showCart: true, sticky: true } },
+  { id: "header",       type: "header",       enabled: true, settings: { showSearch: true, showCart: true, sticky: true, height: "normal", logoSize: "medium", useCustomColors: false, bgColor: "#ffffff", textColor: "#111111", borderColor: "#f0f0f0" } },
   { id: "footer",       type: "footer",       enabled: true, settings: { copyright: "", showNewsletter: true, termsText: "الشروط والسياسات", showSocials: true, socials: {} } },
 ];
 const DEFAULT_STYLES = {
@@ -376,12 +376,18 @@ function ProductDetails() {
       )}
 
       {/* ── Navbar ── */}
+      {(() => {
+        const hs = headerSettings || {};
+        const headerColors = hs.useCustomColors
+          ? { primary, secondary, bgColor: hs.bgColor || bgColor, borderColor: hs.borderColor || borderColor, textColor: hs.textColor || textColor }
+          : { primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor };
+        return (
       <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
         <StoreNavbar
           store={store}
           slug={slug}
-          headerSettings={headerSettings}
-          themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+          headerSettings={hs}
+          themeColors={headerColors}
           links={[
             { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
             { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
@@ -389,6 +395,8 @@ function ProductDetails() {
           ]}
         />
       </SectionWrapper>
+        );
+      })()}
 
       {/* ── Content ── */}
       <div

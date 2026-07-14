@@ -19,6 +19,9 @@ router.post("/create", async (req, res) => {
       customerName,
       phone,
       address,
+      municipality,
+      note,
+      quantity,
       shippingCity,
       shippingPrice,
       totalPrice
@@ -44,7 +47,8 @@ router.post("/create", async (req, res) => {
     }
 
     // ✦ التحقق من المخزون — هنا كانت المشكلة
-    if (product.stock <= 0) {
+    const qty = Math.max(1, Number(quantity) || 1);
+    if (product.stock <= 0 || product.stock < qty) {
       return res.status(400).json({ message: "عذراً، هذا المنتج نفد من المخزون 😔" });
     }
 
@@ -54,6 +58,9 @@ router.post("/create", async (req, res) => {
       customerName,
       phone:         cleanPhone,
       address:       address || "",
+      municipality:  municipality || "",
+      note:          note || "",
+      quantity:      qty,
       shippingCity,
       shippingPrice: Number(shippingPrice) || 0,
       totalPrice:    Number(totalPrice) || product.currentPrice,
@@ -66,7 +73,7 @@ router.post("/create", async (req, res) => {
     // ✦ تناقص المخزون بعد حفظ الطلب — atomic يمنع race condition
     await Product.findByIdAndUpdate(
       productId,
-      { $inc: { stock: -1 } }
+      { $inc: { stock: -qty } }
     );
 
     res.status(201).json({

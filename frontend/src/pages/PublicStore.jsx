@@ -217,7 +217,7 @@ function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
 const DEFAULT_TC = {
   sections: [
     { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
-    { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
+    { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true, height:"normal", logoSize:"medium", useCustomColors:false, bgColor:"#ffffff", textColor:"#111111", borderColor:"#f0f0f0" } },
     { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center" } },
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", titleAlign:"right", selectionMode:"all", productsShown:8, carouselMode:false, columns:3, imageRatio:"1:1", showBadge:true, showRating:false, showViewAll:true, viewAllText:"عرض الكل", viewAllStyle:"link", infiniteScroll:false } },
@@ -535,13 +535,18 @@ function PublicStore() {
       })()}
 
       {/* ── Navbar ── */}
-      {sec(tc, "header")?.enabled !== false && (
+      {sec(tc, "header")?.enabled !== false && (() => {
+        const hs = sec(tc, "header")?.settings || {};
+        const headerColors = hs.useCustomColors
+          ? { primary, secondary, bgColor: hs.bgColor || bgColor, borderColor: hs.borderColor || borderColor, textColor: hs.textColor || textColor }
+          : { primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor };
+        return (
       <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
       <StoreNavbar
         store={store}
         slug={slug}
-        headerSettings={sec(tc, "header")?.settings}
-        themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+        headerSettings={hs}
+        themeColors={headerColors}
         links={[
           { label: "الصفحة الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
           { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
@@ -549,7 +554,8 @@ function PublicStore() {
         ]}
       />
       </SectionWrapper>
-      )}
+        );
+      })()}
 
       {/* ── Hero / Banner ── */}
       {(() => {

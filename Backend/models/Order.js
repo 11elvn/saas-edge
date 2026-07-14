@@ -11,7 +11,19 @@ const orderSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    default: "" // حقل العنوان التفريقي أو البلدية
+    default: "" // حقل العنوان التفصيلي (اختياري)
+  },
+  municipality: {
+    type: String,
+    default: "" // البلدية (Commune) — حقل اختياري حسب إعدادات الفورم
+  },
+  note: {
+    type: String,
+    default: "" // ملاحظة الزبون على الطلب — حقل اختياري حسب إعدادات الفورم
+  },
+  quantity: {
+    type: Number,
+    default: 1
   },
   shippingCity: {
     type: String,
