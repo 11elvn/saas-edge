@@ -1631,7 +1631,7 @@ function FooterSettings({ settings, onChange }) {
 // ─────────────────────────────────────────────
 // PRODUCT PAGE SETTINGS PANELS
 // ─────────────────────────────────────────────
-function GallerySettings({ settings, onChange }) {
+function GallerySettings({ settings, onChange, isMobile }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
@@ -1640,7 +1640,7 @@ function GallerySettings({ settings, onChange }) {
           <span className="pb-toggle-row__label">Carousel mode</span>
           <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
         </div>
-        {!settings.carouselMode && (
+        {!settings.carouselMode && !isMobile && (
           <div className="pb-field">
             <div className="pb-label">Layout</div>
             <div className="pb-segment">
@@ -1651,6 +1651,11 @@ function GallerySettings({ settings, onChange }) {
               ))}
             </div>
           </div>
+        )}
+        {!settings.carouselMode && isMobile && (
+          <p style={{ fontSize: ".72rem", color: "#9ca3af", margin: "-3px 0 0" }}>
+            على الهاتف، الصور تتعرض ديما بشكل شريط تحتي (Bottom rail) — بدّل لنسخة الحاسوب باش تختار Layout.
+          </p>
         )}
       </Collapse>
 
@@ -1908,7 +1913,7 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, collapsed }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, collapsed, isMobile }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
@@ -1920,7 +1925,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
-      case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} />;
+      case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
       case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
       case "checkout":     return <CheckoutSettings     settings={section.settings} onChange={updateSettings} />;
       default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
@@ -2615,6 +2620,7 @@ function ThemeEdit() {
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
             collapsed={collapsedRight}
+            isMobile={isMobile}
           />
         ) : (
           <div className="pb-right" style={{ width: collapsedRight ? 0 : PANEL_W }}>
