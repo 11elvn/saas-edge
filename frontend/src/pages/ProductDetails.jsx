@@ -532,7 +532,7 @@ function ProductDetails() {
 
           {/* Product Info */}
           <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"}>
-            <div className="pd-fade pd-d1" style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
+            <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
               {productInfoSettings.badgeText?.trim() && (
                 <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
                   {productInfoSettings.badgeText}
@@ -557,14 +557,16 @@ function ProductDetails() {
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0 }}>{product.description}</p>
+              {product.description && (
+                <p style={{ fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0 }}>{product.description}</p>
+              )}
               {product.stock > 0 && product.stock <= 5 && (
                 <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>⚠️ بقي {product.stock} قطعة فقط</p>
               )}
 
               {/* Quantity selector */}
               {productInfoSettings.showQuantitySelector !== false && (
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 18 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 20, marginBottom: 22 }}>
                   <span style={{ fontSize: 13, color: mutedTextColor, fontWeight: 600 }}>الكمية</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button className="pd-qty-btn" onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
@@ -574,13 +576,13 @@ function ProductDetails() {
                 </div>
               )}
 
-              {/* CTA + Add to cart */}
-              <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
+              {/* CTA + Add to cart — مرصوصين فوق بعض */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button
                   onClick={scrollToCheckout}
                   disabled={outOfStock}
                   style={{
-                    flex: 1, minWidth: 140, border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
+                    width: "100%", border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
                     borderRadius: 12, padding: "13px 0", background: outOfStock ? "#f3f4f6" : primary,
                     color: outOfStock ? "#aaa" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "inherit",
                   }}
@@ -591,9 +593,9 @@ function ProductDetails() {
                   <button
                     onClick={scrollToCheckout}
                     style={{
-                      flex: 1, minWidth: 140, border: `1px solid ${borderColor}`, cursor: "pointer",
+                      width: "100%", border: `1.5px solid ${primary}`, cursor: "pointer",
                       borderRadius: 12, padding: "13px 0", background: "transparent",
-                      color: textColor, fontSize: 14, fontWeight: 800, fontFamily: "inherit",
+                      color: primary, fontSize: 14, fontWeight: 800, fontFamily: "inherit",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
                   >
@@ -603,7 +605,7 @@ function ProductDetails() {
               </div>
 
               {productInfoSettings.showDeliveryNote !== false && productInfoSettings.deliveryNote?.trim() && (
-                <p style={{ marginTop: 14, fontSize: 12.5, color: mutedTextColor }}>{productInfoSettings.deliveryNote}</p>
+                <p style={{ marginTop: 14, fontSize: 12.5, color: mutedTextColor, textAlign: "center" }}>{productInfoSettings.deliveryNote}</p>
               )}
             </div>
           </SectionWrapper>
