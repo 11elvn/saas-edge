@@ -174,6 +174,29 @@ const IconNote  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="no
 
 const FIELD_ICONS = { fullName: <IconUser/>, phone: <IconPhone/>, province: <IconPin/>, municipality: <IconBuilding/>, address: <IconHome/>, note: <IconNote/> };
 
+// ── GallerySlot — صورة حقيقية، أو placeholder رمادي مرقّم (فـ preview فقط، باش المستخدم يشوف النتيجة حتى بلا ما يرفع كل الصور) ──
+function GallerySlot({ src, index, className = "", style = {} }) {
+  if (src) {
+    return (
+      <img
+        src={src} alt={`img-${index + 1}`}
+        onError={e => { e.target.src = DEFAULT_IMG; }}
+        className={className}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", ...style }}
+      />
+    );
+  }
+  return (
+    <div style={{
+      width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+      background: "#e9eaee", color: "#a3a7b0", fontWeight: 800,
+      fontSize: "clamp(22px,7vw,52px)", fontFamily: "'Inter', sans-serif",
+    }}>
+      {index + 1}
+    </div>
+  );
+}
+
 function ProductDetails() {
   const { slug, productId } = useParams();
   const navigate = useNavigate();
@@ -323,7 +346,11 @@ function ProductDetails() {
     </div>
   );
 
-  const images = product.images?.length > 0 ? product.images : [product.image || DEFAULT_IMG];
+  const realImages = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
+  const PLACEHOLDER_TARGET = 4; // ✦ عدد السلوتات المعروضة فـ preview (صور حقيقية + placeholders رمادية للنقص)
+  const images = isPreview
+    ? [...realImages, ...Array(Math.max(0, PLACEHOLDER_TARGET - realImages.length)).fill(null)]
+    : (realImages.length ? realImages : [DEFAULT_IMG]);
   const outOfStock = product.stock === 0;
   const total = product.currentPrice * quantity + shippingPrice;
 
@@ -414,12 +441,7 @@ function ProductDetails() {
                         aspectRatio: galleryAspect, background: surfaceColor,
                         border: `1px solid ${borderColor}`, borderRadius: 18, overflow: "hidden",
                       }}>
-                        <img
-                          src={img || DEFAULT_IMG} alt={`${product.name}-${i}`}
-                          onError={e => { e.target.src = DEFAULT_IMG; }}
-                          className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
-                          style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
-                        />
+                        <GallerySlot src={img} index={i} />
                       </div>
                     ))}
                   </div>
@@ -447,7 +469,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
-                      <img src={img || DEFAULT_IMG} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <GallerySlot src={img} index={i} />
                     </div>
                   ))}
                 </div>
@@ -471,7 +493,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
-                      <img src={img} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <GallerySlot src={img} index={i} />
                     </div>
                   ))}
                 </div>
@@ -483,12 +505,11 @@ function ProductDetails() {
                 border: `1px solid ${borderColor}`, position: "relative",
                 aspectRatio: galleryAspect,
               }}>
-                <img
-                  src={images[activeImg] || DEFAULT_IMG}
-                  alt={product.name}
-                  onError={e => { e.target.src = DEFAULT_IMG; }}
+                <GallerySlot
+                  src={images[activeImg]}
+                  index={activeImg}
                   className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
-                  style={{ width: "100%", height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
+                  style={{ height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%" }}
                 />
                 {outOfStock && (
                   <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
