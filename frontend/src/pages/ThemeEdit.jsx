@@ -1652,11 +1652,6 @@ function GallerySettings({ settings, onChange, isMobile }) {
             </div>
           </div>
         )}
-        {!settings.carouselMode && isMobile && (
-          <p style={{ fontSize: ".72rem", color: "#9ca3af", margin: "-3px 0 0" }}>
-            على الهاتف، الصور تتعرض ديما بشكل شريط تحتي (Bottom rail) — بدّل لنسخة الحاسوب باش تختار Layout.
-          </p>
-        )}
       </Collapse>
 
       <Collapse title="Image options">
