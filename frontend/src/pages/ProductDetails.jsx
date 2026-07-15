@@ -37,7 +37,7 @@ const DEFAULT_STYLES = {
 };
 // ── DEFAULTS — Gallery / Product Info / Checkout (نفس PRODUCT_DEFAULT_CONFIG فـ ThemeEdit) ──
 const DEFAULT_PRODUCT_SECTIONS = [
-  { id: "gallery", type: "gallery", enabled: true, settings: { carouselMode: false, layout: "stacked", imageRatio: "1:1", enableZoom: false, showArrows: true } },
+  { id: "gallery", type: "gallery", enabled: true, settings: { carouselMode: false, layout: "stacked", imageRatio: "1:1", enableZoom: false, showArrows: true, showThumbnails: true, thumbnailsShown: 4 } },
   { id: "productInfo", type: "productInfo", enabled: true, settings: { ctaButtonText: "اطلب الآن", showQuantitySelector: true, showAddToCartButton: true, badgeText: "الأكثر مبيعاً", showDeliveryNote: true, deliveryNote: "توصيل خلال 3-5 أيام عمل لجميع ولايات الجزائر 🚚" } },
   { id: "checkout", type: "checkout", enabled: true, settings: {
       sectionTitle: "معلومات الطلب", titleAlign: "right", submitButtonText: "تأكيد الطلب",
@@ -339,6 +339,7 @@ function ProductDetails() {
   const prevImg = () => setActiveImg(i => (i - 1 + images.length) % images.length);
 
   const isCompact = checkoutSettings.formStyle === "compact";
+  const dirMultiplier = direction === "rtl" ? 1 : -1; // ✦ اتجاه الـ carousel peek حسب RTL/LTR
   const inputCls = `pd-input${isCompact ? " pd-input--compact" : ""}`;
   const pulseCls = checkoutSettings.buttonAnimation === "pulse" ? " pd-btn-order--pulse" : "";
   const titleAlignCss = { right: "right", center: "center", left: "left" }[checkoutSettings.titleAlign || "right"];
@@ -398,54 +399,111 @@ function ProductDetails() {
 
         {/* ── Gallery ── */}
         <SectionWrapper type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"} style={{ minWidth: 0 }}>
-          <div
-            className="pd-fade"
-            style={{ display: "flex", gap: 14, flexDirection: gallerySettings.layout === "bottom-rail" ? "column" : "row" }}
-          >
-            {/* Thumbnails */}
-            {images.length > 1 && !gallerySettings.carouselMode && (
-              <div
-                className="pd-thumbs-col"
-                style={{
-                  display: "flex", gap: 10,
-                  flexDirection: gallerySettings.layout === "bottom-rail" ? "row" : "column",
-                  order: gallerySettings.layout === "bottom-rail" ? 2 : 0,
-                }}
-              >
-                {images.map((img, i) => (
-                  <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
-                    <img src={img} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {gallerySettings.carouselMode ? (
+            /* ══════════ CAROUSEL MODE — peek slider + thumbnails شريط اختياري ══════════ */
+            <div className="pd-fade">
+              <div style={{ position: "relative", borderRadius: 18, overflow: "hidden" }}>
+                <div style={{ overflow: "hidden", borderRadius: 18 }}>
+                  <div style={{
+                    display: "flex", transition: "transform .38s cubic-bezier(.4,0,.2,1)",
+                    transform: `translateX(${activeImg * 89 * dirMultiplier}%)`,
+                  }}>
+                    {images.map((img, i) => (
+                      <div key={i} style={{
+                        flex: "0 0 86%", marginInlineEnd: "3%",
+                        aspectRatio: galleryAspect, background: surfaceColor,
+                        border: `1px solid ${borderColor}`, borderRadius: 18, overflow: "hidden",
+                      }}>
+                        <img
+                          src={img || DEFAULT_IMG} alt={`${product.name}-${i}`}
+                          onError={e => { e.target.src = DEFAULT_IMG; }}
+                          className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
+                          style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+                {outOfStock && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 18 }}>
+                    <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
+                  </div>
+                )}
+                {gallerySettings.showArrows !== false && images.length > 1 && (
+                  <>
+                    <button className="pd-gallery-nav" style={{ left: 10 }} onClick={prevImg}><IconChevronR/></button>
+                    <button className="pd-gallery-nav" style={{ right: 10 }} onClick={nextImg}><IconChevronL/></button>
+                  </>
+                )}
               </div>
-            )}
 
-            {/* Main image */}
-            <div style={{
-              flex: 1, borderRadius: 18, overflow: "hidden", background: surfaceColor,
-              border: `1px solid ${borderColor}`, position: "relative",
-              aspectRatio: galleryAspect,
-            }}>
-              <img
-                src={images[activeImg] || DEFAULT_IMG}
-                alt={product.name}
-                onError={e => { e.target.src = DEFAULT_IMG; }}
-                className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
-                style={{ width: "100%", height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
-              />
-              {outOfStock && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
+              {gallerySettings.showThumbnails !== false && images.length > 1 && (
+                <div
+                  style={{
+                    display: "flex", gap: 10, marginTop: 12, overflowX: "auto",
+                    maxWidth: `calc(${Math.max(1, gallerySettings.thumbnailsShown || 4)} * 78px)`,
+                    paddingBottom: 2,
+                  }}
+                >
+                  {images.map((img, i) => (
+                    <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
+                      <img src={img || DEFAULT_IMG} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                  ))}
                 </div>
               )}
-              {gallerySettings.showArrows !== false && images.length > 1 && (
-                <>
-                  <button className="pd-gallery-nav" style={{ left: 10 }} onClick={prevImg}><IconChevronR/></button>
-                  <button className="pd-gallery-nav" style={{ right: 10 }} onClick={nextImg}><IconChevronL/></button>
-                </>
-              )}
             </div>
-          </div>
+          ) : (
+            /* ══════════ CAROUSEL OFF — Stacked / Bottom rail (layout ثابت) ══════════ */
+            <div
+              className="pd-fade"
+              style={{ display: "flex", gap: 14, flexDirection: gallerySettings.layout === "bottom-rail" ? "column" : "row" }}
+            >
+              {/* Thumbnails */}
+              {images.length > 1 && (
+                <div
+                  className="pd-thumbs-col"
+                  style={{
+                    display: "flex", gap: 10,
+                    flexDirection: gallerySettings.layout === "bottom-rail" ? "row" : "column",
+                    order: gallerySettings.layout === "bottom-rail" ? 2 : 0,
+                  }}
+                >
+                  {images.map((img, i) => (
+                    <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
+                      <img src={img} alt={`img-${i}`} onError={e => { e.target.src = DEFAULT_IMG; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Main image */}
+              <div style={{
+                flex: 1, borderRadius: 18, overflow: "hidden", background: surfaceColor,
+                border: `1px solid ${borderColor}`, position: "relative",
+                aspectRatio: galleryAspect,
+              }}>
+                <img
+                  src={images[activeImg] || DEFAULT_IMG}
+                  alt={product.name}
+                  onError={e => { e.target.src = DEFAULT_IMG; }}
+                  className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
+                  style={{ width: "100%", height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
+                />
+                {outOfStock && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
+                  </div>
+                )}
+                {gallerySettings.showArrows !== false && images.length > 1 && (
+                  <>
+                    <button className="pd-gallery-nav" style={{ left: 10 }} onClick={prevImg}><IconChevronR/></button>
+                    <button className="pd-gallery-nav" style={{ right: 10 }} onClick={nextImg}><IconChevronL/></button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </SectionWrapper>
 
         {/* ── RIGHT: Product Info + Checkout ── */}

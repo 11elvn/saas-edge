@@ -146,6 +146,8 @@ const PRODUCT_DEFAULT_CONFIG = {
         imageRatio: "1:1",     // 1:1 | 3:4 | 4:3 | adapt
         enableZoom: false,
         showArrows: true,
+        showThumbnails: true,  // فقط فـ Carousel mode
+        thumbnailsShown: 4,    // فقط فـ Carousel mode
       },
     },
     {
@@ -1674,6 +1676,24 @@ function GallerySettings({ settings, onChange }) {
           <span className="pb-toggle-row__label">Show arrows</span>
           <Toggle checked={settings.showArrows !== false} onChange={v => s("showArrows", v)} />
         </div>
+        {settings.carouselMode && (
+          <>
+            <div className="pb-toggle-row">
+              <span className="pb-toggle-row__label">Show thumbnails</span>
+              <Toggle checked={settings.showThumbnails !== false} onChange={v => s("showThumbnails", v)} />
+            </div>
+            {settings.showThumbnails !== false && (
+              <div className="pb-field">
+                <div className="pb-label" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>Thumbnails shown</span><span>{settings.thumbnailsShown || 4}</span>
+                </div>
+                <input type="range" className="pb-range" min={2} max={6} step={1}
+                  value={settings.thumbnailsShown || 4}
+                  onChange={e => s("thumbnailsShown", Number(e.target.value))} />
+              </div>
+            )}
+          </>
+        )}
       </Collapse>
     </>
   );
