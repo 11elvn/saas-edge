@@ -34,12 +34,6 @@ const DEFAULT_CONFIG = {
         showSearch: true,
         showCart: true,
         sticky: true,
-        height: "normal",        // compact | normal | tall
-        logoSize: "medium",      // small | medium | large
-        useCustomColors: false,  // false = يقرا الألوان العامة، true = ألوان خاصة بالهيدر
-        bgColor: "#ffffff",
-        textColor: "#111111",
-        borderColor: "#f0f0f0",
       },
     },
     {
@@ -1214,29 +1208,6 @@ function HeaderSettings({ settings, onChange, store, onLogoChange }) {
         </div>
       </div>
       <div className="pb-group">
-        <div className="pb-group__label">Layout</div>
-        <div className="pb-field">
-          <div className="pb-label">Header height</div>
-          <div className="pb-segment">
-            {[{ v: "compact", l: "Compact" }, { v: "normal", l: "Normal" }, { v: "tall", l: "Tall" }].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.height || "normal") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("height", o.v)}>{o.l}</button>
-            ))}
-          </div>
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">Logo size</div>
-          <div className="pb-segment">
-            {[{ v: "small", l: "Small" }, { v: "medium", l: "Medium" }, { v: "large", l: "Large" }].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.logoSize || "medium") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("logoSize", o.v)}>{o.l}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="pb-group">
         <div className="pb-group__label">Actions</div>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show search</span>
@@ -1250,25 +1221,6 @@ function HeaderSettings({ settings, onChange, store, onLogoChange }) {
           <span className="pb-toggle-row__label">Sticky header</span>
           <Toggle checked={settings.sticky} onChange={v => s("sticky", v)} />
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Appearance</div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">ألوان مخصصة للهيدر</span>
-          <Toggle checked={!!settings.useCustomColors} onChange={v => s("useCustomColors", v)} />
-        </div>
-        {!settings.useCustomColors && (
-          <p style={{ fontSize: ".72rem", color: "#9ca3af", margin: "-3px 0 0" }}>
-            الهيدر كيقرا الألوان العامة ديال المتجر (Styles tab). فعّل الخيار فوق باش تعطيه لون خاص بيه.
-          </p>
-        )}
-        {settings.useCustomColors && (
-          <>
-            <ColorField label="Background color" value={settings.bgColor || "#ffffff"} onChange={v => s("bgColor", v)} />
-            <ColorField label="Text & icons color" value={settings.textColor || "#111111"} onChange={v => s("textColor", v)} />
-            <ColorField label="Border color" value={settings.borderColor || "#f0f0f0"} onChange={v => s("borderColor", v)} />
-          </>
-        )}
       </div>
     </>
   );
@@ -2176,10 +2128,6 @@ function ThemeEdit() {
           cfg = {
             ...cfg,
             sections: cfg.sections.map(sec => {
-              if (sec.type === "header") {
-                const defHeader = DEFAULT_CONFIG.sections.find(s => s.type === "header")?.settings || {};
-                return { ...sec, settings: { ...defHeader, ...sec.settings } };
-              }
               if (sec.type === "trust") {
                 const oldBadges = sec.settings?.badges || [];
                 const badges = FIXED_BADGES.map(fb => {

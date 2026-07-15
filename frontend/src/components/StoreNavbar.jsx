@@ -128,21 +128,6 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
   const navText   = themeColors.textColor    || "#111";
   const initial   = storeName.charAt(0);
 
-  // ✦ Height/Logo size — قابلين للتحكم من Header settings
-  const HEIGHT_MAP   = { compact: { d: 64, m: 52 }, normal: { d: 80, m: 60 }, tall: { d: 96, m: 68 } };
-  const LOGO_MAP      = { small: { d: 52, m: 36 }, medium: { d: 68, m: 44 }, large: { d: 84, m: 54 } };
-  const heightPx = HEIGHT_MAP[headerSettings?.height || "normal"];
-  const logoPx   = LOGO_MAP[headerSettings?.logoSize || "medium"];
-
-  // ✦ overlay hover خفيف — كيتبدل حسب فاتح/غامق لون النص باش يبان مليح فالحالتين
-  const isLightText = (() => {
-    const hex = (navText || "#111").replace("#", "");
-    if (hex.length !== 6) return false;
-    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 150;
-  })();
-  const hoverBg = isLightText ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.06)";
-
   const navLinks = links || [
     { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
     { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
@@ -184,12 +169,11 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         background: navBg,
         backdropFilter:"blur(16px)",
         borderBottom:`1px solid ${navBorder}`,
-        height:heightPx.d,
+        height:80,
         display:"flex",
         alignItems:"center",
         padding:"0 40px",
         direction:"ltr",
-        "--sn-text": navText, "--sn-hover": hoverBg,
       }}>
         {/* يسار: بحث + cart */}
         <div style={{ flex:1, display:"flex", alignItems:"center", gap:4 }}>
@@ -211,7 +195,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         {/* يمين: لوجو */}
         <div style={{ flex:1, display:"flex", justifyContent:"flex-end", alignItems:"center", cursor:"pointer" }}
           onClick={() => navigate(`/store/${slug}`)}>
-          <LogoEl height={logoPx.d} />
+          <LogoEl height={68} />
         </div>
       </nav>
 
@@ -221,12 +205,11 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         background: navBg,
         backdropFilter:"blur(16px)",
         borderBottom:`1px solid ${navBorder}`,
-        height:heightPx.m,
+        height:60,
         display:"flex",
         alignItems:"center",
         padding:"0 16px",
         direction:"ltr",
-        "--sn-text": navText, "--sn-hover": hoverBg,
       }}>
         {/* يسار الشاشة: hamburger */}
         <button className="sn-icon-btn" onClick={() => setDrawerOpen(true)}><IconMenu /></button>
@@ -236,7 +219,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           position:"absolute", left:"50%", transform:"translateX(-50%)",
           display:"flex", alignItems:"center", cursor:"pointer",
         }} onClick={() => navigate(`/store/${slug}`)}>
-          <LogoEl height={logoPx.m} />
+          <LogoEl height={44} />
         </div>
 
         {/* يمين الشاشة: cart + بحث */}
@@ -253,20 +236,19 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       <style>{`
         .sn-icon-btn {
           background: none; border: none; cursor: pointer;
-          color: var(--sn-text, #555); padding: 8px; border-radius: 8px;
+          color: #555; padding: 8px; border-radius: 8px;
           display: flex; align-items: center;
-          transition: background .2s, opacity .2s;
-          opacity: .82;
+          transition: background .2s, color .2s;
         }
-        .sn-icon-btn:hover { background: var(--sn-hover, #f3f4f6); opacity: 1; }
+        .sn-icon-btn:hover { background: #f3f4f6; color: #111; }
 
         .sn-nav-link {
           background: none; border: none; cursor: pointer;
-          color: var(--sn-text, #444); font-family: inherit; font-size: 15px; font-weight: 600;
-          padding: 8px 18px; border-radius: 8px; opacity: .82;
-          transition: opacity .2s, background .2s; white-space: nowrap;
+          color: #444; font-family: inherit; font-size: 15px; font-weight: 600;
+          padding: 8px 18px; border-radius: 8px;
+          transition: color .2s, background .2s; white-space: nowrap;
         }
-        .sn-nav-link:hover { opacity: 1; background: var(--sn-hover, #f3f4f6); }
+        .sn-nav-link:hover { color: #111; background: #f3f4f6; }
 
         /* Desktop يظهر فوق 768 */
         .sn-desktop { display: flex !important; }
