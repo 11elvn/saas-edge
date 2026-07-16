@@ -72,7 +72,7 @@ const PD_CSS = `
 .pd-thumb.active { border-color: var(--pd-primary); }
 .pd-input {
   width:100%; padding:12px 14px; border-radius:12px;
-  border:1px solid #e5e7eb; background:#f9fafb;
+  border:1px solid var(--pd-border, #e5e7eb); background:#f9fafb;
   color:#111; font-family:inherit; font-size:14px;
   outline:none; transition: border-color .2s, background .2s;
   text-align:right; box-sizing:border-box;
@@ -269,7 +269,8 @@ function ProductDetails() {
     injectCSS();
     loadFont("Cairo");
     document.documentElement.style.setProperty("--pd-primary", primary);
-  }, [primary]);
+    document.documentElement.style.setProperty("--pd-border", borderColor);
+  }, [primary, borderColor]);
 
   useEffect(() => { if (font) loadFont(font); }, [font]);
 
@@ -647,7 +648,13 @@ function ProductDetails() {
 
           {/* In-Page Checkout */}
           <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"}>
-            <div ref={checkoutRef} className="pd-fade pd-d2" style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
+            <div
+              ref={checkoutRef} className="pd-fade pd-d2"
+              style={{
+                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px",
+                boxShadow: `0 -22px 40px -26px ${borderColor}, 0 22px 40px -26px ${borderColor}`,
+              }}
+            >
               <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: textColor, textAlign: titleAlignCss }}>
                 {checkoutSettings.sectionTitle || "معلومات الطلب"}
               </h3>
