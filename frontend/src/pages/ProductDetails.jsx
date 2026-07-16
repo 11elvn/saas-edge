@@ -647,7 +647,7 @@ function ProductDetails() {
 
           {/* In-Page Checkout */}
           <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"}>
-            <div ref={checkoutRef} className="pd-fade pd-d2" style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
+            <div ref={checkoutRef} className="pd-fade pd-d2" style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px" }}>
               <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: textColor, textAlign: titleAlignCss }}>
                 {checkoutSettings.sectionTitle || "معلومات الطلب"}
               </h3>
