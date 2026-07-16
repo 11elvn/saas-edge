@@ -209,6 +209,7 @@ function ProductDetails() {
   const [loading,      setLoading]      = useState(true);
   const [ordering,     setOrdering]     = useState(false);
   const [quantity,     setQuantity]     = useState(1);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   // ── حقول الفورم ──
   const [customerName, setCustomerName] = useState("");
@@ -557,9 +558,32 @@ function ProductDetails() {
                   </span>
                 )}
               </div>
-              {product.description && (
-                <p style={{ fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0 }}>{product.description}</p>
-              )}
+              {product.description && (() => {
+                const isLong = product.description.length > 160;
+                return (
+                  <div>
+                    <p style={{
+                      fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0,
+                      ...(isLong && !descExpanded ? {
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                      } : {}),
+                    }}>
+                      {product.description}
+                    </p>
+                    {isLong && (
+                      <button
+                        onClick={() => setDescExpanded(v => !v)}
+                        style={{
+                          background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: 6,
+                          fontSize: 13, fontWeight: 700, color: primary, fontFamily: "inherit",
+                        }}
+                      >
+                        {descExpanded ? "قراءة أقل" : "قراءة المزيد"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
               {product.stock > 0 && product.stock <= 5 && (
                 <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>⚠️ بقي {product.stock} قطعة فقط</p>
               )}
