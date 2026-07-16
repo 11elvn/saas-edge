@@ -175,6 +175,17 @@ const IconNote  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="no
 const FIELD_ICONS = { fullName: <IconUser/>, phone: <IconPhone/>, province: <IconPin/>, municipality: <IconBuilding/>, address: <IconHome/>, note: <IconNote/> };
 
 // ── GallerySlot — صورة حقيقية، أو placeholder رمادي مرقّم (فـ preview فقط، باش المستخدم يشوف النتيجة حتى بلا ما يرفع كل الصور) ──
+// ── FieldLabel — تسمية فوق كل حقل فـ In-Page Checkout (مع نجمة حمراء إذا إجباري) ──
+function FieldLabel({ text, required, optionalLabel, color }) {
+  return (
+    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color, marginBottom: 8 }}>
+      {text}
+      {required && <span style={{ color: "#ef4444", marginInlineStart: 3 }}>*</span>}
+      {optionalLabel && <span style={{ color: "#9ca3af", fontWeight: 600 }}> (اختياري)</span>}
+    </label>
+  );
+}
+
 function GallerySlot({ src, index, className = "", style = {} }) {
   if (src) {
     return (
@@ -641,92 +652,128 @@ function ProductDetails() {
                 {checkoutSettings.sectionTitle || "معلومات الطلب"}
               </h3>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {fieldCfg("fullName").enabled !== false && (
-                  <div className="pd-field-wrap">
-                    <input
-                      className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
-                      value={customerName} onChange={e => setCustomerName(e.target.value)}
-                      placeholder={`الاسم الكامل ${fieldCfg("fullName").required !== false ? "*" : ""}`}
-                    />
-                    {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.fullName}</span>}
+                  <div>
+                    <FieldLabel text="الاسم الكامل" required={fieldCfg("fullName").required !== false} color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={customerName} onChange={e => setCustomerName(e.target.value)}
+                        placeholder="الاسم واللقب..."
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.fullName}</span>}
+                    </div>
                   </div>
                 )}
 
                 {fieldCfg("phone").enabled !== false && (
-                  <div className="pd-field-wrap">
-                    <input
-                      className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
-                      value={phone} onChange={e => setPhone(e.target.value)} type="tel"
-                      placeholder={`رقم الهاتف ${fieldCfg("phone").required !== false ? "*" : ""} (مثال: 0550123456)`}
-                    />
-                    {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.phone}</span>}
+                  <div>
+                    <FieldLabel text="رقم الهاتف" required={fieldCfg("phone").required !== false} color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={phone} onChange={e => setPhone(e.target.value)} type="tel"
+                        placeholder="06 59 24 23 17"
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.phone}</span>}
+                    </div>
+                    <p style={{ margin: "6px 2px 0", fontSize: 12, color: mutedTextColor }}>يجب أن يبدأ بـ 05، 06، أو 07</p>
                   </div>
                 )}
 
-                {fieldCfg("province").enabled !== false && (
-                  <div className="pd-field-wrap">
-                    <select
-                      className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
-                      value={selectedCity} onChange={e => handleCityChange(e.target.value)} style={{ cursor: "pointer" }}
-                    >
-                      <option value="">{`اختر الولاية ${fieldCfg("province").required !== false ? "*" : ""}`}</option>
-                      {ALGERIAN_CITIES.map(city => <option key={city.id} value={city.name}>{city.name}</option>)}
-                    </select>
-                    {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.province}</span>}
-                  </div>
-                )}
-
-                {fieldCfg("municipality").enabled !== false && (
-                  <div className="pd-field-wrap">
-                    <input
-                      className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
-                      value={municipality} onChange={e => setMunicipality(e.target.value)}
-                      placeholder={`البلدية ${fieldCfg("municipality").required ? "*" : "(اختياري)"}`}
-                    />
-                    {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.municipality}</span>}
+                {(fieldCfg("province").enabled !== false || fieldCfg("municipality").enabled !== false) && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {fieldCfg("province").enabled !== false && (
+                      <div>
+                        <FieldLabel text="الولاية" required={fieldCfg("province").required !== false} color={textColor} />
+                        <div className="pd-field-wrap">
+                          <select
+                            className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                            value={selectedCity} onChange={e => handleCityChange(e.target.value)} style={{ cursor: "pointer" }}
+                          >
+                            <option value="">اختر الولاية</option>
+                            {ALGERIAN_CITIES.map(city => <option key={city.id} value={city.name}>{city.name}</option>)}
+                          </select>
+                          {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.province}</span>}
+                        </div>
+                      </div>
+                    )}
+                    {fieldCfg("municipality").enabled !== false && (
+                      <div>
+                        <FieldLabel text="البلدية" required={fieldCfg("municipality").required} color={textColor} />
+                        <div className="pd-field-wrap">
+                          <input
+                            className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                            value={municipality} onChange={e => setMunicipality(e.target.value)}
+                            placeholder="اختر البلدية"
+                          />
+                          {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.municipality}</span>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {checkoutSettings.showAddressField && (
-                  <div className="pd-field-wrap">
-                    <input
-                      className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
-                      value={address} onChange={e => setAddress(e.target.value)}
-                      placeholder="العنوان التفصيلي (اختياري)"
-                    />
-                    {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.address}</span>}
+                  <div>
+                    <FieldLabel text="العنوان التفصيلي" required={false} optionalLabel color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={address} onChange={e => setAddress(e.target.value)}
+                        placeholder="الشارع، رقم العمارة، الباب..."
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.address}</span>}
+                    </div>
                   </div>
                 )}
 
                 {checkoutSettings.showNoteField && (
-                  <textarea
-                    className={inputCls}
-                    value={note} onChange={e => setNote(e.target.value)}
-                    placeholder="ملاحظة على الطلب (اختياري)" rows={2}
-                    style={{ resize: "vertical", fontFamily: "inherit" }}
-                  />
-                )}
-
-                {/* Price breakdown */}
-                {(selectedCity || quantity > 1) && (
-                  <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 12, padding: "14px 16px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, color: mutedTextColor }}>سعر المنتج {quantity > 1 ? `× ${quantity}` : ""}</span>
-                      <span style={{ fontSize: 13, color: textColor }}>{(product.currentPrice * quantity).toLocaleString()} د.ج</span>
-                    </div>
-                    {selectedCity && (
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: `1px solid ${borderColor}` }}>
-                        <span style={{ fontSize: 13, color: mutedTextColor }}>التوصيل إلى {selectedCity}</span>
-                        <span style={{ fontSize: 13, color: textColor }}>{shippingPrice.toLocaleString()} د.ج</span>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: textColor }}>المجموع</span>
-                      <span style={{ fontSize: 16, fontWeight: 900, color: textColor }}>{total.toLocaleString()} د.ج</span>
-                    </div>
+                  <div>
+                    <FieldLabel text="ملاحظة على الطلب" required={false} optionalLabel color={textColor} />
+                    <textarea
+                      className={inputCls}
+                      value={note} onChange={e => setNote(e.target.value)}
+                      placeholder="أي تفاصيل إضافية على طلبك..." rows={2}
+                      style={{ resize: "vertical", fontFamily: "inherit" }}
+                    />
                   </div>
                 )}
+
+                {/* ── Order Summary — Surface + Border من التصميم ── */}
+                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 14, overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
+                    <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: textColor }}>ملخص الطلب</h4>
+                    <span style={{
+                      fontSize: 12, fontWeight: 700, color: primary, border: `1px solid ${primary}`,
+                      borderRadius: 99, padding: "3px 12px",
+                    }}>
+                      {quantity === 1 ? "منتج واحد" : quantity === 2 ? "منتجين" : `${quantity} منتجات`}
+                    </span>
+                  </div>
+
+                  <div style={{ borderTop: `1px solid ${borderColor}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: textColor }}>المجموع الفرعي</span>
+                      <span style={{ fontSize: 13.5, color: textColor }}>{(product.currentPrice * quantity).toLocaleString()} د.ج</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: textColor }}>تكلفة التوصيل</span>
+                      <span style={{ fontSize: 12.5, color: mutedTextColor }}>
+                        {selectedCity ? `${shippingPrice.toLocaleString()} د.ج` : "تحدد عند اختيار الولاية"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: `1px solid ${borderColor}`, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, color: textColor }}>المجموع الإجمالي</div>
+                      <div style={{ fontSize: 12, color: mutedTextColor, marginTop: 2 }}>الدفع عند الاستلام</div>
+                    </div>
+                    <span style={{ fontSize: 20, fontWeight: 900, color: primary }}>{total.toLocaleString()} د.ج</span>
+                  </div>
+                </div>
 
                 <button
                   className={`pd-btn-order${pulseCls}`}
@@ -742,7 +789,7 @@ function ProductDetails() {
                     boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
                   }}
                 >
-                  {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : `✅ ${checkoutSettings.submitButtonText || "تأكيد الطلب"}`}
+                  {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
                 </button>
               </div>
             </div>
