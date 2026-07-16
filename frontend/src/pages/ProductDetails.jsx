@@ -753,7 +753,7 @@ function ProductDetails() {
                     </span>
                   </div>
 
-                  <div style={{ borderTop: `1px solid ${borderColor}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ borderTop: `1px solid ${borderColor}`, background: bgColor, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 13.5, fontWeight: 700, color: textColor }}>المجموع الفرعي</span>
                       <span style={{ fontSize: 13.5, color: textColor }}>{(product.currentPrice * quantity).toLocaleString()} د.ج</span>
