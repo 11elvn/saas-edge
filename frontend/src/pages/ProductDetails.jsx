@@ -180,7 +180,7 @@ function FieldLabel({ text, required, optionalLabel, color }) {
   return (
     <label style={{ display: "block", fontSize: 13, fontWeight: 700, color, marginBottom: 8 }}>
       {text}
-      {required && <span style={{ color: "#ef4444", marginInlineStart: 3 }}>*</span>}
+      {required && <span style={{ color, marginInlineStart: 3 }}>*</span>}
       {optionalLabel && <span style={{ color: "#9ca3af", fontWeight: 600 }}> (اختياري)</span>}
     </label>
   );
@@ -753,7 +753,7 @@ function ProductDetails() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
                     <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: textColor }}>ملخص الطلب</h4>
                     <span style={{
-                      fontSize: 12, fontWeight: 700, color: primary, border: `1px solid ${primary}`,
+                      fontSize: 12, fontWeight: 700, color: primary, border: `1px solid ${borderColor}`,
                       borderRadius: 99, padding: "3px 12px",
                     }}>
                       {quantity === 1 ? "منتج واحد" : quantity === 2 ? "منتجين" : `${quantity} منتجات`}
