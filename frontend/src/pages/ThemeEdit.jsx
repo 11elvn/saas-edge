@@ -823,9 +823,17 @@ const CSS = `
   display:flex; align-items:center; gap:6px;
 }
 
-.pb-preview-iframe {
-  width: 100%; height: 100%; border: none;
+.pb-preview-desktop-wrap {
+  position: relative;
   flex: 1;
+  overflow: hidden;
+}
+.pb-preview-iframe {
+  position: absolute;
+  top: 0; left: 0;
+  border: none;
+  transform-origin: top left;
+  /* width/height/transform يتحسبو بـ JS باش يبقى الـ layout ديال الحاسوب صحيح */
 }
 
 .pb-preview-section-highlight {
@@ -1957,6 +1965,8 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
   const phoneRef   = useRef(null);
+  const desktopWrapRef = useRef(null);
+  const DESKTOP_W = 1280; // ✦ عرض مرجعي "حاسوب" — يضمن أن الـ iframe ما يهبطش تحت breakpoint الموبايل (768px) حتى ملي اللوحات مفتوحة وكيضيق المكان
 
   // ✦ حساب scale ديناميكي باش الـ iframe يتناسب مع حجم الإطار
   useEffect(() => {
@@ -1970,6 +1980,24 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     calcScale();
     const ro = new ResizeObserver(calcScale);
     if (phoneRef.current) ro.observe(phoneRef.current);
+    return () => ro.disconnect();
+  }, [isMobile]);
+
+  // ✦ نفس المبدأ للنسخة Desktop — نفرض عرض 1280px حقيقي جوا الـ iframe ونصغّرو بصريا (transform: scale) باش يبقى الـ layout ديال الحاسوب صحيح (2 أعمدة، sticky، إلخ) بغض النظر عن ضيق اللوحة
+  useEffect(() => {
+    if (isMobile) return;
+    const calcScale = () => {
+      if (!desktopWrapRef.current || !iframeRef.current) return;
+      const wrapW = desktopWrapRef.current.clientWidth;
+      const wrapH = desktopWrapRef.current.clientHeight;
+      const scale = Math.min(1, wrapW / DESKTOP_W);
+      iframeRef.current.style.transform = `scale(${scale})`;
+      iframeRef.current.style.width  = `${DESKTOP_W}px`;
+      iframeRef.current.style.height = `${scale > 0 ? wrapH / scale : wrapH}px`;
+    };
+    calcScale();
+    const ro = new ResizeObserver(calcScale);
+    if (desktopWrapRef.current) ro.observe(desktopWrapRef.current);
     return () => ro.disconnect();
   }, [isMobile]);
 
@@ -2091,13 +2119,15 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
           {window.location.host}/store/{slug}
         </div>
       </div>
-      <iframe
-        ref={iframeRef}
-        src={src}
-        onLoad={handleLoad}
-        className="pb-preview-iframe"
-        title="Desktop Preview"
-      />
+      <div className="pb-preview-desktop-wrap" ref={desktopWrapRef}>
+        <iframe
+          ref={iframeRef}
+          src={src}
+          onLoad={handleLoad}
+          className="pb-preview-iframe"
+          title="Desktop Preview"
+        />
+      </div>
     </div>
   );
 }
