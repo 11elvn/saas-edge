@@ -141,15 +141,15 @@ const SECTION_LABELS = {
 };
 
 // ── SectionWrapper — نفس منطق PublicStore: label + border + كليك يبعث للـ builder ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
-  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
+  if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
       style={{ ...style, position: "relative", cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
-      className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}`}
+      className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
     >
       {isHighlighted && <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>}
       {children}
@@ -394,6 +394,7 @@ function ProductDetails() {
           .pd-grid { grid-template-columns: 1fr !important; }
           .pd-thumbs-col { flex-direction: row !important; order: 2; }
           .pd-thumb { width: 60px !important; height: 60px !important; }
+          .pd-gallery-sticky { position: static !important; top: auto !important; }
         }
       `}</style>
 
@@ -438,7 +439,11 @@ function ProductDetails() {
       >
 
         {/* ── Gallery ── */}
-        <SectionWrapper type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"} style={{ minWidth: 0 }}>
+        <SectionWrapper
+          type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"}
+          style={{ minWidth: 0, position: "sticky", top: headerSettings?.sticky !== false ? 96 : 16, alignSelf: "start" }}
+          className="pd-gallery-sticky"
+        >
           {gallerySettings.carouselMode ? (
             /* ══════════ CAROUSEL MODE — peek slider + thumbnails شريط اختياري ══════════ */
             <div className="pd-fade">
