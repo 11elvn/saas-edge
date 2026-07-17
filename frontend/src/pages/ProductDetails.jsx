@@ -146,7 +146,7 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
-      style={{ ...style, position: "relative", cursor: "pointer" }}
+      style={{ position: "relative", ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
       className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
