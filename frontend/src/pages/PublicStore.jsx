@@ -369,6 +369,10 @@ function PublicStore() {
       if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) {
         setThemeConfig(e.data.themeConfig);
       }
+      // ✦ تحديث فوري لاسم/لوجو المتجر من page builder (preview بدون حفظ)
+      if (e.data?.type === "STORE_UPDATE" && e.data.store) {
+        setStore(prev => (prev ? { ...prev, ...e.data.store } : prev));
+      }
       // ✦ Highlight section في الـ preview
       if (e.data?.type === "HIGHLIGHT_SECTION") {
         setHighlightedSection(e.data.sectionType || null);

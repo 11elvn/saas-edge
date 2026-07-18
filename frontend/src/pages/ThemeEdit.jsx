@@ -34,7 +34,6 @@ const DEFAULT_CONFIG = {
         showSearch: true,
         showCart: true,
         sticky: true,
-        showStoreName: true,
       },
     },
     {
@@ -1203,7 +1202,7 @@ function AnnouncementSettings({ settings, onChange }) {
   );
 }
 
-function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange }) {
+function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange, onNamePreview }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
 
   // ✦ حالة محلية لحقل اسم المتجر (تعديل مباشر + حفظ بعد توقف الكتابة)
@@ -1216,6 +1215,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange 
 
   const handleNameInput = (v) => {
     setNameValue(v);
+    onNamePreview?.(v); // ✦ تحديث فوري في الـ preview (بدون طلب API)
     if (nameTimer.current) clearTimeout(nameTimer.current);
     nameTimer.current = setTimeout(() => {
       const trimmed = v.trim();
@@ -1248,10 +1248,6 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange 
         <div className="pb-field">
           <div className="pb-label">Logo image</div>
           <ImageUploader value={store?.logo || ""} onChange={onLogoChange} label="Logo" dark={false} />
-        </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show store name</span>
-          <Toggle checked={settings.showStoreName ?? true} onChange={v => s("showStoreName", v)} />
         </div>
       </div>
       <div className="pb-group">
@@ -1953,13 +1949,13 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, collapsed, isMobile }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
     switch (section.type) {
       case "announcement": return <AnnouncementSettings settings={section.settings} onChange={updateSettings} />;
-      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} />;
+      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} onNamePreview={onNamePreview} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
@@ -1997,10 +1993,11 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
 // ─────────────────────────────────────────────
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home", productId }) {
+function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home", productId, storePatch }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
+  const pendingStoreRef = useRef(null);
   const phoneRef   = useRef(null);
   const desktopWrapRef = useRef(null);
   const DESKTOP_W = 1280; // ✦ عرض مرجعي "حاسوب" — يضمن أن الـ iframe ما يهبطش تحت breakpoint الموبايل (768px) حتى ملي اللوحات مفتوحة وكيضيق المكان
@@ -2047,6 +2044,26 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     } catch (_) {}
   };
 
+  // ✦ إرسال تحديث فوري لبيانات المتجر (اسم/لوجو) للـ preview iframe
+  const sendStorePatch = (patch) => {
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "STORE_UPDATE", store: patch },
+        "*"
+      );
+    } catch (_) {}
+  };
+
+  // ✦ عند تغيير storePatch (اسم/لوجو المتجر) — أرسل مباشرة إذا الـ iframe محمّل، وإلا احفظه كـ pending
+  useEffect(() => {
+    if (!storePatch) return;
+    if (loadedRef.current) {
+      sendStorePatch(storePatch);
+    } else {
+      pendingStoreRef.current = storePatch;
+    }
+  }, [storePatch]);
+
   // ✦ عند تغيير activeSection — نرسل highlight للـ iframe
   useEffect(() => {
     if (!loadedRef.current) return;
@@ -2073,6 +2090,9 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     // أرسل أي config كان معلّق
     const cfg = pendingRef.current || themeConfig;
     if (cfg) sendConfig(cfg);
+    // أرسل أي تحديث متجر كان معلّق
+    const sp = pendingStoreRef.current || storePatch;
+    if (sp) sendStorePatch(sp);
   };
 
   if (!slug) return (
@@ -2377,6 +2397,11 @@ function ThemeEdit() {
     }
   };
 
+  // ── Preview فوري لاسم المتجر (بدون طلب API) ───────────────
+  const previewName = useCallback((v) => {
+    setStore(prev => (prev ? { ...prev, name: v } : prev));
+  }, []);
+
   // ── Save Store Name ──────────────────────────────────────
   const saveName = async (newName) => {
     try {
@@ -2679,6 +2704,7 @@ function ThemeEdit() {
             activeSection={activeSection}
             page={currentPage}
             productId={previewProductId}
+            storePatch={{ name: store.name, logo: store.logo }}
           />
         </div>
 
@@ -2705,6 +2731,7 @@ function ThemeEdit() {
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
             onNameChange={saveName}
+            onNamePreview={previewName}
             collapsed={collapsedRight}
             isMobile={isMobile}
           />

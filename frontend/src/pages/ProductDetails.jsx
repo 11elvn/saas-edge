@@ -239,6 +239,7 @@ function ProductDetails() {
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) setThemeConfig(e.data.themeConfig);
+      if (e.data?.type === "STORE_UPDATE" && e.data.store) setStore(prev => (prev ? { ...prev, ...e.data.store } : prev));
       if (e.data?.type === "HIGHLIGHT_SECTION") setHighlightedSection(e.data.sectionType || null);
       if (e.data?.type === "SCROLL_TO_SECTION") {
         const el = document.querySelector(`[data-section="${e.data.sectionType}"]`);
