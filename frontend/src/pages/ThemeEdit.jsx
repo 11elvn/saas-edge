@@ -1203,15 +1203,47 @@ function AnnouncementSettings({ settings, onChange }) {
   );
 }
 
-function HeaderSettings({ settings, onChange, store, onLogoChange }) {
+function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
+
+  // ✦ حالة محلية لحقل اسم المتجر (تعديل مباشر + حفظ بعد توقف الكتابة)
+  const [nameValue, setNameValue] = useState(store?.name || "");
+  const nameTimer = useRef(null);
+
+  useEffect(() => {
+    setNameValue(store?.name || "");
+  }, [store?.name]);
+
+  const handleNameInput = (v) => {
+    setNameValue(v);
+    if (nameTimer.current) clearTimeout(nameTimer.current);
+    nameTimer.current = setTimeout(() => {
+      const trimmed = v.trim();
+      if (trimmed && trimmed !== store?.name) onNameChange?.(trimmed);
+    }, 700);
+  };
+
+  const commitName = () => {
+    if (nameTimer.current) clearTimeout(nameTimer.current);
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== store?.name) onNameChange?.(trimmed);
+    else if (!trimmed) setNameValue(store?.name || "");
+  };
+
   return (
     <>
       <div className="pb-group">
         <div className="pb-group__label">Branding</div>
         <div className="pb-field">
           <div className="pb-label">Store name</div>
-          <input className="pb-input" value={store?.name || ""} disabled placeholder="اسم المتجر" />
+          <input
+            className="pb-input"
+            value={nameValue}
+            onChange={e => handleNameInput(e.target.value)}
+            onBlur={commitName}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
+            placeholder="اسم المتجر"
+          />
         </div>
         <div className="pb-field">
           <div className="pb-label">Logo image</div>
@@ -1921,13 +1953,13 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, collapsed, isMobile }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, collapsed, isMobile }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
     switch (section.type) {
       case "announcement": return <AnnouncementSettings settings={section.settings} onChange={updateSettings} />;
-      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} />;
+      case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
@@ -2345,6 +2377,29 @@ function ThemeEdit() {
     }
   };
 
+  // ── Save Store Name ──────────────────────────────────────
+  const saveName = async (newName) => {
+    try {
+      const res = await fetch(`${API()}/api/stores/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token()}`,
+        },
+        body: JSON.stringify({ name: newName, logo: store.logo }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStore(data.store);
+        notify("تم حفظ اسم المتجر ✅");
+      } else {
+        notify(data.message || "فشل حفظ اسم المتجر ❌", "error");
+      }
+    } catch {
+      notify("تعذر الاتصال ❌", "error");
+    }
+  };
+
   // ── Save ─────────────────────────────────────────────────
   const save = async () => {
     setSaving(true);
@@ -2649,6 +2704,7 @@ function ThemeEdit() {
             onUpdate={activeIsProductSection ? updateProductSectionSettings : updateSectionSettings}
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
+            onNameChange={saveName}
             collapsed={collapsedRight}
             isMobile={isMobile}
           />
