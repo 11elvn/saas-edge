@@ -34,6 +34,7 @@ const DEFAULT_CONFIG = {
         showSearch: true,
         showCart: true,
         sticky: true,
+        showStoreName: true,
       },
     },
     {
@@ -1215,6 +1216,10 @@ function HeaderSettings({ settings, onChange, store, onLogoChange }) {
         <div className="pb-field">
           <div className="pb-label">Logo image</div>
           <ImageUploader value={store?.logo || ""} onChange={onLogoChange} label="Logo" dark={false} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show store name</span>
+          <Toggle checked={settings.showStoreName ?? true} onChange={v => s("showStoreName", v)} />
         </div>
       </div>
       <div className="pb-group">

@@ -30,7 +30,7 @@ const IconCart = () => (
   </svg>
 );
 
-function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links }) {
+function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links, showStoreName = true }) {
   if (!open) return null;
   const initial = storeName?.charAt(0) || "م";
   return (
@@ -48,11 +48,17 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
         <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:"#111", alignSelf:"flex-end", padding:4 }}>
           <IconX />
         </button>
-        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"20px 0 32px" }}>
-          {logo
-            ? <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius:16 }} />
-            : <div style={{ width:80, height:80, borderRadius:16, background:`linear-gradient(135deg, ${primaryColor}, ${secondaryColor||"#0f172a"})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, color:"#fff", fontSize:32 }}>{initial}</div>
-          }
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, margin:"20px 0 32px" }}>
+          {logo ? (
+            <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius:16 }} />
+          ) : showStoreName ? (
+            <div style={{ fontWeight:900, fontSize:22, color:"#111", textAlign:"center", lineHeight:1.2 }}>{storeName}</div>
+          ) : (
+            <div style={{ width:80, height:80, borderRadius:16, background:`linear-gradient(135deg, ${primaryColor}, ${secondaryColor||"#0f172a"})`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, color:"#fff", fontSize:32 }}>{initial}</div>
+          )}
+          {logo && showStoreName && (
+            <div style={{ fontWeight:800, fontSize:15, color:"#111" }}>{storeName}</div>
+          )}
         </div>
         <nav style={{ display:"flex", flexDirection:"column", gap:4 }}>
           {links.map((item, i) => (
@@ -115,9 +121,10 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const showSearch = headerSettings?.showSearch ?? true;
-  const showCart   = headerSettings?.showCart   ?? true;
-  const sticky     = headerSettings?.sticky     ?? true;
+  const showSearch    = headerSettings?.showSearch    ?? true;
+  const showCart      = headerSettings?.showCart      ?? true;
+  const sticky        = headerSettings?.sticky        ?? true;
+  const showStoreName = headerSettings?.showStoreName ?? true;
 
   const logo      = store?.logo || "";
   const storeName = store?.name || "المتجر";
@@ -136,16 +143,31 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
 
   const handleSearch = () => { onSearchClick ? onSearchClick() : setSearchOpen(true); };
 
-  const LogoEl = ({ height = 68 }) => logo ? (
-    <img src={logo} alt={storeName} style={{ height, width:"auto", maxWidth:200, objectFit:"contain" }} />
-  ) : (
-    <div style={{
-      height, width:height, borderRadius:14,
-      background:`linear-gradient(135deg, ${primary}, ${secondary})`,
-      display:"flex", alignItems:"center", justifyContent:"center",
-      fontWeight:900, color:"#fff", fontSize: height * 0.38,
-    }}>{initial}</div>
-  );
+  const LogoEl = ({ height = 68 }) => {
+    if (logo) {
+      return (
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {showStoreName && (
+            <span style={{ fontWeight:800, fontSize: height * 0.24, color: navText, whiteSpace:"nowrap" }}>{storeName}</span>
+          )}
+          <img src={logo} alt={storeName} style={{ height, width:"auto", maxWidth:200, objectFit:"contain" }} />
+        </div>
+      );
+    }
+    if (showStoreName) {
+      return (
+        <span style={{ fontWeight:900, fontSize: height * 0.34, color: navText, whiteSpace:"nowrap" }}>{storeName}</span>
+      );
+    }
+    return (
+      <div style={{
+        height, width:height, borderRadius:14,
+        background:`linear-gradient(135deg, ${primary}, ${secondary})`,
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontWeight:900, color:"#fff", fontSize: height * 0.38,
+      }}>{initial}</div>
+    );
+  };
 
   // ✦ position يتغير حسب sticky
   const navPosition = sticky ? "sticky" : "relative";
@@ -157,6 +179,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         logo={logo} storeName={storeName}
         primaryColor={primary} secondaryColor={secondary}
         links={navLinks}
+        showStoreName={showStoreName}
       />
       {/* ✦ SearchBox تظهر فقط إذا showSearch مفعّل */}
       {showSearch && (
