@@ -4,7 +4,6 @@
 // ============================================================
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import ImageUploader from "../components/ui/ImageUploader";
 
 const API   = () => import.meta.env.VITE_API_URL;
 const token = () => localStorage.getItem("token");
@@ -1003,6 +1002,80 @@ const CSS = `
 }
 .pb-img-add:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
 
+/* Logo uploader — premium drag & drop */
+.pb-logo-upload { position: relative; }
+.pb-logo-upload__dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 7px; padding: 26px 16px;
+  border: 1.5px dashed rgba(124,109,242,.32); border-radius: 14px;
+  background: rgba(124,109,242,.03);
+  cursor: pointer; transition: all .2s; position: relative;
+}
+.pb-logo-upload__dropzone:hover,
+.pb-logo-upload__dropzone--drag {
+  border-color: #7c6df2; background: rgba(124,109,242,.07);
+}
+.pb-logo-upload__icon {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: linear-gradient(135deg, rgba(124,109,242,.16), rgba(124,109,242,.06));
+  display: flex; align-items: center; justify-content: center;
+  color: #7c6df2;
+}
+.pb-logo-upload__title { font-size: .82rem; font-weight: 700; color: #334155; }
+.pb-logo-upload__hint  { font-size: .72rem; color: #94a3b8; }
+
+.pb-logo-upload__preview {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px; border-radius: 14px;
+  border: 1px solid rgba(15,23,42,.08);
+  background-image:
+    linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+    linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  background-color: #fff;
+}
+.pb-logo-upload__thumb {
+  width: 60px; height: 60px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; background: #fff; border: 1px solid rgba(15,23,42,.06);
+}
+.pb-logo-upload__thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pb-logo-upload__meta { flex: 1; min-width: 0; }
+.pb-logo-upload__filename {
+  font-size: .8rem; font-weight: 700; color: #1e293b;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pb-logo-upload__status {
+  font-size: .72rem; color: #10b981; font-weight: 600;
+  margin-top: 3px; display: flex; align-items: center; gap: 4px;
+}
+.pb-logo-upload__actions { display: flex; gap: 6px; flex-shrink: 0; }
+.pb-logo-upload__btn {
+  width: 30px; height: 30px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(15,23,42,.08); background: #fff; color: #64748b;
+  cursor: pointer; transition: all .15s;
+}
+.pb-logo-upload__btn:hover { background: rgba(124,109,242,.09); border-color: #7c6df2; color: #7c6df2; }
+.pb-logo-upload__btn--danger:hover { background: rgba(239,68,68,.09); border-color: #ef4444; color: #ef4444; }
+
+.pb-logo-upload__loading {
+  position: absolute; inset: 0; background: rgba(255,255,255,.88);
+  backdrop-filter: blur(2px); border-radius: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  font-size: .78rem; font-weight: 700; color: #7c6df2;
+}
+.pb-logo-upload__spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2.5px solid rgba(124,109,242,.2); border-top-color: #7c6df2;
+  animation: pb-logo-spin .7s linear infinite;
+}
+@keyframes pb-logo-spin { to { transform: rotate(360deg); } }
+.pb-logo-upload__error { font-size: .74rem; color: #ef4444; font-weight: 600; margin-top: 6px; }
+
 /* Text alignment row */
 .pb-align-row { display: flex; gap: 6px; }
 .pb-align-btn {
@@ -1239,6 +1312,110 @@ function AnnouncementSettings({ settings, onChange }) {
   );
 }
 
+// ─────────────────────────────────────────────
+// LOGO UPLOADER — drag & drop, بتصميم احترافي
+// ─────────────────────────────────────────────
+function LogoUploader({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError]         = useState("");
+  const [dragOver, setDragOver]   = useState(false);
+  const inputRef = useRef(null);
+
+  const upload = async (file) => {
+    setError("");
+    if (!file || !file.type.startsWith("image/")) { setError("الملف ليس صورة ❌"); return; }
+    if (file.size > 5 * 1024 * 1024) { setError("الحجم يتجاوز 5MB ❌"); return; }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "saas_edge");
+      const res  = await fetch("https://api.cloudinary.com/v1_1/dbcbkly4w/image/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.secure_url) onChange(data.secure_url);
+      else setError("فشل رفع الصورة ❌");
+    } catch {
+      setError("فشل رفع الصورة، حاول مجدداً ❌");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileSelected = (e) => {
+    const f = e.target.files?.[0];
+    if (f) upload(f);
+    e.target.value = "";
+  };
+
+  const dragHandlers = {
+    onDragOver:  e => { e.preventDefault(); setDragOver(true); },
+    onDragLeave: () => setDragOver(false),
+    onDrop: e => {
+      e.preventDefault(); setDragOver(false);
+      const f = e.dataTransfer.files?.[0];
+      if (f) upload(f);
+    },
+  };
+
+  const UploadIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+    </svg>
+  );
+
+  return (
+    <div className="pb-logo-upload">
+      <input ref={inputRef} type="file" accept="image/*" hidden disabled={uploading} onChange={onFileSelected} />
+
+      {value ? (
+        <div className="pb-logo-upload__preview" {...dragHandlers}>
+          <div className="pb-logo-upload__thumb"><img src={value} alt="logo" /></div>
+          <div className="pb-logo-upload__meta">
+            <div className="pb-logo-upload__filename">اللوجو الحالي</div>
+            <div className="pb-logo-upload__status">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              محفوظ
+            </div>
+          </div>
+          <div className="pb-logo-upload__actions">
+            <button type="button" className="pb-logo-upload__btn" title="تغيير الصورة" onClick={() => inputRef.current?.click()}>
+              <UploadIcon />
+            </button>
+            <button type="button" className="pb-logo-upload__btn pb-logo-upload__btn--danger" title="حذف" onClick={() => onChange("")}>
+              <Icon name="trash" size={14} />
+            </button>
+          </div>
+          {uploading && (
+            <div className="pb-logo-upload__loading">
+              <div className="pb-logo-upload__spinner" />
+              جاري الرفع...
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`pb-logo-upload__dropzone ${dragOver ? "pb-logo-upload__dropzone--drag" : ""}`}
+          onClick={() => !uploading && inputRef.current?.click()}
+          {...dragHandlers}
+        >
+          <div className="pb-logo-upload__icon"><UploadIcon /></div>
+          <div className="pb-logo-upload__title">اسحب صورة هنا أو اضغط للرفع</div>
+          <div className="pb-logo-upload__hint">PNG, JPG أو SVG — حتى 5MB</div>
+          {uploading && (
+            <div className="pb-logo-upload__loading">
+              <div className="pb-logo-upload__spinner" />
+              جاري الرفع...
+            </div>
+          )}
+        </div>
+      )}
+      {error && <div className="pb-logo-upload__error">{error}</div>}
+    </div>
+  );
+}
+
 function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange, onNamePreview }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
 
@@ -1296,7 +1473,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
         </div>
         <div className="pb-field">
           <div className="pb-label">Logo image</div>
-          <ImageUploader value={store?.logo || ""} onChange={onLogoChange} label="Logo" dark={false} />
+          <LogoUploader value={store?.logo || ""} onChange={onLogoChange} />
         </div>
       </div>
       <div className="pb-group">
