@@ -574,44 +574,44 @@ function PublicStore() {
         };
         return (
         <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"}>
-        <section style={{ position: "relative", height: heroHeight, overflow: "hidden" }}>
+        <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
           {heroBanner ? (
-            <img src={heroBanner} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={heroBanner} alt="banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <div style={{
-              width: "100%", height: "100%",
-              background: `linear-gradient(135deg, ${secondary} 0%, ${secondary}cc 100%)`,
-              display: "flex", alignItems: "center", justifyContent: justify,
-            }}>
-              <div style={{ textAlign: align, padding: "0 24px" }}>
-                <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
-                  {hs.title || storeName}
-                </p>
-                <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, marginTop: 14, letterSpacing: .2 }}>{hs.subtitle}</p>
-              </div>
-            </div>
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${secondary} 0%, ${secondary}cc 100%)` }} />
           )}
           <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayAlpha})` }} />
-          {(hs.title || hs.subtitle) && heroBanner && (
-            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, transform: "translateY(-50%)", textAlign: align, padding: "0 24px" }}>
-              {hs.title && <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: -1, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>{hs.title}</p>}
-              {hs.subtitle && <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, margin: 0, letterSpacing: .2, textShadow: "0 2px 12px rgba(0,0,0,.4)" }}>{hs.subtitle}</p>}
+
+          {/* ── مجموعة واحدة: عنوان + وصف + زر، بمسافات ثابتة بينهم ── */}
+          <div style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", justifyContent: justify, padding: "0 24px" }}>
+            <div style={{
+              display: "flex", flexDirection: "column",
+              alignItems: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
+              textAlign: align, maxWidth: 640,
+            }}>
+              <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
+                {hs.title || storeName}
+              </p>
+              {hs.subtitle && (
+                <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, margin: "14px 0 0", letterSpacing: .2, lineHeight: 1.5, textShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+                  {hs.subtitle}
+                </p>
+              )}
+              <button
+                onClick={handleCtaClick}
+                className="ps-btn-order"
+                style={{
+                  marginTop: 32,
+                  background: hs.ctaColor || primary, color: "#fff",
+                  border: "none", borderRadius: 50, padding: "14px 34px",
+                  fontSize: 15, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "inherit", letterSpacing: .5,
+                  boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
+                }}
+              >
+                {hs.ctaText || "تسوق الآن"}
+              </button>
             </div>
-          )}
-          <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, display: "flex", justifyContent: justify, padding: "0 24px" }}>
-            <button
-              onClick={handleCtaClick}
-              className="ps-btn-order"
-              style={{
-                background: hs.ctaColor || primary, color: "#fff",
-                border: "none", borderRadius: 50, padding: "13px 32px",
-                fontSize: 15, fontWeight: 700, cursor: "pointer",
-                fontFamily: "inherit", letterSpacing: .5,
-                boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
-              }}
-            >
-              {hs.ctaText || "تسوق الآن"}
-            </button>
           </div>
         </section>
         </SectionWrapper>
