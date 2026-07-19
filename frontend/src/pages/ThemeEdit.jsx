@@ -37,6 +37,7 @@ const DEFAULT_CONFIG = {
         links: [
           { id: "l1", title: "الصفحة الرئيسية", url: "/" },
           { id: "l2", title: "التصنيفات", url: "/collections" },
+          { id: "l3", title: "اتصل بنا", url: "#" },
         ],
       },
     },
@@ -1267,7 +1268,13 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
   };
 
   // ✦ روابط التنقّل (Navigation) — قائمة قابلة للإضافة/التعديل/الحذف
-  const navLinks = settings.links || [];
+  // للمتاجر القديمة اللي ماعندهاش settings.links بعد، نعرض نفس الروابط الافتراضية بدل قائمة فارغة
+  const DEFAULT_HEADER_LINKS = [
+    { id: "l1", title: "الصفحة الرئيسية", url: "/" },
+    { id: "l2", title: "التصنيفات", url: "/collections" },
+    { id: "l3", title: "اتصل بنا", url: "#" },
+  ];
+  const navLinks = settings.links !== undefined ? settings.links : DEFAULT_HEADER_LINKS;
   const updateLink = (id, patch) => s("links", navLinks.map(l => l.id === id ? { ...l, ...patch } : l));
   const deleteLink = (id) => s("links", navLinks.filter(l => l.id !== id));
   const addLink = () => s("links", [...navLinks, { id: `l_${Date.now()}`, title: "New link", url: "#" }]);

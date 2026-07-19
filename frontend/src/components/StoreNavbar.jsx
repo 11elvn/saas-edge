@@ -149,6 +149,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
   const DEFAULT_NAV_LINKS = [
     { title: "الصفحة الرئيسية", url: "/" },
     { title: "التصنيفات",       url: "/collections" },
+    { title: "اتصل بنا",        url: "#" },
   ];
 
   const navLinks = links || (
