@@ -587,15 +587,15 @@ function PublicStore() {
                 <p style={{ fontSize: "clamp(2rem,6vw,4.5rem)", fontWeight: 900, color: "#fff", letterSpacing: -1, lineHeight: 1.1 }}>
                   {hs.title || storeName}
                 </p>
-                <p style={{ color: "#aaa", fontSize: 16, marginTop: 12, letterSpacing: 1 }}>{hs.subtitle}</p>
+                <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, marginTop: 14, letterSpacing: .2 }}>{hs.subtitle}</p>
               </div>
             </div>
           )}
           <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayAlpha})` }} />
           {(hs.title || hs.subtitle) && heroBanner && (
             <div style={{ position: "absolute", top: "50%", left: 0, right: 0, transform: "translateY(-50%)", textAlign: align, padding: "0 24px" }}>
-              {hs.title && <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: -1 }}>{hs.title}</p>}
-              {hs.subtitle && <p style={{ color: "rgba(255,255,255,.8)", fontSize: 16, margin: 0 }}>{hs.subtitle}</p>}
+              {hs.title && <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: -1, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>{hs.title}</p>}
+              {hs.subtitle && <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, margin: 0, letterSpacing: .2, textShadow: "0 2px 12px rgba(0,0,0,.4)" }}>{hs.subtitle}</p>}
             </div>
           )}
           <div style={{ position: "absolute", bottom: 36, right: 0, left: 0, display: "flex", justifyContent: justify, padding: "0 24px" }}>
