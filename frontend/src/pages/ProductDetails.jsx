@@ -425,11 +425,6 @@ function ProductDetails() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-          links={[
-            { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
-            { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-            { label: "اتصل بنا",        action: () => store?.whatsappNumber && window.open(`https://wa.me/${store.whatsappNumber}`, "_blank") },
-          ]}
         />
       </SectionWrapper>
 

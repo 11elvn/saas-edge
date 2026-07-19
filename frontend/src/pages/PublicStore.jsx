@@ -546,11 +546,6 @@ function PublicStore() {
         slug={slug}
         headerSettings={sec(tc, "header")?.settings}
         themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-        links={[
-          { label: "الصفحة الرئيسية", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-          { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
-        ]}
       />
       </SectionWrapper>
       )}

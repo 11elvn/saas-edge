@@ -34,6 +34,10 @@ const DEFAULT_CONFIG = {
         showSearch: true,
         showCart: true,
         sticky: true,
+        links: [
+          { id: "l1", title: "الصفحة الرئيسية", url: "/" },
+          { id: "l2", title: "التصنيفات", url: "/collections" },
+        ],
       },
     },
     {
@@ -1024,6 +1028,38 @@ const CSS = `
   font-size: .82rem; font-weight: 700; color: #1e293b;
 }
 
+/* Navigation link card (repeater) */
+.pb-link-card {
+  border: 1px solid rgba(15,23,42,.08); border-radius: 12px;
+  overflow: hidden; margin-bottom: 10px; background: #fff;
+  transition: border-color .18s;
+}
+.pb-link-card:hover { border-color: rgba(124,109,242,.22); }
+.pb-link-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(248,249,252,.9);
+  padding: 10px 14px;
+  font-size: .82rem; font-weight: 700; color: #1e293b;
+  border-bottom: 1px solid rgba(15,23,42,.06);
+}
+.pb-link-card__body {
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.pb-link-card__delete {
+  background: none; border: none; cursor: pointer; color: #94a3b8;
+  padding: 4px; border-radius: 6px; display: flex; align-items: center;
+  transition: color .15s, background .15s;
+}
+.pb-link-card__delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
+.pb-add-link-btn {
+  width: 100%; padding: 12px; border-radius: 12px; margin-top: 2px;
+  border: 1.5px dashed rgba(124,109,242,.35); background: rgba(124,109,242,.04);
+  color: #7c6df2; font-weight: 700; font-size: .85rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all .18s; font-family: inherit;
+}
+.pb-add-link-btn:hover { background: rgba(124,109,242,.09); border-color: #7c6df2; }
+
 /* Styles tab */
 .pb-no-selection {
   flex:1; display:flex; flex-direction:column;
@@ -1230,6 +1266,12 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
     else if (!trimmed) setNameValue(store?.name || "");
   };
 
+  // ✦ روابط التنقّل (Navigation) — قائمة قابلة للإضافة/التعديل/الحذف
+  const navLinks = settings.links || [];
+  const updateLink = (id, patch) => s("links", navLinks.map(l => l.id === id ? { ...l, ...patch } : l));
+  const deleteLink = (id) => s("links", navLinks.filter(l => l.id !== id));
+  const addLink = () => s("links", [...navLinks, { id: `l_${Date.now()}`, title: "New link", url: "#" }]);
+
   return (
     <>
       <div className="pb-group">
@@ -1264,6 +1306,32 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
           <span className="pb-toggle-row__label">Sticky header</span>
           <Toggle checked={settings.sticky} onChange={v => s("sticky", v)} />
         </div>
+      </div>
+      <div className="pb-group">
+        <div className="pb-group__label">Navigation</div>
+        {navLinks.map((link, i) => (
+          <div key={link.id} className="pb-link-card">
+            <div className="pb-link-card__header">
+              <span>Link {i + 1}</span>
+              <button type="button" className="pb-link-card__delete" title="حذف" onClick={() => deleteLink(link.id)}>
+                <Icon name="trash" size={14} />
+              </button>
+            </div>
+            <div className="pb-link-card__body">
+              <div className="pb-field">
+                <div className="pb-label">Title</div>
+                <input className="pb-input" value={link.title} onChange={e => updateLink(link.id, { title: e.target.value })} placeholder="مثال: اتصل بنا" />
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Link</div>
+                <input className="pb-input" value={link.url} onChange={e => updateLink(link.id, { url: e.target.value })} placeholder="/contact أو https://..." />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="pb-add-link-btn" onClick={addLink}>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add link
+        </button>
       </div>
     </>
   );

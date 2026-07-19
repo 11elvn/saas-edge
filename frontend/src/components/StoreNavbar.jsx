@@ -126,13 +126,35 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
   const navBorder = themeColors.borderColor  || "#f0f0f0";
   const navText   = themeColors.textColor    || "#111";
 
-  const navLinks = links || [
-    { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
-    { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-    { label: "اتصل بنا",        action: () => {} },
+  const handleSearch = () => { onSearchClick ? onSearchClick() : setSearchOpen(true); };
+
+  // ✦ يحدد إذا الرابط خارجي (URL كامل / بريد / هاتف) وإلا مسار داخل المتجر
+  const isExternalUrl = (url) => /^https?:\/\//i.test(url) || /^mailto:|^tel:/i.test(url) || url?.startsWith("www.");
+
+  const resolveInternalPath = (url) => {
+    const path = url.startsWith("/") ? url : `/${url}`;
+    return path === "/" ? `/store/${slug}` : `/store/${slug}${path}`;
+  };
+
+  const goToLink = (url) => () => {
+    if (!url || url === "#") return;
+    if (isExternalUrl(url)) {
+      const href = url.startsWith("www.") ? `https://${url}` : url;
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(resolveInternalPath(url));
+    }
+  };
+
+  const DEFAULT_NAV_LINKS = [
+    { title: "الصفحة الرئيسية", url: "/" },
+    { title: "التصنيفات",       url: "/collections" },
   ];
 
-  const handleSearch = () => { onSearchClick ? onSearchClick() : setSearchOpen(true); };
+  const navLinks = links || (
+    (headerSettings?.links?.length ? headerSettings.links : DEFAULT_NAV_LINKS)
+      .map(l => ({ label: l.title || "", action: goToLink(l.url) }))
+  );
 
   const LogoEl = ({ height = 68 }) => logo ? (
     <img src={logo} alt={storeName} style={{ height, width:"auto", maxWidth:200, objectFit:"contain" }} />
