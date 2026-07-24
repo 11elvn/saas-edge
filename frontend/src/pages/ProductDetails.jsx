@@ -395,6 +395,8 @@ function ProductDetails() {
           .pd-grid { grid-template-columns: 1fr !important; }
           .pd-thumbs-col { flex-direction: row !important; order: 2; }
           .pd-thumb { width: 60px !important; height: 60px !important; }
+          .pd-thumb-carousel { width: 84px !important; height: 84px !important; }
+          .pd-thumbs-carousel-row { max-width: 100% !important; }
           .pd-gallery-sticky { position: static !important; top: auto !important; }
         }
       `}</style>
@@ -475,6 +477,7 @@ function ProductDetails() {
 
               {gallerySettings.showThumbnails !== false && images.length > 1 && (
                 <div
+                  className="pd-thumbs-carousel-row"
                   style={{
                     display: "flex", gap: 10, marginTop: 12, overflowX: "auto",
                     maxWidth: `calc(${Math.max(1, gallerySettings.thumbnailsShown || 4)} * 78px)`,
@@ -482,7 +485,7 @@ function ProductDetails() {
                   }}
                 >
                   {images.map((img, i) => (
-                    <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
+                    <div key={i} className={`pd-thumb pd-thumb-carousel ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
                       <GallerySlot src={img} index={i} />
                     </div>
                   ))}
