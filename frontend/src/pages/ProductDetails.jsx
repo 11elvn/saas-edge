@@ -393,7 +393,8 @@ function ProductDetails() {
       <style>{`
         @media (max-width: 768px) {
           .pd-grid { grid-template-columns: 1fr !important; }
-          .pd-thumbs-col { flex-direction: row !important; order: 2; }
+          .pd-gallery-outer { flex-direction: column !important; }
+          .pd-thumbs-col { flex-direction: row !important; order: 2 !important; }
           .pd-thumb { width: 60px !important; height: 60px !important; }
           .pd-thumb-carousel { width: 84px !important; height: 84px !important; }
           .pd-thumbs-carousel-row { max-width: 100% !important; }
@@ -495,7 +496,7 @@ function ProductDetails() {
           ) : (
             /* ══════════ CAROUSEL OFF — Stacked / Bottom rail (layout ثابت) ══════════ */
             <div
-              className="pd-fade"
+              className="pd-fade pd-gallery-outer"
               style={{ display: "flex", gap: 14, flexDirection: gallerySettings.layout === "bottom-rail" ? "column" : "row" }}
             >
               {/* Thumbnails */}
