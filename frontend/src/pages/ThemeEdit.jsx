@@ -692,125 +692,25 @@ const CSS = `
   display: flex; flex-direction: column;
 }
 
-.pb-iphone {
-  position: relative;
-  /* نسبة 15 Pro Max: 393 × 852 = 0.4613 */
-  aspect-ratio: 393 / 852;
-  height: calc(100vh - 140px);
-  max-height: 760px;
-  min-height: 500px;
-  width: auto;
-  flex-shrink: 0;
+.pb-preview-mobile {
+  width: 420px; max-width: 100%; height: 100%;
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 24px 64px rgba(15,23,42,.18), 0 0 0 1px rgba(15,23,42,.05);
+  overflow: hidden;
+  display: flex; flex-direction: column;
   margin: auto;
 }
-.pb-iphone__frame {
-  position: absolute;
-  inset: 0;
-  border-radius: 54px;
-  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 40%, #111 60%, #1e1e1e 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.12),
-    0 0 0 1px rgba(0,0,0,.8),
-    0 24px 60px rgba(0,0,0,.55),
-    0 6px 16px rgba(0,0,0,.35);
-  pointer-events: none;
-  z-index: 5;
-}
-.pb-iphone__screen-wrap {
-  position: absolute;
-  top: 10px; left: 10px; right: 10px; bottom: 10px;
-  border-radius: 46px;
-  overflow: hidden;
-  background: #000;
-  z-index: 10;
-}
-.pb-iphone__island {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 86px; height: 24px;
-  background: #000;
-  border-radius: 20px;
-  z-index: 25;
-  pointer-events: none;
-}
-.pb-iphone__status {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 44px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 0 16px;
-  z-index: 22;
-  pointer-events: none;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.pb-iphone__time {
-  font-size: 12px; font-weight: 600;
-  color: #000; font-family: -apple-system, sans-serif;
-  letter-spacing: -.2px;
-  justify-self: start;
-  padding-top: 8px;
-}
-.pb-iphone__island-spacer {
-  width: 86px; height: 24px;
-}
-.pb-iphone__signals {
-  display: flex; align-items: center; gap: 4px;
-  justify-self: end;
-  padding-top: 8px;
-}
-.pb-iphone__btn-right {
-  position: absolute;
-  right: -3px; top: 140px;
-  width: 3px; height: 72px;
-  background: linear-gradient(to right, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 0 2px 2px 0;
-  z-index: 21; pointer-events: none;
-}
-.pb-iphone__btn-left1 {
-  position: absolute;
-  left: -3px; top: 105px;
-  width: 3px; height: 42px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21; pointer-events: none;
-}
-.pb-iphone__btn-left2 {
-  position: absolute;
-  left: -3px; top: 170px;
-  width: 3px; height: 66px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21; pointer-events: none;
-}
-.pb-iphone__btn-left3 {
-  position: absolute;
-  left: -3px; top: 252px;
-  width: 3px; height: 66px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21; pointer-events: none;
-}
-.pb-iphone__content {
-  position: absolute;
-  top: 44px;
-  left: 0; right: 0; bottom: 0;
+.pb-preview-mobile-wrap {
+  position: relative;
+  flex: 1;
   overflow: hidden;
 }
-.pb-iphone__iframe {
+.pb-preview-mobile-iframe {
   position: absolute;
   top: 0; left: 0;
-  width: 393px;
-  height: 852px;
   border: none;
-  display: block;
   transform-origin: top left;
-  /* scale يتحسب بـ JS */
+  /* width/height/transform يتحسبو بـ JS باش يبقى الـ layout ديال الموبايل صحيح */
 }
 
 .pb-chrome-bar {
@@ -2252,16 +2152,20 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   const pendingStoreRef = useRef(null);
   const phoneRef   = useRef(null);
   const desktopWrapRef = useRef(null);
+  const MOBILE_W  = 393;  // ✦ عرض مرجعي "موبايل" — نفس عرض iPhone القياسي، يضمن أن breakpoint الموبايل (768px) يتفعّل صحيح
   const DESKTOP_W = 1280; // ✦ عرض مرجعي "حاسوب" — يضمن أن الـ iframe ما يهبطش تحت breakpoint الموبايل (768px) حتى ملي اللوحات مفتوحة وكيضيق المكان
 
-  // ✦ حساب scale ديناميكي باش الـ iframe يتناسب مع حجم الإطار
+  // ✦ نفس مبدأ الـ Desktop — نفرض عرض 393px حقيقي جوا الـ iframe ونصغّرو/نكبّرو بصريا (transform: scale) باش يبقى الـ layout ديال الموبايل صحيح بغض النظر عن حجم الإطار
   useEffect(() => {
     if (!isMobile) return;
     const calcScale = () => {
       if (!phoneRef.current || !iframeRef.current) return;
-      const screenW = phoneRef.current.clientWidth - 20; // 10px padding كل جهة
-      const scale = screenW / 393;
+      const wrapW = phoneRef.current.clientWidth;
+      const wrapH = phoneRef.current.clientHeight;
+      const scale = wrapW / MOBILE_W;
       iframeRef.current.style.transform = `scale(${scale})`;
+      iframeRef.current.style.width  = `${MOBILE_W}px`;
+      iframeRef.current.style.height = `${scale > 0 ? wrapH / scale : wrapH}px`;
     };
     calcScale();
     const ro = new ResizeObserver(calcScale);
@@ -2367,52 +2271,24 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="pb-iphone" ref={phoneRef}>
-        {/* الإطار الخارجي */}
-        <div className="pb-iphone__frame" />
-        {/* أزرار جانبية */}
-        <div className="pb-iphone__btn-right" />
-        <div className="pb-iphone__btn-left1" />
-        <div className="pb-iphone__btn-left2" />
-        <div className="pb-iphone__btn-left3" />
-        {/* الشاشة */}
-        <div className="pb-iphone__screen-wrap">
-          {/* Dynamic Island — absolute فوق كل شي */}
-          <div className="pb-iphone__island" />
-          {/* Status Bar — 3 columns: time | island-spacer | signals */}
-          <div className="pb-iphone__status">
-            <span className="pb-iphone__time">9:41</span>
-            <div className="pb-iphone__island-spacer" />
-            <div className="pb-iphone__signals">
-              <svg width="10" height="8" viewBox="0 0 17 12" fill="#000">
-                <rect x="0" y="7" width="3" height="5" rx=".5"/>
-                <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
-                <rect x="9" y="2" width="3" height="10" rx=".5"/>
-                <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
-              </svg>
-              <svg width="10" height="8" viewBox="0 0 16 12" fill="none" stroke="#000" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M8 10h.01"/><path d="M5.5 7.5a3.5 3.5 0 015 0"/>
-                <path d="M3 5a7 7 0 0110 0"/><path d="M1 2.5a11 11 0 0114 0"/>
-              </svg>
-              <svg width="15" height="8" viewBox="0 0 25 12" fill="#000">
-                <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#000" strokeWidth="1" fill="none"/>
-                <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#000" opacity=".4"/>
-                <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
-              </svg>
-            </div>
-          </div>
-          {/* iframe */}
-          <div className="pb-iphone__content">
-            <iframe
-              ref={iframeRef}
-              src={src}
-              onLoad={handleLoad}
-              className="pb-iphone__iframe"
-              title="Mobile Preview"
-            />
-          </div>
+    <div className="pb-preview-mobile">
+      <div className="pb-chrome-bar">
+        <div className="pb-chrome-dot" style={{ background: "#ff5f56" }} />
+        <div className="pb-chrome-dot" style={{ background: "#ffbd2e" }} />
+        <div className="pb-chrome-dot" style={{ background: "#27c93f" }} />
+        <div className="pb-chrome-url">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          {window.location.host}/store/{slug}
         </div>
+      </div>
+      <div className="pb-preview-mobile-wrap" ref={phoneRef}>
+        <iframe
+          ref={iframeRef}
+          src={src}
+          onLoad={handleLoad}
+          className="pb-preview-mobile-iframe"
+          title="Mobile Preview"
+        />
       </div>
     </div>
   );
