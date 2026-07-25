@@ -193,6 +193,21 @@ const PRODUCT_DEFAULT_CONFIG = {
   ],
 };
 
+// ✦ Default config لصفحة Category (بانر التصنيف: صورة + اسم) — نفس مبدأ PRODUCT_DEFAULT_CONFIG
+const CATEGORY_DEFAULT_CONFIG = {
+  sections: [
+    {
+      id: "categoryBanner",
+      type: "categoryBanner",
+      enabled: true,
+      settings: {
+        style: "overlay",        // overlay (تصميم A) | compact (تصميم B)
+        showProductCount: true,
+      },
+    },
+  ],
+};
+
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
@@ -213,8 +228,13 @@ const PRODUCT_SECTION_META = {
   checkout:    { label: "In-Page Checkout",  icon: "checkout",    locked: true },
 };
 
-// ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product
-const getSectionMeta = (type) => SECTION_META[type] || PRODUCT_SECTION_META[type] || {};
+// ✦ Sections خاصة بصفحة Category فقط — locked ديما
+const CATEGORY_SECTION_META = {
+  categoryBanner: { label: "Category Banner", icon: "categories", locked: true },
+};
+
+// ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category
+const getSectionMeta = (type) => SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || {};
 
 const PAGES = [
   { id: "home",     label: "Home",     icon: "home" },
@@ -2039,6 +2059,31 @@ function CheckoutSettings({ settings, onChange }) {
   );
 }
 
+function CategoryBannerSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  return (
+    <>
+      <div className="pb-group">
+        <div className="pb-group__label">Banner style</div>
+        <div className="pb-field">
+          <div className="pb-label">Style</div>
+          <div className="pb-segment">
+            {[{ v: "overlay", l: "Overlay" }, { v: "compact", l: "Compact" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.style || "overlay") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("style", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show product count</span>
+          <Toggle checked={settings.showProductCount !== false} onChange={v => s("showProductCount", v)} />
+        </div>
+      </div>
+    </>
+  );
+}
+
 function StylesPanel({ styles, onChange }) {
   const s = (k, v) => onChange({ ...styles, [k]: v });
   return (
@@ -2116,6 +2161,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
       case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
       case "checkout":     return <CheckoutSettings     settings={section.settings} onChange={updateSettings} />;
+      case "categoryBanner": return <CategoryBannerSettings settings={section.settings} onChange={updateSettings} />;
       default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
     }
   };
@@ -2145,7 +2191,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
 // ─────────────────────────────────────────────
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home", productId, storePatch }) {
+function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home", productId, categoryId, storePatch }) {
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
@@ -2266,8 +2312,18 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     </div>
   );
 
+  // ✦ صفحة Category محتاجة تصنيف حقيقي باش نعاينوها
+  if (page === "category" && !categoryId) return (
+    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
+      <div style={{ fontSize:"2rem" }}>🗂️</div>
+      <div style={{ fontSize:".85rem" }}>زيد تصنيف واحد على الأقل باش تعاين هاذي الصفحة</div>
+    </div>
+  );
+
   const src = page === "product"
     ? `/store/${slug}/product/${productId}?preview=1`
+    : page === "category"
+    ? `/store/${slug}/collections/${categoryId}?preview=1`
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
@@ -2338,6 +2394,7 @@ function ThemeEdit() {
   const [collapsedRight, setCollapsedRight] = useState(false);
   const [showAddMenu,    setShowAddMenu]    = useState(false);
   const [previewProductId, setPreviewProductId] = useState(null); // ✦ أول منتج فالمتجر — نستعملوه لمعاينة صفحة Product
+  const [previewCategoryId, setPreviewCategoryId] = useState(null); // ✦ أول تصنيف فالمتجر — نستعملوه لمعاينة صفحة Category
   const PANEL_W = 340; // نفس عرض الأعمدة كيف كيف (يسار ويمين)
 
   const notify = (msg, type = "success") => {
@@ -2410,12 +2467,28 @@ function ThemeEdit() {
             }),
           };
 
+          // ✦ نطمّنو أن themeConfig.category فيه section البانر بكل الحقول
+          const savedCategorySections = d.store.themeConfig?.category?.sections || [];
+          cfg.category = {
+            sections: CATEGORY_DEFAULT_CONFIG.sections.map(defSec => {
+              const saved = savedCategorySections.find(s => s.type === defSec.type);
+              if (!saved) return defSec;
+              return { ...defSec, ...saved, settings: { ...defSec.settings, ...(saved.settings || {}) } };
+            }),
+          };
+
           setThemeConfig(cfg);
 
           // ✦ نجيبو أول منتج فالمتجر باش نعاينو بيه صفحة Product فالـ builder
           fetch(`${API()}/api/products/store/${d.store._id}`)
             .then(r => r.json())
             .then(list => { if (Array.isArray(list) && list.length) setPreviewProductId(list[0]._id); })
+            .catch(() => {});
+
+          // ✦ نجيبو أول تصنيف فالمتجر باش نعاينو بيه صفحة Category فالـ builder
+          fetch(`${API()}/api/categories/public/${d.store._id}`)
+            .then(r => r.json())
+            .then(list => { if (Array.isArray(list) && list.length) setPreviewCategoryId(list[0]._id); })
             .catch(() => {});
         }
       })
@@ -2428,9 +2501,10 @@ function ThemeEdit() {
     const handler = (e) => {
       if (e.data?.type !== "SECTION_CLICK") return;
       const sectionType = e.data.sectionType;
-      // نلقى الـ section اللي type ديالو يطابق — سواء فـ Home ولا Product
+      // نلقى الـ section اللي type ديالو يطابق — سواء فـ Home ولا Product ولا Category
       const matched = themeConfig?.sections?.find(s => s.type === sectionType)
-        || themeConfig?.product?.sections?.find(s => s.type === sectionType);
+        || themeConfig?.product?.sections?.find(s => s.type === sectionType)
+        || themeConfig?.category?.sections?.find(s => s.type === sectionType);
       if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
@@ -2458,6 +2532,20 @@ function ThemeEdit() {
       product: {
         ...prev.product,
         sections: prev.product.sections.map(s =>
+          s.id === id ? { ...s, settings: newSettings } : s
+        ),
+      },
+    }));
+    setIsDirty(true);
+  }, []);
+
+  // ── Update category-page section settings (Category Banner) ──
+  const updateCategorySectionSettings = useCallback((id, newSettings) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      category: {
+        ...prev.category,
+        sections: prev.category.sections.map(s =>
           s.id === id ? { ...s, settings: newSettings } : s
         ),
       },
@@ -2580,9 +2668,12 @@ function ThemeEdit() {
   };
 
   const activeSectionObj = themeConfig?.sections?.find(s => s.id === activeSection)
-    || themeConfig?.product?.sections?.find(s => s.id === activeSection);
+    || themeConfig?.product?.sections?.find(s => s.id === activeSection)
+    || themeConfig?.category?.sections?.find(s => s.id === activeSection);
   const activeIsProductSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.product?.sections?.some(s => s.id === activeSection);
+  const activeIsCategorySection = !themeConfig?.sections?.some(s => s.id === activeSection)
+    && !!themeConfig?.category?.sections?.some(s => s.id === activeSection);
 
   // ✦ لائحة الـ sections المعروضة فالعمود الأيسر — تتبدل حسب الصفحة المختارة
   const displaySections = currentPage === "product"
@@ -2596,6 +2687,18 @@ function ThemeEdit() {
           pick(prod, "gallery"),
           pick(prod, "productInfo"),
           pick(prod, "checkout"),
+          pick(home, "footer"),
+        ].filter(Boolean);
+      })()
+    : currentPage === "category"
+    ? (() => {
+        const home = themeConfig?.sections || [];
+        const cat  = themeConfig?.category?.sections || [];
+        const pick = (arr, type) => arr.find(s => s.type === type);
+        return [
+          pick(home, "announcement"),
+          pick(home, "header"),
+          pick(cat, "categoryBanner"),
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -2832,6 +2935,7 @@ function ThemeEdit() {
             activeSection={activeSection}
             page={currentPage}
             productId={previewProductId}
+            categoryId={previewCategoryId}
             storePatch={{ name: store.name, logo: store.logo }}
           />
         </div>
@@ -2855,7 +2959,7 @@ function ThemeEdit() {
           <SectionSettingsPanel
             section={activeSectionObj}
             store={store}
-            onUpdate={activeIsProductSection ? updateProductSectionSettings : updateSectionSettings}
+            onUpdate={activeIsProductSection ? updateProductSectionSettings : activeIsCategorySection ? updateCategorySectionSettings : updateSectionSettings}
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
             onNameChange={saveName}

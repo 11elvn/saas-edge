@@ -3,12 +3,24 @@
 // Route: /store/:slug/collections/:categoryId
 // ============================================================
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
+
+// ── DEFAULTS — نفس القيم الافتراضية ديال ThemeEdit (Home sections + Category Banner) ──
+const DEFAULT_HOME_SECTIONS = [
+  { id: "announcement", type: "announcement", enabled: true, settings: { message: "توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor: "#111827", textColor: "#ffffff", animation: true, showClose: false } },
+  { id: "header",       type: "header",       enabled: true, settings: { showSearch: true, showCart: true, sticky: true } },
+  { id: "footer",       type: "footer",       enabled: true, settings: { copyright: "", showNewsletter: true, termsText: "الشروط والسياسات", showSocials: true, socials: {} } },
+];
+const DEFAULT_CATEGORY_SECTIONS = [
+  { id: "categoryBanner", type: "categoryBanner", enabled: true, settings: { style: "overlay", showProductCount: true } },
+];
+
+const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
 function loadFont(font) {
   const id = `font-${font}`;
@@ -25,15 +37,65 @@ const IconWA = () => (
   </svg>
 );
 
+const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", categoryBanner: "Category Banner", footer: "Footer" };
+
+// ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
+  if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
+  const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
+  return (
+    <div
+      style={{ position: "relative", ...style, cursor: "pointer" }}
+      data-section={type}
+      onClick={handleClick}
+      className={`cp-section-wrapper${isHighlighted ? " cp-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
+    >
+      {isHighlighted && <div className="cp-section-label">{SECTION_LABELS[type] || type}</div>}
+      {children}
+    </div>
+  );
+}
+
 export default function CategoryProducts() {
   const { slug, categoryId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isPreview = new URLSearchParams(location.search).get("preview") === "1";
 
   const [store,    setStore]    = useState(null);
   const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [sort,     setSort]     = useState("newest");
+
+  // ── Live theme من الـ builder (postMessage) ──
+  const [themeConfig, setThemeConfig] = useState(null);
+  const [highlightedSection, setHighlightedSection] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) setThemeConfig(e.data.themeConfig);
+      if (e.data?.type === "STORE_UPDATE" && e.data.store) setStore(prev => (prev ? { ...prev, ...e.data.store } : prev));
+      if (e.data?.type === "HIGHLIGHT_SECTION") setHighlightedSection(e.data.sectionType || null);
+      if (e.data?.type === "SCROLL_TO_SECTION") {
+        const el = document.querySelector(`[data-section="${e.data.sectionType}"]`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // ── الإعدادات الفعلية — من postMessage إذا preview، وإلا من store.themeConfig، وإلا defaults ──
+  const rawTc         = themeConfig || store?.themeConfig || null;
+  const homeSections  = rawTc?.sections || DEFAULT_HOME_SECTIONS;
+  const catSections    = rawTc?.category?.sections || DEFAULT_CATEGORY_SECTIONS;
+
+  const announcementSec = sec(homeSections, "announcement");
+  const headerSettings  = sec(homeSections, "header")?.settings;
+  const bannerSettings  = sec(catSections, "categoryBanner")?.settings || DEFAULT_CATEGORY_SECTIONS[0].settings;
+  const bannerStyle     = bannerSettings.style || "overlay";
+  const showCount       = bannerSettings.showProductCount !== false;
 
   const primary = store?.primaryColor || "#111827";
   const font    = store?.fontFamily   || "Cairo";
@@ -78,9 +140,9 @@ export default function CategoryProducts() {
     return 0;
   });
 
-  const logo      = store?.logo || "";
-  const storeName = store?.name || "المتجر";
-  const phone     = store?.whatsappNumber || "";
+  const phone = store?.whatsappNumber || "";
+  const categoryImg  = category?.image || "";
+  const categoryName = category?.name || "التصنيف";
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -92,58 +154,103 @@ export default function CategoryProducts() {
   return (
     <div dir="rtl" style={{ minHeight: "100vh", background: "#fff", fontFamily: `'${font}','Cairo',sans-serif`, color: "#111" }}>
 
+      <style>{`
+        .cp-section-wrapper { position: relative; }
+        .cp-section-wrapper--highlighted { outline: 2px solid #2563eb; outline-offset: -2px; }
+        .cp-section-label {
+          position: fixed; top: 8px; left: 8px; z-index: 9999;
+          background: #2563eb; color: #fff; font-size: 11px; font-weight: 700;
+          padding: 3px 10px; border-radius: 6px; pointer-events: none;
+          font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(37,99,235,.35);
+        }
+      `}</style>
+
+      {/* ── Announcement Bar (مشترك مع Home) ── */}
+      {announcementSec?.enabled !== false && announcementSec?.settings && (
+        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
+            <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>{announcementSec.settings.message}</p>
+          </div>
+        </SectionWrapper>
+      )}
+
       {/* ── Navbar ── */}
-      <StoreNavbar
-        store={store}
-        slug={slug}
-        links={[
-          { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
-          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-          { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
-        ]}
-      />
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+        <StoreNavbar
+          store={store}
+          slug={slug}
+          headerSettings={headerSettings}
+          links={[
+            { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
+            { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
+            { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
+          ]}
+        />
+      </SectionWrapper>
 
       {/* ── Breadcrumb ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", alignItems: "center", gap: 8 }}>
         <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: "none", border: "none", color: "#888", fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
           التشكيلات
         </button>
         <span style={{ color: "#ccc" }}>›</span>
-        <span style={{ color: "#111", fontSize: 13, fontWeight: 600 }}>{category?.name || "..."}</span>
+        <span style={{ color: "#111", fontSize: 13, fontWeight: 600 }}>{categoryName}</span>
       </div>
 
-      {/* ── Header ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 24px 32px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#111", margin: "0 0 6px", letterSpacing: -1 }}>
-              {category?.name || "التصنيف"}
-            </h1>
-            <p style={{ color: "#888", fontSize: 14, margin: 0 }}>{sorted.length} منتج</p>
+      {/* ── Category Banner (Overlay أو Compact) ── */}
+      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"}>
+        {bannerStyle === "compact" ? (
+          /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
+          <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", background: "#f3f4f6", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {categoryImg
+                ? <img src={categoryImg} alt={categoryName} onError={e => { e.target.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span style={{ fontSize: 22 }}>🗂️</span>}
+            </div>
+            <div>
+              <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.7rem)", fontWeight: 900, color: "#111", margin: "0 0 4px", letterSpacing: -0.5 }}>{categoryName}</h1>
+              {showCount && <p style={{ color: "#888", fontSize: 13, margin: 0 }}>{sorted.length} منتج</p>}
+            </div>
           </div>
-          {/* Sort */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 13, color: "#888" }}>الترتيب حسب:</span>
-            {[
-              { val: "newest",     label: "أحدثاً" },
-              { val: "price_asc",  label: "الثمن ↑" },
-              { val: "price_desc", label: "الثمن ↓" },
-            ].map(s => (
-              <button key={s.val} onClick={() => setSort(s.val)} style={{
-                padding: "6px 13px", borderRadius: 8,
-                border: `1px solid ${sort === s.val ? primary : "#e5e7eb"}`,
-                background: sort === s.val ? primary : "#fff",
-                color: sort === s.val ? "#fff" : "#555",
-                fontSize: 12, fontWeight: 600, cursor: "pointer",
-                fontFamily: "inherit", transition: "all .15s",
-              }}>{s.label}</button>
-            ))}
+        ) : (
+          /* ══════ Overlay — صورة كاملة العرض + تعتيم + الاسم فوقها ══════ */
+          <div style={{ position: "relative", height: "clamp(180px,28vw,320px)", background: "#f3f4f6", marginTop: 20 }}>
+            {categoryImg && (
+              <img src={categoryImg} alt={categoryName} onError={e => { e.target.style.opacity = 0; }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            )}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.05) 60%)" }} />
+            <div style={{ position: "absolute", bottom: 20, right: 24, left: 24 }}>
+              <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#fff", margin: "0 0 4px", letterSpacing: -1 }}>{categoryName}</h1>
+              {showCount && <p style={{ color: "rgba(255,255,255,.85)", fontSize: 13, margin: 0 }}>{sorted.length} منتج</p>}
+            </div>
           </div>
+        )}
+      </SectionWrapper>
+
+      {/* ── Sort ── */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, color: "#888" }}>الترتيب حسب:</span>
+          {[
+            { val: "newest",     label: "أحدثاً" },
+            { val: "price_asc",  label: "الثمن ↑" },
+            { val: "price_desc", label: "الثمن ↓" },
+          ].map(s => (
+            <button key={s.val} onClick={() => setSort(s.val)} style={{
+              padding: "6px 13px", borderRadius: 8,
+              border: `1px solid ${sort === s.val ? primary : "#e5e7eb"}`,
+              background: sort === s.val ? primary : "#fff",
+              color: sort === s.val ? "#fff" : "#555",
+              fontSize: 12, fontWeight: 600, cursor: "pointer",
+              fontFamily: "inherit", transition: "all .15s",
+            }}>{s.label}</button>
+          ))}
         </div>
       </div>
 
       {/* ── Products Grid ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 80px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
         {sorted.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
             <p style={{ fontSize: 40 }}>📦</p>
@@ -220,7 +327,9 @@ export default function CategoryProducts() {
       </div>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} light />
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+        <StoreFooter store={store} slug={slug} light />
+      </SectionWrapper>
 
       {/* WhatsApp */}
       {phone && (
