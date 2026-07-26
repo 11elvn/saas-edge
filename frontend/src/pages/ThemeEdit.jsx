@@ -193,7 +193,7 @@ const PRODUCT_DEFAULT_CONFIG = {
   ],
 };
 
-// ✦ Default config لصفحة Category (بانر التصنيف: صورة + اسم) — نفس مبدأ PRODUCT_DEFAULT_CONFIG
+// ✦ Default config لصفحة Category (بانر التصنيف + شبكة المنتجات) — نفس مبدأ PRODUCT_DEFAULT_CONFIG
 const CATEGORY_DEFAULT_CONFIG = {
   sections: [
     {
@@ -203,6 +203,30 @@ const CATEGORY_DEFAULT_CONFIG = {
       settings: {
         style: "overlay",        // overlay (تصميم A) | compact (تصميم B)
         showProductCount: true,
+      },
+    },
+    // ✦ نفس section الـ Collection ديال Home — كيتحكم فـ شكل شبكة المنتجات هنا
+    // ✦ id فريد (categoryCollection) باش ما يتصادمش مع section الهوم اللي عندو نفس النوع "collection"
+    // (activeIsCategorySection فـ ThemeEdit كيتأكد بـ id، فإذا كان نفس id كيروح التحديث غلط لـ Home)
+    {
+      id: "categoryCollection",
+      type: "collection",
+      enabled: true,
+      settings: {
+        title: "",
+        titleAlign: "right",
+        selectionMode: "all",
+        productsShown: 8,
+        carouselMode: false,
+        columns: 3,                 // 2 | 3 | 4
+        cardStyle: "default",       // default | minimal | bordered
+        imageRatio: "1:1",          // 1:1 | 3:4 | adapt
+        showBadge: true,
+        showRating: false,
+        showViewAll: false,
+        viewAllText: "عرض الكل",
+        viewAllStyle: "link",
+        infiniteScroll: false,
       },
     },
   ],
@@ -2699,6 +2723,7 @@ function ThemeEdit() {
           pick(home, "announcement"),
           pick(home, "header"),
           pick(cat, "categoryBanner"),
+          pick(cat, "collection"),
           pick(home, "footer"),
         ].filter(Boolean);
       })()

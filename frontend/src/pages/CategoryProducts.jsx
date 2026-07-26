@@ -2,7 +2,7 @@
 // 📁 pages/CategoryProducts.jsx — منتجات تصنيف معين
 // Route: /store/:slug/collections/:categoryId
 // ============================================================
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
@@ -18,6 +18,12 @@ const DEFAULT_HOME_SECTIONS = [
 ];
 const DEFAULT_CATEGORY_SECTIONS = [
   { id: "categoryBanner", type: "categoryBanner", enabled: true, settings: { style: "overlay", showProductCount: true } },
+  // ✦ نفس section الـ Collection ديال Home — كيتحكم فـ شكل شبكة المنتجات هنا (id فريد: categoryCollection)
+  { id: "categoryCollection", type: "collection", enabled: true, settings: {
+      title: "", titleAlign: "right", selectionMode: "all", productsShown: 8, carouselMode: false,
+      columns: 3, cardStyle: "default", imageRatio: "1:1", showBadge: true, showRating: false,
+      showViewAll: false, viewAllText: "عرض الكل", viewAllStyle: "link", infiniteScroll: false,
+  } },
 ];
 const DEFAULT_STYLES = {
   primaryColor: "#2563eb", secondaryColor: "#0f172a", backgroundColor: "#ffffff",
@@ -36,13 +42,18 @@ function loadFont(font) {
   document.head.appendChild(link);
 }
 
+const IconCart = () => (
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+);
 const IconWA = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 );
 
-const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", categoryBanner: "Category Banner", footer: "Footer" };
+const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", categoryBanner: "Category Banner", collection: "Collection", footer: "Footer" };
 
 // ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
@@ -73,6 +84,10 @@ export default function CategoryProducts() {
   const [loading,  setLoading]  = useState(true);
   const [sort,     setSort]     = useState("newest");
 
+  // ── Collection grid — infinite scroll ──
+  const loadMoreRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(null);
+
   // ── Live theme من الـ builder (postMessage) ──
   const [themeConfig, setThemeConfig] = useState(null);
   const [highlightedSection, setHighlightedSection] = useState(null);
@@ -101,6 +116,8 @@ export default function CategoryProducts() {
   const bannerSettings  = sec(catSections, "categoryBanner")?.settings || DEFAULT_CATEGORY_SECTIONS[0].settings;
   const bannerStyle     = bannerSettings.style || "overlay";
   const showCount       = bannerSettings.showProductCount !== false;
+  const collectionSec   = sec(catSections, "collection");
+  const collSettings    = collectionSec?.settings || DEFAULT_CATEGORY_SECTIONS[1].settings;
 
   // ── ألوان الثيم (Styles tab) — نفس منطق PublicStore/ProductDetails ──
   const styles       = rawTc?.styles || DEFAULT_STYLES;
@@ -108,6 +125,8 @@ export default function CategoryProducts() {
   const bgColor        = styles.backgroundColor || "#ffffff";
   const surfaceColor  = styles.surfaceColor    || "#fafafa";
   const textColor     = styles.textColor       || "#111111";
+  const mutedTextColor = styles.mutedTextColor || "#666666";
+  const borderColor    = styles.borderColor    || "#ebebeb";
   const font    = store?.fontFamily   || "Cairo";
 
   useEffect(() => { loadFont("Cairo"); }, []);
@@ -149,6 +168,23 @@ export default function CategoryProducts() {
     if (sort === "price_desc") return b.currentPrice - a.currentPrice;
     return 0;
   });
+
+  // ✦ Infinite Scroll — يحمّل المزيد كل ما يوصل المستخدم للـ sentinel (نفس منطق PublicStore)
+  useEffect(() => {
+    if (!collSettings.infiniteScroll || !loadMoreRef.current) return;
+    const productsShown = collSettings.productsShown || 8;
+    const el = loadMoreRef.current;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setVisibleCount(prev => Math.min((prev || productsShown) + productsShown, sorted.length));
+      }
+    }, { rootMargin: "200px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [collSettings.infiniteScroll, collSettings.productsShown, sorted.length, visibleCount]);
+
+  // ✦ نرجّعو عداد العرض لقيمته الأصلية كي يتبدل الترتيب
+  useEffect(() => { setVisibleCount(null); }, [sort]);
 
   const phone = store?.whatsappNumber || "";
   const categoryImg  = category?.image || "";
@@ -273,82 +309,211 @@ export default function CategoryProducts() {
         </div>
       </div>
 
-      {/* ── Products Grid ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
-        {sorted.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
-            <p style={{ fontSize: 40 }}>📦</p>
-            <p style={{ color: "#aaa", fontSize: 14 }}>لا توجد منتجات في هذا التصنيف</p>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
-            {sorted.map(product => {
-              const img        = product.images?.[0] || product.image || DEFAULT_IMG;
-              const outOfStock = product.stock === 0;
-              return (
-                <div
-                  key={product._id}
-                  onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
-                  style={{
-                    background: "#fff", border: "1px solid #eee",
-                    borderRadius: 16, overflow: "hidden", cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(0,0,0,.04)",
-                    transition: "transform .25s, box-shadow .25s",
-                    opacity: outOfStock ? 0.6 : 1,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.1)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.04)"; }}
-                >
-                  {/* Image */}
-                  <div style={{ height: 220, overflow: "hidden", background: "#f9fafb", position: "relative" }}>
-                    <img
-                      src={img} alt={product.name}
-                      onError={e => { e.target.src = DEFAULT_IMG; }}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .4s" }}
-                      onMouseEnter={e => e.target.style.transform = "scale(1.05)"}
-                      onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                    />
-                    {product.oldPrice && !outOfStock && (
-                      <span style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 99 }}>
-                        -{Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
-                      </span>
-                    )}
-                    {outOfStock && (
-                      <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ background: "#111", color: "#fff", fontSize: 12, fontWeight: 700, padding: "6px 16px", borderRadius: 99 }}>نفد المخزون</span>
-                      </div>
-                    )}
-                  </div>
-                  {/* Info */}
-                  <div style={{ padding: "14px 16px 16px" }}>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: "#111", margin: "0 0 8px", lineHeight: 1.4 }}>{product.name}</p>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                      <span style={{ fontSize: 16, fontWeight: 800, color: "#111" }}>{product.currentPrice.toLocaleString()} <span style={{ fontSize: 11, color: "#888" }}>د.ج</span></span>
-                      {product.oldPrice && <span style={{ fontSize: 12, color: "#bbb", textDecoration: "line-through" }}>{product.oldPrice.toLocaleString()}</span>}
+      {/* ── Products Grid (Collection section) — نفس تصميم PublicStore بالضبط ── */}
+      {collectionSec?.enabled !== false && (() => {
+        const carouselMode   = !!collSettings.carouselMode;
+        const columns         = collSettings.columns || 3;
+        const imageRatio      = collSettings.imageRatio || "1:1";
+        const cardStyle       = collSettings.cardStyle || "default";
+        const showBadge       = collSettings.showBadge !== false;
+        const showRating      = !!collSettings.showRating;
+        const showViewAll     = collSettings.showViewAll;
+        const viewAllText     = collSettings.viewAllText || "عرض الكل";
+        const viewAllStyle    = collSettings.viewAllStyle || "link";
+        const infiniteScroll  = !!collSettings.infiniteScroll;
+        const productsShown   = collSettings.productsShown || 8;
+
+        const effectiveCount  = infiniteScroll ? (visibleCount || productsShown) : productsShown;
+        const visibleProducts = carouselMode ? sorted : sorted.slice(0, effectiveCount);
+        const aspectMap = { "1:1": "1/1", "3:4": "3/4" };
+
+        // ✦ Card style presets — Default | Minimal | Bordered (نفس presets ديال PublicStore)
+        const CARD_STYLE_MAP = {
+          default:  { cardBorder: "none", cardPadding: 0, imgRadius: 14, titleSize: 14, priceSize: 16, gap: 8 },
+          minimal:  { cardBorder: "none", cardPadding: 0, imgRadius: 6,  titleSize: 13, priceSize: 14, gap: 6 },
+          bordered: { cardBorder: `1px solid ${borderColor}`, cardPadding: 8, imgRadius: 12, titleSize: 14, priceSize: 16, gap: 8 },
+        };
+        const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
+
+        const viewAllBtnStyle = {
+          link:    { background: "none", color: primary, border: "none", textDecoration: "underline" },
+          filled:  { background: primary, color: "#fff", border: "none" },
+          outline: { background: "none", color: primary, border: `1px solid ${primary}` },
+        }[viewAllStyle];
+
+        return (
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"}>
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
+          {sorted.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
+              <p style={{ fontSize: 40 }}>📦</p>
+              <p style={{ color: "#aaa", fontSize: 14 }}>لا توجد منتجات في هذا التصنيف</p>
+            </div>
+          ) : (
+            <div
+              className="cp-coll-grid"
+              data-cols={columns}
+              data-carousel={carouselMode ? "1" : "0"}
+              style={carouselMode ? {
+                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8,
+              } : {
+                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
+              }}
+            >
+              {visibleProducts.map((product, idx) => {
+                const img        = product.images?.[0] || product.image || DEFAULT_IMG;
+                const outOfStock = product.stock === 0;
+                return (
+                  <div
+                    key={product._id}
+                    className="cp-card"
+                    style={{
+                      animationDelay: `${(idx % 6) * 0.07}s`,
+                      background: "transparent",
+                      border: cardStyleCfg.cardBorder,
+                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
+                      padding: cardStyleCfg.cardPadding,
+                      display: "flex", flexDirection: "column",
+                      cursor: "pointer",
+                      opacity: outOfStock ? 0.6 : 1,
+                      ...(carouselMode ? { flex: `0 0 calc((100% - ${(columns - 1) * 20}px) / ${columns})`, scrollSnapAlign: "start", minWidth: 220 } : {}),
+                    }}
+                    onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
+                  >
+                    {/* Image */}
+                    <div style={{
+                      position: "relative", overflow: "hidden", background: surfaceColor,
+                      borderRadius: cardStyleCfg.imgRadius,
+                      ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
+                    }}>
+                      <img
+                        src={img}
+                        alt={product.name}
+                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
+                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
+                        onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
+                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                      />
+                      {showBadge && product.oldPrice && !outOfStock && (
+                        <span style={{
+                          position: "absolute", top: 12, right: 12,
+                          background: "#ef4444", color: "#fff",
+                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
+                          letterSpacing: .5,
+                        }}>تخفيض</span>
+                      )}
+                      {outOfStock && (
+                        <div style={{
+                          position: "absolute", inset: 0,
+                          background: "rgba(0,0,0,.65)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <span style={{ background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, padding: "6px 18px", borderRadius: 99 }}>
+                            نفد من المخزون
+                          </span>
+                        </div>
+                      )}
+                      {!outOfStock && product.stock <= 5 && (
+                        <span style={{
+                          position: "absolute", top: 12, left: 12,
+                          background: "rgba(245,158,11,.9)", color: "#fff",
+                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
+                        }}>⚠️ آخر {product.stock} قطع</span>
+                      )}
+                      {!outOfStock && (
+                        <div
+                          className="cp-card-cta"
+                          style={{ position: "absolute", left: 10, right: 10, bottom: 10 }}
+                        >
+                          <button
+                            onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
+                            style={{
+                              width: "100%", border: "none", cursor: "pointer",
+                              borderRadius: 12, padding: "12px 0",
+                              background: primary, color: "#fff",
+                              fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
+                              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                              boxShadow: "0 4px 16px rgba(0,0,0,.25)",
+                            }}
+                          >
+                            <IconCart />
+                            أضف للسلة
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      disabled={outOfStock}
-                      onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
-                      style={{
-                        width: "100%", padding: "10px 0", borderRadius: 10,
-                        border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
-                        background: outOfStock ? "#f3f4f6" : primary,
-                        color: outOfStock ? "#aaa" : "#fff",
-                        fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-                        transition: "opacity .15s",
-                      }}
-                      onMouseEnter={e => { if (!outOfStock) e.target.style.opacity = ".85"; }}
-                      onMouseLeave={e => { e.target.style.opacity = "1"; }}
-                    >
-                      {outOfStock ? "نفد المخزون" : "اطلب الآن"}
-                    </button>
+
+                    {/* Info */}
+                    <div style={{ padding: `${cardStyleCfg.gap}px 2px 0`, display: "flex", flexDirection: "column" }}>
+                      <p style={{ fontSize: cardStyleCfg.titleSize, fontWeight: 700, color: textColor, margin: `0 0 ${cardStyleCfg.gap - 2}px`, lineHeight: 1.4 }}>
+                        {product.name}
+                      </p>
+                      {showRating && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>5.0</span>
+                          <span style={{ fontSize: 12, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</span>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                        <span style={{ fontSize: cardStyleCfg.priceSize, fontWeight: 800, color: textColor }}>
+                          {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
+                        </span>
+                        {product.oldPrice && (
+                          <span style={{ fontSize: 12.5, color: mutedTextColor, textDecoration: "line-through" }}>
+                            {product.oldPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ✦ Infinite scroll sentinel */}
+          {!carouselMode && infiniteScroll && effectiveCount < sorted.length && (
+            <div ref={loadMoreRef} style={{ height: 1 }} />
+          )}
+
+          {/* ✦ View All */}
+          {!carouselMode && !infiniteScroll && showViewAll && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
+              <button
+                onClick={() => navigate(`/store/${slug}/collections`)}
+                style={{
+                  padding: "11px 28px", borderRadius: 12, cursor: "pointer",
+                  fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                  ...viewAllBtnStyle,
+                }}
+              >
+                {viewAllText}
+              </button>
+            </div>
+          )}
+        </div>
+        </SectionWrapper>
+        );
+      })()}
+
+      {/* Collection grid responsive overrides — نفس منطق PublicStore */}
+      <style>{`
+        @media (max-width: 900px) {
+          .cp-coll-grid[data-carousel="0"][data-cols="4"],
+          .cp-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+          .cp-coll-grid[data-carousel="0"] { grid-template-columns: repeat(1, 1fr) !important; }
+          .cp-coll-grid[data-carousel="1"] > * { flex: 0 0 80% !important; }
+        }
+        .cp-card { transition: transform .25s ease, box-shadow .25s ease; }
+        .cp-card:hover { transform: translateY(-4px); }
+        .cp-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
+        .cp-card:hover .cp-card-cta { opacity: 1; transform: translateY(0); }
+        @media (hover: none) {
+          .cp-card-cta { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
