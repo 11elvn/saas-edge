@@ -19,6 +19,11 @@ const DEFAULT_HOME_SECTIONS = [
 const DEFAULT_CATEGORY_SECTIONS = [
   { id: "categoryBanner", type: "categoryBanner", enabled: true, settings: { style: "overlay", showProductCount: true } },
 ];
+const DEFAULT_STYLES = {
+  primaryColor: "#2563eb", secondaryColor: "#0f172a", backgroundColor: "#ffffff",
+  surfaceColor: "#fafafa", textColor: "#111111", mutedTextColor: "#666666",
+  borderColor: "#ebebeb", fontFamily: "Cairo", direction: "rtl",
+};
 
 const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
@@ -97,7 +102,11 @@ export default function CategoryProducts() {
   const bannerStyle     = bannerSettings.style || "overlay";
   const showCount       = bannerSettings.showProductCount !== false;
 
-  const primary = store?.primaryColor || "#111827";
+  // ── ألوان الثيم (Styles tab) — نفس منطق PublicStore/ProductDetails ──
+  const styles       = rawTc?.styles || DEFAULT_STYLES;
+  const primary       = styles.primaryColor || store?.primaryColor || "#111827";
+  const surfaceColor  = styles.surfaceColor  || "#fafafa";
+  const textColor     = styles.textColor     || "#111111";
   const font    = store?.fontFamily   || "Cairo";
 
   useEffect(() => { loadFont("Cairo"); }, []);
@@ -342,7 +351,7 @@ export default function CategoryProducts() {
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-        <StoreFooter store={store} slug={slug} light settings={sec(homeSections, "footer")?.settings} />
+        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
       {/* WhatsApp */}
