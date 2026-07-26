@@ -344,6 +344,21 @@ export default function CategoryProducts() {
         return (
         <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"}>
         <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
+          <div style={{
+            display: "flex", alignItems: "center", marginBottom: 20, gap: 12,
+            justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
+            flexDirection: (collSettings.titleAlign || "right") === "left" ? "row-reverse" : "row",
+          }}>
+            <h2 style={{ fontSize: "clamp(1.2rem,3vw,1.5rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: collSettings.titleAlign || "right" }}>
+              {collSettings.title || categoryName}
+            </h2>
+            {(collSettings.titleAlign || "right") !== "center" && (
+              <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>
+                {sorted.length} منتج
+              </span>
+            )}
+          </div>
+
           {sorted.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
               <p style={{ fontSize: 40 }}>📦</p>
