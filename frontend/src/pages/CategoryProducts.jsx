@@ -104,9 +104,10 @@ export default function CategoryProducts() {
 
   // ── ألوان الثيم (Styles tab) — نفس منطق PublicStore/ProductDetails ──
   const styles       = rawTc?.styles || DEFAULT_STYLES;
-  const primary       = styles.primaryColor || store?.primaryColor || "#111827";
-  const surfaceColor  = styles.surfaceColor  || "#fafafa";
-  const textColor     = styles.textColor     || "#111111";
+  const primary       = styles.primaryColor    || store?.primaryColor || "#111827";
+  const bgColor        = styles.backgroundColor || "#ffffff";
+  const surfaceColor  = styles.surfaceColor    || "#fafafa";
+  const textColor     = styles.textColor       || "#111111";
   const font    = store?.fontFamily   || "Cairo";
 
   useEffect(() => { loadFont("Cairo"); }, []);
