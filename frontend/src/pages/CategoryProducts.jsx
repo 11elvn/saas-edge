@@ -164,16 +164,35 @@ export default function CategoryProducts() {
           font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
           box-shadow: 0 2px 8px rgba(37,99,235,.35);
         }
+        @keyframes ps-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .ps-marquee-track { animation: ps-marquee 18s linear infinite; }
       `}</style>
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
-      {announcementSec?.enabled !== false && announcementSec?.settings && (
-        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
-          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
-            <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>{announcementSec.settings.message}</p>
-          </div>
-        </SectionWrapper>
-      )}
+      {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
+        const { message, bgColor, textColor, animation, showClose } = announcementSec.settings;
+        return (
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+            <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
+              {animation ? (
+                <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+                  {[...Array(6)].map((_, i) => (
+                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap" }}>
+                      {message}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: textColor, margin: 0, letterSpacing: 1 }}>{message}</p>
+              )}
+              {showClose && (
+                <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
+                  style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
+              )}
+            </div>
+          </SectionWrapper>
+        );
+      })()}
 
       {/* ── Navbar ── */}
       <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
@@ -181,11 +200,6 @@ export default function CategoryProducts() {
           store={store}
           slug={slug}
           headerSettings={headerSettings}
-          links={[
-            { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
-            { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-            { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
-          ]}
         />
       </SectionWrapper>
 
@@ -328,7 +342,7 @@ export default function CategoryProducts() {
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-        <StoreFooter store={store} slug={slug} light />
+        <StoreFooter store={store} slug={slug} light settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
       {/* WhatsApp */}
