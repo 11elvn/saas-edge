@@ -20,7 +20,7 @@ const DEFAULT_CATEGORY_SECTIONS = [
   { id: "categoryBanner", type: "categoryBanner", enabled: true, settings: { style: "overlay", showProductCount: true } },
   // ✦ نفس section الـ Collection ديال Home — كيتحكم فـ شكل شبكة المنتجات هنا (id فريد: categoryCollection)
   { id: "categoryCollection", type: "collection", enabled: true, settings: {
-      title: "", titleAlign: "right", selectionMode: "all", productsShown: 8, carouselMode: false,
+      title: "منتجات", titleAlign: "right", selectionMode: "all", productsShown: 8, carouselMode: false,
       columns: 3, cardStyle: "default", imageRatio: "1:1", showBadge: true, showRating: false,
       showViewAll: false, viewAllText: "عرض الكل", viewAllStyle: "link", infiniteScroll: false,
   } },
@@ -350,7 +350,7 @@ export default function CategoryProducts() {
             flexDirection: (collSettings.titleAlign || "right") === "left" ? "row-reverse" : "row",
           }}>
             <h2 style={{ fontSize: "clamp(1.2rem,3vw,1.5rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: collSettings.titleAlign || "right" }}>
-              {collSettings.title || categoryName}
+              {collSettings.title || "منتجات"}
             </h2>
             {(collSettings.titleAlign || "right") !== "center" && (
               <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>

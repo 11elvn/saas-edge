@@ -213,7 +213,7 @@ const CATEGORY_DEFAULT_CONFIG = {
       type: "collection",
       enabled: true,
       settings: {
-        title: "",
+        title: "منتجات",
         titleAlign: "right",
         selectionMode: "all",
         productsShown: 8,
