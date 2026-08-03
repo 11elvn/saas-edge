@@ -254,11 +254,11 @@ export default function CategoryProducts() {
 
       {/* ── Breadcrumb ── */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: "none", border: "none", color: "#888", fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+        <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: "none", border: "none", color: mutedTextColor, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
           التشكيلات
         </button>
-        <span style={{ color: "#ccc" }}>›</span>
-        <span style={{ color: "#111", fontSize: 13, fontWeight: 600 }}>{categoryName}</span>
+        <span style={{ color: mutedTextColor }}>›</span>
+        <span style={{ color: textColor, fontSize: 13, fontWeight: 600 }}>{categoryName}</span>
       </div>
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
@@ -294,7 +294,7 @@ export default function CategoryProducts() {
       {/* ── Sort ── */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", justifyContent: "flex-end" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, color: "#888" }}>الترتيب حسب:</span>
+          <span style={{ fontSize: 13, color: mutedTextColor }}>الترتيب حسب:</span>
           {[
             { val: "newest",     label: "أحدثاً" },
             { val: "price_asc",  label: "الثمن ↑" },
@@ -302,9 +302,9 @@ export default function CategoryProducts() {
           ].map(s => (
             <button key={s.val} onClick={() => setSort(s.val)} style={{
               padding: "6px 13px", borderRadius: 8,
-              border: `1px solid ${sort === s.val ? primary : "#e5e7eb"}`,
-              background: sort === s.val ? primary : "#fff",
-              color: sort === s.val ? "#fff" : "#555",
+              border: `1px solid ${sort === s.val ? primary : borderColor}`,
+              background: sort === s.val ? primary : surfaceColor,
+              color: sort === s.val ? "#fff" : mutedTextColor,
               fontSize: 12, fontWeight: 600, cursor: "pointer",
               fontFamily: "inherit", transition: "all .15s",
             }}>{s.label}</button>
