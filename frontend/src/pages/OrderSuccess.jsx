@@ -75,12 +75,10 @@ function OrderSuccess() {
   const location  = useLocation();
   const search    = new URLSearchParams(location.search);
   const isPreview = search.get("preview") === "1";
-  const sampleProductId = search.get("sampleProductId");
 
   const slug = slugParam || state?.slug;
 
   const [store,        setStore]        = useState(null);
-  const [sampleProduct,setSampleProduct]= useState(null);
   const [loading,       setLoading]      = useState(true);
 
   // ── مرحلتين: أولاً الأنيميشن، بعدها التفاصيل ──
@@ -120,18 +118,6 @@ function OrderSuccess() {
     })();
   }, [slug]);
 
-  // ── فـ preview فقط: نجيبو منتج حقيقي باش نعمرو بيه بطاقة ملخص الطلب ──
-  useEffect(() => {
-    if (!isPreview || !sampleProductId) return;
-    (async () => {
-      try {
-        const r = await fetch(`${API()}/api/products/${sampleProductId}`);
-        const d = await r.json();
-        if (r.ok) setSampleProduct(d);
-      } catch (e) { console.error(e); }
-    })();
-  }, [isPreview, sampleProductId]);
-
   // ── الإعدادات الفعلية — من postMessage إذا preview، وإلا من store.themeConfig، وإلا defaults ──
   const rawTc         = themeConfig || store?.themeConfig || null;
   const homeSections   = rawTc?.sections || DEFAULT_HOME_SECTIONS;
@@ -155,14 +141,14 @@ function OrderSuccess() {
   const successSec      = sec(successSections, "successMessage");
   const s = successSec?.settings || DEFAULT_SUCCESS_SECTIONS[0].settings;
 
-  // ── بيانات الطلب — حقيقية (state) فـ الاستعمال الفعلي، أو تجريبية فـ preview ──
+  // ── بيانات الطلب — حقيقية (state) فـ الاستعمال الفعلي، أو مثال ثابت فـ preview ──
   const orderData = isPreview
     ? {
         orderId: "000000000000000000000001",
-        productName: sampleProduct?.name || "منتج تجريبي",
-        productImage: sampleProduct?.images?.[0] || sampleProduct?.image || "",
+        productName: "تيشرت قطني أبيض",
+        productImage: "",       // بلا صورة حقيقية — نعرضو placeholder
         quantity: 1,
-        totalPrice: sampleProduct?.currentPrice || 3200,
+        totalPrice: 3200,
       }
     : {
         orderId: state?.orderId || "",
@@ -282,7 +268,16 @@ function OrderSuccess() {
                   width: 52, height: 52, borderRadius: 10, background: borderColor, flexShrink: 0,
                   backgroundImage: orderData.productImage ? `url(${orderData.productImage})` : undefined,
                   backgroundSize: "cover", backgroundPosition: "center",
-                }} />
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {!orderData.productImage && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={mutedTextColor} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                  )}
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {orderData.productName}

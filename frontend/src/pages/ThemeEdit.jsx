@@ -2475,7 +2475,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     : page === "category"
     ? `/store/${slug}/collections/${categoryId}?preview=1`
     : page === "success"
-    ? `/store/${slug}/order-success?preview=1${productId ? `&sampleProductId=${productId}` : ""}`
+    ? `/store/${slug}/order-success?preview=1`
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
