@@ -174,7 +174,7 @@ const IconNote  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="no
 
 const FIELD_ICONS = { fullName: <IconUser/>, phone: <IconPhone/>, province: <IconPin/>, municipality: <IconBuilding/>, address: <IconHome/>, note: <IconNote/> };
 
-// ── GallerySlot — صورة حقيقية (فـ الموقع الحي)، أو placeholder احترافي (أيقونة + gradient) فـ preview الـ ThemeEdit ──
+// ── GallerySlot — صورة حقيقية (فـ الموقع الحي)، أو placeholder رمادي مرقّم فـ preview الـ ThemeEdit ──
 // ── FieldLabel — تسمية فوق كل حقل فـ In-Page Checkout (مع نجمة حمراء إذا إجباري) ──
 function FieldLabel({ text, required, optionalLabel, color }) {
   return (
@@ -183,17 +183,6 @@ function FieldLabel({ text, required, optionalLabel, color }) {
       {required && <span style={{ color, marginInlineStart: 3 }}>*</span>}
       {optionalLabel && <span style={{ color: "#9ca3af", fontWeight: 600 }}> (اختياري)</span>}
     </label>
-  );
-}
-
-// ── IconImagePlaceholder — أيقونة صورة بسيطة (بحال Shopify) لسلوتات الـ Gallery الفارغة ──
-function IconImagePlaceholder({ size = "34%" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ opacity: 0.9 }}>
-      <rect x="2.5" y="4" width="19" height="16" rx="2.5" stroke="#c3c8d1" strokeWidth="1.4" />
-      <circle cx="8.2" cy="9.4" r="1.7" stroke="#c3c8d1" strokeWidth="1.4" />
-      <path d="M4 17l4.8-5.2a1.4 1.4 0 0 1 2 0L14 15l2-2.1a1.4 1.4 0 0 1 2 0L20.5 15.5" stroke="#c3c8d1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 
@@ -211,9 +200,10 @@ function GallerySlot({ src, index, className = "", style = {} }) {
   return (
     <div style={{
       width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #f4f5f7 0%, #e7e9ed 100%)",
+      background: "#e9eaee", color: "#a3a7b0", fontWeight: 800,
+      fontSize: "clamp(22px,7vw,52px)", fontFamily: "'Inter', sans-serif",
     }}>
-      <IconImagePlaceholder />
+      {index + 1}
     </div>
   );
 }
@@ -371,7 +361,7 @@ function ProductDetails() {
   );
 
   const realImages = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
-  const PLACEHOLDER_TARGET = 4; // ✦ عدد سلوتات الـ Gallery المعروضة فـ preview الـ ThemeEdit (أمثلة فقط، ماشي صور المستخدم)
+  const PLACEHOLDER_TARGET = 5; // ✦ عدد سلوتات الـ Gallery المعروضة فـ preview الـ ThemeEdit (أمثلة فقط، ماشي صور المستخدم)
   const images = isPreview
     ? Array(PLACEHOLDER_TARGET).fill(null) // ✦ preview ديما كيبان بأمثلة احترافية — ما نوريوش صور المنتج الحقيقية تاع المستخدم
     : (realImages.length ? realImages : [DEFAULT_IMG]);
