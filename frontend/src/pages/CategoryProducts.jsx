@@ -127,7 +127,9 @@ export default function CategoryProducts() {
   const textColor     = styles.textColor       || "#111111";
   const mutedTextColor = styles.mutedTextColor || "#666666";
   const borderColor    = styles.borderColor    || "#ebebeb";
-  const font    = store?.fontFamily   || "Cairo";
+  const secondary      = styles.secondaryColor || store?.secondaryColor || "#0f172a";
+  const font           = styles.fontFamily     || store?.fontFamily     || "Cairo";
+  const direction      = styles.direction      || "rtl";
 
   useEffect(() => { loadFont("Cairo"); }, []);
   useEffect(() => { if (font) loadFont(font); }, [font]);
@@ -198,7 +200,7 @@ export default function CategoryProducts() {
   );
 
   return (
-    <div dir="rtl" style={{ minHeight: "100vh", background: "#fff", fontFamily: `'${font}','Cairo',sans-serif`, color: "#111" }}>
+    <div dir={direction} style={{ minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
 
       <style>{`
         .cp-section-wrapper { position: relative; }
@@ -246,6 +248,7 @@ export default function CategoryProducts() {
           store={store}
           slug={slug}
           headerSettings={headerSettings}
+          themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
         />
       </SectionWrapper>
 
