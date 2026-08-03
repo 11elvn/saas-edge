@@ -272,8 +272,8 @@ export default function CategoryProducts() {
                 : <span style={{ fontSize: 22 }}>🗂️</span>}
             </div>
             <div>
-              <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.7rem)", fontWeight: 900, color: "#111", margin: "0 0 4px", letterSpacing: -0.5 }}>{categoryName}</h1>
-              {showCount && <p style={{ color: "#888", fontSize: 13, margin: 0 }}>{sorted.length} منتج</p>}
+              <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.7rem)", fontWeight: 900, color: textColor, margin: "0 0 4px", letterSpacing: -0.5 }}>{categoryName}</h1>
+              {showCount && <p style={{ color: mutedTextColor, fontSize: 13, margin: 0 }}>{sorted.length} منتج</p>}
             </div>
           </div>
         ) : (
