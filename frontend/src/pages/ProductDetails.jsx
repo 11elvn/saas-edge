@@ -332,8 +332,11 @@ function ProductDetails() {
       });
       const data = await res.json();
       if (res.ok) {
-        navigate("/order-success", { state: {
+        navigate(`/store/${slug}/order-success`, { state: {
+          orderId: data.order?._id,
           productName: product.name,
+          productImage: product.images?.[0] || product.image || "",
+          quantity,
           totalPrice: total,
           customerName, shippingCity: selectedCity, slug,
         }});

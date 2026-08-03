@@ -70,6 +70,7 @@ function App() {
         <Route path="/store/:slug/collections"                       element={<StoreCollections />} />
         <Route path="/store/:slug/collections/:categoryId"           element={<CategoryProducts />} />
         <Route path="/store/:slug/search"                             element={<SearchResults />} />
+        <Route path="/store/:slug/order-success"                     element={<OrderSuccess />} />
       </Routes>
     </BrowserRouter>
   );

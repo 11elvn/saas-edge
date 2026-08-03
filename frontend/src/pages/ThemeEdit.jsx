@@ -232,6 +232,32 @@ const CATEGORY_DEFAULT_CONFIG = {
   ],
 };
 
+// ✦ Default config لصفحة Success (تأكيد الطلب) — section واحد "successMessage"
+// ✦ Announcement / Header / Footer مشتركين مع Home، نفس مبدأ Product/Category
+const SUCCESS_DEFAULT_CONFIG = {
+  sections: [
+    {
+      id: "successMessage",
+      type: "successMessage",
+      enabled: true,
+      settings: {
+        headline: "تم تأكيد طلبك بنجاح",
+        subtext: "سيتواصل معك فريقنا قريباً لتأكيد تفاصيل التوصيل",
+        alignment: "center",          // center | start
+        showOrderNumber: true,
+        showOrderSummary: true,
+        showTimeline: true,
+        ctaButtonText: "تابع التسوق",
+        ctaButtonLink: "/",
+        showSecondaryButton: true,
+        secondaryButtonText: "تواصل معنا عبر واتساب",
+        whatsappNumber: "",
+        backgroundStyle: "tinted",    // plain | tinted
+      },
+    },
+  ],
+};
+
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
@@ -257,13 +283,20 @@ const CATEGORY_SECTION_META = {
   categoryBanner: { label: "Category Banner", icon: "categories", locked: true },
 };
 
-// ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category
-const getSectionMeta = (type) => SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || {};
+// ✦ Section خاص بصفحة Success (تأكيد الطلب) فقط — locked ديما
+const SUCCESS_SECTION_META = {
+  successMessage: { label: "Success Message", icon: "success", locked: true },
+};
+
+// ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category ولا Success
+const getSectionMeta = (type) =>
+  SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || SUCCESS_SECTION_META[type] || {};
 
 const PAGES = [
   { id: "home",     label: "Home",     icon: "home" },
   { id: "product",  label: "Product",  icon: "collection" },
   { id: "category", label: "Category", icon: "categories" },
+  { id: "success",  label: "Success",  icon: "success" },
   { id: "search",   label: "Search",   icon: "search" },
 ];
 
@@ -341,6 +374,13 @@ function Icon({ name, size = 15 }) {
         <svg {...common}>
           <circle cx="11" cy="11" r="7" />
           <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+      );
+    case "success":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <polyline points="8 12.5 11 15.5 16 9.5" />
         </svg>
       );
     case "gallery":
@@ -2108,6 +2148,91 @@ function CategoryBannerSettings({ settings, onChange }) {
   );
 }
 
+function SuccessMessageSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  return (
+    <>
+      <Collapse title="Message">
+        <div className="pb-field">
+          <div className="pb-label">Headline</div>
+          <input className="pb-input" value={settings.headline || ""} onChange={e => s("headline", e.target.value)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Subtext</div>
+          <input className="pb-input" value={settings.subtext || ""} onChange={e => s("subtext", e.target.value)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Alignment</div>
+          <div className="pb-segment">
+            {[{ v: "start", i: "alignRight" }, { v: "center", i: "alignCenter" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.alignment || "center") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("alignment", o.v)}>
+                <Icon name={o.i} size={15} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </Collapse>
+
+      <Collapse title="Order details">
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show order number</span>
+          <Toggle checked={settings.showOrderNumber !== false} onChange={v => s("showOrderNumber", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show order summary card</span>
+          <Toggle checked={settings.showOrderSummary !== false} onChange={v => s("showOrderSummary", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show delivery timeline</span>
+          <Toggle checked={settings.showTimeline !== false} onChange={v => s("showTimeline", v)} />
+        </div>
+      </Collapse>
+
+      <Collapse title="Call to action">
+        <div className="pb-field">
+          <div className="pb-label">Button text</div>
+          <input className="pb-input" value={settings.ctaButtonText || ""} onChange={e => s("ctaButtonText", e.target.value)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Button link</div>
+          <input className="pb-input" value={settings.ctaButtonLink || ""} onChange={e => s("ctaButtonLink", e.target.value)} placeholder="/" />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show secondary button (WhatsApp)</span>
+          <Toggle checked={settings.showSecondaryButton !== false} onChange={v => s("showSecondaryButton", v)} />
+        </div>
+        {settings.showSecondaryButton !== false && (
+          <>
+            <div className="pb-field">
+              <div className="pb-label">Secondary button text</div>
+              <input className="pb-input" value={settings.secondaryButtonText || ""} onChange={e => s("secondaryButtonText", e.target.value)} />
+            </div>
+            <div className="pb-field">
+              <div className="pb-label">WhatsApp number <span>مثال: 213550123456</span></div>
+              <input className="pb-input" value={settings.whatsappNumber || ""} onChange={e => s("whatsappNumber", e.target.value)} placeholder="213550123456" />
+            </div>
+          </>
+        )}
+      </Collapse>
+
+      <Collapse title="Appearance" defaultOpen={false}>
+        <div className="pb-field">
+          <div className="pb-label">Background style</div>
+          <div className="pb-segment">
+            {[{ v: "plain", l: "Plain" }, { v: "tinted", l: "Tinted" }].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.backgroundStyle || "tinted") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("backgroundStyle", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </Collapse>
+    </>
+  );
+}
+
 function StylesPanel({ styles, onChange }) {
   const s = (k, v) => onChange({ ...styles, [k]: v });
   return (
@@ -2186,6 +2311,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
       case "checkout":     return <CheckoutSettings     settings={section.settings} onChange={updateSettings} />;
       case "categoryBanner": return <CategoryBannerSettings settings={section.settings} onChange={updateSettings} />;
+      case "successMessage": return <SuccessMessageSettings settings={section.settings} onChange={updateSettings} />;
       default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
     }
   };
@@ -2348,6 +2474,8 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     ? `/store/${slug}/product/${productId}?preview=1`
     : page === "category"
     ? `/store/${slug}/collections/${categoryId}?preview=1`
+    : page === "success"
+    ? `/store/${slug}/order-success?preview=1${productId ? `&sampleProductId=${productId}` : ""}`
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
@@ -2501,6 +2629,16 @@ function ThemeEdit() {
             }),
           };
 
+          // ✦ نطمّنو أن themeConfig.success فيه section successMessage بكل الحقول
+          const savedSuccessSections = d.store.themeConfig?.success?.sections || [];
+          cfg.success = {
+            sections: SUCCESS_DEFAULT_CONFIG.sections.map(defSec => {
+              const saved = savedSuccessSections.find(s => s.type === defSec.type);
+              if (!saved) return defSec;
+              return { ...defSec, ...saved, settings: { ...defSec.settings, ...(saved.settings || {}) } };
+            }),
+          };
+
           setThemeConfig(cfg);
 
           // ✦ نجيبو أول منتج فالمتجر باش نعاينو بيه صفحة Product فالـ builder
@@ -2528,7 +2666,8 @@ function ThemeEdit() {
       // نلقى الـ section اللي type ديالو يطابق — سواء فـ Home ولا Product ولا Category
       const matched = themeConfig?.sections?.find(s => s.type === sectionType)
         || themeConfig?.product?.sections?.find(s => s.type === sectionType)
-        || themeConfig?.category?.sections?.find(s => s.type === sectionType);
+        || themeConfig?.category?.sections?.find(s => s.type === sectionType)
+        || themeConfig?.success?.sections?.find(s => s.type === sectionType);
       if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
@@ -2570,6 +2709,20 @@ function ThemeEdit() {
       category: {
         ...prev.category,
         sections: prev.category.sections.map(s =>
+          s.id === id ? { ...s, settings: newSettings } : s
+        ),
+      },
+    }));
+    setIsDirty(true);
+  }, []);
+
+  // ── Update success-page section settings (Success Message) ──
+  const updateSuccessSectionSettings = useCallback((id, newSettings) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      success: {
+        ...prev.success,
+        sections: prev.success.sections.map(s =>
           s.id === id ? { ...s, settings: newSettings } : s
         ),
       },
@@ -2693,11 +2846,14 @@ function ThemeEdit() {
 
   const activeSectionObj = themeConfig?.sections?.find(s => s.id === activeSection)
     || themeConfig?.product?.sections?.find(s => s.id === activeSection)
-    || themeConfig?.category?.sections?.find(s => s.id === activeSection);
+    || themeConfig?.category?.sections?.find(s => s.id === activeSection)
+    || themeConfig?.success?.sections?.find(s => s.id === activeSection);
   const activeIsProductSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.product?.sections?.some(s => s.id === activeSection);
   const activeIsCategorySection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.category?.sections?.some(s => s.id === activeSection);
+  const activeIsSuccessSection = !themeConfig?.sections?.some(s => s.id === activeSection)
+    && !!themeConfig?.success?.sections?.some(s => s.id === activeSection);
 
   // ✦ لائحة الـ sections المعروضة فالعمود الأيسر — تتبدل حسب الصفحة المختارة
   const displaySections = currentPage === "product"
@@ -2724,6 +2880,18 @@ function ThemeEdit() {
           pick(home, "header"),
           pick(cat, "categoryBanner"),
           pick(cat, "collection"),
+          pick(home, "footer"),
+        ].filter(Boolean);
+      })()
+    : currentPage === "success"
+    ? (() => {
+        const home = themeConfig?.sections || [];
+        const succ = themeConfig?.success?.sections || [];
+        const pick = (arr, type) => arr.find(s => s.type === type);
+        return [
+          pick(home, "announcement"),
+          pick(home, "header"),
+          pick(succ, "successMessage"),
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -2984,7 +3152,12 @@ function ThemeEdit() {
           <SectionSettingsPanel
             section={activeSectionObj}
             store={store}
-            onUpdate={activeIsProductSection ? updateProductSectionSettings : activeIsCategorySection ? updateCategorySectionSettings : updateSectionSettings}
+            onUpdate={
+              activeIsProductSection ? updateProductSectionSettings
+              : activeIsCategorySection ? updateCategorySectionSettings
+              : activeIsSuccessSection ? updateSuccessSectionSettings
+              : updateSectionSettings
+            }
             onClose={() => setActiveSection(null)}
             onLogoChange={saveLogo}
             onNameChange={saveName}
