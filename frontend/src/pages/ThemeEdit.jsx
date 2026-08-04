@@ -243,7 +243,6 @@ const SUCCESS_DEFAULT_CONFIG = {
       settings: {
         headline: "تم تأكيد طلبك بنجاح",
         subtext: "سيتواصل معك فريقنا قريباً لتأكيد تفاصيل التوصيل",
-        alignment: "center",          // center | start
         showOrderNumber: true,
         showOrderSummary: true,
         showTimeline: true,
@@ -2160,18 +2159,6 @@ function SuccessMessageSettings({ settings, onChange }) {
         <div className="pb-field">
           <div className="pb-label">Subtext</div>
           <input className="pb-input" value={settings.subtext || ""} onChange={e => s("subtext", e.target.value)} />
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">Alignment</div>
-          <div className="pb-segment">
-            {[{ v: "start", i: "alignRight" }, { v: "center", i: "alignCenter" }].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.alignment || "center") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("alignment", o.v)}>
-                <Icon name={o.i} size={15} />
-              </button>
-            ))}
-          </div>
         </div>
       </Collapse>
 

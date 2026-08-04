@@ -37,7 +37,7 @@ const DEFAULT_STYLES = {
 const DEFAULT_SUCCESS_SECTIONS = [
   { id: "successMessage", type: "successMessage", enabled: true, settings: {
       headline: "تم تأكيد طلبك بنجاح", subtext: "سيتواصل معك فريقنا قريباً لتأكيد تفاصيل التوصيل",
-      alignment: "center", showOrderNumber: true, showOrderSummary: true, showTimeline: true,
+      showOrderNumber: true, showOrderSummary: true, showTimeline: true,
       ctaButtonText: "تابع التسوق", ctaButtonLink: "/", showSecondaryButton: true,
       secondaryButtonText: "تواصل معنا عبر واتساب", whatsappNumber: "", backgroundStyle: "tinted",
   } },
@@ -162,8 +162,6 @@ function OrderSuccess() {
   if (!isPreview && !state && !loading) { navigate("/"); return null; }
 
   const tinted = (s.backgroundStyle || "tinted") === "tinted";
-  const alignItems = (s.alignment || "center") === "start" ? "flex-start" : "center";
-  const textAlign  = (s.alignment || "center") === "start" ? "right" : "center";
 
   const copyOrderNumber = () => {
     navigator.clipboard?.writeText(shortOrderNumber(orderData.orderId)).catch(() => {});
@@ -219,7 +217,7 @@ function OrderSuccess() {
 
       {/* ── Success Message ── */}
       <SectionWrapper type="successMessage" isPreview={isPreview} isHighlighted={highlightedSection === "successMessage"}>
-        <div style={{ maxWidth: 480, margin: "0 auto", padding: "48px 20px 64px", display: "flex", flexDirection: "column", alignItems }}>
+        <div style={{ maxWidth: 480, margin: "0 auto", padding: "48px 20px 64px", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
           {/* ✦ علامة الصح بأنيميشن */}
           <div
@@ -236,7 +234,7 @@ function OrderSuccess() {
             </svg>
           </div>
 
-          <div className={`os-details ${showDetails ? "visible" : ""}`} style={{ width: "100%", textAlign }}>
+          <div className={`os-details ${showDetails ? "visible" : ""}`} style={{ width: "100%", textAlign: "center" }}>
             <h1 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 6px" }}>{s.headline}</h1>
             <p style={{ color: mutedTextColor, fontSize: ".9rem", margin: "0 0 22px", lineHeight: 1.6 }}>{s.subtext}</p>
 
@@ -265,13 +263,13 @@ function OrderSuccess() {
                 border: `1px solid ${borderColor}`, borderRadius: 14, padding: 14, marginBottom: 20,
               }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 10, background: borderColor, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 10, background: "#eef0f2", flexShrink: 0,
                   backgroundImage: orderData.productImage ? `url(${orderData.productImage})` : undefined,
                   backgroundSize: "cover", backgroundPosition: "center",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   {!orderData.productImage && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={mutedTextColor} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9aa1a9" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
                       <path d="M21 15l-5-5L5 21" />
