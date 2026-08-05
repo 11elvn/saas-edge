@@ -154,8 +154,8 @@ function FieldLabel({ text, required, optionalLabel, color }) {
 
 // ── منتجات تجريبية — تتعرض فقط فـ preview الـ ThemeEdit كي تكون السلة فارغة ──
 const PREVIEW_ITEMS = [
-  { productId: "preview1", name: "منتج تجريبي 1", image: "", price: 3500, quantity: 1, stock: 99 },
-  { productId: "preview2", name: "منتج تجريبي 2", image: "", price: 5200, quantity: 2, stock: 99 },
+  { productId: "preview1", name: "منتج تجريبي 1", image: "", price: 3500, quantity: 1, stock: 99, variant: ["المقاس: XL", "اللون: أسود"] },
+  { productId: "preview2", name: "منتج تجريبي 2", image: "", price: 5200, quantity: 2, stock: 99, variant: ["المقاس: L", "اللون: أبيض"] },
 ];
 
 function Checkout() {
@@ -497,7 +497,13 @@ function Checkout() {
                           <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: textColor, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {item.name}
                           </p>
-                          <p style={{ margin: "2px 0 0", fontSize: 11.5, color: mutedTextColor, fontWeight: 600 }}>الكمية {item.quantity}</p>
+                          {item.variant?.length ? (
+                            item.variant.map((v, i) => (
+                              <p key={i} style={{ margin: i === 0 ? "2px 0 0" : "0", fontSize: 11.5, color: mutedTextColor, fontWeight: 600 }}>{v}</p>
+                            ))
+                          ) : (
+                            <p style={{ margin: "2px 0 0", fontSize: 11.5, color: mutedTextColor, fontWeight: 600 }}>الكمية {item.quantity}</p>
+                          )}
                         </div>
                         <span style={{ fontSize: 13, fontWeight: 800, color: textColor, whiteSpace: "nowrap" }}>
                           {(item.price * item.quantity).toLocaleString()} د.ج
