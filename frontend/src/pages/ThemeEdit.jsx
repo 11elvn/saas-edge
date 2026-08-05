@@ -280,6 +280,36 @@ const SEARCH_DEFAULT_CONFIG = {
   ],
 };
 
+// ✦ Default config لصفحة Checkout المستقلة (سلة كاملة) — نعاود نستعمل نفس type "checkout"
+// ✦ (نفس settings shape ديال In-Page Checkout فصفحة المنتج) باش نستافدو من نفس CheckoutSettings panel
+const CHECKOUT_PAGE_DEFAULT_CONFIG = {
+  sections: [
+    {
+      id: "cartCheckout",
+      type: "checkout",
+      enabled: true,
+      settings: {
+        sectionTitle: "إتمام الطلب",
+        titleAlign: "center",       // right | center | left
+        submitButtonText: "تأكيد الطلب الآن",
+        formStyle: "default",       // default | compact
+        buttonAnimation: "none",    // none | pulse
+        showFieldIcons: true,
+        showAddressField: false,
+        showNoteField: false,
+        stickyButton: true,
+        stickyButtonText: "تأكيد الطلب الآن",
+        fields: {
+          fullName:     { enabled: true, required: true },
+          phone:        { enabled: true, required: true },
+          province:     { enabled: true, required: true },
+          municipality: { enabled: true, required: true },
+        },
+      },
+    },
+  ],
+};
+
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
@@ -320,6 +350,7 @@ const PAGES = [
   { id: "category", label: "Category", icon: "categories" },
   { id: "success",  label: "Success",  icon: "success" },
   { id: "search",   label: "Search",   icon: "search" },
+  { id: "checkout", label: "Checkout", icon: "checkout" },
 ];
 
 // ─────────────────────────────────────────────
@@ -2494,6 +2525,8 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     ? `/store/${slug}/order-success?preview=1`
     : page === "search"
     ? `/store/${slug}/search?preview=1`
+    : page === "checkout"
+    ? `/store/${slug}/checkout?preview=1`
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
@@ -2667,6 +2700,20 @@ function ThemeEdit() {
             }),
           };
 
+          // ✦ نطمّنو أن themeConfig.checkout فيه section الفورم المستقل (cartCheckout) بكل الحقول
+          const savedCheckoutSections = d.store.themeConfig?.checkout?.sections || [];
+          cfg.checkout = {
+            sections: CHECKOUT_PAGE_DEFAULT_CONFIG.sections.map(defSec => {
+              const saved = savedCheckoutSections.find(s => s.id === defSec.id) || savedCheckoutSections.find(s => s.type === defSec.type);
+              if (!saved) return defSec;
+              return {
+                ...defSec,
+                ...saved,
+                settings: { ...defSec.settings, ...(saved.settings || {}), fields: { ...defSec.settings.fields, ...(saved.settings?.fields || {}) } },
+              };
+            }),
+          };
+
           setThemeConfig(cfg);
 
           // ✦ نجيبو أول منتج فالمتجر باش نعاينو بيه صفحة Product فالـ builder
@@ -2698,13 +2745,15 @@ function ThemeEdit() {
         : currentPage === "category" ? themeConfig?.category?.sections
         : currentPage === "success"  ? themeConfig?.success?.sections
         : currentPage === "search"   ? themeConfig?.search?.sections
+        : currentPage === "checkout" ? themeConfig?.checkout?.sections
         : themeConfig?.sections;
       const matched = pageScoped?.find(s => s.type === sectionType)
         || themeConfig?.sections?.find(s => s.type === sectionType)
         || themeConfig?.product?.sections?.find(s => s.type === sectionType)
         || themeConfig?.category?.sections?.find(s => s.type === sectionType)
         || themeConfig?.success?.sections?.find(s => s.type === sectionType)
-        || themeConfig?.search?.sections?.find(s => s.type === sectionType);
+        || themeConfig?.search?.sections?.find(s => s.type === sectionType)
+        || themeConfig?.checkout?.sections?.find(s => s.type === sectionType);
       if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
@@ -2774,6 +2823,20 @@ function ThemeEdit() {
       search: {
         ...prev.search,
         sections: prev.search.sections.map(s =>
+          s.id === id ? { ...s, settings: newSettings } : s
+        ),
+      },
+    }));
+    setIsDirty(true);
+  }, []);
+
+  // ── Update checkout-page section settings (صفحة Checkout المستقلة) ──
+  const updateCheckoutSectionSettings = useCallback((id, newSettings) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      checkout: {
+        ...prev.checkout,
+        sections: prev.checkout.sections.map(s =>
           s.id === id ? { ...s, settings: newSettings } : s
         ),
       },
@@ -2899,7 +2962,8 @@ function ThemeEdit() {
     || themeConfig?.product?.sections?.find(s => s.id === activeSection)
     || themeConfig?.category?.sections?.find(s => s.id === activeSection)
     || themeConfig?.success?.sections?.find(s => s.id === activeSection)
-    || themeConfig?.search?.sections?.find(s => s.id === activeSection);
+    || themeConfig?.search?.sections?.find(s => s.id === activeSection)
+    || themeConfig?.checkout?.sections?.find(s => s.id === activeSection);
   const activeIsProductSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.product?.sections?.some(s => s.id === activeSection);
   const activeIsCategorySection = !themeConfig?.sections?.some(s => s.id === activeSection)
@@ -2908,6 +2972,8 @@ function ThemeEdit() {
     && !!themeConfig?.success?.sections?.some(s => s.id === activeSection);
   const activeIsSearchSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.search?.sections?.some(s => s.id === activeSection);
+  const activeIsCheckoutSection = !themeConfig?.sections?.some(s => s.id === activeSection)
+    && !!themeConfig?.checkout?.sections?.some(s => s.id === activeSection);
 
   // ✦ لائحة الـ sections المعروضة فالعمود الأيسر — تتبدل حسب الصفحة المختارة
   const displaySections = currentPage === "product"
@@ -2958,6 +3024,18 @@ function ThemeEdit() {
           pick(home, "announcement"),
           pick(home, "header"),
           pick(srch, "collection"),
+          pick(home, "footer"),
+        ].filter(Boolean);
+      })()
+    : currentPage === "checkout"
+    ? (() => {
+        const home = themeConfig?.sections || [];
+        const co   = themeConfig?.checkout?.sections || [];
+        const pick = (arr, type) => arr.find(s => s.type === type);
+        return [
+          pick(home, "announcement"),
+          pick(home, "header"),
+          pick(co, "checkout"),
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3224,6 +3302,7 @@ function ThemeEdit() {
               : activeIsCategorySection ? updateCategorySectionSettings
               : activeIsSuccessSection ? updateSuccessSectionSettings
               : activeIsSearchSection ? updateSearchSectionSettings
+              : activeIsCheckoutSection ? updateCheckoutSectionSettings
               : updateSectionSettings
             }
             onClose={() => setActiveSection(null)}
