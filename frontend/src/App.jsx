@@ -21,6 +21,7 @@ import OrdersManagement from "./pages/OrdersManagement";
 import Theme            from "./pages/Theme";
 import ThemeEdit        from "./pages/ThemeEdit";
 import OrderSuccess     from "./pages/OrderSuccess";
+import Checkout          from "./pages/Checkout";
 
 // ── Layout + Auth ───────────────────────────────────────────
 import ProtectedRoute   from "./components/ProtectedRoute";
@@ -74,6 +75,7 @@ function App() {
         <Route path="/store/:slug/collections"                       element={<StoreCollections />} />
         <Route path="/store/:slug/collections/:categoryId"           element={<CategoryProducts />} />
         <Route path="/store/:slug/search"                             element={<SearchResults />} />
+        <Route path="/store/:slug/checkout"                           element={<Checkout />} />
         <Route path="/store/:slug/order-success"                     element={<OrderSuccess />} />
       </Routes>
     </BrowserRouter>
