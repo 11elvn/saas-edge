@@ -257,6 +257,27 @@ const SUCCESS_DEFAULT_CONFIG = {
   ],
 };
 
+// ✦ Default config لصفحة Search — نفس section الـ Collection (id فريد: searchCollection)
+// ✦ ما فيهاش Selection Mode / Carousel / View All (نتائج البحث ديما تعرض كامل، بلا اختيار يدوي)
+const SEARCH_DEFAULT_CONFIG = {
+  sections: [
+    {
+      id: "searchCollection",
+      type: "collection",
+      enabled: true,
+      settings: {
+        productsShown: 12,
+        columns: 3,
+        cardStyle: "default",
+        imageRatio: "1:1",
+        showBadge: true,
+        showRating: false,
+        infiniteScroll: false,
+      },
+    },
+  ],
+};
+
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
@@ -1671,54 +1692,60 @@ function TrustSettings({ settings, onChange }) {
   );
 }
 
-function CollectionSettings({ settings, onChange }) {
+function CollectionSettings({ settings, onChange, hideForSearch }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">General</div>
-        <div className="pb-field">
-          <div className="pb-label">Section title</div>
-          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">Title alignment</div>
-          <div className="pb-segment">
-            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
-            ))}
+      {!hideForSearch && (
+        <div className="pb-group">
+          <div className="pb-group__label">General</div>
+          <div className="pb-field">
+            <div className="pb-label">Section title</div>
+            <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
+          </div>
+          <div className="pb-field">
+            <div className="pb-label">Title alignment</div>
+            <div className="pb-segment">
+              {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
+                <button key={o.v}
+                  className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="pb-group">
-        <div className="pb-group__label">Product Source</div>
-        <div className="pb-field">
-          <div className="pb-label">Selection Mode</div>
-          <select className="pb-input" value={settings.selectionMode || "all"} onChange={e => s("selectionMode", e.target.value)}>
-            <option value="all">All Products</option>
-          </select>
-        </div>
-        <div className="pb-field">
-          <div className="pb-label">Products shown</div>
-          <div className="pb-segment">
-            {[4,8,12].map(n => (
-              <button key={n}
-                className={`pb-seg-btn ${(settings.productsShown || 8) === n ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("productsShown", n)}>{n}</button>
-            ))}
+      {!hideForSearch && (
+        <div className="pb-group">
+          <div className="pb-group__label">Product Source</div>
+          <div className="pb-field">
+            <div className="pb-label">Selection Mode</div>
+            <select className="pb-input" value={settings.selectionMode || "all"} onChange={e => s("selectionMode", e.target.value)}>
+              <option value="all">All Products</option>
+            </select>
+          </div>
+          <div className="pb-field">
+            <div className="pb-label">Products shown</div>
+            <div className="pb-segment">
+              {[4,8,12].map(n => (
+                <button key={n}
+                  className={`pb-seg-btn ${(settings.productsShown || 8) === n ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("productsShown", n)}>{n}</button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="pb-group">
         <div className="pb-group__label">Layout</div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Carousel mode</span>
-          <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
-        </div>
+        {!hideForSearch && (
+          <div className="pb-toggle-row">
+            <span className="pb-toggle-row__label">Carousel mode</span>
+            <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
+          </div>
+        )}
         <div className="pb-field">
           <div className="pb-label">Columns</div>
           <div className="pb-segment">
@@ -1765,15 +1792,17 @@ function CollectionSettings({ settings, onChange }) {
 
       <div className="pb-group">
         <div className="pb-group__label">Footer</div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show "View all" link</span>
-          <Toggle checked={settings.showViewAll} onChange={v => s("showViewAll", v)} />
-        </div>
+        {!hideForSearch && (
+          <div className="pb-toggle-row">
+            <span className="pb-toggle-row__label">Show "View all" link</span>
+            <Toggle checked={settings.showViewAll} onChange={v => s("showViewAll", v)} />
+          </div>
+        )}
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Enable Infinite Scroll</span>
           <Toggle checked={!!settings.infiniteScroll} onChange={v => s("infiniteScroll", v)} />
         </div>
-        {settings.showViewAll && (
+        {!hideForSearch && settings.showViewAll && (
           <>
             <div className="pb-field">
               <div className="pb-label">View All text</div>
@@ -2282,7 +2311,7 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
@@ -2291,7 +2320,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} onNamePreview={onNamePreview} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
-      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} />;
+      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
       case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
@@ -2463,6 +2492,8 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     ? `/store/${slug}/collections/${categoryId}?preview=1`
     : page === "success"
     ? `/store/${slug}/order-success?preview=1`
+    : page === "search"
+    ? `/store/${slug}/search?preview=1`
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
@@ -2626,6 +2657,16 @@ function ThemeEdit() {
             }),
           };
 
+          // ✦ نطمّنو أن themeConfig.search فيه section searchCollection بكل الحقول
+          const savedSearchSections = d.store.themeConfig?.search?.sections || [];
+          cfg.search = {
+            sections: SEARCH_DEFAULT_CONFIG.sections.map(defSec => {
+              const saved = savedSearchSections.find(s => s.id === defSec.id);
+              if (!saved) return defSec;
+              return { ...defSec, ...saved, settings: { ...defSec.settings, ...(saved.settings || {}) } };
+            }),
+          };
+
           setThemeConfig(cfg);
 
           // ✦ نجيبو أول منتج فالمتجر باش نعاينو بيه صفحة Product فالـ builder
@@ -2650,11 +2691,20 @@ function ThemeEdit() {
     const handler = (e) => {
       if (e.data?.type !== "SECTION_CLICK") return;
       const sectionType = e.data.sectionType;
-      // نلقى الـ section اللي type ديالو يطابق — سواء فـ Home ولا Product ولا Category
-      const matched = themeConfig?.sections?.find(s => s.type === sectionType)
+      // ✦ نبدأو بالبحث فـ sections ديال الصفحة الحالية (باش نتفاداو تصادم النوع "collection"
+      // ✦ المشترك بين Home/Category/Search)، ثم نكملو بالبحث العام كـ fallback
+      const pageScoped =
+        currentPage === "product"  ? themeConfig?.product?.sections
+        : currentPage === "category" ? themeConfig?.category?.sections
+        : currentPage === "success"  ? themeConfig?.success?.sections
+        : currentPage === "search"   ? themeConfig?.search?.sections
+        : themeConfig?.sections;
+      const matched = pageScoped?.find(s => s.type === sectionType)
+        || themeConfig?.sections?.find(s => s.type === sectionType)
         || themeConfig?.product?.sections?.find(s => s.type === sectionType)
         || themeConfig?.category?.sections?.find(s => s.type === sectionType)
-        || themeConfig?.success?.sections?.find(s => s.type === sectionType);
+        || themeConfig?.success?.sections?.find(s => s.type === sectionType)
+        || themeConfig?.search?.sections?.find(s => s.type === sectionType);
       if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
@@ -2662,7 +2712,7 @@ function ThemeEdit() {
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [themeConfig]);
+  }, [themeConfig, currentPage]);
 
   // ── Update section settings ──────────────────────────────
   const updateSectionSettings = useCallback((id, newSettings) => {
@@ -2710,6 +2760,20 @@ function ThemeEdit() {
       success: {
         ...prev.success,
         sections: prev.success.sections.map(s =>
+          s.id === id ? { ...s, settings: newSettings } : s
+        ),
+      },
+    }));
+    setIsDirty(true);
+  }, []);
+
+  // ── Update search-page section settings (Collection grid) ──
+  const updateSearchSectionSettings = useCallback((id, newSettings) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      search: {
+        ...prev.search,
+        sections: prev.search.sections.map(s =>
           s.id === id ? { ...s, settings: newSettings } : s
         ),
       },
@@ -2834,13 +2898,16 @@ function ThemeEdit() {
   const activeSectionObj = themeConfig?.sections?.find(s => s.id === activeSection)
     || themeConfig?.product?.sections?.find(s => s.id === activeSection)
     || themeConfig?.category?.sections?.find(s => s.id === activeSection)
-    || themeConfig?.success?.sections?.find(s => s.id === activeSection);
+    || themeConfig?.success?.sections?.find(s => s.id === activeSection)
+    || themeConfig?.search?.sections?.find(s => s.id === activeSection);
   const activeIsProductSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.product?.sections?.some(s => s.id === activeSection);
   const activeIsCategorySection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.category?.sections?.some(s => s.id === activeSection);
   const activeIsSuccessSection = !themeConfig?.sections?.some(s => s.id === activeSection)
     && !!themeConfig?.success?.sections?.some(s => s.id === activeSection);
+  const activeIsSearchSection = !themeConfig?.sections?.some(s => s.id === activeSection)
+    && !!themeConfig?.search?.sections?.some(s => s.id === activeSection);
 
   // ✦ لائحة الـ sections المعروضة فالعمود الأيسر — تتبدل حسب الصفحة المختارة
   const displaySections = currentPage === "product"
@@ -2879,6 +2946,18 @@ function ThemeEdit() {
           pick(home, "announcement"),
           pick(home, "header"),
           pick(succ, "successMessage"),
+          pick(home, "footer"),
+        ].filter(Boolean);
+      })()
+    : currentPage === "search"
+    ? (() => {
+        const home = themeConfig?.sections || [];
+        const srch = themeConfig?.search?.sections || [];
+        const pick = (arr, type) => arr.find(s => s.type === type);
+        return [
+          pick(home, "announcement"),
+          pick(home, "header"),
+          pick(srch, "collection"),
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3139,10 +3218,12 @@ function ThemeEdit() {
           <SectionSettingsPanel
             section={activeSectionObj}
             store={store}
+            isSearchPage={activeIsSearchSection}
             onUpdate={
               activeIsProductSection ? updateProductSectionSettings
               : activeIsCategorySection ? updateCategorySectionSettings
               : activeIsSuccessSection ? updateSuccessSectionSettings
+              : activeIsSearchSection ? updateSearchSectionSettings
               : updateSectionSettings
             }
             onClose={() => setActiveSection(null)}
