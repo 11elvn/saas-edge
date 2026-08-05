@@ -33,6 +33,17 @@ const DEFAULT_STYLES = {
 
 const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
+// ── منتجات وهمية عامة — تُستعمل فقط فـ preview إذا مازال المتجر بلا أي منتج حقيقي ──
+const PLACEHOLDER_PRODUCTS = [1, 2, 3, 4].map(n => ({
+  _id: `placeholder-${n}`,
+  name: `منتج تجريبي ${n}`,
+  currentPrice: 2000 + n * 300,
+  oldPrice: null,
+  stock: 10,
+  images: [],
+  __placeholder: true,
+}));
+
 function loadFont(font) {
   const id = `font-${font}`;
   if (document.getElementById(id)) return;
@@ -129,7 +140,8 @@ export default function SearchResults() {
         if (sd.store) {
           setStore(sd.store);
           if (isPreview) {
-            setProducts(Array.isArray(sd.products) ? sd.products : []);
+            const realProducts = Array.isArray(sd.products) ? sd.products : [];
+            setProducts(realProducts.length ? realProducts : PLACEHOLDER_PRODUCTS);
           } else if (q.trim()) {
             const pr = await fetch(`${API()}/api/products/search/${sd.store._id}?q=${encodeURIComponent(q.trim())}`);
             const pd = await pr.json();
