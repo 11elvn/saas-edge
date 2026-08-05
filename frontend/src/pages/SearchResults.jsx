@@ -236,19 +236,22 @@ export default function SearchResults() {
         />
       </SectionWrapper>
 
-      {/* ── عنوان النتائج — قابل للتعديل (Section title) + معلومات البحث الديناميكية ── */}
-      <div style={{
-        maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px",
-        textAlign: collSettings.titleAlign || "right",
-      }}>
-        <h1 style={{ fontSize: "clamp(1.4rem,3.4vw,1.9rem)", fontWeight: 800, color: textColor, margin: "0 0 6px", letterSpacing: -0.5 }}>
-          {collSettings.title || "نتائج البحث"}
-        </h1>
-        <p style={{ color: mutedTextColor, fontSize: 13.5, margin: 0 }}>
-          {isPreview
-            ? <>مثال — {products.length} منتج</>
-            : q ? <>عن "<strong style={{ color: textColor }}>{q}</strong>" — {products.length} منتج</> : "أدخل كلمة للبحث"}
-        </p>
+      {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12,
+          justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
+          flexDirection: (collSettings.titleAlign || "right") === "left" ? "row-reverse" : "row",
+        }}>
+          <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: collSettings.titleAlign || "right" }}>
+            {collSettings.title || "نتائج البحث"}
+          </h2>
+          {(collSettings.titleAlign || "right") !== "center" && (
+            <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>
+              {products.length} منتج
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Collection grid — قابلة للتحكم كاملة (Columns / Card style / Badge / Rating...) ── */}
@@ -256,7 +259,7 @@ export default function SearchResults() {
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 80px" }}>
           {products.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
-              <p style={{ fontSize: 13.5 }}>لا توجد نتائج مطابقة</p>
+              <p style={{ fontSize: 13.5 }}>{(!isPreview && !q.trim()) ? "أدخل كلمة للبحث" : "لا توجد نتائج مطابقة"}</p>
             </div>
           ) : (
             <div className="sr-grid" data-cols={columns} style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20 }}>
