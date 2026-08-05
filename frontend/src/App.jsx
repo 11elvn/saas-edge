@@ -26,6 +26,9 @@ import OrderSuccess     from "./pages/OrderSuccess";
 import ProtectedRoute   from "./components/ProtectedRoute";
 import AppLayout        from "./components/layout/AppLayout";
 
+// ── Cart (سلة التسوق) — عالمية عبر التطبيق ──────────────────
+import { CartProvider } from "./context/CartContext";
+
 // ── Helper: يلف الصفحة بـ ProtectedRoute + AppLayout ───────
 const DashPage = ({ component: Component, title }) => (
   <ProtectedRoute>
@@ -37,6 +40,7 @@ const DashPage = ({ component: Component, title }) => (
 
 function App() {
   return (
+    <CartProvider>
     <BrowserRouter>
       <Routes>
         {/* Redirect */}
@@ -73,6 +77,7 @@ function App() {
         <Route path="/store/:slug/order-success"                     element={<OrderSuccess />} />
       </Routes>
     </BrowserRouter>
+    </CartProvider>
   );
 }
 

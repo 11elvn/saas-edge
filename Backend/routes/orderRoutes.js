@@ -15,20 +15,21 @@ const ALGERIAN_PHONE_REGEX = /^0[5-7][0-9]{8}$/;
 router.post("/create", async (req, res) => {
   try {
     const {
-      productId,
+      productId,       // ✦ الشراء المباشر (منتج واحد) — بقات كيما هي، ما تبدلتش
+      quantity,
+      items,           // ✦ جديد — سلة بعدة منتجات: [{ productId, quantity }]
       customerName,
       phone,
       address,
       municipality,
       note,
-      quantity,
       shippingCity,
       shippingPrice,
       totalPrice
     } = req.body;
 
     // ✦ التحقق من الحقول الإجبارية
-    if (!productId || !customerName || !phone || !shippingCity) {
+    if (!customerName || !phone || !shippingCity) {
       return res.status(400).json({ message: "جميع الحقول الإجبارية مطلوبة ❌" });
     }
 
@@ -40,40 +41,61 @@ router.post("/create", async (req, res) => {
       });
     }
 
-    // ✦ التأكد من وجود المنتج
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "المنتج غير موجود ❌" });
+    // ✦ نبنيو لائحة عناصر موحدة — سواء جات من "items" (سلة) ولا productId مفرد (شراء مباشر)
+    const rawItems = Array.isArray(items) && items.length
+      ? items
+      : (productId ? [{ productId, quantity: quantity || 1 }] : []);
+
+    if (!rawItems.length) {
+      return res.status(400).json({ message: "لا توجد منتجات في الطلب ❌" });
     }
 
-    // ✦ التحقق من المخزون — هنا كانت المشكلة
-    const qty = Math.max(1, Number(quantity) || 1);
-    if (product.stock <= 0 || product.stock < qty) {
-      return res.status(400).json({ message: "عذراً، هذا المنتج نفد من المخزون 😔" });
+    // ✦ نجيبو كل منتج، نتحققو من وجوده والمخزون ديالو، ونبنيو snapshot (اسم/صورة/سعر وقت الطلب)
+    const builtItems = [];
+    let storeId = null;
+    for (const it of rawItems) {
+      const product = await Product.findById(it.productId);
+      if (!product) {
+        return res.status(404).json({ message: "أحد المنتجات في طلبك لم يعد موجوداً ❌" });
+      }
+      const qty = Math.max(1, Number(it.quantity) || 1);
+      if (product.stock <= 0 || product.stock < qty) {
+        return res.status(400).json({ message: `عذراً، "${product.name}" نفد من المخزون 😔` });
+      }
+      if (!storeId) storeId = product.storeId;
+      builtItems.push({
+        productId: product._id,
+        name:      product.name,
+        image:     product.images?.[0] || product.image || "",
+        price:     product.currentPrice,
+        quantity:  qty,
+      });
     }
 
-    // ✦ إنشاء الطلب
+    const itemsTotal = builtItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
+    // ✦ إنشاء الطلب — items هو المصدر الأساسي، productId/quantity كيتولدو من أول عنصر للتوافق القديم
     const order = new Order({
-      productId,
+      items:        builtItems,
+      productId:    builtItems[0].productId,
+      quantity:     builtItems[0].quantity,
       customerName,
       phone:         cleanPhone,
       address:       address || "",
       municipality:  municipality || "",
       note:          note || "",
-      quantity:      qty,
       shippingCity,
       shippingPrice: Number(shippingPrice) || 0,
-      totalPrice:    Number(totalPrice) || product.currentPrice,
-      storeId:       product.storeId,
+      totalPrice:    Number(totalPrice) || (itemsTotal + (Number(shippingPrice) || 0)),
+      storeId,
       status:        "pending",
     });
 
     await order.save();
 
-    // ✦ تناقص المخزون بعد حفظ الطلب — atomic يمنع race condition
-    await Product.findByIdAndUpdate(
-      productId,
-      { $inc: { stock: -qty } }
+    // ✦ تناقص المخزون بعد حفظ الطلب لكل منتج — atomic يمنع race condition
+    await Promise.all(
+      builtItems.map(it => Product.findByIdAndUpdate(it.productId, { $inc: { stock: -it.quantity } }))
     );
 
     res.status(201).json({
@@ -186,11 +208,13 @@ router.put("/update-status/:id", auth, async (req, res) => {
       });
     }
 
-    // ✦ إذا تم إلغاء الطلب — نرجع المخزون
+    // ✦ إذا تم إلغاء الطلب — نرجع المخزون لكل منتج فالطلب (وليس فقط +1)
     if (status === "cancelled") {
-      await Product.findByIdAndUpdate(
-        order.productId,
-        { $inc: { stock: 1 } }
+      const restoreItems = order.items?.length
+        ? order.items
+        : (order.productId ? [{ productId: order.productId, quantity: order.quantity || 1 }] : []);
+      await Promise.all(
+        restoreItems.map(it => Product.findByIdAndUpdate(it.productId, { $inc: { stock: it.quantity } }))
       );
     }
 
