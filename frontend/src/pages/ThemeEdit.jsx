@@ -266,6 +266,8 @@ const SEARCH_DEFAULT_CONFIG = {
       type: "collection",
       enabled: true,
       settings: {
+        title: "نتائج البحث",
+        titleAlign: "right",
         productsShown: 12,
         columns: 3,
         cardStyle: "default",
@@ -1696,47 +1698,45 @@ function CollectionSettings({ settings, onChange, hideForSearch }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      {!hideForSearch && (
-        <div className="pb-group">
-          <div className="pb-group__label">General</div>
-          <div className="pb-field">
-            <div className="pb-label">Section title</div>
-            <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
-          </div>
-          <div className="pb-field">
-            <div className="pb-label">Title alignment</div>
-            <div className="pb-segment">
-              {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
-                <button key={o.v}
-                  className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("titleAlign", o.v)}>{o.l}</button>
-              ))}
-            </div>
+      <div className="pb-group">
+        <div className="pb-group__label">General</div>
+        <div className="pb-field">
+          <div className="pb-label">Section title</div>
+          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Title alignment</div>
+          <div className="pb-segment">
+            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
+              <button key={o.v}
+                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {!hideForSearch && (
-        <div className="pb-group">
-          <div className="pb-group__label">Product Source</div>
+      <div className="pb-group">
+        <div className="pb-group__label">Product Source</div>
+        {!hideForSearch && (
           <div className="pb-field">
             <div className="pb-label">Selection Mode</div>
             <select className="pb-input" value={settings.selectionMode || "all"} onChange={e => s("selectionMode", e.target.value)}>
               <option value="all">All Products</option>
             </select>
           </div>
-          <div className="pb-field">
-            <div className="pb-label">Products shown</div>
-            <div className="pb-segment">
-              {[4,8,12].map(n => (
-                <button key={n}
-                  className={`pb-seg-btn ${(settings.productsShown || 8) === n ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("productsShown", n)}>{n}</button>
-              ))}
-            </div>
+        )}
+        <div className="pb-field">
+          <div className="pb-label">Products shown</div>
+          <div className="pb-segment">
+            {[4,8,12].map(n => (
+              <button key={n}
+                className={`pb-seg-btn ${(settings.productsShown || 8) === n ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("productsShown", n)}>{n}</button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
       <div className="pb-group">
         <div className="pb-group__label">Layout</div>

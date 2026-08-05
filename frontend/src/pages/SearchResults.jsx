@@ -20,6 +20,7 @@ const DEFAULT_HOME_SECTIONS = [
 // ✦ نفس section الـ Collection — بلا Selection Mode / Carousel / View All (نتائج البحث ديما كاملة)
 const DEFAULT_SEARCH_SECTIONS = [
   { id: "searchCollection", type: "collection", enabled: true, settings: {
+      title: "نتائج البحث", titleAlign: "right",
       productsShown: 12, columns: 3, cardStyle: "default", imageRatio: "1:1",
       showBadge: true, showRating: false, infiniteScroll: false,
   } },
@@ -172,7 +173,7 @@ export default function SearchResults() {
   const showRating     = !!collSettings.showRating;
   const infiniteScroll = !!collSettings.infiniteScroll;
   const productsShown  = collSettings.productsShown || 12;
-  const effectiveCount = infiniteScroll ? (visibleCount || productsShown) : products.length;
+  const effectiveCount = infiniteScroll ? (visibleCount || productsShown) : productsShown;
   const visibleProducts = products.slice(0, effectiveCount);
   const aspectMap = { "1:1": "1/1", "3:4": "3/4" };
 
@@ -235,10 +236,13 @@ export default function SearchResults() {
         />
       </SectionWrapper>
 
-      {/* ── عنوان النتائج (ثابت، غير قابل للتعديل — يعكس كلمة البحث تلقائياً) ── */}
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
+      {/* ── عنوان النتائج — قابل للتعديل (Section title) + معلومات البحث الديناميكية ── */}
+      <div style={{
+        maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px",
+        textAlign: collSettings.titleAlign || "right",
+      }}>
         <h1 style={{ fontSize: "clamp(1.4rem,3.4vw,1.9rem)", fontWeight: 800, color: textColor, margin: "0 0 6px", letterSpacing: -0.5 }}>
-          نتائج البحث
+          {collSettings.title || "نتائج البحث"}
         </h1>
         <p style={{ color: mutedTextColor, fontSize: 13.5, margin: 0 }}>
           {isPreview
