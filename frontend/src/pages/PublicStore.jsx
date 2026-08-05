@@ -7,6 +7,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import CartDrawer from "../components/CartDrawer";
+import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
@@ -354,6 +356,8 @@ function PublicStore() {
   const [activeCat,  setActiveCat]  = useState("all");
   const [loading,    setLoading]    = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { getCartCount } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
   // ✦ themeConfig — يُحدَّث live من postMessage (page builder)
   const [themeConfig, setThemeConfig] = useState(null);
   // ✦ highlighted section type من page builder
@@ -546,6 +550,8 @@ function PublicStore() {
         slug={slug}
         headerSettings={sec(tc, "header")?.settings}
         themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+        cartCount={getCartCount(slug)}
+        onCartClick={() => setCartOpen(true)}
       />
       </SectionWrapper>
       )}
@@ -1040,6 +1046,16 @@ function PublicStore() {
         }
       `}</style>
 
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        slug={slug}
+        primary={primary}
+        textColor={textColor}
+        mutedTextColor={mutedTextColor}
+        borderColor={borderColor}
+        surfaceColor={surfaceColor}
+      />
     </div>
   );
 }

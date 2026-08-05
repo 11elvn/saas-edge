@@ -197,7 +197,10 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
             <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
           )}
           {showCart && (
-            <button className="sn-icon-btn" onClick={onCartClick}><IconCart /></button>
+            <button className="sn-icon-btn sn-icon-btn--cart" onClick={onCartClick}>
+              <IconCart />
+              {cartCount > 0 && <span className="sn-cart-badge">{cartCount > 9 ? "9+" : cartCount}</span>}
+            </button>
           )}
         </div>
 
@@ -241,7 +244,10 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         {/* يمين الشاشة: cart + بحث */}
         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:2 }}>
           {showCart && (
-            <button className="sn-icon-btn" onClick={onCartClick}><IconCart /></button>
+            <button className="sn-icon-btn sn-icon-btn--cart" onClick={onCartClick}>
+              <IconCart />
+              {cartCount > 0 && <span className="sn-cart-badge">{cartCount > 9 ? "9+" : cartCount}</span>}
+            </button>
           )}
           {showSearch && (
             <button className="sn-icon-btn" onClick={handleSearch}><IconSearch /></button>
@@ -257,6 +263,14 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           transition: background .2s, color .2s;
         }
         .sn-icon-btn:hover { background: #f3f4f6; color: #111; }
+        .sn-icon-btn--cart { position: relative; }
+        .sn-cart-badge {
+          position: absolute; top: 2px; right: 2px;
+          min-width: 16px; height: 16px; padding: 0 3px;
+          border-radius: 999px; background: #ef4444; color: #fff;
+          font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+          font-family: inherit;
+        }
 
         .sn-nav-link {
           background: none; border: none; cursor: pointer;

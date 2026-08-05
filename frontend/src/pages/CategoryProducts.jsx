@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import CartDrawer from "../components/CartDrawer";
+import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
@@ -83,6 +85,8 @@ export default function CategoryProducts() {
   const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [sort,     setSort]     = useState("newest");
+  const { getCartCount } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
 
   // ── Collection grid — infinite scroll ──
   const loadMoreRef = useRef(null);
@@ -249,6 +253,8 @@ export default function CategoryProducts() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+          cartCount={getCartCount(slug)}
+          onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
 
@@ -546,6 +552,17 @@ export default function CategoryProducts() {
           onMouseLeave={e => e.currentTarget.style.transform = "none"}
         ><IconWA /></a>
       )}
+
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        slug={slug}
+        primary={primary}
+        textColor={textColor}
+        mutedTextColor={mutedTextColor}
+        borderColor={borderColor}
+        surfaceColor={surfaceColor}
+      />
     </div>
   );
 }

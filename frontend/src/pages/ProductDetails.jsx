@@ -9,6 +9,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import CartDrawer from "../components/CartDrawer";
+import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
@@ -220,6 +222,11 @@ function ProductDetails() {
   const [loading,      setLoading]      = useState(true);
   const [ordering,     setOrdering]     = useState(false);
   const [quantity,     setQuantity]     = useState(1);
+
+  // ── السلة (Cart) ──────────────────────────────────────────
+  const { addToCart, getCartCount } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
 
   // ── حقول الفورم ──
@@ -431,6 +438,8 @@ function ProductDetails() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+          cartCount={getCartCount(slug)}
+          onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
 
@@ -635,7 +644,11 @@ function ProductDetails() {
                 </button>
                 {productInfoSettings.showAddToCartButton !== false && !outOfStock && (
                   <button
-                    onClick={scrollToCheckout}
+                    onClick={() => {
+                      addToCart(slug, product, quantity);
+                      setAddedToCart(true);
+                      setTimeout(() => setAddedToCart(false), 1800);
+                    }}
                     style={{
                       width: "100%", border: `1.5px solid ${primary}`, cursor: "pointer",
                       borderRadius: 12, padding: "13px 0", background: "transparent",
@@ -643,7 +656,7 @@ function ProductDetails() {
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
                   >
-                    <IconCart /> أضف للسلة
+                    <IconCart /> {addedToCart ? "أُضيف للسلة ✓" : "أضف للسلة"}
                   </button>
                 )}
               </div>
@@ -834,6 +847,17 @@ function ProductDetails() {
           </button>
         </div>
       )}
+
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        slug={slug}
+        primary={primary}
+        textColor={textColor}
+        mutedTextColor={mutedTextColor}
+        borderColor={borderColor}
+        surfaceColor={surfaceColor}
+      />
     </div>
   );
 }
