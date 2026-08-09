@@ -340,8 +340,19 @@ const SUCCESS_SECTION_META = {
   successMessage: { label: "Success Message", icon: "success", locked: true },
 };
 
+// ✦ Overrides بالـ id — لـ sections كتشارك نفس الـ type مع Home (مثلا "collection")
+// بصح فـ Category/Search هي section أساسية بالصفحة (بحال gallery/productInfo) وخاصها تكون locked
+// (غير هكا، meta ديال Home (SECTION_META.collection، ماشي locked) كانت غادي تتفرض عليهم بالغلط،
+// وهذا هو اللي كان كيخلي أزرار العين/الحذف تبان فـ Category/Search بلا ما تخدم)
+const SECTION_META_BY_ID = {
+  categoryCollection: { label: "Collection", icon: "collection", locked: true },
+  searchCollection:   { label: "Collection", icon: "collection", locked: true },
+};
+
 // ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category ولا Success
-const getSectionMeta = (type) =>
+// (id اختياري — كي يكون معروف، override بالـ id يجي قبل الـ type)
+const getSectionMeta = (type, id) =>
+  (id && SECTION_META_BY_ID[id]) ||
   SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || SUCCESS_SECTION_META[type] || {};
 
 const PAGES = [
@@ -2366,7 +2377,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
     }
   };
 
-  const meta = getSectionMeta(section.type);
+  const meta = getSectionMeta(section.type, section.id);
 
   return (
     <div className="pb-right" style={{ width: collapsed ? 0 : 340 }}>
@@ -3170,7 +3181,7 @@ function ThemeEdit() {
             <>
               <div className="pb-sections-list">
                 {displaySections.map((sec, idx) => {
-                  const meta = getSectionMeta(sec.type);
+                  const meta = getSectionMeta(sec.type, sec.id);
                   // ✦ الـ drag & drop خدام غير فصفحة Home، وغير على sections الماشي locked
                   // (على صفحات أخرى — Product/Category/... — الترتيب ثابت وماشي حر)
                   const canDrag = currentPage === "home" && !meta.locked;
