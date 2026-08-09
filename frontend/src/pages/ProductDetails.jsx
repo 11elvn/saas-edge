@@ -312,7 +312,13 @@ function ProductDetails() {
   };
 
   const checkoutSettings = sec(productSections, "checkout")?.settings || DEFAULT_PRODUCT_SECTIONS[2].settings;
-  const fieldCfg = (key) => checkoutSettings.fields?.[key] || { enabled: true, required: true };
+  // ✦ fullName/phone أساسيين لإتمام الطلب — نفرضو enabled:true ديما، حتى لو كاين إعداد قديم
+  // (من قبل الإصلاح) كيقول enabled:false، باش ما يبقاش الطلب يوصل بلا اسم/هاتف
+  const fieldCfg = (key) => {
+    const cfg = checkoutSettings.fields?.[key] || { enabled: true, required: true };
+    if (key === "fullName" || key === "phone") return { ...cfg, enabled: true };
+    return cfg;
+  };
 
   const scrollToCheckout = () => checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 

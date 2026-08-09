@@ -1732,7 +1732,7 @@ function TrustSettings({ settings, onChange }) {
         {(settings.badges || []).map((badge, i) => (
           <div key={i} className="pb-badge-card">
             <div className="pb-badge-card__header">
-              <span>{BADGE_LABELS[badge.id] || badge.title}</span>
+              <span>{badge.title || BADGE_LABELS[badge.id]}</span>
               <Toggle checked={badge.enabled !== false} onChange={v => updateBadge(i, "enabled", v)} />
             </div>
             <div className="pb-field">
@@ -2100,9 +2100,11 @@ function ProductInfoSettings({ settings, onChange }) {
 }
 
 // ✦ حقول الفورم القابلة للتحكم — key يطابق fields object فالـ settings
+// ✦ critical: true → فُل name والهاتف أساسيين لإتمام الطلب، ما نخلوش المستخدم "يعطلهم" بالغلط
+//   (بلا رقم هاتف/اسم، الطلب يوصل بلا ما تقدر تتواصل مع الزبون)
 const CHECKOUT_FIELD_LABELS = [
-  { key: "fullName",     label: "Full name" },
-  { key: "phone",        label: "Phone number" },
+  { key: "fullName",     label: "Full name",              critical: true },
+  { key: "phone",        label: "Phone number",           critical: true },
   { key: "province",     label: "Province (Wilaya)" },
   { key: "municipality", label: "Municipality (Commune)" },
 ];
@@ -2110,10 +2112,15 @@ const CHECKOUT_FIELD_LABELS = [
 function CheckoutSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   const fields = settings.fields || {};
-  const setField = (key, k, v) => onChange({
-    ...settings,
-    fields: { ...fields, [key]: { ...(fields[key] || { enabled: true, required: true }), [k]: v } },
-  });
+  const setField = (key, k, v) => {
+    // ✦ حماية إضافية: حتى لو توصل الطلب من مكان آخر، ما نخليوش أي كود يعطل fullName/phone
+    const isCriticalField = CHECKOUT_FIELD_LABELS.find(f => f.key === key)?.critical;
+    if (isCriticalField && k === "enabled" && v === false) return;
+    onChange({
+      ...settings,
+      fields: { ...fields, [key]: { ...(fields[key] || { enabled: true, required: true }), [k]: v } },
+    });
+  };
 
   return (
     <>
@@ -2145,15 +2152,24 @@ function CheckoutSettings({ settings, onChange }) {
           const fv = fields[f.key] || { enabled: true, required: true };
           return (
             <div key={f.key} className="pb-field-card">
-              <div className="pb-field-card__title">{f.label}</div>
+              <div className="pb-field-card__title">
+                {f.label}
+                {f.critical && <span style={{ marginInlineStart: 6, fontSize: 11, fontWeight: 600, color: "#7c6df2" }}>(أساسي)</span>}
+              </div>
               <div className="pb-toggle-row">
                 <span className="pb-toggle-row__label">Required</span>
                 <Toggle checked={fv.required !== false} onChange={v => setField(f.key, "required", v)} />
               </div>
-              <div className="pb-toggle-row">
-                <span className="pb-toggle-row__label">Enabled</span>
-                <Toggle checked={fv.enabled !== false} onChange={v => setField(f.key, "enabled", v)} />
-              </div>
+              {f.critical ? (
+                <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "#94a3b8" }}>
+                  هاد الحقل أساسي لإتمام الطلب (باش تقدر تتواصل مع الزبون) — ما يقدرش يتعطل.
+                </p>
+              ) : (
+                <div className="pb-toggle-row">
+                  <span className="pb-toggle-row__label">Enabled</span>
+                  <Toggle checked={fv.enabled !== false} onChange={v => setField(f.key, "enabled", v)} />
+                </div>
+              )}
             </div>
           );
         })}

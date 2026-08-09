@@ -246,7 +246,13 @@ function Checkout() {
   };
 
   const checkoutSettings = sec(checkoutSections, "checkout")?.settings || DEFAULT_CHECKOUT_SECTIONS[0].settings;
-  const fieldCfg = (key) => checkoutSettings.fields?.[key] || { enabled: true, required: true };
+  // ✦ fullName/phone أساسيين لإتمام الطلب — نفرضو enabled:true ديما، حتى لو كاين إعداد قديم
+  // (من قبل الإصلاح) كيقول enabled:false، باش ما يبقاش الطلب يوصل بلا اسم/هاتف
+  const fieldCfg = (key) => {
+    const cfg = checkoutSettings.fields?.[key] || { enabled: true, required: true };
+    if (key === "fullName" || key === "phone") return { ...cfg, enabled: true };
+    return cfg;
+  };
 
   const total = itemsTotal + shippingPrice;
 
