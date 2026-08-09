@@ -260,7 +260,7 @@ const PREVIEW_CSS = `
 
 /* Border أزرق كامل حول الـ section المختار فقط */
 .ps-section-wrapper--highlighted {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #7c6df2;
   outline-offset: -2px;
   position: relative;
 }
@@ -271,7 +271,7 @@ const PREVIEW_CSS = `
   top: 8px;
   inset-inline-start: 8px;
   z-index: 20;
-  background: #2563eb;
+  background: #7c6df2;
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -281,10 +281,10 @@ const PREVIEW_CSS = `
   font-family: 'Inter', sans-serif;
   letter-spacing: .3px;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(37,99,235,.35);
+  box-shadow: 0 2px 8px rgba(124,109,242,.35);
 }
 .ps-section-label--active {
-  background: #2563eb;
+  background: #7c6df2;
 }
 
 /* زر + أسفل الـ section المختار */
@@ -301,7 +301,7 @@ const PREVIEW_CSS = `
 .ps-add-below__btn {
   width: 28px; height: 28px;
   border-radius: 50%;
-  background: #2563eb;
+  background: #7c6df2;
   border: 2px solid #fff;
   color: #fff;
   font-size: 18px;
@@ -309,7 +309,7 @@ const PREVIEW_CSS = `
   line-height: 1;
   display: flex; align-items: center; justify-content: center;
   cursor: not-allowed;
-  box-shadow: 0 2px 8px rgba(37,99,235,.45);
+  box-shadow: 0 2px 8px rgba(124,109,242,.45);
 }
 `;
 

@@ -66,13 +66,13 @@ const PD_CSS = `
   background:#fff; border-top:1px solid #eee; box-shadow:0 -8px 24px rgba(0,0,0,.08);
 }
 .pd-section-wrapper { position: relative; }
-.pd-section-wrapper--highlighted { outline: 2px solid #2563eb; outline-offset: -2px; }
+.pd-section-wrapper--highlighted { outline: 2px solid #7c6df2; outline-offset: -2px; }
 .pd-section-label {
   position: absolute; top: 8px; inset-inline-start: 8px; z-index: 20;
-  background: #2563eb; color: #fff; font-size: 11px; font-weight: 700;
+  background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
   padding: 3px 10px; border-radius: 6px; pointer-events: none;
   font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(37,99,235,.35);
+  box-shadow: 0 2px 8px rgba(124,109,242,.35);
 }
 `;
 

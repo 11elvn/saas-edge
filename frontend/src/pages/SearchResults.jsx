@@ -69,17 +69,17 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
-      style={{ position: "relative", ...style, cursor: "pointer", outline: isHighlighted ? "2px solid #2563eb" : "none", outlineOffset: -2 }}
+      style={{ position: "relative", ...style, cursor: "pointer", outline: isHighlighted ? "2px solid #7c6df2" : "none", outlineOffset: -2 }}
       data-section={type}
       onClick={handleClick}
     >
       {isHighlighted && (
         <div style={{
           position: "absolute", top: 8, insetInlineStart: 8, zIndex: 20,
-          background: "#2563eb", color: "#fff", fontSize: 11, fontWeight: 700,
+          background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
           padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
           fontFamily: "'Inter', sans-serif", letterSpacing: ".3px", whiteSpace: "nowrap",
-          boxShadow: "0 2px 8px rgba(37,99,235,.35)",
+          boxShadow: "0 2px 8px rgba(124,109,242,.35)",
         }}>
           {SECTION_LABELS[type] || type}
         </div>
