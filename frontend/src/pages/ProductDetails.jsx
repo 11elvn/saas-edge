@@ -393,6 +393,10 @@ function ProductDetails() {
 
   const gallerySettings     = sec(productSections, "gallery")?.settings || DEFAULT_PRODUCT_SECTIONS[0].settings;
   const productInfoSettings = sec(productSections, "productInfo")?.settings || DEFAULT_PRODUCT_SECTIONS[1].settings;
+  // ✦ الأقسام هادو دابا قابلين للإخفاء من ThemeEdit — خاصنا نتأكدو من enabled فعليا هنا
+  const galleryEnabled     = sec(productSections, "gallery")?.enabled !== false;
+  const productInfoEnabled = sec(productSections, "productInfo")?.enabled !== false;
+  const checkoutEnabled    = sec(productSections, "checkout")?.enabled !== false;
   const headerSettings      = sec(homeSections, "header")?.settings;
   const announcementSec     = sec(homeSections, "announcement");
   const footerSettings      = sec(homeSections, "footer")?.settings;
@@ -459,10 +463,11 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}
+        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
+        {galleryEnabled && (
         <SectionWrapper
           type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"}
           style={{ minWidth: 0, position: "sticky", top: headerSettings?.sticky !== false ? 96 : 16, alignSelf: "start" }}
@@ -569,11 +574,13 @@ function ProductDetails() {
             </div>
           )}
         </SectionWrapper>
+        )}
 
         {/* ── RIGHT: Product Info + Checkout ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
 
           {/* Product Info */}
+          {productInfoEnabled && (
           <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }}>
             <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
               {productInfoSettings.badgeText?.trim() && (
@@ -679,8 +686,10 @@ function ProductDetails() {
               )}
             </div>
           </SectionWrapper>
+          )}
 
           {/* In-Page Checkout */}
+          {checkoutEnabled && (
           <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"} style={{ order: productOrder("checkout") }}>
             <div
               ref={checkoutRef} className="pd-fade pd-d2"
@@ -835,6 +844,7 @@ function ProductDetails() {
               </div>
             </div>
           </SectionWrapper>
+          )}
         </div>
       </div>
 
@@ -844,7 +854,7 @@ function ProductDetails() {
       </SectionWrapper>
 
       {/* ── Sticky order bar ── */}
-      {checkoutSettings.stickyButton !== false && !outOfStock && (
+      {checkoutEnabled && checkoutSettings.stickyButton !== false && !outOfStock && (
         <div className="pd-sticky-bar">
           <button
             className={`pd-btn-order${pulseCls}`}

@@ -313,9 +313,10 @@ const CHECKOUT_PAGE_DEFAULT_CONFIG = {
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
-// ✦ locked  = ماشي قابلة للحذف/الإخفاء (زر العين والحذف يختفيو)
-// ✦ fixed   = ماشي قابلة للسحب/التحريك (مكانها ثابت ديما — Announcement/Header/Footer،
-//             وكذا أي section وحدها فالصفحة اللي ما عندهاش حاجة تتحرك معاها)
+// ✦ locked         = ماشي قابلة للحذف/الإخفاء (زر العين والحذف يختفيو) — Home/Header/Footer وSuccess وSearch وCheckout
+//                     (هاد الـ 3 الأخيرين لأنهم صفحات عندهم section واحدة غير، حذفها كيخلي الصفحة فارغة بالكامل)
+// ✦ fixed          = ماشي قابلة للسحب/التحريك (مكانها ثابت ديما)
+// ✦ criticalDelete = قابلة للحذف، بصح لازم تأكيد (confirm) قبل — section أساسية للصفحة (بحال Product Info)
 const SECTION_META = {
   announcement: { label: "Announcement Bar", icon: "announcement", fixed: true },
   header:       { label: "Header",           icon: "header", locked: true, fixed: true },
@@ -326,36 +327,36 @@ const SECTION_META = {
   footer:       { label: "Footer",           icon: "footer", locked: true, fixed: true },
 };
 
-// ✦ Sections خاصة بصفحة المنتج فقط — locked ديما (ماشي قابلين للحذف)
-// ✦ Gallery وحدها fixed (العمود ديالها ثابت جنب المعلومات، ماشي مرصوصة فوقهم — التحريك ما عندوش معنى بصري)
-// ✦ ProductInfo/Checkout قابلين للتحريك بينهم (مرصوصين فوق بعضهم فنفس العمود)
+// ✦ Sections خاصة بصفحة المنتج فقط
+// ✦ Gallery: قابلة للحذف/الإخفاء بلا تأكيد (fixed غير على السحب — عمود ثابت جنب المعلومات)
+// ✦ ProductInfo/Checkout: قابلين للحذف/الإخفاء بصح بـ تأكيد (بيهم يتباع المنتج فعليا)
 const PRODUCT_SECTION_META = {
-  gallery:     { label: "Gallery",           icon: "gallery",     locked: true, fixed: true },
-  productInfo: { label: "Product Info",      icon: "productInfo", locked: true },
-  checkout:    { label: "In-Page Checkout",  icon: "checkout",    locked: true },
+  gallery:     { label: "Gallery",           icon: "gallery",     fixed: true },
+  productInfo: { label: "Product Info",      icon: "productInfo", criticalDelete: true },
+  checkout:    { label: "In-Page Checkout",  icon: "checkout",    criticalDelete: true },
 };
 
-// ✦ Sections خاصة بصفحة Category فقط — locked ديما، بصح قابلة للتحريك (مرصوصين فوق بعضهم)
+// ✦ Sections خاصة بصفحة Category فقط
+// ✦ CategoryBanner: قابلة للحذف/الإخفاء بلا تأكيد — categoryCollection كيتزاد override تحت (id-based)
 const CATEGORY_SECTION_META = {
-  categoryBanner: { label: "Category Banner", icon: "categories", locked: true },
+  categoryBanner: { label: "Category Banner", icon: "categories" },
 };
 
-// ✦ Section خاص بصفحة Success (تأكيد الطلب) فقط — locked و fixed (وحدها فالصفحة، لا حاجة تتحرك معاها)
+// ✦ Section خاص بصفحة Success (تأكيد الطلب) — بقات locked/fixed (ماشي جزء من التوسيع):
+// حذفها/إخفاؤها كيخلي صفحة "تم تأكيد الطلب" فارغة بالكامل بلا أي فائدة للزبون
 const SUCCESS_SECTION_META = {
   successMessage: { label: "Success Message", icon: "success", locked: true, fixed: true },
 };
 
 // ✦ Overrides بالـ id — لـ sections كتشارك نفس الـ type مع Home (مثلا "collection")
-// بصح فـ Category/Search هي section أساسية بالصفحة (بحال gallery/productInfo) وخاصها تكون locked
-// (غير هكا، meta ديال Home (SECTION_META.collection، ماشي locked) كانت غادي تتفرض عليهم بالغلط،
-// وهذا هو اللي كان كيخلي أزرار العين/الحذف تبان فـ Category/Search بلا ما تخدم)
-// ✦ categoryCollection قابلة للتحريك مع categoryBanner (2 sections فنفس الصفحة)
-// ✦ searchCollection وcartCheckout fixed — كل وحدة منهم لوحدها فالصفحة ديالها، ما كاين حتى حاجة تتحرك معاها
+// ✦ categoryCollection: قابلة للحذف بصح بتأكيد (criticalDelete) — هي أساس صفحة Category
+// ✦ searchCollection وcartCheckout: بقاو locked+fixed — كل وحدة منهم هي الـ section الوحيدة
+// فصفحتها (Search/Checkout)، حذفها/إخفاؤها كيخلي الصفحة فارغة بالكامل بلا أي وظيفة
 // (هادي overrides جزئية، كتنمزج مع meta ديال الـ type — label/icon كيبقاو من الـ type)
 const SECTION_META_BY_ID = {
-  categoryCollection: { locked: true },
+  categoryCollection: { criticalDelete: true },
   searchCollection:   { locked: true, fixed: true },
-  cartCheckout:       { fixed: true },
+  cartCheckout:       { locked: true, fixed: true },
 };
 
 // ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category ولا Success
@@ -2884,40 +2885,54 @@ function ThemeEdit() {
   }, []);
 
   // ── Toggle section enabled ───────────────────────────────
-  const toggleSection = useCallback((id, enabled) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.map(s => s.id === id ? { ...s, enabled } : s),
-    }));
+  // ✦ خدامة على Home وكذا على باقي الصفحات (Product/Category/...) — كل وحدة عندها array خاص بيها
+  const PAGE_SECTIONS_KEY = { home: "sections", product: "product", category: "category", success: "success", search: "search", checkout: "checkout" };
+  const toggleSection = useCallback((page, id, enabled) => {
+    setThemeConfig(prev => {
+      const key = PAGE_SECTIONS_KEY[page] || "sections";
+      const isHome = key === "sections";
+      const currentArr = isHome ? prev.sections : prev[key]?.sections;
+      if (!currentArr) return prev;
+      const arr = currentArr.map(s => s.id === id ? { ...s, enabled } : s);
+      return isHome ? { ...prev, sections: arr } : { ...prev, [key]: { ...prev[key], sections: arr } };
+    });
     setIsDirty(true);
   }, []);
 
   // ── Delete section (non-locked only) ─────────────────────
-  const deleteSection = useCallback((id) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: prev.sections.filter(s => s.id !== id),
-    }));
+  const deleteSection = useCallback((page, id) => {
+    setThemeConfig(prev => {
+      const key = PAGE_SECTIONS_KEY[page] || "sections";
+      const isHome = key === "sections";
+      const currentArr = isHome ? prev.sections : prev[key]?.sections;
+      if (!currentArr) return prev;
+      const arr = currentArr.filter(s => s.id !== id);
+      return isHome ? { ...prev, sections: arr } : { ...prev, [key]: { ...prev[key], sections: arr } };
+    });
     setActiveSection(prevActive => (prevActive === id ? null : prevActive));
     setIsDirty(true);
   }, []);
 
-  // ── Add a section back (only types not already present) ──
-  const addSection = useCallback((type) => {
-    const template = DEFAULT_CONFIG.sections.find(s => s.type === type);
+  // ── Add a section back (only types not already present فنفس الصفحة) ──
+  // ✦ خدامة على Home وكذا على Product/Category — كل وحدة عندها "كتالوگ" ديال templates ديالها
+  const PAGE_TEMPLATE_SOURCE = { home: DEFAULT_CONFIG, product: PRODUCT_DEFAULT_CONFIG, category: CATEGORY_DEFAULT_CONFIG };
+  const addSection = useCallback((page, type) => {
+    const source = PAGE_TEMPLATE_SOURCE[page] || DEFAULT_CONFIG;
+    const template = source.sections.find(s => s.type === type);
     if (!template) return;
-    setThemeConfig(prev => ({
-      ...prev,
-      sections: [...prev.sections, { ...template, id: `${type}-${Date.now()}` }],
-    }));
+    const key = PAGE_SECTIONS_KEY[page] || "sections";
+    const isHome = key === "sections";
+    setThemeConfig(prev => {
+      const currentArr = (isHome ? prev.sections : prev[key]?.sections) || [];
+      const newArr = [...currentArr, { ...template, id: `${type}-${Date.now()}` }];
+      return isHome ? { ...prev, sections: newArr } : { ...prev, [key]: { ...prev[key], sections: newArr } };
+    });
     setIsDirty(true);
     setShowAddMenu(false);
   }, []);
 
   // ── Reorder sections (drag & drop) — الترتيب هنا كيأثر فعلا على المتجر ─
   // (الـ section الـ fixed ما تقدرش تسحبها — Announcement/Header/Footer، وأي section وحدها فصفحتها)
-  // ✦ خدامة على Home وكذا على باقي الصفحات (Product/Category/...) — كل وحدة عندها array خاص بيها
-  const PAGE_SECTIONS_KEY = { home: "sections", product: "product", category: "category", success: "success", search: "search", checkout: "checkout" };
   const reorderSections = useCallback((page, draggedId, targetId) => {
     if (!draggedId || !targetId || draggedId === targetId) return;
     setThemeConfig(prev => {
@@ -3282,14 +3297,19 @@ function ThemeEdit() {
                             <button
                               className="pb-section-item__action"
                               title={sec.enabled ? "إخفاء" : "إظهار"}
-                              onClick={e => { e.stopPropagation(); toggleSection(sec.id, !sec.enabled); }}
+                              onClick={e => { e.stopPropagation(); toggleSection(currentPage, sec.id, !sec.enabled); }}
                             >
                               <Icon name={sec.enabled ? "eye" : "eye-off"} size={14} />
                             </button>
                             <button
                               className="pb-section-item__action pb-section-item__action--danger"
                               title="حذف"
-                              onClick={e => { e.stopPropagation(); deleteSection(sec.id); }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                // ✦ Section أساسية (بحال Product Info/Checkout/Collection) — نطلبو تأكيد قبل الحذف
+                                if (meta.criticalDelete && !window.confirm(`متأكد بغيتي تحذف "${meta.label}"؟ هاد الـ section أساسية فالصفحة — بلاها الصفحة يمكن ما تخدمش مزيان.`)) return;
+                                deleteSection(currentPage, sec.id);
+                              }}
                             >
                               <Icon name="trash" size={14} />
                             </button>
@@ -3301,23 +3321,30 @@ function ThemeEdit() {
                   );
                 })}
               </div>
-              {currentPage === "home" && (
+              {["home", "product", "category"].includes(currentPage) && (
               <div className="pb-add-section" style={{ position: "relative" }}>
-                {showAddMenu && (
-                  <div className="pb-add-menu">
-                    {Object.entries(SECTION_META)
-                      .filter(([type]) => !themeConfig?.sections?.some(s => s.type === type))
-                      .map(([type, meta]) => (
-                        <button key={type} className="pb-add-menu__item" onClick={() => addSection(type)}>
+                {showAddMenu && (() => {
+                  const menuMeta = currentPage === "product" ? PRODUCT_SECTION_META
+                    : currentPage === "category" ? CATEGORY_SECTION_META
+                    : SECTION_META;
+                  const existingSections = currentPage === "product" ? (themeConfig?.product?.sections || [])
+                    : currentPage === "category" ? (themeConfig?.category?.sections || [])
+                    : (themeConfig?.sections || []);
+                  const missingTypes = Object.entries(menuMeta).filter(([type]) => !existingSections.some(s => s.type === type));
+                  return (
+                    <div className="pb-add-menu">
+                      {missingTypes.map(([type, meta]) => (
+                        <button key={type} className="pb-add-menu__item" onClick={() => addSection(currentPage, type)}>
                           <Icon name={meta.icon} size={15} />
                           <span>{meta.label}</span>
                         </button>
                       ))}
-                    {Object.keys(SECTION_META).every(type => themeConfig?.sections?.some(s => s.type === type)) && (
-                      <div className="pb-add-menu__empty">كل الأقسام مضافة بالفعل</div>
-                    )}
-                  </div>
-                )}
+                      {missingTypes.length === 0 && (
+                        <div className="pb-add-menu__empty">كل الأقسام مضافة بالفعل</div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <button className="pb-add-btn" onClick={() => setShowAddMenu(v => !v)}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>

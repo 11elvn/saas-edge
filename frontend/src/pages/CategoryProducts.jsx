@@ -132,6 +132,8 @@ export default function CategoryProducts() {
   const bannerSettings  = sec(catSections, "categoryBanner")?.settings || DEFAULT_CATEGORY_SECTIONS[0].settings;
   const bannerStyle     = bannerSettings.style || "overlay";
   const showCount       = bannerSettings.showProductCount !== false;
+  // ✦ Category Banner دابا قابل للإخفاء من ThemeEdit — خاصنا نتأكدو من enabled فعليا هنا
+  const bannerEnabled   = sec(catSections, "categoryBanner")?.enabled !== false;
   const collectionSec   = sec(catSections, "collection");
   const collSettings    = collectionSec?.settings || DEFAULT_CATEGORY_SECTIONS[1].settings;
 
@@ -292,6 +294,7 @@ export default function CategoryProducts() {
       </div>
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
+      {bannerEnabled && (
       <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
@@ -320,6 +323,7 @@ export default function CategoryProducts() {
           </div>
         )}
       </SectionWrapper>
+      )}
 
       {/* ── Sort ── */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", justifyContent: "flex-end" }}>
