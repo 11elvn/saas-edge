@@ -2509,18 +2509,14 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     </div>
   );
 
-  // ✦ صفحة Category محتاجة تصنيف حقيقي باش نعاينوها
-  if (page === "category" && !categoryId) return (
-    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
-      <div style={{ fontSize:"2rem" }}>🗂️</div>
-      <div style={{ fontSize:".85rem" }}>زيد تصنيف واحد على الأقل باش تعاين هاذي الصفحة</div>
-    </div>
-  );
+  // ✦ صفحة Category — كي ماكاينش تصنيف حقيقي، نعاينوها بـ categoryId="demo"
+  // ✦ (CategoryProducts.jsx كيتعرف عليه وكيبني تصنيف + منتجات تجريبية بلاصة الحجب الكامل)
+  const effectiveCategoryId = page === "category" ? (categoryId || "demo") : categoryId;
 
   const src = page === "product"
     ? `/store/${slug}/product/${productId}?preview=1`
     : page === "category"
-    ? `/store/${slug}/collections/${categoryId}?preview=1`
+    ? `/store/${slug}/collections/${effectiveCategoryId}?preview=1`
     : page === "success"
     ? `/store/${slug}/order-success?preview=1`
     : page === "search"
