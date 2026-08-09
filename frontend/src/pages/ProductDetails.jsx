@@ -263,6 +263,13 @@ function ProductDetails() {
   const productSections = rawTc?.product?.sections || DEFAULT_PRODUCT_SECTIONS;
   const styles = rawTc?.styles || DEFAULT_STYLES;
 
+  // ✦ ترتيب ProductInfo/Checkout داخل العمود اليمين (Gallery ثابتة ديما فاليسار — العمود مقسوم
+  // 2 لصور/معلومات، ماشي stack، فالتحريك ما عندوش معنى بصري ليها) — حسب مكانهم فـ themeConfig.product.sections
+  const productOrder = (type) => {
+    const idx = (productSections || []).findIndex(s => s.type === type);
+    return idx === -1 ? 99 : idx;
+  };
+
   const primary        = styles.primaryColor    || store?.primaryColor   || "#2563eb";
   const secondary      = styles.secondaryColor  || store?.secondaryColor || "#0f172a";
   const font           = styles.fontFamily      || store?.fontFamily     || "Cairo";
@@ -561,7 +568,7 @@ function ProductDetails() {
         <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
 
           {/* Product Info */}
-          <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"}>
+          <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }}>
             <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
               {productInfoSettings.badgeText?.trim() && (
                 <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
@@ -668,7 +675,7 @@ function ProductDetails() {
           </SectionWrapper>
 
           {/* In-Page Checkout */}
-          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"}>
+          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"} style={{ order: productOrder("checkout") }}>
             <div
               ref={checkoutRef} className="pd-fade pd-d2"
               style={{

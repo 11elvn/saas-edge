@@ -313,47 +313,58 @@ const CHECKOUT_PAGE_DEFAULT_CONFIG = {
 // ─────────────────────────────────────────────
 // SECTION ICONS & LABELS
 // ─────────────────────────────────────────────
+// ✦ locked  = ماشي قابلة للحذف/الإخفاء (زر العين والحذف يختفيو)
+// ✦ fixed   = ماشي قابلة للسحب/التحريك (مكانها ثابت ديما — Announcement/Header/Footer،
+//             وكذا أي section وحدها فالصفحة اللي ما عندهاش حاجة تتحرك معاها)
 const SECTION_META = {
-  announcement: { label: "Announcement Bar", icon: "announcement" },
-  header:       { label: "Header",           icon: "header", locked: true },
+  announcement: { label: "Announcement Bar", icon: "announcement", fixed: true },
+  header:       { label: "Header",           icon: "header", locked: true, fixed: true },
   hero:         { label: "Hero Banner",      icon: "hero" },
   trust:        { label: "Trust Badges",     icon: "trust" },
   collection:   { label: "Collection",       icon: "collection" },
   categories:   { label: "Categories",       icon: "categories" },
-  footer:       { label: "Footer",           icon: "footer", locked: true },
+  footer:       { label: "Footer",           icon: "footer", locked: true, fixed: true },
 };
 
 // ✦ Sections خاصة بصفحة المنتج فقط — locked ديما (ماشي قابلين للحذف)
+// ✦ Gallery وحدها fixed (العمود ديالها ثابت جنب المعلومات، ماشي مرصوصة فوقهم — التحريك ما عندوش معنى بصري)
+// ✦ ProductInfo/Checkout قابلين للتحريك بينهم (مرصوصين فوق بعضهم فنفس العمود)
 const PRODUCT_SECTION_META = {
-  gallery:     { label: "Gallery",           icon: "gallery",     locked: true },
+  gallery:     { label: "Gallery",           icon: "gallery",     locked: true, fixed: true },
   productInfo: { label: "Product Info",      icon: "productInfo", locked: true },
   checkout:    { label: "In-Page Checkout",  icon: "checkout",    locked: true },
 };
 
-// ✦ Sections خاصة بصفحة Category فقط — locked ديما
+// ✦ Sections خاصة بصفحة Category فقط — locked ديما، بصح قابلة للتحريك (مرصوصين فوق بعضهم)
 const CATEGORY_SECTION_META = {
   categoryBanner: { label: "Category Banner", icon: "categories", locked: true },
 };
 
-// ✦ Section خاص بصفحة Success (تأكيد الطلب) فقط — locked ديما
+// ✦ Section خاص بصفحة Success (تأكيد الطلب) فقط — locked و fixed (وحدها فالصفحة، لا حاجة تتحرك معاها)
 const SUCCESS_SECTION_META = {
-  successMessage: { label: "Success Message", icon: "success", locked: true },
+  successMessage: { label: "Success Message", icon: "success", locked: true, fixed: true },
 };
 
 // ✦ Overrides بالـ id — لـ sections كتشارك نفس الـ type مع Home (مثلا "collection")
 // بصح فـ Category/Search هي section أساسية بالصفحة (بحال gallery/productInfo) وخاصها تكون locked
 // (غير هكا، meta ديال Home (SECTION_META.collection، ماشي locked) كانت غادي تتفرض عليهم بالغلط،
 // وهذا هو اللي كان كيخلي أزرار العين/الحذف تبان فـ Category/Search بلا ما تخدم)
+// ✦ categoryCollection قابلة للتحريك مع categoryBanner (2 sections فنفس الصفحة)
+// ✦ searchCollection وcartCheckout fixed — كل وحدة منهم لوحدها فالصفحة ديالها، ما كاين حتى حاجة تتحرك معاها
+// (هادي overrides جزئية، كتنمزج مع meta ديال الـ type — label/icon كيبقاو من الـ type)
 const SECTION_META_BY_ID = {
-  categoryCollection: { label: "Collection", icon: "collection", locked: true },
-  searchCollection:   { label: "Collection", icon: "collection", locked: true },
+  categoryCollection: { locked: true },
+  searchCollection:   { locked: true, fixed: true },
+  cartCheckout:       { fixed: true },
 };
 
 // ✦ helper — يلقى meta الـ section سواء كانت Home ولا Product ولا Category ولا Success
-// (id اختياري — كي يكون معروف، override بالـ id يجي قبل الـ type)
-const getSectionMeta = (type, id) =>
-  (id && SECTION_META_BY_ID[id]) ||
-  SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || SUCCESS_SECTION_META[type] || {};
+// (id اختياري — كي يكون معروف، override بالـ id كيتمزج فوق meta ديال الـ type)
+const getSectionMeta = (type, id) => {
+  const base = SECTION_META[type] || PRODUCT_SECTION_META[type] || CATEGORY_SECTION_META[type] || SUCCESS_SECTION_META[type] || {};
+  const override = (id && SECTION_META_BY_ID[id]) || {};
+  return { ...base, ...override };
+};
 
 const PAGES = [
   { id: "home",     label: "Home",     icon: "home" },
@@ -2888,17 +2899,25 @@ function ThemeEdit() {
   }, []);
 
   // ── Reorder sections (drag & drop) — الترتيب هنا كيأثر فعلا على المتجر ─
-  // (الـ section الـ locked ما تقدرش تسحبها، بصح تقدر تحط section أخرى قبلها/بعدها)
-  const reorderSections = useCallback((draggedId, targetId) => {
+  // (الـ section الـ fixed ما تقدرش تسحبها — Announcement/Header/Footer، وأي section وحدها فصفحتها)
+  // ✦ خدامة على Home وكذا على باقي الصفحات (Product/Category/...) — كل وحدة عندها array خاص بيها
+  const PAGE_SECTIONS_KEY = { home: "sections", product: "product", category: "category", success: "success", search: "search", checkout: "checkout" };
+  const reorderSections = useCallback((page, draggedId, targetId) => {
     if (!draggedId || !targetId || draggedId === targetId) return;
     setThemeConfig(prev => {
-      const arr = [...prev.sections];
+      const key = PAGE_SECTIONS_KEY[page] || "sections";
+      const isHome = key === "sections";
+      const currentArr = isHome ? prev.sections : prev[key]?.sections;
+      if (!currentArr) return prev;
+      const arr = [...currentArr];
       const fromIdx = arr.findIndex(s => s.id === draggedId);
       const toIdx = arr.findIndex(s => s.id === targetId);
       if (fromIdx === -1 || toIdx === -1) return prev;
       const [moved] = arr.splice(fromIdx, 1);
       arr.splice(toIdx, 0, moved);
-      return { ...prev, sections: arr };
+      return isHome
+        ? { ...prev, sections: arr }
+        : { ...prev, [key]: { ...prev[key], sections: arr } };
     });
     setIsDirty(true);
   }, []);
@@ -3012,9 +3031,7 @@ function ThemeEdit() {
         return [
           pick(home, "announcement"),
           pick(home, "header"),
-          pick(prod, "gallery"),
-          pick(prod, "productInfo"),
-          pick(prod, "checkout"),
+          ...prod, // ✦ بترتيبهم الحقيقي فـ themeConfig.product.sections (كيتبدل بالـ drag)
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3026,8 +3043,7 @@ function ThemeEdit() {
         return [
           pick(home, "announcement"),
           pick(home, "header"),
-          pick(cat, "categoryBanner"),
-          pick(cat, "collection"),
+          ...cat, // ✦ بترتيبهم الحقيقي فـ themeConfig.category.sections (كيتبدل بالـ drag)
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3039,7 +3055,7 @@ function ThemeEdit() {
         return [
           pick(home, "announcement"),
           pick(home, "header"),
-          pick(succ, "successMessage"),
+          ...succ,
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3051,7 +3067,7 @@ function ThemeEdit() {
         return [
           pick(home, "announcement"),
           pick(home, "header"),
-          pick(srch, "collection"),
+          ...srch,
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3063,7 +3079,7 @@ function ThemeEdit() {
         return [
           pick(home, "announcement"),
           pick(home, "header"),
-          pick(co, "checkout"),
+          ...co,
           pick(home, "footer"),
         ].filter(Boolean);
       })()
@@ -3182,9 +3198,9 @@ function ThemeEdit() {
               <div className="pb-sections-list">
                 {displaySections.map((sec, idx) => {
                   const meta = getSectionMeta(sec.type, sec.id);
-                  // ✦ الـ drag & drop خدام غير فصفحة Home، وغير على sections الماشي locked
-                  // (على صفحات أخرى — Product/Category/... — الترتيب ثابت وماشي حر)
-                  const canDrag = currentPage === "home" && !meta.locked;
+                  // ✦ الـ drag & drop خدام فكل الصفحات دابا — غير على sections الماشي fixed
+                  // (Announcement/Header/Footer، وأي section وحدها فصفحتها، ديما ثابتين)
+                  const canDrag = !meta.fixed;
                   return (
                     <div key={sec.id}>
                       {/* ── Section Item ── */}
@@ -3206,7 +3222,7 @@ function ThemeEdit() {
                         }}
                         onDrop={e => {
                           e.preventDefault();
-                          if (draggedSectionId) reorderSections(draggedSectionId, sec.id);
+                          if (draggedSectionId) reorderSections(currentPage, draggedSectionId, sec.id);
                           setDraggedSectionId(null);
                           setDragOverSectionId(null);
                         }}
@@ -3228,7 +3244,7 @@ function ThemeEdit() {
                         }}
                       >
                         <span className={`pb-section-item__drag ${!canDrag ? "pb-section-item__drag--disabled" : ""}`}>
-                          {meta.locked ? (
+                          {meta.fixed ? (
                             <Icon name="lock" size={13} />
                           ) : (
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

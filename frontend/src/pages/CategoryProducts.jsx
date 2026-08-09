@@ -135,6 +135,14 @@ export default function CategoryProducts() {
   const collectionSec   = sec(catSections, "collection");
   const collSettings    = collectionSec?.settings || DEFAULT_CATEGORY_SECTIONS[1].settings;
 
+  // ✦ ترتيب الأقسام القابلة للتحريك (Category Banner / Collection) — حسب مكانهم الحقيقي
+  // فـ themeConfig.category.sections (باش drag & drop ديال ThemeEdit يأثر فعلا هنا)
+  // Announcement/Header ديما فوق (order 0/1)، Breadcrumb ثابت بعدهم (order 2)، Footer ديما آخر واحد (order 999)
+  const categoryOrder = (type) => {
+    const idx = (catSections || []).findIndex(s => s.type === type);
+    return idx === -1 ? 99 : 3 + idx;
+  };
+
   // ── ألوان الثيم (Styles tab) — نفس منطق PublicStore/ProductDetails ──
   const styles       = rawTc?.styles || DEFAULT_STYLES;
   const primary       = styles.primaryColor    || store?.primaryColor || "#111827";
@@ -220,7 +228,7 @@ export default function CategoryProducts() {
   );
 
   return (
-    <div dir={direction} style={{ minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
+    <div dir={direction} style={{ minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction, display: "flex", flexDirection: "column" }}>
 
       <style>{`
         .cp-section-wrapper { position: relative; }
@@ -240,7 +248,7 @@ export default function CategoryProducts() {
       {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
         const { message, bgColor, textColor, animation, showClose } = announcementSec.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: 0 }}>
             <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
                 <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
@@ -263,7 +271,7 @@ export default function CategoryProducts() {
       })()}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: 1 }}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -275,7 +283,7 @@ export default function CategoryProducts() {
       </SectionWrapper>
 
       {/* ── Breadcrumb ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", alignItems: "center", gap: 8, order: 2, width: "100%", boxSizing: "border-box" }}>
         <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: "none", border: "none", color: mutedTextColor, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
           التشكيلات
         </button>
@@ -284,7 +292,7 @@ export default function CategoryProducts() {
       </div>
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
-      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"}>
+      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -367,7 +375,7 @@ export default function CategoryProducts() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"}>
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: categoryOrder("collection") }}>
         <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 20, gap: 12,
@@ -580,7 +588,7 @@ export default function CategoryProducts() {
       `}</style>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: 999 }}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
