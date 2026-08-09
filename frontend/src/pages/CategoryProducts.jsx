@@ -12,6 +12,15 @@ import { useCart } from "../context/CartContext";
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
 
+// ── Demo products — تبان غير كي التصنيف تجريبي (categoryId="demo") و 0 منتجات حقيقية ──
+// ✦ باش التاجر يقدر يعاين تصميم الـ grid (أعمدة، ستايل الكارد...) قبل ما يزيد منتجات
+const DEMO_PRODUCTS = [
+  { _id: "demo-p1", name: "منتج تجريبي 1", currentPrice: 2500, oldPrice: null, stock: 10, images: [], _demo: true },
+  { _id: "demo-p2", name: "منتج تجريبي 2", currentPrice: 4200, oldPrice: 5000, stock: 10, images: [], _demo: true },
+  { _id: "demo-p3", name: "منتج تجريبي 3", currentPrice: 1800, oldPrice: null, stock: 10, images: [], _demo: true },
+  { _id: "demo-p4", name: "منتج تجريبي 4", currentPrice: 3300, oldPrice: null, stock: 10, images: [], _demo: true },
+];
+
 // ── DEFAULTS — نفس القيم الافتراضية ديال ThemeEdit (Home sections + Category Banner) ──
 const DEFAULT_HOME_SECTIONS = [
   { id: "announcement", type: "announcement", enabled: true, settings: { message: "توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor: "#111827", textColor: "#ffffff", animation: true, showClose: false } },
@@ -79,6 +88,9 @@ export default function CategoryProducts() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPreview = new URLSearchParams(location.search).get("preview") === "1";
+  // ✦ "demo" — sentinel كيبعتو ThemeEdit كي التاجر مازال ما دار حتى تصنيف حقيقي
+  // ✦ باش يقدر يعاين ويعدل ديزاين صفحة Category قبل ما يزيد تصنيفات
+  const isDemoCategory = categoryId === "demo";
 
   const [store,    setStore]    = useState(null);
   const [category, setCategory] = useState(null);
@@ -167,8 +179,12 @@ export default function CategoryProducts() {
     })();
   }, [slug, categoryId]);
 
+  // ✦ كي التصنيف تجريبي (isDemoCategory) و 0 منتجات حقيقية، نستعملو DEMO_PRODUCTS باش يبان تصميم الـ grid
+  const usingDemoProducts = isDemoCategory && products.length === 0;
+  const sourceProducts = usingDemoProducts ? DEMO_PRODUCTS : products;
+
   // Sort
-  const sorted = [...products].sort((a, b) => {
+  const sorted = [...sourceProducts].sort((a, b) => {
     if (sort === "newest")   return new Date(b.createdAt) - new Date(a.createdAt);
     if (sort === "price_asc")  return a.currentPrice - b.currentPrice;
     if (sort === "price_desc") return b.currentPrice - a.currentPrice;
@@ -387,6 +403,7 @@ export default function CategoryProducts() {
               {visibleProducts.map((product, idx) => {
                 const img        = product.images?.[0] || product.image || DEFAULT_IMG;
                 const outOfStock = product.stock === 0;
+                const isDemo     = !!product._demo;
                 return (
                   <div
                     key={product._id}
@@ -398,26 +415,49 @@ export default function CategoryProducts() {
                       borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
                       padding: cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
-                      cursor: "pointer",
+                      cursor: isDemo ? "default" : "pointer",
                       opacity: outOfStock ? 0.6 : 1,
                       ...(carouselMode ? { flex: `0 0 calc((100% - ${(columns - 1) * 20}px) / ${columns})`, scrollSnapAlign: "start", minWidth: 220 } : {}),
                     }}
-                    onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
+                    onClick={() => { if (!isDemo) navigate(`/store/${slug}/product/${product._id}`); }}
                   >
-                    {/* Image */}
+                    {/* Image — أو placeholder أنيق (؟) للمنتجات التجريبية */}
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
                       borderRadius: cardStyleCfg.imgRadius,
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
-                      <img
-                        src={img}
-                        alt={product.name}
-                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
-                        onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                      />
+                      {isDemo ? (
+                        <div style={{
+                          width: "100%", height: "100%", minHeight: 140,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: "linear-gradient(160deg,#3a3f47,#1c1f24)",
+                        }}>
+                          <div style={{
+                            width: 44, height: 44, borderRadius: 10,
+                            border: "2px solid rgba(255,255,255,.28)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 19, fontWeight: 800, color: "rgba(255,255,255,.55)",
+                          }}>؟</div>
+                        </div>
+                      ) : (
+                        <img
+                          src={img}
+                          alt={product.name}
+                          onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
+                          style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
+                          onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
+                          onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                        />
+                      )}
+                      {isDemo && (
+                        <div style={{
+                          position: "absolute", top: 10, insetInlineStart: 10,
+                          background: "rgba(255,255,255,.92)",
+                          color: "#1c1f24", fontSize: 10, fontWeight: 700,
+                          padding: "3px 9px", borderRadius: 999, letterSpacing: ".3px",
+                        }}>مثال</div>
+                      )}
                       {showBadge && product.oldPrice && !outOfStock && (
                         <span style={{
                           position: "absolute", top: 12, right: 12,
@@ -450,9 +490,9 @@ export default function CategoryProducts() {
                           style={{ position: "absolute", left: 10, right: 10, bottom: 10 }}
                         >
                           <button
-                            onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
+                            onClick={e => { e.stopPropagation(); if (!isDemo) navigate(`/store/${slug}/product/${product._id}`); }}
                             style={{
-                              width: "100%", border: "none", cursor: "pointer",
+                              width: "100%", border: "none", cursor: isDemo ? "default" : "pointer",
                               borderRadius: 12, padding: "12px 0",
                               background: primary, color: "#fff",
                               fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
