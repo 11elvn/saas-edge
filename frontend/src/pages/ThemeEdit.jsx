@@ -723,11 +723,14 @@ const CSS = `
   box-shadow: 0 3px 12px rgba(124,109,242,.1);
 }
 .pb-section-item--disabled { opacity: .42; }
+.pb-section-item--dragging { opacity: .4; }
+.pb-section-item--drag-over { box-shadow: inset 0 2px 0 #7c6df2, inset 0 -2px 0 transparent; }
 
 .pb-section-item__drag {
   cursor: grab; color: #cbd5e1; flex-shrink: 0; padding: 2px;
   display: flex; align-items: center; justify-content: center;
 }
+.pb-section-item__drag--disabled { cursor: default; opacity: .5; }
 .pb-section-item__icon  { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; }
 .pb-section-item__label { flex: 1; font-size: .84rem; font-weight: 600; color: #334155; }
 
@@ -2594,6 +2597,8 @@ function ThemeEdit() {
   const [showAddMenu,    setShowAddMenu]    = useState(false);
   const [previewProductId, setPreviewProductId] = useState(null); // ✦ أول منتج فالمتجر — نستعملوه لمعاينة صفحة Product
   const [previewCategoryId, setPreviewCategoryId] = useState(null); // ✦ أول تصنيف فالمتجر — نستعملوه لمعاينة صفحة Category
+  const [draggedSectionId, setDraggedSectionId] = useState(null); // ✦ id ديال الـ section اللي كيتسحب دابا
+  const [dragOverSectionId, setDragOverSectionId] = useState(null); // ✦ id ديال الـ section اللي الماوس فوقها دابا (للـ visual feedback)
   const PANEL_W = 340; // نفس عرض الأعمدة كيف كيف (يسار ويمين)
 
   const notify = (msg, type = "success") => {
@@ -2869,6 +2874,22 @@ function ThemeEdit() {
     }));
     setIsDirty(true);
     setShowAddMenu(false);
+  }, []);
+
+  // ── Reorder sections (drag & drop) — الترتيب هنا كيأثر فعلا على المتجر ─
+  // (الـ section الـ locked ما تقدرش تسحبها، بصح تقدر تحط section أخرى قبلها/بعدها)
+  const reorderSections = useCallback((draggedId, targetId) => {
+    if (!draggedId || !targetId || draggedId === targetId) return;
+    setThemeConfig(prev => {
+      const arr = [...prev.sections];
+      const fromIdx = arr.findIndex(s => s.id === draggedId);
+      const toIdx = arr.findIndex(s => s.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      return { ...prev, sections: arr };
+    });
+    setIsDirty(true);
   }, []);
 
   // ── Update global styles ─────────────────────────────────
@@ -3150,11 +3171,38 @@ function ThemeEdit() {
               <div className="pb-sections-list">
                 {displaySections.map((sec, idx) => {
                   const meta = getSectionMeta(sec.type);
+                  // ✦ الـ drag & drop خدام غير فصفحة Home، وغير على sections الماشي locked
+                  // (على صفحات أخرى — Product/Category/... — الترتيب ثابت وماشي حر)
+                  const canDrag = currentPage === "home" && !meta.locked;
                   return (
                     <div key={sec.id}>
                       {/* ── Section Item ── */}
                       <div
-                        className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""}`}
+                        className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""} ${draggedSectionId === sec.id ? "pb-section-item--dragging" : ""} ${dragOverSectionId === sec.id && draggedSectionId !== sec.id ? "pb-section-item--drag-over" : ""}`}
+                        draggable={canDrag}
+                        onDragStart={e => {
+                          if (!canDrag) return;
+                          setDraggedSectionId(sec.id);
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        onDragOver={e => {
+                          if (!draggedSectionId) return;
+                          e.preventDefault(); // ✦ لازم باش onDrop يخدم
+                          if (dragOverSectionId !== sec.id) setDragOverSectionId(sec.id);
+                        }}
+                        onDragLeave={() => {
+                          if (dragOverSectionId === sec.id) setDragOverSectionId(null);
+                        }}
+                        onDrop={e => {
+                          e.preventDefault();
+                          if (draggedSectionId) reorderSections(draggedSectionId, sec.id);
+                          setDraggedSectionId(null);
+                          setDragOverSectionId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedSectionId(null);
+                          setDragOverSectionId(null);
+                        }}
                         onClick={() => {
                           const newActive = activeSection === sec.id ? null : sec.id;
                           setActiveSection(newActive);
@@ -3168,7 +3216,7 @@ function ThemeEdit() {
                           }
                         }}
                       >
-                        <span className="pb-section-item__drag">
+                        <span className={`pb-section-item__drag ${!canDrag ? "pb-section-item__drag--disabled" : ""}`}>
                           {meta.locked ? (
                             <Icon name="lock" size={13} />
                           ) : (

@@ -423,6 +423,13 @@ function PublicStore() {
     };
   })();
 
+  // ✦ ترتيب الـ section حسب مكانه الحقيقي فـ themeConfig.sections
+  // (باش drag & drop ديال ThemeEdit يأثر فعلا على ترتيب العرض هنا، بلا ما يبقى الترتيب ثابت فالكود)
+  const sectionOrder = (type) => {
+    const idx = (tc?.sections || []).findIndex(s => s.type === type);
+    return idx === -1 ? 999 : idx;
+  };
+
   // derived theme values (من styles أو من store مباشرة كـ fallback)
   const primary         = tc?.styles?.primaryColor    || store?.primaryColor   || "#111827";
   const secondary       = tc?.styles?.secondaryColor  || store?.secondaryColor || "#1f2937";
@@ -521,7 +528,7 @@ function PublicStore() {
   const phone     = store?.whatsappNumber || "";
 
   return (
-    <div style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction }}>
+    <div style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
 
       {/* ── Announcement Bar ── */}
       {(() => {
@@ -529,7 +536,7 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }}>
           <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
@@ -553,7 +560,7 @@ function PublicStore() {
 
       {/* ── Navbar ── */}
       {sec(tc, "header")?.enabled !== false && (
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }}>
       <StoreNavbar
         store={store}
         slug={slug}
@@ -588,7 +595,7 @@ function PublicStore() {
           }
         };
         return (
-        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"}>
+        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
           {heroBanner ? (
             <img src={heroBanner} alt="banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -725,7 +732,7 @@ function PublicStore() {
         );
 
         return (
-        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
+        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }}>
           <section style={{ background: bgColor, padding: "24px 16px" }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
@@ -746,7 +753,7 @@ function PublicStore() {
         const usingDemo = categories.length === 0 && isPreview;
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
-        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"}>
+        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
           <div style={{
@@ -869,7 +876,7 @@ function PublicStore() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"}>
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }}>
         <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
@@ -1048,7 +1055,7 @@ function PublicStore() {
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
-        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }}>
           <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(tc, "footer")?.settings || {}} />
         </SectionWrapper>
       )}
