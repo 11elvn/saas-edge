@@ -265,12 +265,12 @@ const PREVIEW_CSS = `
   position: relative;
 }
 
-/* Label اسم الـ section */
+/* Label اسم الـ section — ملتصق بزاوية الـ section نفسها (RTL-safe) */
 .ps-section-label {
-  position: fixed;
+  position: absolute;
   top: 8px;
-  left: 8px;
-  z-index: 9999;
+  inset-inline-start: 8px;
+  z-index: 20;
   background: #2563eb;
   color: #fff;
   font-size: 11px;

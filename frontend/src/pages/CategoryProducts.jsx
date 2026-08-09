@@ -236,7 +236,7 @@ export default function CategoryProducts() {
         .cp-section-wrapper { position: relative; }
         .cp-section-wrapper--highlighted { outline: 2px solid #2563eb; outline-offset: -2px; }
         .cp-section-label {
-          position: fixed; top: 8px; left: 8px; z-index: 9999;
+          position: absolute; top: 8px; inset-inline-start: 8px; z-index: 20;
           background: #2563eb; color: #fff; font-size: 11px; font-weight: 700;
           padding: 3px 10px; border-radius: 6px; pointer-events: none;
           font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
