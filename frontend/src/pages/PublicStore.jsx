@@ -13,6 +13,15 @@ import { useCart } from "../context/CartContext";
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
 
+// ── Demo categories — تبان غير جوه ThemeEdit (isPreview) كي التاجر مازال ما دار تصنيفات ──
+// ✦ بلا صور — نستعملو placeholder أنيق (❓ + خلفية غامقة) كيما Tassyir، ماشي صور حقيقية
+const DEMO_CATEGORIES = [
+  { _id: "demo-1", name: "ملابس",       image: null, _demo: true },
+  { _id: "demo-2", name: "إلكترونيات",  image: null, _demo: true },
+  { _id: "demo-3", name: "إكسسوارات",   image: null, _demo: true },
+  { _id: "demo-4", name: "أحذية",       image: null, _demo: true },
+];
+
 // ── Google Font loader ──────────────────────────────────────
 function loadFont(font) {
   const id = `font-${font}`;
@@ -725,13 +734,17 @@ function PublicStore() {
       })()}
 
       {/* ── Categories ── */}
-      {sec(tc, "categories")?.enabled !== false && categories.length > 0 && (() => {
+      {sec(tc, "categories")?.enabled !== false && (categories.length > 0 || isPreview) && (() => {
         const s = sec(tc, "categories");
         const catTitle = s?.settings?.title || "التصنيفات";
         const catSubtitle = s?.settings?.subtitle || "اعثر على كل ما تريد";
         const maxItems = s?.settings?.maxItems || 6;
         const titleAlign = s?.settings?.titleAlign || "right";
         const displayStyle = s?.settings?.displayStyle || "grid";
+        // ✦ كي التاجر مازال ما دار تصنيفات حقيقية، نعرضو أمثلة تجريبية جوه الـ builder فقط
+        // ✦ باش يفهم كيفاش غادي يبان الديزاين — ما تبانش عند الزبون الحقيقي (isPreview=false)
+        const usingDemo = categories.length === 0 && isPreview;
+        const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
         <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
@@ -755,13 +768,13 @@ function PublicStore() {
             gap: 16,
             paddingBottom: displayStyle === "row" ? 4 : 0,
           }}>
-            {categories.slice(0, maxItems).map(cat => (
+            {displayCategories.slice(0, maxItems).map(cat => (
               <div
                 key={cat._id}
-                onClick={() => navigate(`/store/${slug}/collections/${cat._id}`)}
+                onClick={() => { if (!cat._demo) navigate(`/store/${slug}/collections/${cat._id}`); }}
                 style={{
                   position: "relative",
-                  borderRadius: 16, overflow: "hidden", cursor: "pointer",
+                  borderRadius: 16, overflow: "hidden", cursor: cat._demo ? "default" : "pointer",
                   height: 280,
                   boxShadow: "0 2px 8px rgba(0,0,0,.08)",
                   transition: "transform .25s, box-shadow .25s",
@@ -772,7 +785,7 @@ function PublicStore() {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 34px rgba(0,0,0,.14)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.08)"; }}
               >
-                {/* Background image (fills the whole card) */}
+                {/* Background image (fills the whole card) — أو placeholder أنيق (❓) كي ماكايناش صورة */}
                 {cat.image ? (
                   <img
                     src={cat.image} alt={cat.name}
@@ -781,7 +794,17 @@ function PublicStore() {
                     onMouseLeave={e => e.target.style.transform = "scale(1)"}
                   />
                 ) : (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, color: "#cbd5e1", background: "linear-gradient(135deg,#e5e7eb,#f8fafc)" }}>📁</div>
+                  <div style={{
+                    position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "linear-gradient(160deg,#3a3f47,#1c1f24)",
+                  }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 12,
+                      border: "2px solid rgba(255,255,255,.28)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,.55)",
+                    }}>؟</div>
+                  </div>
                 )}
                 {/* Bottom gradient for text readability */}
                 <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "62%", background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))" }} />
@@ -792,6 +815,17 @@ function PublicStore() {
                     تصفح المجموعة <span style={{ fontSize: 14 }}>←</span>
                   </div>
                 </div>
+                {/* بادج "مثال" — يبان غير على التصنيفات التجريبية باش التاجر يعرف بلي ماهيش حقيقية */}
+                {cat._demo && (
+                  <div style={{
+                    position: "absolute", top: 10, insetInlineStart: 10,
+                    background: "rgba(255,255,255,.92)",
+                    color: "#1c1f24", fontSize: 10.5, fontWeight: 700,
+                    padding: "4px 10px", borderRadius: 999, letterSpacing: ".3px",
+                  }}>
+                    مثال
+                  </div>
+                )}
               </div>
             ))}
           </div>
