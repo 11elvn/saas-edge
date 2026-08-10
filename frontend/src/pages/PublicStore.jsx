@@ -261,7 +261,7 @@ const PREVIEW_CSS = `
 /* Hover — تمرير الفار فوق أي section: outline خفيف + تلوين شفاف خفيف */
 .ps-section-wrapper:hover {
   outline: 2px dashed rgba(124,109,242,.55);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
 .ps-section-wrapper:hover::after {
   content: "";
@@ -269,13 +269,13 @@ const PREVIEW_CSS = `
   inset: 0;
   background: rgba(124,109,242,.05);
   pointer-events: none;
-  z-index: 4;
+  z-index: 140;
 }
 
 /* Selected/highlighted — الـ section المختارة فعليًا (كليك): outline صريح + تلوين بنفسجي شفاف واضح */
 .ps-section-wrapper--highlighted {
   outline: 2px solid #7c6df2;
-  outline-offset: -2px;
+  outline-offset: 2px;
   position: relative;
 }
 .ps-section-wrapper--highlighted::after {
@@ -284,7 +284,7 @@ const PREVIEW_CSS = `
   inset: 0;
   background: rgba(124,109,242,.10);
   pointer-events: none;
-  z-index: 4;
+  z-index: 140;
 }
 
 /* Label اسم الـ section — دايمًا فالزاوية اليسرى الفيزيائية (left)، بغض النظر عن اتجاه الصفحة */
