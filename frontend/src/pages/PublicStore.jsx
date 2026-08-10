@@ -258,30 +258,26 @@ const PREVIEW_CSS = `
   position: relative;
 }
 
-/* Hover — تمرير الفار فوق أي section: outline خفيف + تلوين شفاف خفيف */
-.ps-section-wrapper:hover {
-  outline: 2px dashed rgba(124,109,242,.55);
-  outline-offset: 2px;
-}
+/* Hover — تمرير الفار فوق أي section: طبقة overlay ملتصقة بالضبط بالحواف (inset:0)، فوق كل المحتوى */
 .ps-section-wrapper:hover::after {
   content: "";
   position: absolute;
   inset: 0;
+  border: 2px dashed rgba(124,109,242,.55);
   background: rgba(124,109,242,.05);
   pointer-events: none;
   z-index: 140;
 }
 
-/* Selected/highlighted — الـ section المختارة فعليًا (كليك): outline صريح + تلوين بنفسجي شفاف واضح */
+/* Selected/highlighted — الـ section المختارة فعليًا (كليك): نفس الطبقة بحدود صريحة + تلوين أقوى */
 .ps-section-wrapper--highlighted {
-  outline: 2px solid #7c6df2;
-  outline-offset: 2px;
   position: relative;
 }
 .ps-section-wrapper--highlighted::after {
   content: "";
   position: absolute;
   inset: 0;
+  border: 2px solid #7c6df2;
   background: rgba(124,109,242,.10);
   pointer-events: none;
   z-index: 140;
