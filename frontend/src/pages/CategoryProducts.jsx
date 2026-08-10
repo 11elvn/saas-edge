@@ -526,15 +526,15 @@ export default function CategoryProducts() {
 
                     {/* Info */}
                     <div style={{ padding: `${cardStyleCfg.gap}px 2px 0`, display: "flex", flexDirection: "column" }}>
+                      {showRating && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>5.0</span>
+                          <span style={{ fontSize: 15, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</span>
+                        </div>
+                      )}
                       <p style={{ fontSize: cardStyleCfg.titleSize, fontWeight: 700, color: textColor, margin: `0 0 ${cardStyleCfg.gap - 2}px`, lineHeight: 1.4 }}>
                         {product.name}
                       </p>
-                      {showRating && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>5.0</span>
-                          <span style={{ fontSize: 12, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</span>
-                        </div>
-                      )}
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                         <span style={{ fontSize: cardStyleCfg.priceSize, fontWeight: 800, color: textColor }}>
                           {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
