@@ -2534,6 +2534,13 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     // أرسل أي تحديث متجر كان معلّق
     const sp = pendingStoreRef.current || storePatch;
     if (sp) sendStorePatch(sp);
+    // ✦ أرسل الـ highlight الحالي (كان كيضيع قبل — الـ iframe كي يعاود يتحمّل، ما كانش عندو نظام pending كيما cfg/store)
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+        "*"
+      );
+    } catch (_) {}
   };
 
   if (!slug) return (
