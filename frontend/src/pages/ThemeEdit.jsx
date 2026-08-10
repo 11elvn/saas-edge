@@ -227,6 +227,7 @@ const CATEGORY_DEFAULT_CONFIG = {
         viewAllText: "عرض الكل",
         viewAllStyle: "link",
         infiniteScroll: false,
+        showSortBar: true, // ✦ خاص بصفحة Category — يظهر/يخفي شريط "الترتيب حسب"
       },
     },
   ],
@@ -1751,7 +1752,7 @@ function TrustSettings({ settings, onChange }) {
   );
 }
 
-function CollectionSettings({ settings, onChange, hideForSearch }) {
+function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
@@ -1801,6 +1802,12 @@ function CollectionSettings({ settings, onChange, hideForSearch }) {
           <div className="pb-toggle-row">
             <span className="pb-toggle-row__label">Carousel mode</span>
             <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
+          </div>
+        )}
+        {showSortToggle && (
+          <div className="pb-toggle-row">
+            <span className="pb-toggle-row__label">Show sort dropdown</span>
+            <Toggle checked={settings.showSortBar !== false} onChange={v => s("showSortBar", v)} />
           </div>
         )}
         <div className="pb-field">
@@ -2384,7 +2391,7 @@ function StylesPanel({ styles, onChange }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage, isCategoryPage }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
@@ -2393,7 +2400,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} onNamePreview={onNamePreview} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
-      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} />;
+      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} showSortToggle={isCategoryPage} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
       case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
@@ -2575,7 +2582,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     : `/store/${slug}?preview=1`;
 
   if (isMobile) return (
-    <div className="pb-preview-mobile">
+    <div className="pb-preview-mobile" key="mobile-preview">
       <div className="pb-chrome-bar">
         <div className="pb-chrome-dot" style={{ background: "#ff5f56" }} />
         <div className="pb-chrome-dot" style={{ background: "#ffbd2e" }} />
@@ -2598,7 +2605,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   );
 
   return (
-    <div className="pb-preview-desktop">
+    <div className="pb-preview-desktop" key="desktop-preview">
       <div className="pb-chrome-bar">
         <div className="pb-chrome-dot" style={{ background: "#ff5f56" }} />
         <div className="pb-chrome-dot" style={{ background: "#ffbd2e" }} />
@@ -3418,6 +3425,7 @@ function ThemeEdit() {
             section={activeSectionObj}
             store={store}
             isSearchPage={activeIsSearchSection}
+            isCategoryPage={activeIsCategorySection}
             onUpdate={
               activeIsProductSection ? updateProductSectionSettings
               : activeIsCategorySection ? updateCategorySectionSettings

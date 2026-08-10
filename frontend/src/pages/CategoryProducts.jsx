@@ -329,27 +329,6 @@ export default function CategoryProducts() {
       </SectionWrapper>
       )}
 
-      {/* ── Sort ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px 0", display: "flex", justifyContent: "flex-end" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, color: mutedTextColor }}>الترتيب حسب:</span>
-          {[
-            { val: "newest",     label: "أحدثاً" },
-            { val: "price_asc",  label: "الثمن ↑" },
-            { val: "price_desc", label: "الثمن ↓" },
-          ].map(s => (
-            <button key={s.val} onClick={() => setSort(s.val)} style={{
-              padding: "6px 13px", borderRadius: 8,
-              border: `1px solid ${sort === s.val ? primary : borderColor}`,
-              background: sort === s.val ? primary : surfaceColor,
-              color: sort === s.val ? "#fff" : mutedTextColor,
-              fontSize: 12, fontWeight: 600, cursor: "pointer",
-              fontFamily: "inherit", transition: "all .15s",
-            }}>{s.label}</button>
-          ))}
-        </div>
-      </div>
-
       {/* ── Products Grid (Collection section) — نفس تصميم PublicStore بالضبط ── */}
       {collectionSec?.enabled !== false && (() => {
         const carouselMode   = !!collSettings.carouselMode;
@@ -384,6 +363,28 @@ export default function CategoryProducts() {
 
         return (
         <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: categoryOrder("collection") }}>
+        {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
+        {collSettings.showSortBar !== false && (
+          <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 13, color: mutedTextColor }}>الترتيب حسب:</span>
+              {[
+                { val: "newest",     label: "أحدثاً" },
+                { val: "price_asc",  label: "الثمن ↑" },
+                { val: "price_desc", label: "الثمن ↓" },
+              ].map(s => (
+                <button key={s.val} onClick={() => setSort(s.val)} style={{
+                  padding: "6px 13px", borderRadius: 8,
+                  border: `1px solid ${sort === s.val ? primary : borderColor}`,
+                  background: sort === s.val ? primary : surfaceColor,
+                  color: sort === s.val ? "#fff" : mutedTextColor,
+                  fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  fontFamily: "inherit", transition: "all .15s",
+                }}>{s.label}</button>
+              ))}
+            </div>
+          </div>
+        )}
         <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 20, gap: 12,
