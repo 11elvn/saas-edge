@@ -63,27 +63,43 @@ const SECTION_LABELS = {
   footer:       "Footer",
 };
 
+// ── CSS للـ preview overlays — نفس منطق PublicStore/CategoryProducts (hover + selected) ──
+const PREVIEW_CSS = `
+.sr-section-wrapper { position: relative; }
+.sr-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+.sr-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+.sr-section-label {
+  position: absolute; top: 8px; left: 8px; z-index: 150;
+  background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px; pointer-events: none;
+  font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(124,109,242,.35);
+  opacity: 0; transition: opacity .12s ease;
+}
+.sr-section-wrapper:hover .sr-section-label,
+.sr-section-wrapper--highlighted .sr-section-label { opacity: 1; }
+`;
+
+function injectPreviewCSS() {
+  if (document.getElementById("sr-preview-styles")) return;
+  const s = document.createElement("style");
+  s.id = "sr-preview-styles";
+  s.textContent = PREVIEW_CSS;
+  document.head.appendChild(s);
+}
+
 // ── SectionWrapper — نفس منطق CategoryProducts/ProductDetails ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
   if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
-      style={{ position: "relative", ...style, cursor: "pointer", outline: isHighlighted ? "2px solid #7c6df2" : "none", outlineOffset: -2 }}
+      style={{ position: "relative", ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
+      className={`sr-section-wrapper${isHighlighted ? " sr-section-wrapper--highlighted" : ""}`}
     >
-      {isHighlighted && (
-        <div style={{
-          position: "absolute", top: 8, insetInlineStart: 8, zIndex: 20,
-          background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-          padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
-          fontFamily: "'Inter', sans-serif", letterSpacing: ".3px", whiteSpace: "nowrap",
-          boxShadow: "0 2px 8px rgba(124,109,242,.35)",
-        }}>
-          {SECTION_LABELS[type] || type}
-        </div>
-      )}
+      <div className="sr-section-label">{SECTION_LABELS[type] || type}</div>
       {children}
     </div>
   );
@@ -145,7 +161,7 @@ export default function SearchResults() {
   const font            = styles.fontFamily      || "Cairo";
   const direction       = styles.direction       || "rtl";
 
-  useEffect(() => { loadFont("Cairo"); }, []);
+  useEffect(() => { loadFont("Cairo"); injectPreviewCSS(); }, []);
   useEffect(() => { if (font) loadFont(font); }, [font]);
 
   // ── جلب المتجر — وفـ preview نستعمل منتجاته الحقيقية كمثال للنتائج، بلا اعتماد على q ──

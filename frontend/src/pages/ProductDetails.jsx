@@ -115,14 +115,18 @@ const PD_CSS = `
 
 const PREVIEW_CSS = `
 .pd-section-wrapper { position: relative; }
-.pd-section-wrapper--highlighted { outline: 2px solid #7c6df2; outline-offset: -2px; }
+.pd-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+.pd-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
 .pd-section-label {
-  position: absolute; top: 8px; inset-inline-start: 8px; z-index: 20;
+  position: absolute; top: 8px; left: 8px; z-index: 150;
   background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
   padding: 3px 10px; border-radius: 6px; pointer-events: none;
   font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
   box-shadow: 0 2px 8px rgba(124,109,242,.35);
+  opacity: 0; transition: opacity .12s ease;
 }
+.pd-section-wrapper:hover .pd-section-label,
+.pd-section-wrapper--highlighted .pd-section-label { opacity: 1; }
 `;
 
 function injectCSS() {
@@ -153,7 +157,7 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
       onClick={handleClick}
       className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
     >
-      {isHighlighted && <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>}
+      <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>
       {children}
     </div>
   );
