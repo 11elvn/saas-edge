@@ -258,19 +258,41 @@ const PREVIEW_CSS = `
   position: relative;
 }
 
-/* Border أزرق كامل حول الـ section المختار فقط */
+/* Hover — تمرير الفار فوق أي section: outline خفيف + تلوين شفاف خفيف */
+.ps-section-wrapper:hover {
+  outline: 2px dashed rgba(124,109,242,.55);
+  outline-offset: -2px;
+}
+.ps-section-wrapper:hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(124,109,242,.05);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Selected/highlighted — الـ section المختارة فعليًا (كليك): outline صريح + تلوين بنفسجي شفاف واضح */
 .ps-section-wrapper--highlighted {
   outline: 2px solid #7c6df2;
   outline-offset: -2px;
   position: relative;
 }
+.ps-section-wrapper--highlighted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(124,109,242,.10);
+  pointer-events: none;
+  z-index: 4;
+}
 
-/* Label اسم الـ section — ملتصق بزاوية الـ section نفسها (RTL-safe) */
+/* Label اسم الـ section — دايمًا فالزاوية اليسرى الفيزيائية (left)، بغض النظر عن اتجاه الصفحة */
 .ps-section-label {
   position: absolute;
   top: 8px;
-  inset-inline-start: 8px;
-  z-index: 20;
+  left: 8px;
+  z-index: 150;
   background: #7c6df2;
   color: #fff;
   font-size: 11px;
@@ -282,6 +304,13 @@ const PREVIEW_CSS = `
   letter-spacing: .3px;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(124,109,242,.35);
+  opacity: 0;
+  transition: opacity .12s ease;
+}
+/* يبان عند hover حتى بلا اختيار، ويبقى ظاهر دايمًا كي الـ section مختارة */
+.ps-section-wrapper:hover .ps-section-label,
+.ps-section-wrapper--highlighted .ps-section-label {
+  opacity: 1;
 }
 .ps-section-label--active {
   background: #7c6df2;
@@ -329,12 +358,10 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }
       onClick={handleClick}
       className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
     >
-      {/* ── Label — اسم الـ section (يظهر فقط عند highlight) ── */}
-      {isHighlighted && (
-        <div className="ps-section-label ps-section-label--active">
-          {SECTION_LABELS[type] || type}
-        </div>
-      )}
+      {/* ── Label — اسم الـ section: يبان عند hover، ويبقى ظاهر إذا كانت مختارة ── */}
+      <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
+        {SECTION_LABELS[type] || type}
+      </div>
       {children}
       {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) ── */}
       {isHighlighted && (
