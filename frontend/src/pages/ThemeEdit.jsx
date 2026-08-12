@@ -552,8 +552,8 @@ function Icon({ name, size = 15 }) {
 }
 
 const FONTS     = ["Cairo","Inter","Poppins","Roboto"];
-const RADII     = [{ v:"small", l:"صغير" },{ v:"medium", l:"متوسط" },{ v:"large", l:"كبير" }];
-const BTN_STYLE = [{ v:"filled", l:"ممتلئ" },{ v:"outline", l:"مخطط" },{ v:"ghost", l:"شفاف" }];
+const RADII     = [{ v:"small", l:"Small" },{ v:"medium", l:"Medium" },{ v:"large", l:"Large" }];
+const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"ghost", l:"Ghost" }];
 
 // ─────────────────────────────────────────────
 // CSS
@@ -1390,8 +1390,8 @@ function LogoUploader({ value, onChange }) {
 
   const upload = async (file) => {
     setError("");
-    if (!file || !file.type.startsWith("image/")) { setError("الملف ليس صورة ❌"); return; }
-    if (file.size > 5 * 1024 * 1024) { setError("الحجم يتجاوز 5MB ❌"); return; }
+    if (!file || !file.type.startsWith("image/")) { setError("The file is not an image ❌"); return; }
+    if (file.size > 5 * 1024 * 1024) { setError("Size exceeds 5MB ❌"); return; }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -1400,9 +1400,9 @@ function LogoUploader({ value, onChange }) {
       const res  = await fetch("https://api.cloudinary.com/v1_1/dbcbkly4w/image/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.secure_url) onChange(data.secure_url);
-      else setError("فشل رفع الصورة ❌");
+      else setError("Failed to upload image ❌");
     } catch {
-      setError("فشل رفع الصورة، حاول مجدداً ❌");
+      setError("Failed to upload image, try again ❌");
     } finally {
       setUploading(false);
     }
@@ -1438,26 +1438,26 @@ function LogoUploader({ value, onChange }) {
         <div className="pb-logo-upload__preview" {...dragHandlers}>
           <div className="pb-logo-upload__thumb"><img src={value} alt="logo" /></div>
           <div className="pb-logo-upload__meta">
-            <div className="pb-logo-upload__filename">اللوجو الحالي</div>
+            <div className="pb-logo-upload__filename">Current logo</div>
             <div className="pb-logo-upload__status">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              محفوظ
+              Saved
             </div>
           </div>
           <div className="pb-logo-upload__actions">
-            <button type="button" className="pb-logo-upload__btn" title="تغيير الصورة" onClick={() => inputRef.current?.click()}>
+            <button type="button" className="pb-logo-upload__btn" title="Change image" onClick={() => inputRef.current?.click()}>
               <UploadIcon />
             </button>
-            <button type="button" className="pb-logo-upload__btn pb-logo-upload__btn--danger" title="حذف" onClick={() => onChange("")}>
+            <button type="button" className="pb-logo-upload__btn pb-logo-upload__btn--danger" title="Delete" onClick={() => onChange("")}>
               <Icon name="trash" size={14} />
             </button>
           </div>
           {uploading && (
             <div className="pb-logo-upload__loading">
               <div className="pb-logo-upload__spinner" />
-              جاري الرفع...
+              Uploading...
             </div>
           )}
         </div>
@@ -1468,12 +1468,12 @@ function LogoUploader({ value, onChange }) {
           {...dragHandlers}
         >
           <div className="pb-logo-upload__icon"><UploadIcon /></div>
-          <div className="pb-logo-upload__title">اسحب صورة هنا أو اضغط للرفع</div>
-          <div className="pb-logo-upload__hint">PNG, JPG أو SVG — حتى 5MB</div>
+          <div className="pb-logo-upload__title">Drag an image here or click to upload</div>
+          <div className="pb-logo-upload__hint">PNG, JPG or SVG — up to 5MB</div>
           {uploading && (
             <div className="pb-logo-upload__loading">
               <div className="pb-logo-upload__spinner" />
-              جاري الرفع...
+              Uploading...
             </div>
           )}
         </div>
@@ -1535,7 +1535,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
             onChange={e => handleNameInput(e.target.value)}
             onBlur={commitName}
             onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
-            placeholder="اسم المتجر"
+            placeholder="Store name"
           />
         </div>
         <div className="pb-field">
@@ -1571,18 +1571,18 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
           <div key={link.id} className="pb-link-card">
             <div className="pb-link-card__header">
               <span>Link {i + 1}</span>
-              <button type="button" className="pb-link-card__delete" title="حذف" onClick={() => deleteLink(link.id)}>
+              <button type="button" className="pb-link-card__delete" title="Delete" onClick={() => deleteLink(link.id)}>
                 <Icon name="trash" size={14} />
               </button>
             </div>
             <div className="pb-link-card__body">
               <div className="pb-field">
                 <div className="pb-label">Title</div>
-                <input className="pb-input" value={link.title} onChange={e => updateLink(link.id, { title: e.target.value })} placeholder="مثال: اتصل بنا" />
+                <input className="pb-input" value={link.title} onChange={e => updateLink(link.id, { title: e.target.value })} placeholder="e.g. Contact us" />
               </div>
               <div className="pb-field">
                 <div className="pb-label">Link</div>
-                <input className="pb-input" value={link.url} onChange={e => updateLink(link.id, { url: e.target.value })} placeholder="/contact أو https://..." />
+                <input className="pb-input" value={link.url} onChange={e => updateLink(link.id, { url: e.target.value })} placeholder="/contact or https://..." />
               </div>
             </div>
           </div>
@@ -1619,7 +1619,7 @@ function HeroSettings({ settings, onChange }) {
 
         <div className="pb-field">
           <div className="pb-label">Headline</div>
-          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} placeholder="مرحباً بك في متجرنا" />
+          <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} placeholder="Welcome to our store" />
         </div>
 
         <div className="pb-field">
@@ -1661,7 +1661,7 @@ function HeroSettings({ settings, onChange }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <span>اسحب أو اضغط للرفع</span>
+              <span>Drag or click to upload</span>
               <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
             </label>
           </div>
@@ -1981,7 +1981,7 @@ function FooterSettings({ settings, onChange }) {
       <div className="pb-group">
         <div className="pb-group__label">Content</div>
         <div className="pb-field">
-          <div className="pb-label">Copyright text <span>اختياري</span></div>
+          <div className="pb-label">Copyright text <span>optional</span></div>
           <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)} />
         </div>
         <div className="pb-toggle-row">
@@ -1989,7 +1989,7 @@ function FooterSettings({ settings, onChange }) {
           <Toggle checked={settings.showNewsletter} onChange={v => s("showNewsletter", v)} />
         </div>
         <div className="pb-field">
-          <div className="pb-label">Terms link text <span>خوي الخانة باش تخفي الرابط</span></div>
+          <div className="pb-label">Terms link text <span>leave empty to hide the link</span></div>
           <input className="pb-input" value={settings.termsText || ""} onChange={e => s("termsText", e.target.value)} />
         </div>
       </div>
@@ -2002,7 +2002,7 @@ function FooterSettings({ settings, onChange }) {
         </div>
         {settings.showSocials !== false && (
           <>
-            <div style={{ fontSize: 11.5, color: "#94a3b8", margin: "2px 0 10px" }}>اترك الحقل فارغ باش تخفي الأيقونة</div>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", margin: "2px 0 10px" }}>Leave the field empty to hide the icon</div>
             {SOCIAL_FIELDS.map(f => (
               <div className="pb-field" key={f.key}>
                 <div className="pb-label">{f.label}</div>
@@ -2109,7 +2109,7 @@ function ProductInfoSettings({ settings, onChange }) {
 
       <Collapse title="Badges & notes">
         <div className="pb-field">
-          <div className="pb-label">Badge text <span>اتركه فارغ باش تخفيه</span></div>
+          <div className="pb-label">Badge text <span>leave empty to hide it</span></div>
           <input className="pb-input" value={settings.badgeText || ""} onChange={e => s("badgeText", e.target.value)} />
         </div>
         <div className="pb-toggle-row">
@@ -2182,7 +2182,7 @@ function CheckoutSettings({ settings, onChange }) {
             <div key={f.key} className="pb-field-card">
               <div className="pb-field-card__title">
                 {f.label}
-                {f.critical && <span style={{ marginInlineStart: 6, fontSize: 11, fontWeight: 600, color: "#7c6df2" }}>(أساسي)</span>}
+                {f.critical && <span style={{ marginInlineStart: 6, fontSize: 11, fontWeight: 600, color: "#7c6df2" }}>(required)</span>}
               </div>
               <div className="pb-toggle-row">
                 <span className="pb-toggle-row__label">Required</span>
@@ -2190,7 +2190,7 @@ function CheckoutSettings({ settings, onChange }) {
               </div>
               {f.critical ? (
                 <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "#94a3b8" }}>
-                  هاد الحقل أساسي لإتمام الطلب (باش تقدر تتواصل مع الزبون) — ما يقدرش يتعطل.
+                  This field is essential to complete the order (so you can reach the customer) — it can't be disabled.
                 </p>
               ) : (
                 <div className="pb-toggle-row">
@@ -2326,7 +2326,7 @@ function SuccessMessageSettings({ settings, onChange }) {
               <input className="pb-input" value={settings.secondaryButtonText || ""} onChange={e => s("secondaryButtonText", e.target.value)} />
             </div>
             <div className="pb-field">
-              <div className="pb-label">WhatsApp number <span>مثال: 213550123456</span></div>
+              <div className="pb-label">WhatsApp number <span>e.g. 213550123456</span></div>
               <input className="pb-input" value={settings.whatsappNumber || ""} onChange={e => s("whatsappNumber", e.target.value)} placeholder="213550123456" />
             </div>
           </>
@@ -2428,7 +2428,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "checkout":     return <CheckoutSettings     settings={section.settings} onChange={updateSettings} />;
       case "categoryBanner": return <CategoryBannerSettings settings={section.settings} onChange={updateSettings} />;
       case "successMessage": return <SuccessMessageSettings settings={section.settings} onChange={updateSettings} />;
-      default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>لا توجد إعدادات</p>;
+      default: return <p style={{ color: "#9ca3af", fontSize: ".82rem" }}>No settings</p>;
     }
   };
 
@@ -2573,7 +2573,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   if (!slug) return (
     <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
       <div style={{ fontSize:"2rem" }}>🏪</div>
-      <div style={{ fontSize:".85rem" }}>لا يوجد متجر مرتبط</div>
+      <div style={{ fontSize:".85rem" }}>No store linked</div>
     </div>
   );
 
@@ -2581,7 +2581,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   if (page === "product" && !productId) return (
     <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
       <div style={{ fontSize:"2rem" }}>📦</div>
-      <div style={{ fontSize:".85rem" }}>زيد منتج واحد على الأقل باش تعاين هاذي الصفحة</div>
+      <div style={{ fontSize:".85rem" }}>Add at least one product to preview this page</div>
     </div>
   );
 
@@ -3007,12 +3007,12 @@ function ThemeEdit() {
       const data = await res.json();
       if (res.ok) {
         setStore(data.store);
-        notify("تم حفظ اللوجو ✅");
+        notify("Logo saved ✅");
       } else {
-        notify(data.message || "فشل حفظ اللوجو ❌", "error");
+        notify(data.message || "Failed to save logo ❌", "error");
       }
     } catch {
-      notify("تعذر الاتصال ❌", "error");
+      notify("Could not connect ❌", "error");
     }
   };
 
@@ -3035,12 +3035,12 @@ function ThemeEdit() {
       const data = await res.json();
       if (res.ok) {
         setStore(data.store);
-        notify("تم حفظ اسم المتجر ✅");
+        notify("Store name saved ✅");
       } else {
-        notify(data.message || "فشل حفظ اسم المتجر ❌", "error");
+        notify(data.message || "Failed to save store name ❌", "error");
       }
     } catch {
-      notify("تعذر الاتصال ❌", "error");
+      notify("Could not connect ❌", "error");
     }
   };
 
@@ -3059,12 +3059,12 @@ function ThemeEdit() {
       const data = await res.json();
       if (res.ok) {
         setIsDirty(false);
-        notify("تم نشر الثيم ✅");
+        notify("Theme published ✅");
       } else {
-        notify(data.message || "حدث خطأ ❌", "error");
+        notify(data.message || "An error occurred ❌", "error");
       }
     } catch {
-      notify("تعذر الاتصال ❌", "error");
+      notify("Could not connect ❌", "error");
     } finally {
       setSaving(false);
     }
@@ -3155,14 +3155,14 @@ function ThemeEdit() {
     <div className="pb-loading">
       <style>{CSS}</style>
       <div className="pb-spinner" />
-      <p>جاري التحميل...</p>
+      <p>Loading...</p>
     </div>
   );
 
   if (!store) return (
     <div className="pb-loading">
       <style>{CSS}</style>
-      <p>لا يوجد متجر. <button onClick={() => navigate("/dashboard")} style={{ color:"#894bf4", background:"none", border:"none", cursor:"pointer", fontWeight:700 }}>العودة</button></p>
+      <p>No store found. <button onClick={() => navigate("/dashboard")} style={{ color:"#894bf4", background:"none", border:"none", cursor:"pointer", fontWeight:700 }}>Go back</button></p>
     </div>
   );
 
@@ -3330,18 +3330,18 @@ function ThemeEdit() {
                           <span className="pb-section-item__actions">
                             <button
                               className="pb-section-item__action"
-                              title={sec.enabled ? "إخفاء" : "إظهار"}
+                              title={sec.enabled ? "Hide" : "Show"}
                               onClick={e => { e.stopPropagation(); toggleSection(currentPage, sec.id, !sec.enabled); }}
                             >
                               <Icon name={sec.enabled ? "eye" : "eye-off"} size={14} />
                             </button>
                             <button
                               className="pb-section-item__action pb-section-item__action--danger"
-                              title="حذف"
+                              title="Delete"
                               onClick={e => {
                                 e.stopPropagation();
                                 // ✦ Section أساسية (بحال Product Info/Checkout/Collection) — نطلبو تأكيد قبل الحذف
-                                if (meta.criticalDelete && !window.confirm(`متأكد بغيتي تحذف "${meta.label}"؟ هاد الـ section أساسية فالصفحة — بلاها الصفحة يمكن ما تخدمش مزيان.`)) return;
+                                if (meta.criticalDelete && !window.confirm(`Are you sure you want to delete "${meta.label}"? This section is essential to the page — without it, the page may not work properly.`)) return;
                                 deleteSection(currentPage, sec.id);
                               }}
                             >
@@ -3374,7 +3374,7 @@ function ThemeEdit() {
                         </button>
                       ))}
                       {missingTypes.length === 0 && (
-                        <div className="pb-add-menu__empty">كل الأقسام مضافة بالفعل</div>
+                        <div className="pb-add-menu__empty">All sections already added</div>
                       )}
                     </div>
                   );
@@ -3402,7 +3402,7 @@ function ThemeEdit() {
           className="pb-collapse-btn"
           style={{ left: collapsedLeft ? 8 : PANEL_W - 13 }}
           onClick={() => setCollapsedLeft(v => !v)}
-          title={collapsedLeft ? "إظهار القائمة" : "إخفاء القائمة"}
+          title={collapsedLeft ? "Show list" : "Hide list"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             {collapsedLeft
@@ -3430,7 +3430,7 @@ function ThemeEdit() {
           className="pb-collapse-btn"
           style={{ right: collapsedRight ? 8 : PANEL_W - 13 }}
           onClick={() => setCollapsedRight(v => !v)}
-          title={collapsedRight ? "إظهار الإعدادات" : "إخفاء الإعدادات"}
+          title={collapsedRight ? "Show settings" : "Hide settings"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             {collapsedRight
@@ -3466,7 +3466,7 @@ function ThemeEdit() {
             <div className="pb-no-selection">
               <div className="pb-no-selection__icon">👈</div>
               <div className="pb-no-selection__text">
-                اختر section من القائمة على اليسار لتعديل إعداداته
+                Choose a section from the list on the left to edit its settings
               </div>
             </div>
           </div>
