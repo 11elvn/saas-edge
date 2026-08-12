@@ -1046,7 +1046,7 @@ const CSS = `
 }
 
 /* Background image row */
-.pb-img-row { display: flex; gap: 10px; }
+.pb-img-row { display: flex; flex-direction: column; gap: 10px; }
 .pb-img-thumb {
   position: relative; width: 64px; height: 64px;
   border-radius: 12px; overflow: hidden; flex-shrink: 0;
@@ -1061,12 +1061,13 @@ const CSS = `
   cursor: pointer; backdrop-filter: blur(4px);
 }
 .pb-img-add {
-  width: 64px; height: 64px; border-radius: 12px;
-  border: 1.5px dashed rgba(124,109,242,.3); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: #94a3b8; cursor: pointer; transition: all .18s;
+  width: 100%; height: 76px; border-radius: 12px;
+  border: 1.5px dashed rgba(124,109,242,.35); background: rgba(124,109,242,.04);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  color: #7c6df2; cursor: pointer; transition: all .18s;
 }
-.pb-img-add:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
+.pb-img-add:hover { border-color: #7c6df2; background: rgba(124,109,242,.08); }
+.pb-img-add span { font-size: .78rem; font-weight: 600; }
 
 /* Logo uploader — premium drag & drop */
 .pb-logo-upload { position: relative; }
@@ -1657,9 +1658,10 @@ function HeroSettings({ settings, onChange }) {
               </div>
             )}
             <label className="pb-img-add">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
+              <span>اسحب أو اضغط للرفع</span>
               <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
             </label>
           </div>
