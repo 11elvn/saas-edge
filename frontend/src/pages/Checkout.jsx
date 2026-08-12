@@ -576,7 +576,7 @@ function Checkout() {
       {/* ── Footer ── */}
       {sec(homeSections, "footer")?.enabled !== false && (
         <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
+          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
         </SectionWrapper>
       )}
 

@@ -111,7 +111,6 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         copyright: "© 2025 اسم متجرك",
-        showNewsletter: true,
         termsText: "الشروط والسياسات",
         showSocials: true,
         socials: { facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "", whatsapp: "" },
@@ -1983,10 +1982,6 @@ function FooterSettings({ settings, onChange }) {
         <div className="pb-field">
           <div className="pb-label">Copyright text <span>optional</span></div>
           <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)} />
-        </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show newsletter box</span>
-          <Toggle checked={settings.showNewsletter} onChange={v => s("showNewsletter", v)} />
         </div>
         <div className="pb-field">
           <div className="pb-label">Terms link text <span>leave empty to hide the link</span></div>

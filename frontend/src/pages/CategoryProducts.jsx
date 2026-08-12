@@ -598,7 +598,7 @@ export default function CategoryProducts() {
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: 999 }}>
-        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
+        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
       {/* WhatsApp */}

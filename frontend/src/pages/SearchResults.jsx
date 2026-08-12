@@ -400,7 +400,7 @@ export default function SearchResults() {
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
-        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
+        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
       <CartDrawer

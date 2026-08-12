@@ -3,7 +3,7 @@
 // ✦ تصميم بسيط: Newsletter + Copyright + Terms + Social Icons
 // ============================================================
 
-import { useState } from "react";
+// (لا حاجة لاستيراد React/useState هنا — ماعادش عندنا state محلي بعد حذف Newsletter)
 
 const IconTikTok = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -48,9 +48,8 @@ function isLightColor(hex) {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 }
 
-export default function StoreFooter({ store, slug, light = false, bgColor, textColor, settings }) {
+export default function StoreFooter({ store, slug, light = false, bgColor, mutedColor, settings }) {
   const storeName = store?.name || "المتجر";
-  const primary   = store?.primaryColor || "#2563eb";
 
   // ✦ إلا ما توصلاتش settings كـ prop مباشرة، نقراوها بروحنا من store.themeConfig
   //   هكذا أي صفحة عطات لينا store فيه themeConfig، الفوتر يبان نفسو بلا ما نكرر الكود فكل صفحة
@@ -58,24 +57,24 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
 
   const {
     copyright        = "",
-    showNewsletter   = true,
     termsText        = "",
     showSocials      = true,
     socials          = {},
   } = resolvedSettings;
 
-  const [email, setEmail] = useState("");
-  const [sent,  setSent]  = useState(false);
-
   const resolvedBg = bgColor || (light ? "#ffffff" : "#0d0d0d");
   const useLight   = bgColor ? isLightColor(resolvedBg) : light;
 
   const colors = useLight
-    ? { bg: resolvedBg, border: "#00000022", text: textColor || "#111", muted: "#666", icon: "#555", input: "#ffffff", inputBorder: "#00000022" }
-    : { bg: resolvedBg, border: "#ffffff2a", text: textColor || "#fff", muted: "#aaa", icon: "#ccc", input: "#ffffff10", inputBorder: "#ffffff2a" };
+    ? { bg: resolvedBg, border: "#00000022", muted: mutedColor || "#666", icon: "#555" }
+    : { bg: resolvedBg, border: "#ffffff2a", muted: mutedColor || "#aaa", icon: "#ccc" };
 
   // ✦ رقم واتساب مربوط بالإعدادات ديال الفوتر (Social links) — ماشي رقم المتجر العام تلقائي
-  const waDigits = (socials.whatsapp || "").replace(/[^0-9]/g, "");
+  // ✦ نبدلو الأرقام العربية (٠-٩) والفارسية (۰-۹) لأرقام عادية قبل التنظيف، حتى إذا كتب التاجر الرقم بلوحة مفاتيح عربية يخدم الرابط
+  const normalizeDigits = (str) =>
+    (str || "").replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+                .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0));
+  const waDigits = normalizeDigits(socials.whatsapp).replace(/[^0-9]/g, "");
 
   const socialList = !showSocials ? [] : [
     { key: "facebook",  url: socials.facebook,  icon: <IconFB />,     hover: "#1877f2" },
@@ -86,44 +85,9 @@ export default function StoreFooter({ store, slug, light = false, bgColor, textC
     { key: "whatsapp",  url: waDigits ? `https://wa.me/${waDigits}` : "", icon: <IconWA />, hover: "#25d366" },
   ].filter(s => s.url);
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setSent(true);
-    setTimeout(() => { setSent(false); setEmail(""); }, 2500);
-  };
-
   return (
     <footer style={{ background: colors.bg, padding: "40px 24px 32px", direction: "rtl" }}>
       <div style={{ maxWidth: 560, margin: "0 auto" }}>
-
-        {/* Newsletter */}
-        {showNewsletter && (
-          <form onSubmit={handleSubscribe} style={{ marginBottom: 24 }}>
-            <div style={{
-              display: "flex", alignItems: "center", background: colors.input,
-              border: `1px solid ${colors.inputBorder}`, borderRadius: 999, padding: "4px 4px 4px 18px",
-            }}>
-              <input
-                type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="البريد الإلكتروني"
-                style={{
-                  flex: 1, border: "none", outline: "none", background: "transparent",
-                  color: colors.text, fontSize: 14, fontFamily: "inherit", padding: "10px 0",
-                }}
-              />
-              <button type="submit" aria-label="اشترك" style={{
-                width: 36, height: 36, borderRadius: "50%", border: "none", cursor: "pointer",
-                background: primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-                </svg>
-              </button>
-            </div>
-            {sent && <p style={{ color: primary, fontSize: 12, margin: "8px 0 0", textAlign: "center" }}>تم الاشتراك بنجاح ✓</p>}
-          </form>
-        )}
 
         {/* Bottom box: copyright + terms + socials */}
         <div style={{
