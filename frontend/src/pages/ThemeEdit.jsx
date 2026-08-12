@@ -1541,6 +1541,13 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
           <div className="pb-label">Logo image</div>
           <LogoUploader value={store?.logo || ""} onChange={onLogoChange} />
         </div>
+        {store?.logo && (
+          <div className="pb-field">
+            <div className="pb-label">Logo size <span>{Math.round((settings.logoSize ?? 1) * 100)}%</span></div>
+            <input type="range" className="pb-range" min={0.6} max={1.6} step={0.05}
+              value={settings.logoSize ?? 1} onChange={e => s("logoSize", +e.target.value)} />
+          </div>
+        )}
       </div>
       <div className="pb-group">
         <div className="pb-group__label">Actions</div>

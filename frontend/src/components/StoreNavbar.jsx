@@ -120,6 +120,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
 
   const logo      = store?.logo || "";
   const storeName = store?.name || "المتجر";
+  const logoScale = headerSettings?.logoSize ?? 1; // ✦ حجم اللوجو القابل للتحكم من ThemeEdit
   const primary   = themeColors.primary   || store?.primaryColor   || "#2563eb";
   const secondary = themeColors.secondary || store?.secondaryColor || "#0f172a";
   const navBg     = themeColors.bgColor      || "#ffffff";
@@ -214,7 +215,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         {/* يمين: لوجو */}
         <div style={{ flex:1, display:"flex", justifyContent:"flex-end", alignItems:"center", cursor:"pointer" }}
           onClick={() => navigate(`/store/${slug}`)}>
-          <LogoEl height={68} />
+          <LogoEl height={68 * logoScale} />
         </div>
       </nav>
 
@@ -238,7 +239,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           position:"absolute", left:"50%", transform:"translateX(-50%)",
           display:"flex", alignItems:"center", cursor:"pointer",
         }} onClick={() => navigate(`/store/${slug}`)}>
-          <LogoEl height={44} />
+          <LogoEl height={44 * logoScale} />
         </div>
 
         {/* يمين الشاشة: cart + بحث */}
