@@ -1152,8 +1152,8 @@ const CSS = `
 }
 .pb-align-btn--active {
   border-color: transparent;
-  background: linear-gradient(135deg,#1f2937,#0f172a); color: #fff;
-  box-shadow: 0 4px 14px rgba(15,23,42,.22);
+  background: #7c6df2; color: #fff;
+  box-shadow: 0 4px 14px rgba(124,109,242,.28);
 }
 
 /* Badge card */
@@ -1773,11 +1773,20 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle 
         </div>
         <div className="pb-field">
           <div className="pb-label">Title alignment</div>
-          <div className="pb-segment">
-            {[{v:"right",l:"⇥"},{v:"center",l:"≡"},{v:"left",l:"⇤"}].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.titleAlign || "right") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("titleAlign", o.v)}>{o.l}</button>
+          <div className="pb-align-row">
+            {[
+              { v: "right",  icon: "M21 6H3M21 12H9M21 18H3" },
+              { v: "center", icon: "M21 6H3M17 12H7M21 18H3" },
+              { v: "left",   icon: "M21 6H3M21 12H9M21 18H3" },
+            ].map((o, i) => (
+              <button key={o.v} type="button"
+                className={`pb-align-btn ${(settings.titleAlign || "right") === o.v ? "pb-align-btn--active" : ""}`}
+                onClick={() => s("titleAlign", o.v)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                  style={{ transform: i === 2 ? "scaleX(-1)" : "none" }}>
+                  <path d={o.icon}/>
+                </svg>
+              </button>
             ))}
           </div>
         </div>
