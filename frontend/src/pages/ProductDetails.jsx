@@ -438,9 +438,9 @@ function ProductDetails() {
         <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
           <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
             {announcementSec.settings.animation ? (
-              <div className="pd-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+              <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
                 {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap" }}>
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
                     {announcementSec.settings.message}
                   </span>
                 ))}

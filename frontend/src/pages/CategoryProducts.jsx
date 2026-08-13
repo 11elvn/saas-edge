@@ -257,9 +257,9 @@ export default function CategoryProducts() {
           <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: 0 }}>
             <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
-                <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+                <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
                   {[...Array(6)].map((_, i) => (
-                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap" }}>
+                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
                       {message}
                     </span>
                   ))}

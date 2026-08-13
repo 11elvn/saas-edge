@@ -255,9 +255,9 @@ export default function SearchResults() {
           <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
             <div style={{ background: abg, overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
-                <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+                <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
                   {[...Array(6)].map((_, i) => (
-                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: atx, whiteSpace: "nowrap" }}>{message}</span>
+                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: atx, whiteSpace: "nowrap", marginInlineEnd: 64 }}>{message}</span>
                   ))}
                 </div>
               ) : (

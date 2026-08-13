@@ -562,9 +562,11 @@ function PublicStore() {
           <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }}>
           <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {animation ? (
-              <div className="ps-marquee-track" style={{ display: "flex", gap: 64, width: "max-content" }}>
+              <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
+                {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
+                    باش كل عنصر يحسب مساحته كاملة (النص + المسافة)، وتحريك -50% يبقى مضبوط 100% بلا أي قفزة */}
                 {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap" }}>
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
                     {message}
                   </span>
                 ))}
