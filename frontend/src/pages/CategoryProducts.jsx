@@ -288,15 +288,6 @@ export default function CategoryProducts() {
         />
       </SectionWrapper>
 
-      {/* ── Breadcrumb ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", alignItems: "center", gap: 8, order: 2, width: "100%", boxSizing: "border-box" }}>
-        <button onClick={() => navigate(`/store/${slug}/collections`)} style={{ background: "none", border: "none", color: mutedTextColor, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-          التشكيلات
-        </button>
-        <span style={{ color: mutedTextColor }}>›</span>
-        <span style={{ color: textColor, fontSize: 13, fontWeight: 600 }}>{categoryName}</span>
-      </div>
-
       {/* ── Category Banner (Overlay أو Compact) ── */}
       {bannerEnabled && (
       <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }}>
