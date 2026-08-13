@@ -112,11 +112,22 @@ const DEFAULT_CHECKOUT_SECTIONS = [
         municipality: { enabled: true, required: true },
       },
   } },
+  { id: "checkoutTrust", type: "trust", enabled: true, settings: {
+      layout: "row",
+      badges: [
+        { id: "cod",      enabled: true,  title: "دفع عند الاستلام", sub: "دفع آمن وسهل" },
+        { id: "secure",   enabled: true,  title: "متجر موثوق",       sub: "آلاف العملاء الراضين" },
+        { id: "shipping", enabled: true,  title: "توصيل سريع",       sub: "لجميع ولايات الجزائر" },
+        { id: "return",   enabled: false, title: "إرجاع مجاني",      sub: "خلال 7 أيام" },
+        { id: "support",  enabled: false, title: "دعم 24/7",         sub: "نحن هنا لمساعدتك" },
+      ],
+      bgColor: "#ffffff",
+  } },
 ];
 
 const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
-const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", footer: "Footer" };
+const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", trust: "Trust Badges", footer: "Footer" };
 
 // ── SectionWrapper — نفس منطق ProductDetails: label + كليك يبعث SECTION_CLICK للـ builder ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
@@ -572,6 +583,105 @@ function Checkout() {
           </SectionWrapper>
         )}
       </div>
+
+      {/* ── Trust Badges ── */}
+      {(() => {
+        const s = sec(checkoutSections, "trust");
+        if (!s || s.enabled === false) return null;
+        const { badges, layout } = s.settings || {};
+        const activeBadges = (badges || []).filter(b => b.enabled !== false);
+        if (!activeBadges.length) return null;
+
+        // ✦ نفس الأيقونات ديال Trust Badges فـ الصفحة الرئيسية (PublicStore)
+        const ICONS = {
+          cod: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.33 12a19.79 19.79 0 01-3.07-8.67A2 2 0 013.24 1.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          ),
+          shipping: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          ),
+          return: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+          ),
+          support: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>
+            </svg>
+          ),
+          secure: (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+          ),
+        };
+
+        const isRow = (layout || "row") === "row";
+
+        const renderRow = () => {
+          const groups = [];
+          for (let i = 0; i < activeBadges.length; i += 4) groups.push(activeBadges.slice(i, i + 4));
+          return (
+            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
+              {groups.map((group, gi) => (
+                <div key={gi} style={{
+                  background: surfaceColor, borderRadius: 20, overflow: "hidden",
+                  display: "grid", gridTemplateColumns: `repeat(${group.length}, 1fr)`,
+                }}>
+                  {group.map((b, i) => (
+                    <div key={i} style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                      textAlign: "center", padding: "22px 10px",
+                      borderInlineStart: i !== 0 ? `1px solid ${borderColor}` : "none",
+                    }}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
+                        {ICONS[b.id] || ICONS.secure}
+                      </div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
+                      <p style={{ fontSize: 10, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        };
+
+        const renderGrid = () => (
+          <div style={{
+            maxWidth: 900, margin: "0 auto",
+            display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
+          }}>
+            {activeBadges.map((b, i) => (
+              <div key={i} style={{
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                textAlign: "center", padding: "20px 12px",
+                background: surfaceColor, borderRadius: 18, border: `1px solid ${borderColor}`,
+              }}>
+                <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
+                  {ICONS[b.id] || ICONS.secure}
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
+                <p style={{ fontSize: 11, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
+              </div>
+            ))}
+          </div>
+        );
+
+        return (
+          <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"}>
+            <section style={{ background: bgColor, padding: "24px 16px" }}>
+              {isRow ? renderRow() : renderGrid()}
+            </section>
+          </SectionWrapper>
+        );
+      })()}
 
       {/* ── Footer ── */}
       {sec(homeSections, "footer")?.enabled !== false && (

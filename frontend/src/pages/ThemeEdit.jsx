@@ -307,6 +307,24 @@ const CHECKOUT_PAGE_DEFAULT_CONFIG = {
         },
       },
     },
+    {
+      // ✦ Trust Badges — 3 مفعّلين بالافتراضي (standard)، و2 (إرجاع/دعم) موجودين بصح مطفيين
+      //   التاجر حر يشعلهم من التوگل فـ TrustSettings إذا حاب
+      id: "checkoutTrust",
+      type: "trust",
+      enabled: true,
+      settings: {
+        layout: "row",
+        badges: [
+          { id: "cod",      enabled: true,  title: "دفع عند الاستلام", sub: "دفع آمن وسهل" },
+          { id: "secure",   enabled: true,  title: "متجر موثوق",       sub: "آلاف العملاء الراضين" },
+          { id: "shipping", enabled: true,  title: "توصيل سريع",       sub: "لجميع ولايات الجزائر" },
+          { id: "return",   enabled: false, title: "إرجاع مجاني",      sub: "خلال 7 أيام" },
+          { id: "support",  enabled: false, title: "دعم 24/7",         sub: "نحن هنا لمساعدتك" },
+        ],
+        bgColor: "#ffffff",
+      },
+    },
   ],
 };
 
@@ -346,6 +364,11 @@ const CATEGORY_SECTION_META = {
 // حذفها/إخفاؤها كيخلي صفحة "تم تأكيد الطلب" فارغة بالكامل بلا أي فائدة للزبون
 const SUCCESS_SECTION_META = {
   successMessage: { label: "Success Message", icon: "success", locked: true, fixed: true },
+};
+
+// ✦ Section اللي يقدر التاجر يزيدها لصفحة Checkout المستقلة (غير Trust Badges — الباقي ماعندوش معنى هنا)
+const CHECKOUT_SECTION_META = {
+  trust: SECTION_META.trust,
 };
 
 // ✦ Overrides بالـ id — لـ sections كتشارك نفس الـ type مع Home (مثلا "collection")
@@ -2944,7 +2967,7 @@ function ThemeEdit() {
 
   // ── Add a section back (only types not already present فنفس الصفحة) ──
   // ✦ خدامة على Home وكذا على Product/Category — كل وحدة عندها "كتالوگ" ديال templates ديالها
-  const PAGE_TEMPLATE_SOURCE = { home: DEFAULT_CONFIG, product: PRODUCT_DEFAULT_CONFIG, category: CATEGORY_DEFAULT_CONFIG };
+  const PAGE_TEMPLATE_SOURCE = { home: DEFAULT_CONFIG, product: PRODUCT_DEFAULT_CONFIG, category: CATEGORY_DEFAULT_CONFIG, checkout: CHECKOUT_PAGE_DEFAULT_CONFIG };
   const addSection = useCallback((page, type) => {
     const source = PAGE_TEMPLATE_SOURCE[page] || DEFAULT_CONFIG;
     const template = source.sections.find(s => s.type === type);
@@ -3350,14 +3373,16 @@ function ThemeEdit() {
                   );
                 })}
               </div>
-              {["home", "product", "category"].includes(currentPage) && (
+              {["home", "product", "category", "checkout"].includes(currentPage) && (
               <div className="pb-add-section" style={{ position: "relative" }}>
                 {showAddMenu && (() => {
                   const menuMeta = currentPage === "product" ? PRODUCT_SECTION_META
                     : currentPage === "category" ? CATEGORY_SECTION_META
+                    : currentPage === "checkout" ? CHECKOUT_SECTION_META
                     : SECTION_META;
                   const existingSections = currentPage === "product" ? (themeConfig?.product?.sections || [])
                     : currentPage === "category" ? (themeConfig?.category?.sections || [])
+                    : currentPage === "checkout" ? (themeConfig?.checkout?.sections || [])
                     : (themeConfig?.sections || []);
                   const missingTypes = Object.entries(menuMeta).filter(([type]) => !existingSections.some(s => s.type === type));
                   return (
