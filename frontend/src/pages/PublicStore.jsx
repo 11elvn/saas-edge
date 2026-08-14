@@ -981,7 +981,7 @@ function PublicStore() {
                       opacity: outOfStock ? 0.6 : 1,
                       ...(carouselMode ? { flex: `0 0 calc((100% - ${(columns - 1) * 20}px) / ${columns})`, scrollSnapAlign: "start", minWidth: 220 } : {}),
                     }}
-                    onClick={() => navigate(`/store/${slug}/product/${product._id}`)}
+                    onClick={() => { if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
                   >
                     {/* Image (with hover/touch CTA overlay) */}
                     <div style={{
@@ -1035,7 +1035,7 @@ function PublicStore() {
                           }}
                         >
                           <button
-                            onClick={e => { e.stopPropagation(); navigate(`/store/${slug}/product/${product._id}`); }}
+                            onClick={e => { e.stopPropagation(); if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
                             style={{
                               width: "100%", border: "none", cursor: "pointer",
                               borderRadius: 12, padding: "12px 0",
