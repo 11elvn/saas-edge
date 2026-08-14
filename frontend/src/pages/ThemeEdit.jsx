@@ -1391,6 +1391,8 @@ const COLOR_PRESETS = [
       borderColor: "#bfd7f5",
     },
     onPrimary: "#ffffff",
+    announcementBg: "#0f172a",
+    announcementText: "#ffffff",
   },
   {
     id: "luxury-gold",
@@ -1405,6 +1407,8 @@ const COLOR_PRESETS = [
       borderColor: "#2e2e2e",
     },
     onPrimary: "#2c1f05",
+    announcementBg: "#c9a227",
+    announcementText: "#1a1200",
   },
   {
     id: "warm-terracotta",
@@ -1419,6 +1423,8 @@ const COLOR_PRESETS = [
       borderColor: "#dfbd93",
     },
     onPrimary: "#ffffff",
+    announcementBg: "#6b4226",
+    announcementText: "#ffffff",
   },
   {
     id: "fresh-green",
@@ -1433,6 +1439,8 @@ const COLOR_PRESETS = [
       borderColor: "#a6dcb4",
     },
     onPrimary: "#ffffff",
+    announcementBg: "#14532d",
+    announcementText: "#ffffff",
   },
   {
     id: "modern-rose",
@@ -1447,6 +1455,8 @@ const COLOR_PRESETS = [
       borderColor: "#ef9dc0",
     },
     onPrimary: "#ffffff",
+    announcementBg: "#831843",
+    announcementText: "#ffffff",
   },
 ];
 
@@ -1461,14 +1471,10 @@ const PRESET_STRIP_KEYS = [
   "primaryColor", "secondaryColor", "surfaceColor", "mutedTextColor", "borderColor",
 ];
 
-function ColorPresetsPanel({ styles, onChange }) {
+function ColorPresetsPanel({ styles, onApplyPreset }) {
   const activeId = COLOR_PRESETS.find(p =>
     PRESET_COLOR_KEYS.every(k => (styles?.[k] || "").toLowerCase() === p.colors[k].toLowerCase())
   )?.id || null;
-
-  const applyPreset = (preset) => {
-    onChange({ ...styles, ...preset.colors });
-  };
 
   return (
     <div className="pb-group">
@@ -1481,7 +1487,7 @@ function ColorPresetsPanel({ styles, onChange }) {
               type="button"
               key={p.id}
               className={`pb-preset-card ${isActive ? "pb-preset-card--active" : ""}`}
-              onClick={() => applyPreset(p)}
+              onClick={() => onApplyPreset(p)}
             >
               <div className="pb-preset-card__preview" style={{ background: p.colors.backgroundColor }}>
                 <div className="pb-preset-card__store" style={{ color: p.colors.textColor }}>Your store</div>
@@ -2523,11 +2529,11 @@ function SuccessMessageSettings({ settings, onChange }) {
   );
 }
 
-function StylesPanel({ styles, onChange }) {
+function StylesPanel({ styles, onChange, onApplyPreset }) {
   const s = (k, v) => onChange({ ...styles, [k]: v });
   return (
     <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
-      <ColorPresetsPanel styles={styles} onChange={onChange} />
+      <ColorPresetsPanel styles={styles} onApplyPreset={onApplyPreset} />
       <div className="pb-group">
         <div className="pb-group__label">Colors</div>
         <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
@@ -3168,6 +3174,21 @@ function ThemeEdit() {
     setIsDirty(true);
   }, []);
 
+  // ── Apply a full color preset — updates styles AND the Announcement Bar
+  // colors together, so the bar stays coordinated with the chosen design ──
+  const applyColorPreset = useCallback((preset) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      styles: { ...prev.styles, ...preset.colors },
+      sections: prev.sections.map(s =>
+        s.id === "announcement"
+          ? { ...s, settings: { ...s.settings, bgColor: preset.announcementBg, textColor: preset.announcementText } }
+          : s
+      ),
+    }));
+    setIsDirty(true);
+  }, []);
+
   // ── Save Logo ────────────────────────────────────────────
   const saveLogo = async (url) => {
     try {
@@ -3570,6 +3591,7 @@ function ThemeEdit() {
             <StylesPanel
               styles={themeConfig?.styles || DEFAULT_CONFIG.styles}
               onChange={updateStyles}
+              onApplyPreset={applyColorPreset}
             />
           )}
         </div>
