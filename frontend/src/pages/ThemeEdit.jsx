@@ -1029,23 +1029,29 @@ const CSS = `
 .pb-color-hex:focus { border-color: #7c6df2; box-shadow: 0 0 0 3px rgba(124,109,242,.14); }
 
 /* Design presets */
-.pb-preset-grid { display:flex; flex-direction:column; gap:8px; }
+.pb-preset-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 .pb-preset-card {
-  position: relative; display:flex; align-items:center; gap:10px;
-  padding: 9px 10px; border: 1.5px solid #ece7fb; border-radius: 12px;
-  background: #fbfaff; cursor: pointer; text-align: right;
+  direction: ltr; position: relative; display:flex; flex-direction:column;
+  padding: 0; border: 1.5px solid #ece7fb; border-radius: 12px;
+  background: #fff; cursor: pointer; text-align: left; overflow: hidden;
   font-family: inherit; transition: all .18s;
 }
-.pb-preset-card:hover { border-color: #cabdf7; background: #fff; }
-.pb-preset-card--active { border-color: #7c6df2; background: #fff; box-shadow: 0 0 0 3px rgba(124,109,242,.14); }
-.pb-preset-card__swatches { display:flex; flex-shrink:0; }
-.pb-preset-card__dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 1.5px solid #fff; margin-inline-start: -7px;
+.pb-preset-card:hover { border-color: #cabdf7; }
+.pb-preset-card--active { border-color: #7c6df2; box-shadow: 0 0 0 3px rgba(124,109,242,.14); }
+.pb-preset-card__preview { padding: 12px 12px 10px; }
+.pb-preset-card__store { font-size: .74rem; font-weight: 600; margin-bottom: 6px; }
+.pb-preset-card__btn {
+  display: inline-block; font-size: .68rem; font-weight: 600;
+  padding: 6px 11px; border-radius: 8px;
 }
-.pb-preset-card__dot:first-child { margin-inline-start: 0; }
-.pb-preset-card__name { flex:1; font-size: .82rem; font-weight: 600; color: #443a63; }
-.pb-preset-card__check { color: #7c6df2; font-weight: 700; font-size: .85rem; flex-shrink:0; }
+.pb-preset-card__strip { display:flex; height: 6px; }
+.pb-preset-card__stripSeg { flex:1; }
+.pb-preset-card__footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 10px;
+}
+.pb-preset-card__name { font-size: .78rem; font-weight: 600; color: #443a63; }
+.pb-preset-card__check { color: #7c6df2; font-weight: 700; font-size: .82rem; flex-shrink:0; }
 
 /* Toggle row */
 .pb-toggle-row {
@@ -1368,14 +1374,13 @@ function Collapse({ title, defaultOpen = true, children }) {
 // COLOR FIELD
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
-// COLOR PRESETS — 5 تصاميم ألوان جاهزة ومتناسقة
-// ✦ الترتيب يطابق حقول styles: primary/secondary/background/surface/text/mutedText/border
+// COLOR PRESETS — 5 ready-made, coordinated color designs
+// ✦ Order matches the styles fields: primary/secondary/background/surface/text/mutedText/border
 // ─────────────────────────────────────────────
 const COLOR_PRESETS = [
   {
     id: "classic-blue",
-    name: "أزرق كلاسيكي",
-    desc: "ثقة واحترافية — مناسب لمعظم المتاجر",
+    name: "Classic blue",
     colors: {
       primaryColor: "#2563eb",
       secondaryColor: "#0f172a",
@@ -1385,11 +1390,11 @@ const COLOR_PRESETS = [
       mutedTextColor: "#54688a",
       borderColor: "#bfd7f5",
     },
+    onPrimary: "#ffffff",
   },
   {
-    id: "luxury-black-gold",
-    name: "أسود وذهبي فاخر",
-    desc: "فخامة — مجوهرات، عطور، منتجات راقية",
+    id: "luxury-gold",
+    name: "Luxury gold",
     colors: {
       primaryColor: "#c9a227",
       secondaryColor: "#0f0f0f",
@@ -1399,11 +1404,11 @@ const COLOR_PRESETS = [
       mutedTextColor: "#a3a3a3",
       borderColor: "#2e2e2e",
     },
+    onPrimary: "#2c1f05",
   },
   {
     id: "warm-terracotta",
-    name: "تراكوتا دافئ",
-    desc: "دفء مغاربي — أزياء، بيت، حرف يدوية",
+    name: "Warm terracotta",
     colors: {
       primaryColor: "#c1662f",
       secondaryColor: "#6b4226",
@@ -1413,11 +1418,11 @@ const COLOR_PRESETS = [
       mutedTextColor: "#8a6a4a",
       borderColor: "#dfbd93",
     },
+    onPrimary: "#ffffff",
   },
   {
     id: "fresh-green",
-    name: "أخضر طبيعي",
-    desc: "نضارة — أغذية عضوية، صحة، نباتات",
+    name: "Fresh green",
     colors: {
       primaryColor: "#16a34a",
       secondaryColor: "#14532d",
@@ -1427,11 +1432,11 @@ const COLOR_PRESETS = [
       mutedTextColor: "#4d7a5b",
       borderColor: "#a6dcb4",
     },
+    onPrimary: "#ffffff",
   },
   {
     id: "modern-rose",
-    name: "وردي عصري",
-    desc: "جرأة عصرية — أزياء، تجميل، إكسسوارات",
+    name: "Modern rose",
     colors: {
       primaryColor: "#db2777",
       secondaryColor: "#831843",
@@ -1441,13 +1446,19 @@ const COLOR_PRESETS = [
       mutedTextColor: "#8c4f68",
       borderColor: "#ef9dc0",
     },
+    onPrimary: "#ffffff",
   },
 ];
 
-// مفاتيح الألوان اللي كنقارنو بيها باش نعرفو التصميم النشط حاليًا
+// The color fields used to detect which preset is currently active
 const PRESET_COLOR_KEYS = [
   "primaryColor", "secondaryColor", "backgroundColor",
   "surfaceColor", "textColor", "mutedTextColor", "borderColor",
+];
+
+// The 5 fields shown as the mini strip at the bottom of each preset card
+const PRESET_STRIP_KEYS = [
+  "primaryColor", "secondaryColor", "surfaceColor", "mutedTextColor", "borderColor",
 ];
 
 function ColorPresetsPanel({ styles, onChange }) {
@@ -1461,25 +1472,33 @@ function ColorPresetsPanel({ styles, onChange }) {
 
   return (
     <div className="pb-group">
-      <div className="pb-group__label">Design presets</div>
+      <div className="pb-group__label">Presets</div>
       <div className="pb-preset-grid">
-        {COLOR_PRESETS.map(p => (
-          <button
-            type="button"
-            key={p.id}
-            className={`pb-preset-card ${activeId === p.id ? "pb-preset-card--active" : ""}`}
-            onClick={() => applyPreset(p)}
-            title={p.desc}
-          >
-            <div className="pb-preset-card__swatches">
-              {PRESET_COLOR_KEYS.map(k => (
-                <span key={k} className="pb-preset-card__dot" style={{ background: p.colors[k] }} />
-              ))}
-            </div>
-            <div className="pb-preset-card__name">{p.name}</div>
-            {activeId === p.id && <div className="pb-preset-card__check">✓</div>}
-          </button>
-        ))}
+        {COLOR_PRESETS.map(p => {
+          const isActive = activeId === p.id;
+          return (
+            <button
+              type="button"
+              key={p.id}
+              className={`pb-preset-card ${isActive ? "pb-preset-card--active" : ""}`}
+              onClick={() => applyPreset(p)}
+            >
+              <div className="pb-preset-card__preview" style={{ background: p.colors.backgroundColor }}>
+                <div className="pb-preset-card__store" style={{ color: p.colors.textColor }}>Your store</div>
+                <div className="pb-preset-card__btn" style={{ background: p.colors.primaryColor, color: p.onPrimary }}>Buy now</div>
+              </div>
+              <div className="pb-preset-card__strip">
+                {PRESET_STRIP_KEYS.map(k => (
+                  <span key={k} className="pb-preset-card__stripSeg" style={{ background: p.colors[k] }} />
+                ))}
+              </div>
+              <div className="pb-preset-card__footer">
+                <span className="pb-preset-card__name">{p.name}</span>
+                {isActive && <span className="pb-preset-card__check">✓</span>}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
