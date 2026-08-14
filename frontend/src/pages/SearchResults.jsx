@@ -412,6 +412,7 @@ export default function SearchResults() {
         mutedTextColor={mutedTextColor}
         borderColor={borderColor}
         surfaceColor={surfaceColor}
+        bgColor={bgColor}
       />
     </div>
   );

@@ -23,7 +23,7 @@ const IconCartEmpty = () => (
   </svg>
 );
 
-export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", textColor = "#111111", mutedTextColor = "#888888", borderColor = "#eeeeee", surfaceColor = "#fafafa" }) {
+export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", textColor = "#111111", mutedTextColor = "#888888", borderColor = "#eeeeee", surfaceColor = "#fafafa", bgColor = "#ffffff" }) {
   const navigate = useNavigate();
   const { getCart, updateQuantity, removeFromCart, getCartTotal } = useCart();
   const items = getCart(slug);
@@ -36,7 +36,7 @@ export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", t
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 998, backdropFilter: "blur(2px)" }} />
       <div dir="rtl" style={{
         position: "fixed", top: 0, right: 0, height: "100%", width: "min(400px, 92vw)",
-        background: "#fff", zIndex: 999, display: "flex", flexDirection: "column",
+        background: bgColor, zIndex: 999, display: "flex", flexDirection: "column",
         animation: "cd-slide-in .28s cubic-bezier(.32,.72,0,1) both", boxShadow: "-8px 0 30px rgba(0,0,0,.12)",
       }}>
         {/* Header */}
@@ -46,7 +46,7 @@ export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", t
         </div>
 
         {/* Items */}
-        <div style={{ flex: 1, overflowY: "auto", padding: items.length ? "8px 16px" : 0 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: items.length ? "10px 14px" : 0 }}>
           {items.length === 0 ? (
             <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, color: mutedTextColor, padding: "0 20px", textAlign: "center" }}>
               <IconCartEmpty />
@@ -54,9 +54,9 @@ export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", t
               <p style={{ margin: 0, fontSize: 12.5 }}>زيد منتجات باش تبدا الطلب</p>
             </div>
           ) : items.map(item => (
-            <div key={item.productId} style={{ display: "flex", gap: 12, padding: "12px 4px", borderBottom: `1px solid ${borderColor}` }}>
+            <div key={item.productId} style={{ display: "flex", gap: 12, padding: 10, marginBottom: 8, borderRadius: 14, background: surfaceColor }}>
               <div style={{
-                width: 60, height: 60, borderRadius: 10, background: surfaceColor, flexShrink: 0, overflow: "hidden",
+                width: 56, height: 56, borderRadius: 10, background: bgColor, flexShrink: 0, overflow: "hidden",
                 backgroundImage: `url(${item.image || DEFAULT_IMG})`, backgroundSize: "cover", backgroundPosition: "center",
               }} />
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -69,10 +69,10 @@ export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", t
                   </button>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, border: `1px solid ${borderColor}`, borderRadius: 8, padding: "2px 4px" }}>
-                    <button onClick={() => updateQuantity(slug, item.productId, item.quantity - 1)} style={{ background: "none", border: "none", cursor: "pointer", width: 22, height: 22, fontSize: 15, color: textColor, fontFamily: "inherit" }}>−</button>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 16, textAlign: "center" }}>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(slug, item.productId, item.quantity + 1)} disabled={item.quantity >= (item.stock ?? 99)} style={{ background: "none", border: "none", cursor: item.quantity >= (item.stock ?? 99) ? "not-allowed" : "pointer", width: 22, height: 22, fontSize: 15, color: item.quantity >= (item.stock ?? 99) ? "#ccc" : textColor, fontFamily: "inherit" }}>+</button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, border: `1px solid ${borderColor}`, borderRadius: 8, padding: "2px 4px", background: bgColor }}>
+                    <button onClick={() => updateQuantity(slug, item.productId, item.quantity - 1)} style={{ background: "none", border: "none", cursor: "pointer", width: 22, height: 22, fontSize: 15, color: primary, fontFamily: "inherit" }}>−</button>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 16, textAlign: "center", color: textColor }}>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(slug, item.productId, item.quantity + 1)} disabled={item.quantity >= (item.stock ?? 99)} style={{ background: "none", border: "none", cursor: item.quantity >= (item.stock ?? 99) ? "not-allowed" : "pointer", width: 22, height: 22, fontSize: 15, color: item.quantity >= (item.stock ?? 99) ? "#ccc" : primary, fontFamily: "inherit" }}>+</button>
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 800, color: textColor }}>
                     {(item.price * item.quantity).toLocaleString()} <span style={{ fontSize: 11, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
@@ -85,10 +85,10 @@ export default function CartDrawer({ open, onClose, slug, primary = "#2563eb", t
 
         {/* Footer */}
         {items.length > 0 && (
-          <div style={{ padding: "16px 20px", borderTop: `1px solid ${borderColor}` }}>
+          <div style={{ padding: "16px 20px", borderTop: `1px solid ${borderColor}`, background: bgColor }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <span style={{ fontSize: 13.5, color: mutedTextColor, fontWeight: 600 }}>المجموع</span>
-              <span style={{ fontSize: 17, fontWeight: 800, color: textColor }}>{total.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span></span>
+              <span style={{ fontSize: 17, fontWeight: 800, color: primary }}>{total.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span></span>
             </div>
             <button
               onClick={() => { onClose?.(); navigate(`/store/${slug}/checkout`); }}

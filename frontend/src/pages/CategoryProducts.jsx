@@ -656,6 +656,7 @@ export default function CategoryProducts() {
         mutedTextColor={mutedTextColor}
         borderColor={borderColor}
         surfaceColor={surfaceColor}
+        bgColor={bgColor}
       />
     </div>
   );

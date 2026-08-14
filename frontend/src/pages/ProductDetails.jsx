@@ -884,6 +884,7 @@ function ProductDetails() {
         mutedTextColor={mutedTextColor}
         borderColor={borderColor}
         surfaceColor={surfaceColor}
+        bgColor={bgColor}
       />
     </div>
   );
