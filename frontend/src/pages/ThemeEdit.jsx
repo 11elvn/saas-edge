@@ -1028,6 +1028,25 @@ const CSS = `
 }
 .pb-color-hex:focus { border-color: #7c6df2; box-shadow: 0 0 0 3px rgba(124,109,242,.14); }
 
+/* Design presets */
+.pb-preset-grid { display:flex; flex-direction:column; gap:8px; }
+.pb-preset-card {
+  position: relative; display:flex; align-items:center; gap:10px;
+  padding: 9px 10px; border: 1.5px solid #ece7fb; border-radius: 12px;
+  background: #fbfaff; cursor: pointer; text-align: right;
+  font-family: inherit; transition: all .18s;
+}
+.pb-preset-card:hover { border-color: #cabdf7; background: #fff; }
+.pb-preset-card--active { border-color: #7c6df2; background: #fff; box-shadow: 0 0 0 3px rgba(124,109,242,.14); }
+.pb-preset-card__swatches { display:flex; flex-shrink:0; }
+.pb-preset-card__dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid #fff; margin-inline-start: -7px;
+}
+.pb-preset-card__dot:first-child { margin-inline-start: 0; }
+.pb-preset-card__name { flex:1; font-size: .82rem; font-weight: 600; color: #443a63; }
+.pb-preset-card__check { color: #7c6df2; font-weight: 700; font-size: .85rem; flex-shrink:0; }
+
 /* Toggle row */
 .pb-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
@@ -1348,6 +1367,124 @@ function Collapse({ title, defaultOpen = true, children }) {
 // ─────────────────────────────────────────────
 // COLOR FIELD
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// COLOR PRESETS — 5 تصاميم ألوان جاهزة ومتناسقة
+// ✦ الترتيب يطابق حقول styles: primary/secondary/background/surface/text/mutedText/border
+// ─────────────────────────────────────────────
+const COLOR_PRESETS = [
+  {
+    id: "classic-blue",
+    name: "أزرق كلاسيكي",
+    desc: "ثقة واحترافية — مناسب لمعظم المتاجر",
+    colors: {
+      primaryColor: "#2563eb",
+      secondaryColor: "#0f172a",
+      backgroundColor: "#ffffff",
+      surfaceColor: "#f8fafc",
+      textColor: "#111111",
+      mutedTextColor: "#64748b",
+      borderColor: "#e2e8f0",
+    },
+  },
+  {
+    id: "luxury-black-gold",
+    name: "أسود وذهبي فاخر",
+    desc: "فخامة — مجوهرات، عطور، منتجات راقية",
+    colors: {
+      primaryColor: "#c9a227",
+      secondaryColor: "#0f0f0f",
+      backgroundColor: "#121212",
+      surfaceColor: "#1c1c1c",
+      textColor: "#f5f5f5",
+      mutedTextColor: "#a3a3a3",
+      borderColor: "#2e2e2e",
+    },
+  },
+  {
+    id: "warm-terracotta",
+    name: "تراكوتا دافئ",
+    desc: "دفء مغاربي — أزياء، بيت، حرف يدوية",
+    colors: {
+      primaryColor: "#c1662f",
+      secondaryColor: "#6b4226",
+      backgroundColor: "#fdf8f3",
+      surfaceColor: "#f7ede2",
+      textColor: "#2e2018",
+      mutedTextColor: "#8a7563",
+      borderColor: "#ecdfd0",
+    },
+  },
+  {
+    id: "fresh-green",
+    name: "أخضر طبيعي",
+    desc: "نضارة — أغذية عضوية، صحة، نباتات",
+    colors: {
+      primaryColor: "#16a34a",
+      secondaryColor: "#14532d",
+      backgroundColor: "#ffffff",
+      surfaceColor: "#f0fdf4",
+      textColor: "#14231a",
+      mutedTextColor: "#6b7d72",
+      borderColor: "#dcece1",
+    },
+  },
+  {
+    id: "modern-rose",
+    name: "وردي عصري",
+    desc: "جرأة عصرية — أزياء، تجميل، إكسسوارات",
+    colors: {
+      primaryColor: "#db2777",
+      secondaryColor: "#831843",
+      backgroundColor: "#fffbfc",
+      surfaceColor: "#fdf2f8",
+      textColor: "#241119",
+      mutedTextColor: "#8a6a76",
+      borderColor: "#f5d9e3",
+    },
+  },
+];
+
+// مفاتيح الألوان اللي كنقارنو بيها باش نعرفو التصميم النشط حاليًا
+const PRESET_COLOR_KEYS = [
+  "primaryColor", "secondaryColor", "backgroundColor",
+  "surfaceColor", "textColor", "mutedTextColor", "borderColor",
+];
+
+function ColorPresetsPanel({ styles, onChange }) {
+  const activeId = COLOR_PRESETS.find(p =>
+    PRESET_COLOR_KEYS.every(k => (styles?.[k] || "").toLowerCase() === p.colors[k].toLowerCase())
+  )?.id || null;
+
+  const applyPreset = (preset) => {
+    onChange({ ...styles, ...preset.colors });
+  };
+
+  return (
+    <div className="pb-group">
+      <div className="pb-group__label">Design presets</div>
+      <div className="pb-preset-grid">
+        {COLOR_PRESETS.map(p => (
+          <button
+            type="button"
+            key={p.id}
+            className={`pb-preset-card ${activeId === p.id ? "pb-preset-card--active" : ""}`}
+            onClick={() => applyPreset(p)}
+            title={p.desc}
+          >
+            <div className="pb-preset-card__swatches">
+              {PRESET_COLOR_KEYS.map(k => (
+                <span key={k} className="pb-preset-card__dot" style={{ background: p.colors[k] }} />
+              ))}
+            </div>
+            <div className="pb-preset-card__name">{p.name}</div>
+            {activeId === p.id && <div className="pb-preset-card__check">✓</div>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ColorField({ label, value, onChange }) {
   return (
     <div className="pb-field">
@@ -2371,6 +2508,7 @@ function StylesPanel({ styles, onChange }) {
   const s = (k, v) => onChange({ ...styles, [k]: v });
   return (
     <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
+      <ColorPresetsPanel styles={styles} onChange={onChange} />
       <div className="pb-group">
         <div className="pb-group__label">Colors</div>
         <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
