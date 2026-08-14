@@ -102,6 +102,7 @@ export default function CategoryProducts() {
 
   // ── Collection grid — infinite scroll ──
   const loadMoreRef = useRef(null);
+  const carouselRef  = useRef(null); // ✦ مرجع الكاروسيل — لأزرار التنقل الجديدة
   const [visibleCount, setVisibleCount] = useState(null);
 
   // ── Live theme من الـ builder (postMessage) ──
@@ -398,12 +399,14 @@ export default function CategoryProducts() {
               <p style={{ color: "#aaa", fontSize: 14 }}>لا توجد منتجات في هذا التصنيف</p>
             </div>
           ) : (
+            <div className={carouselMode ? "cp-carousel-wrap" : undefined} style={carouselMode ? { position: "relative" } : undefined}>
             <div
+              ref={carouselMode ? carouselRef : null}
               className="cp-coll-grid"
               data-cols={columns}
               data-carousel={carouselMode ? "1" : "0"}
               style={carouselMode ? {
-                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8,
+                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
               } : {
                 display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
               }}
@@ -541,6 +544,27 @@ export default function CategoryProducts() {
                 );
               })}
             </div>
+            {carouselMode && (
+              <>
+                <button
+                  aria-label="السابق"
+                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? 240 : -240, behavior: "smooth" })}
+                  className="cp-carousel-nav cp-carousel-nav--prev"
+                  style={{ background: primary }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="15 6 9 12 15 18"/></svg>
+                </button>
+                <button
+                  aria-label="التالي"
+                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? -240 : 240, behavior: "smooth" })}
+                  className="cp-carousel-nav cp-carousel-nav--next"
+                  style={{ background: primary }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+                </button>
+              </>
+            )}
+            </div>
           )}
 
           {/* ✦ Infinite scroll sentinel */}
@@ -582,6 +606,28 @@ export default function CategoryProducts() {
         .cp-card:hover { transform: translateY(-4px); }
         .cp-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
         .cp-card:hover .cp-card-cta { opacity: 1; transform: translateY(0); }
+
+        /* ✦ إخفاء الـ scrollbar الافتراضي للكاروسيل — بدّلناه بأزرار تنقل عائمة */
+        .cp-coll-grid[data-carousel="1"]::-webkit-scrollbar { display:none; }
+        .cp-coll-grid[data-carousel="1"] { -ms-overflow-style:none; scrollbar-width:none; }
+        .cp-carousel-nav {
+          position: absolute; top: 40%; transform: translateY(-50%);
+          width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 14px rgba(0,0,0,.18);
+          opacity: 0; transition: opacity .2s, transform .2s;
+          z-index: 2;
+        }
+        .cp-carousel-wrap:hover .cp-carousel-nav,
+        .cp-carousel-nav:focus-visible { opacity: 1; }
+        .cp-carousel-nav--prev { right: -6px; }
+        .cp-carousel-nav--next { left: -6px; }
+        .cp-carousel-nav:hover { transform: translateY(-50%) scale(1.06); }
+        @media (max-width: 768px) {
+          .cp-carousel-nav { opacity: 1; width: 32px; height: 32px; }
+          .cp-carousel-nav--prev { right: 2px; }
+          .cp-carousel-nav--next { left: 2px; }
+        }
         @media (hover: none) {
           .cp-card-cta { opacity: 1; transform: translateY(0); }
         }

@@ -126,6 +126,30 @@ const CSS = `
 /* Hide scrollbar for cat strip */
 .ps-cat-strip::-webkit-scrollbar { display:none; }
 .ps-cat-strip { -ms-overflow-style:none; scrollbar-width:none; }
+
+/* ✦ إخفاء الـ scrollbar الافتراضي للكاروسيل — بدّلناه بأزرار تنقل عائمة */
+.ps-coll-grid[data-carousel="1"]::-webkit-scrollbar { display:none; }
+.ps-coll-grid[data-carousel="1"] { -ms-overflow-style:none; scrollbar-width:none; }
+
+/* ✦ أزرار التنقل العائمة لكاروسيل المنتجات */
+.ps-carousel-nav {
+  position: absolute; top: 40%; transform: translateY(-50%);
+  width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  opacity: 0; transition: opacity .2s, transform .2s;
+  z-index: 2;
+}
+.ps-carousel-wrap:hover .ps-carousel-nav,
+.ps-carousel-nav:focus-visible { opacity: 1; }
+.ps-carousel-nav--prev { right: -6px; }
+.ps-carousel-nav--next { left: -6px; }
+.ps-carousel-nav:hover { transform: translateY(-50%) scale(1.06); }
+@media (max-width: 768px) {
+  .ps-carousel-nav { opacity: 1; width: 32px; height: 32px; }
+  .ps-carousel-nav--prev { right: 2px; }
+  .ps-carousel-nav--next { left: 2px; }
+}
 `;
 
 function injectCSS() {
@@ -397,6 +421,7 @@ function PublicStore() {
 
   const productsRef = useRef(null);
   const loadMoreRef = useRef(null);
+  const carouselRef  = useRef(null); // ✦ مرجع الكاروسيل — لأزرار التنقل الجديدة
   const [visibleCount, setVisibleCount] = useState(null); // ✦ يُهيّأ بحسب productsShown عند توفر إعدادات collection
 
   // ✦ Listen for live updates from ThemeEdit (iframe postMessage)
@@ -926,12 +951,14 @@ function PublicStore() {
               <p style={{ fontSize: 14 }}>لا توجد منتجات في هذا القسم</p>
             </div>
           ) : (
+            <div className={carouselMode ? "ps-carousel-wrap" : undefined} style={carouselMode ? { position: "relative" } : undefined}>
             <div
+              ref={carouselMode ? carouselRef : null}
               className="ps-coll-grid"
               data-cols={columns}
               data-carousel={carouselMode ? "1" : "0"}
               style={carouselMode ? {
-                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8,
+                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
               } : {
                 display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
               }}
@@ -1050,6 +1077,27 @@ function PublicStore() {
                   </div>
                 );
               })}
+            </div>
+            {carouselMode && (
+              <>
+                <button
+                  aria-label="السابق"
+                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? 240 : -240, behavior: "smooth" })}
+                  className="ps-carousel-nav ps-carousel-nav--prev"
+                  style={{ background: primary }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="15 6 9 12 15 18"/></svg>
+                </button>
+                <button
+                  aria-label="التالي"
+                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? -240 : 240, behavior: "smooth" })}
+                  className="ps-carousel-nav ps-carousel-nav--next"
+                  style={{ background: primary }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+                </button>
+              </>
+            )}
             </div>
           )}
 
