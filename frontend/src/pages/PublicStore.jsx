@@ -1170,6 +1170,7 @@ function PublicStore() {
         borderColor={borderColor}
         surfaceColor={surfaceColor}
         bgColor={bgColor}
+        isPreview={isPreview}
       />
     </div>
   );
