@@ -30,38 +30,42 @@ const IconCart = () => (
   </svg>
 );
 
-function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links }) {
+function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryColor, links, navBg, navText, navBorder }) {
   if (!open) return null;
+  // ✦ لون hover خفيف مبني على navText (يشتغل مع أي خلفية غامقة أو فاتحة)
+  const hoverBg = navText === "#111" || !navText ? "#f5f5f5" : `${navText}1a`;
   return (
     <>
       <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.55)", zIndex:998, backdropFilter:"blur(2px)" }} />
       <div style={{
         position:"fixed", top:0, right:0,
         width:"75%", maxWidth:300, height:"100%",
-        background:"#fff", zIndex:999,
+        background: navBg || "#fff",
+        borderLeft: `1px solid ${navBorder || "#f0f0f0"}`,
+        zIndex:999,
         padding:"24px 20px",
         display:"flex", flexDirection:"column",
         animation:"sn-slide-in .28s cubic-bezier(.32,.72,0,1) both",
         direction:"rtl",
       }}>
-        <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:"#111", alignSelf:"flex-end", padding:4 }}>
+        <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color: navText || "#111", alignSelf:"flex-end", padding:4 }}>
           <IconX />
         </button>
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"20px 0 32px" }}>
           {logo
             ? <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius:16 }} />
-            : <div style={{ fontWeight:900, fontSize:22, color:"#111", textAlign:"center", lineHeight:1.2 }}>{storeName}</div>
+            : <div style={{ fontWeight:900, fontSize:22, color: navText || "#111", textAlign:"center", lineHeight:1.2 }}>{storeName}</div>
           }
         </div>
         <nav style={{ display:"flex", flexDirection:"column", gap:4 }}>
           {links.map((item, i) => (
             <button key={i} onClick={() => { item.action(); onClose(); }} style={{
               background:"none", border:"none", cursor:"pointer",
-              color:"#333", fontFamily:"inherit", fontSize:15, fontWeight:600,
+              color: navText || "#333", fontFamily:"inherit", fontSize:15, fontWeight:600,
               padding:"12px 16px", borderRadius:10, textAlign:"right", transition:"background .2s",
             }}
-            onMouseEnter={e => e.currentTarget.style.background="#f5f5f5"}
-            onMouseLeave={e => e.currentTarget.style.background="none"}
+            onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}
             >{item.label}</button>
           ))}
         </nav>
@@ -71,7 +75,7 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
   );
 }
 
-function SearchBox({ open, onClose, slug, primaryColor }) {
+function SearchBox({ open, onClose, slug, primaryColor, navBg, navText, navBorder }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   if (!open) return null;
@@ -87,20 +91,21 @@ function SearchBox({ open, onClose, slug, primaryColor }) {
       <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:998, backdropFilter:"blur(2px)" }} />
       <div style={{
         position:"fixed", top:0, left:0, right:0, zIndex:999,
-        background:"#fff", borderBottom:"1px solid #f0f0f0",
+        background: navBg || "#fff",
+        borderBottom: `1px solid ${navBorder || "#f0f0f0"}`,
         boxShadow:"0 8px 30px rgba(0,0,0,.08)",
         padding:"18px 24px",
         animation:"sn-search-drop .25s ease both",
         direction:"rtl",
       }}>
-        <form onSubmit={submit} style={{ maxWidth:640, margin:"0 auto", display:"flex", alignItems:"center", gap:10 }}>
+        <form onSubmit={submit} style={{ maxWidth:640, margin:"0 auto", display:"flex", alignItems:"center", gap:10, color: navText || "#111" }}>
           <IconSearch />
           <input autoFocus value={q} onChange={e => setQ(e.target.value)}
             placeholder="ابحث عن منتج..."
-            style={{ flex:1, border:"none", outline:"none", fontSize:16, fontFamily:"inherit", background:"none", color:"#111", textAlign:"right" }}
+            style={{ flex:1, border:"none", outline:"none", fontSize:16, fontFamily:"inherit", background:"none", color: navText || "#111", textAlign:"right" }}
           />
           <button type="submit" style={{ background:primaryColor, color:"#fff", border:"none", borderRadius:10, padding:"9px 18px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>بحث</button>
-          <button type="button" onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", padding:6 }}><IconX /></button>
+          <button type="button" onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color: navText || "#888", padding:6, opacity:.7 }}><IconX /></button>
         </form>
       </div>
       <style>{`@keyframes sn-search-drop { from{transform:translateY(-100%)} to{transform:translateY(0)} }`}</style>
@@ -174,10 +179,14 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         logo={logo} storeName={storeName}
         primaryColor={primary} secondaryColor={secondary}
         links={navLinks}
+        navBg={navBg} navText={navText} navBorder={navBorder}
       />
       {/* ✦ SearchBox تظهر فقط إذا showSearch مفعّل */}
       {showSearch && (
-        <SearchBox open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary} />
+        <SearchBox
+          open={searchOpen} onClose={() => setSearchOpen(false)} slug={slug} primaryColor={primary}
+          navBg={navBg} navText={navText} navBorder={navBorder}
+        />
       )}
 
       {/* ══════════════ DESKTOP NAV (LTR layout) ══════════════ */}
