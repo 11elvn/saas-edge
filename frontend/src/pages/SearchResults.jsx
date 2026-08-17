@@ -138,6 +138,10 @@ export default function SearchResults() {
       }
     };
     window.addEventListener("message", handler);
+    // ✦ نطلبو آخر themeConfig مباشرة (بلاصة نتصنّتو غير على push من load event)
+    if (isPreview) {
+      try { window.parent.postMessage({ type: "REQUEST_THEME_CONFIG" }, "*"); } catch (_) {}
+    }
     return () => window.removeEventListener("message", handler);
   }, []);
 

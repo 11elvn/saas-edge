@@ -2724,6 +2724,25 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     } catch (_) {}
   }, [activeSection]);
 
+  // ✦ الصفحة الجديدة (بعد ما تحمّل وتسجّل الـ listener ديالها) كتطلب آخر themeConfig بنفسها
+  // هذا كيحل أي سباق توقيت مع حدث load (بلاصة الاعتماد بروحو على handleLoad)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type !== "REQUEST_THEME_CONFIG") return;
+      if (iframeRef.current?.contentWindow && e.source !== iframeRef.current.contentWindow) return;
+      if (themeConfig) sendConfig(themeConfig);
+      if (storePatch) sendStorePatch(storePatch);
+      try {
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+          "*"
+        );
+      } catch (_) {}
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [themeConfig, storePatch, activeSection]);
+
   // عند تغيير themeConfig — إذا الـ iframe محمّل أرسل مباشرة، وإلا احفظه كـ pending
   useEffect(() => {
     if (!themeConfig) return;
@@ -2737,6 +2756,8 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   const handleLoad = () => {
     loadedRef.current = true;
     // أرسل أي config كان معلّق
+    // ✦ الأولوية دايماً للـ themeConfig الحي (المحدّث) — pendingRef غير fallback نادر
+    // (قبل: pendingRef.current كانت تاخد الأولوية وتبعث نسخة قديمة عند تبديل الصفحة → التصميم يرجع للقديم)
     const cfg = themeConfig || pendingRef.current;
     if (cfg) sendConfig(cfg);
     // أرسل أي تحديث متجر كان معلّق
