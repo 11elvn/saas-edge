@@ -2737,7 +2737,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
   const handleLoad = () => {
     loadedRef.current = true;
     // أرسل أي config كان معلّق
-    const cfg = pendingRef.current || themeConfig;
+    const cfg = themeConfig || pendingRef.current;
     if (cfg) sendConfig(cfg);
     // أرسل أي تحديث متجر كان معلّق
     const sp = pendingStoreRef.current || storePatch;
