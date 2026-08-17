@@ -30,6 +30,16 @@ const IconCartEmpty = () => (
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
   </svg>
 );
+const IconMinus = () => (
+  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const IconPlus = () => (
+  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
 
 // ── منتجات تجريبية — تبان غير جوه ThemeEdit (isPreview) كي السلة الحقيقية فارغة ──
 // ✦ باش التاجر يشوف كيفاش يبان تصميم السلة بمنتجات، ماشي فارغة دايماً
@@ -130,13 +140,13 @@ export default function CartDrawer({
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {items.map(item => (
                 <div key={item.productId} style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  background: surfaceColor, borderRadius: 16, padding: 10,
+                  display: "flex", alignItems: "center", gap: 11,
+                  background: surfaceColor, borderRadius: 14, padding: 9,
                   border: `1px solid ${borderColor}`,
                 }}>
                   {/* الصورة */}
                   <div style={{
-                    width: 58, height: 58, borderRadius: 12, overflow: "hidden", flexShrink: 0,
+                    width: 56, height: 56, borderRadius: 10, overflow: "hidden", flexShrink: 0,
                     background: bgColor, backgroundImage: `url(${item.image || DEFAULT_IMG})`,
                     backgroundSize: "cover", backgroundPosition: "center",
                   }} />
@@ -156,24 +166,26 @@ export default function CartDrawer({
 
                       {/* stepper */}
                       <div style={{
-                        display: "flex", alignItems: "center", gap: 2,
-                        background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 999, padding: 3,
+                        display: "flex", alignItems: "center", gap: 4,
+                        background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 10, padding: "3px 8px",
                       }}>
                         <button
                           onClick={() => handleQty(item.productId, item.quantity - 1)}
-                          style={{ background: "none", border: "none", cursor: "pointer", width: 20, height: 20, fontSize: 13, lineHeight: 1, color: textColor, fontFamily: "inherit", borderRadius: "50%" }}
-                        >−</button>
+                          className="cd-step-btn"
+                          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, color: mutedTextColor, borderRadius: 6 }}
+                        ><IconMinus /></button>
                         <span style={{ fontSize: 11.5, fontWeight: 800, color: textColor, minWidth: 16, textAlign: "center" }}>{item.quantity}</span>
                         <button
                           onClick={() => handleQty(item.productId, item.quantity + 1)}
                           disabled={item.quantity >= (item.stock ?? 99)}
+                          className="cd-step-btn"
                           style={{
-                            background: "none", border: "none", width: 20, height: 20, fontSize: 13, lineHeight: 1, borderRadius: "50%",
+                            background: "none", border: "none", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, borderRadius: 6,
                             cursor: item.quantity >= (item.stock ?? 99) ? "not-allowed" : "pointer",
                             color: item.quantity >= (item.stock ?? 99) ? mutedTextColor : textColor,
-                            opacity: item.quantity >= (item.stock ?? 99) ? .5 : 1, fontFamily: "inherit",
+                            opacity: item.quantity >= (item.stock ?? 99) ? .5 : 1,
                           }}
-                        >+</button>
+                        ><IconPlus /></button>
                       </div>
                     </div>
                   </div>
@@ -221,6 +233,7 @@ export default function CartDrawer({
       <style>{`
         @keyframes cd-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .cd-close-btn:hover { filter: brightness(.94); }
+        .cd-step-btn:hover:not(:disabled) { background: rgba(0,0,0,.06); }
         .cd-remove-btn:hover { color: #ef4444 !important; background: #ef44441a; }
         .cd-checkout-btn:hover { filter: brightness(1.06); }
         .cd-checkout-btn:active { transform: scale(.98); }
