@@ -1,10 +1,12 @@
 // ============================================================
-// 📁 pages/PublicStore.jsx — Day 23 Redesign (bat-caveee style)
+// 📁 pages/ProductDetails.jsx — Product Page Builder (Tassyir-style)
+// Sections: Announcement · Header · Gallery · Product Info · In-Page Checkout · Footer
+// كل شي مربوط بـ themeConfig.product.sections (يتحرر من ThemeEdit → Product tab)
 // ============================================================
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ALGERIAN_CITIES } from "../constants/algerianCities";
+import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
@@ -13,16 +15,7 @@ import { useCart } from "../context/CartContext";
 const API = () => import.meta.env.VITE_API_URL;
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
 
-// ── Demo categories — تبان غير جوه ThemeEdit (isPreview) كي التاجر مازال ما دار تصنيفات ──
-// ✦ بلا صور — نستعملو placeholder أنيق (❓ + خلفية غامقة) كيما Tassyir، ماشي صور حقيقية
-const DEMO_CATEGORIES = [
-  { _id: "demo-1", name: "ملابس",       image: null, _demo: true },
-  { _id: "demo-2", name: "إلكترونيات",  image: null, _demo: true },
-  { _id: "demo-3", name: "إكسسوارات",   image: null, _demo: true },
-  { _id: "demo-4", name: "أحذية",       image: null, _demo: true },
-];
-
-// ── Google Font loader ──────────────────────────────────────
+// ── Google Font loader (نفس المنطق ديال PublicStore) ─────────
 function loadFont(font) {
   const id = `font-${font}`;
   if (document.getElementById(id)) return;
@@ -33,416 +26,234 @@ function loadFont(font) {
   document.head.appendChild(link);
 }
 
-// ── CSS inject ──────────────────────────────────────────────
-const CSS = `
-@keyframes ps-fade-up {
-  from { opacity:0; transform:translateY(24px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes ps-slide-in {
-  from { transform:translateX(100%); }
-  to   { transform:translateX(0); }
-}
-@keyframes ps-marquee {
-  from { transform:translateX(0); }
-  to   { transform:translateX(-50%); }
-}
-@keyframes ps-spin { to { transform:rotate(360deg); } }
+// ── DEFAULTS — نفس القيم المبدئية ديال ThemeEdit (announcement/header/footer + styles) ──
+const DEFAULT_HOME_SECTIONS = [
+  { id: "announcement", type: "announcement", enabled: true, settings: { message: "توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor: "#111827", textColor: "#ffffff", animation: true, showClose: false } },
+  { id: "header",       type: "header",       enabled: true, settings: { showSearch: true, showCart: true, sticky: true } },
+  { id: "footer",       type: "footer",       enabled: true, settings: { copyright: "", showNewsletter: true, termsText: "الشروط والسياسات", showSocials: true, socials: {} } },
+];
+const DEFAULT_STYLES = {
+  primaryColor: "#2563eb", secondaryColor: "#0f172a", backgroundColor: "#ffffff",
+  surfaceColor: "#fafafa", textColor: "#111111", mutedTextColor: "#666666",
+  borderColor: "#ebebeb", fontFamily: "Cairo", direction: "rtl",
+};
+// ── DEFAULTS — Gallery / Product Info / Checkout (نفس PRODUCT_DEFAULT_CONFIG فـ ThemeEdit) ──
+const DEFAULT_PRODUCT_SECTIONS = [
+  { id: "gallery", type: "gallery", enabled: true, settings: { carouselMode: false, layout: "stacked", imageRatio: "1:1", enableZoom: false, showArrows: true, showThumbnails: true, thumbnailsShown: 4 } },
+  { id: "productInfo", type: "productInfo", enabled: true, settings: { ctaButtonText: "اطلب الآن", showQuantitySelector: true, showAddToCartButton: true, badgeText: "الأكثر مبيعاً", showDeliveryNote: true, deliveryNote: "توصيل خلال 3-5 أيام عمل لجميع ولايات الجزائر 🚚" } },
+  { id: "checkout", type: "checkout", enabled: true, settings: {
+      sectionTitle: "معلومات الطلب", titleAlign: "right", submitButtonText: "تأكيد الطلب",
+      formStyle: "default", buttonAnimation: "none", showFieldIcons: true,
+      showAddressField: false, showNoteField: false, stickyButton: true, stickyButtonText: "اطلب الآن",
+      fields: { fullName: { enabled: true, required: true }, phone: { enabled: true, required: true }, province: { enabled: true, required: true }, municipality: { enabled: true, required: false } },
+  } },
+];
 
-.ps-fade-up  { animation: ps-fade-up .55s ease both; }
-.ps-delay-1  { animation-delay:.08s; }
-.ps-delay-2  { animation-delay:.16s; }
-.ps-delay-3  { animation-delay:.24s; }
-.ps-delay-4  { animation-delay:.32s; }
+const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
-.ps-drawer          { animation: ps-slide-in .3s cubic-bezier(.32,.72,0,1) both; }
-.ps-marquee-track   { animation: ps-marquee 18s linear infinite; }
-.ps-spinner         { animation: ps-spin .7s linear infinite; }
-
-.ps-card {
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+const PD_CSS = `
+@keyframes pd-fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pd-spin     { to{transform:rotate(360deg)} }
+@keyframes pd-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+@keyframes pd-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0,0,0,.35); }
+  70%  { box-shadow: 0 0 0 12px rgba(0,0,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
 }
-.ps-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0,0,0,.18);
+.pd-fade  { animation: pd-fade-up .45s ease both; }
+.pd-d1    { animation-delay: .08s; }
+.pd-d2    { animation-delay: .16s; }
+.pd-spinner { animation: pd-spin .7s linear infinite; }
+.pd-marquee-track { animation: pd-marquee 18s linear infinite; }
+.pd-thumb {
+  cursor:pointer; border-radius:10px; overflow:hidden;
+  border:2px solid transparent; flex-shrink:0;
+  transition: border-color .2s, transform .2s;
 }
-.ps-cat-chip {
-  transition: background .2s, color .2s, border-color .2s;
-  white-space: nowrap;
-  cursor: pointer;
+.pd-thumb:hover { transform:scale(1.05); }
+.pd-thumb.active { border-color: var(--pd-primary); }
+.pd-input {
+  width:100%; padding:12px 14px; border-radius:12px;
+  border:1px solid var(--pd-border, #e5e7eb); background:#f9fafb;
+  color:#111; font-family:inherit; font-size:14px;
+  outline:none; transition: border-color .2s, background .2s;
+  text-align:right; box-sizing:border-box;
 }
-.ps-card-cta {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .22s ease, transform .22s ease;
+.pd-input--compact { padding:9px 12px; font-size:13px; border-radius:10px; }
+.pd-input--icon { padding-right: 38px; }
+.pd-input:focus { border-color: var(--pd-primary); background:#fff; }
+.pd-input::placeholder { color:#aaa; }
+.pd-field-wrap { position:relative; }
+.pd-field-icon { position:absolute; top:50%; right:12px; transform:translateY(-50%); color:#9ca3af; pointer-events:none; display:flex; }
+.pd-btn-order {
+  position:relative; overflow:hidden;
+  transition: transform .15s, box-shadow .15s, opacity .2s;
 }
-.ps-card:hover .ps-card-cta {
-  opacity: 1;
-  transform: translateY(0);
+.pd-btn-order:not(:disabled):hover { transform:translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+.pd-btn-order:not(:disabled):active { transform:scale(.97); }
+.pd-btn-order--pulse { animation: pd-pulse 1.8s ease-out infinite; }
+.pd-qty-btn {
+  width:34px; height:34px; border-radius:9px; border:1px solid #e5e7eb; background:#fff;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; color:#111;
+  transition: background .15s;
 }
-@media (hover: none) {
-  .ps-card-cta { opacity: 1; transform: translateY(0); }
+.pd-qty-btn:hover { background:#f3f4f6; }
+.pd-gallery-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.9); box-shadow:0 4px 14px rgba(0,0,0,.15);
+  display:flex; align-items:center; justify-content:center; color:#111; z-index:2;
 }
-.ps-btn-order {
-  position: relative;
-  overflow: hidden;
-  transition: transform .15s, box-shadow .15s;
-}
-.ps-btn-order:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.35);
-}
-.ps-btn-order:not(:disabled):active { transform: scale(.97); }
-.ps-btn-order::after {
-  content:'';
-  position:absolute;inset:0;
-  background:rgba(255,255,255,.12);
-  opacity:0; transition:opacity .2s;
-}
-.ps-btn-order:not(:disabled):hover::after { opacity:1; }
-
-.ps-whatsapp {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 999;
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  background: #25D366;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 20px rgba(37,211,102,.45);
-  transition: transform .2s, box-shadow .2s;
-}
-.ps-whatsapp:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(37,211,102,.6);
-}
-.ps-overlay {
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.55);
-  z-index:998;
-  backdrop-filter: blur(2px);
-}
-/* Hide scrollbar for cat strip */
-.ps-cat-strip::-webkit-scrollbar { display:none; }
-.ps-cat-strip { -ms-overflow-style:none; scrollbar-width:none; }
-
-/* ✦ إخفاء الـ scrollbar الافتراضي للكاروسيل — بدّلناه بأزرار تنقل عائمة */
-.ps-coll-grid[data-carousel="1"]::-webkit-scrollbar { display:none; }
-.ps-coll-grid[data-carousel="1"] { -ms-overflow-style:none; scrollbar-width:none; }
-
-/* ✦ أزرار التنقل العائمة لكاروسيل المنتجات */
-.ps-carousel-nav {
-  position: absolute; top: 40%; transform: translateY(-50%);
-  width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(0,0,0,.18);
-  opacity: 0; transition: opacity .2s, transform .2s;
-  z-index: 2;
-}
-.ps-carousel-wrap:hover .ps-carousel-nav,
-.ps-carousel-nav:focus-visible { opacity: 1; }
-.ps-carousel-nav--prev { right: -6px; }
-.ps-carousel-nav--next { left: -6px; }
-.ps-carousel-nav:hover { transform: translateY(-50%) scale(1.06); }
-@media (max-width: 768px) {
-  .ps-carousel-nav { opacity: 1; width: 32px; height: 32px; }
-  .ps-carousel-nav--prev { right: 2px; }
-  .ps-carousel-nav--next { left: 2px; }
+.pd-gallery-zoom { transition: transform .4s ease; }
+.pd-gallery-zoom--enabled:hover { transform: scale(1.35); cursor: zoom-in; }
+.pd-sticky-bar {
+  position:fixed; bottom:0; left:0; right:0; z-index:500;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:#fff; border-top:1px solid #eee; box-shadow:0 -8px 24px rgba(0,0,0,.08);
 }
 `;
 
+const PREVIEW_CSS = `
+.pd-section-wrapper { position: relative; }
+.pd-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+.pd-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+.pd-section-label {
+  position: absolute; top: 8px; left: 8px; z-index: 150;
+  background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px; pointer-events: none;
+  font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(124,109,242,.35);
+  opacity: 0; transition: opacity .12s ease;
+}
+.pd-section-wrapper:hover .pd-section-label,
+.pd-section-wrapper--highlighted .pd-section-label { opacity: 1; }
+`;
+
 function injectCSS() {
-  if (document.getElementById("ps-styles")) return;
+  if (document.getElementById("pd-styles")) return;
   const s = document.createElement("style");
-  s.id = "ps-styles";
-  s.textContent = CSS + PREVIEW_CSS;
+  s.id = "pd-styles";
+  s.textContent = PD_CSS + PREVIEW_CSS;
   document.head.appendChild(s);
 }
 
-// ── Icons ───────────────────────────────────────────────────
-const IconMenu = () => (
-  <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-);
-const IconX = () => (
-  <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-);
+const SECTION_LABELS = {
+  announcement: "Announcement Bar",
+  header: "Header",
+  gallery: "Gallery",
+  productInfo: "Product Info",
+  checkout: "In-Page Checkout",
+  footer: "Footer",
+};
+
+// ── SectionWrapper — نفس منطق PublicStore: label + border + كليك يبعث للـ builder ──
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
+  if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
+  const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
+  return (
+    <div
+      style={{ position: "relative", ...style, cursor: "pointer" }}
+      data-section={type}
+      onClick={handleClick}
+      className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
+    >
+      <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>
+      {children}
+    </div>
+  );
+}
+
+// ── أيقونات صغيرة ─────────────────────────────────────────
 const IconCart = () => (
   <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
   </svg>
 );
-const IconChevron = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
-    <polyline points="9 18 15 12 9 6"/>
-  </svg>
-);
-const IconTruck   = () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
-const IconShield  = () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
-const IconHeadset = () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z"/><path d="M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>;
-const IconWA = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-);
+const IconChevronL = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
+const IconChevronR = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
+const IconUser  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>;
+const IconPhone = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.12 4.2 2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>;
+const IconPin   = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>;
+const IconBuilding = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="3" width="16" height="18" rx="1"/><line x1="9" y1="8" x2="9" y2="8.01"/><line x1="15" y1="8" x2="15" y2="8.01"/><line x1="9" y1="13" x2="9" y2="13.01"/><line x1="15" y1="13" x2="15" y2="13.01"/><line x1="10" y1="21" x2="10" y2="17" /><line x1="14" y1="21" x2="14" y2="17" /></svg>;
+const IconHome  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>;
+const IconNote  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg>;
 
-// ── Drawer (mobile menu) ────────────────────────────────────
-function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
-  if (!open) return null;
+const FIELD_ICONS = { fullName: <IconUser/>, phone: <IconPhone/>, province: <IconPin/>, municipality: <IconBuilding/>, address: <IconHome/>, note: <IconNote/> };
+
+// ── GallerySlot — صورة حقيقية (فـ الموقع الحي)، أو placeholder رمادي مرقّم فـ preview الـ ThemeEdit ──
+// ── FieldLabel — تسمية فوق كل حقل فـ In-Page Checkout (مع نجمة حمراء إذا إجباري) ──
+function FieldLabel({ text, required, optionalLabel, color }) {
   return (
-    <>
-      <div className="ps-overlay" onClick={onClose} />
-      <div
-        className="ps-drawer"
-        style={{
-          position: "fixed", top: 0, right: 0, bottom: 0, width: "280px",
-          background: "#fff", zIndex: 999, display: "flex", flexDirection: "column",
-          boxShadow: "-8px 0 40px rgba(0,0,0,.2)",
-        }}
-        dir="rtl"
-      >
-        {/* Header */}
-        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {logo
-              ? <img src={logo} alt="logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} />
-              : <div style={{ width: 36, height: 36, borderRadius: 8, background: primaryColor, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>{storeName?.charAt(0) || "م"}</div>
-            }
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>{storeName}</span>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", padding: 4 }}>
-            <IconX />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid #f0f0f0" }}>
-          <div style={{ background: "#f9fafb", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #e5e7eb" }}>
-            <svg width="16" height="16" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input placeholder="البحث عن منتج" style={{ border: "none", background: "none", outline: "none", fontSize: 14, color: "#374151", width: "100%", textAlign: "right" }} />
-          </div>
-        </div>
-
-        {/* Nav links */}
-        {["الصفحة الرئيسية", "التصنيفات", "اتصل بنا"].map((item, i) => (
-          <button
-            key={i}
-            onClick={() => { onNavigate(item); onClose(); }}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "16px 20px", border: "none", borderBottom: "1px solid #f9fafb",
-              background: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, color: "#111",
-              fontFamily: "inherit",
-            }}
-          >
-            {item}
-            <IconChevron />
-          </button>
-        ))}
-      </div>
-    </>
+    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color, marginBottom: 8 }}>
+      {text}
+      {required && <span style={{ color, marginInlineStart: 3 }}>*</span>}
+      {optionalLabel && <span style={{ color: "#9ca3af", fontWeight: 600 }}> (اختياري)</span>}
+    </label>
   );
 }
 
-// ── DEFAULT THEME CONFIG (fallback) ──────────────────────────
-const DEFAULT_TC = {
-  sections: [
-    { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
-    { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
-    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center" } },
-    { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
-    { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", titleAlign:"right", selectionMode:"all", productsShown:8, carouselMode:false, columns:3, imageRatio:"1:1", showBadge:true, showRating:false, showViewAll:true, viewAllText:"عرض الكل", viewAllStyle:"link", infiniteScroll:false } },
-    { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", subtitle:"اعثر على كل ما تريد", titleAlign:"right", displayStyle:"grid", maxItems:6 } },
-    { id:"footer",       type:"footer",       enabled:true,  settings:{ copyright:"© 2025 اسم متجرك", termsText:"الشروط والسياسات", showSocials:true, socials:{ facebook:"", instagram:"", youtube:"", tiktok:"", twitter:"", whatsapp:"" } } },
-  ],
-  styles: { primaryColor:"#2563eb", secondaryColor:"#0f172a", fontFamily:"Cairo", borderRadius:"medium", buttonStyle:"filled" },
-};
-
-// helper — بحث في sections
-const sec = (tc, type) => tc?.sections?.find(s => s.type === type);
-
-// ── اسماء الـ sections للـ label ──────────────────────────────
-const SECTION_LABELS = {
-  announcement: "Announcement Bar",
-  header:       "Header",
-  hero:         "Hero Banner",
-  trust:        "Trust Badges",
-  collection:   "Product Collection",
-  categories:   "Categories",
-  footer:       "Footer",
-};
-
-// ── CSS للـ preview overlays ──────────────────────────────────
-const PREVIEW_CSS = `
-.ps-section-wrapper {
-  position: relative;
-}
-
-/* Hover — تمرير الفار فوق أي section: طبقة overlay ملتصقة بالضبط بالحواف (inset:0)، فوق كل المحتوى */
-.ps-section-wrapper:hover::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px dashed rgba(124,109,242,.55);
-  background: rgba(124,109,242,.05);
-  pointer-events: none;
-  z-index: 140;
-}
-
-/* Selected/highlighted — الـ section المختارة فعليًا (كليك): نفس الطبقة بحدود صريحة + تلوين أقوى */
-.ps-section-wrapper--highlighted {
-  position: relative;
-}
-.ps-section-wrapper--highlighted::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px solid #7c6df2;
-  background: rgba(124,109,242,.10);
-  pointer-events: none;
-  z-index: 140;
-}
-
-/* Label اسم الـ section — دايمًا فالزاوية اليسرى الفيزيائية (left)، بغض النظر عن اتجاه الصفحة */
-.ps-section-label {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 150;
-  background: #7c6df2;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 6px;
-  pointer-events: none;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: .3px;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(124,109,242,.35);
-  opacity: 0;
-  transition: opacity .12s ease;
-}
-/* يبان عند hover حتى بلا اختيار، ويبقى ظاهر دايمًا كي الـ section مختارة */
-.ps-section-wrapper:hover .ps-section-label,
-.ps-section-wrapper--highlighted .ps-section-label {
-  opacity: 1;
-}
-.ps-section-label--active {
-  background: #7c6df2;
-}
-
-/* زر + أسفل الـ section المختار */
-.ps-add-below {
-  position: absolute;
-  bottom: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 101;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ps-add-below__btn {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: #7c6df2;
-  border: 2px solid #fff;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  cursor: not-allowed;
-  box-shadow: 0 2px 8px rgba(124,109,242,.45);
-}
-`;
-
-// ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
-  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
-
-  // ✦ عند كليك على أي مكان في الـ section → نرسل للـ ThemeEdit باش يفتح settings
-  const handleClick = () => {
-    window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
-  };
-
+function GallerySlot({ src, index, className = "", style = {} }) {
+  if (src) {
+    return (
+      <img
+        src={src} alt={`img-${index + 1}`}
+        onError={e => { e.target.src = DEFAULT_IMG; }}
+        className={className}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", ...style }}
+      />
+    );
+  }
   return (
-    <div
-      style={{ ...style, position: "relative", cursor: "pointer" }}
-      data-section={type}
-      onClick={handleClick}
-      className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
-    >
-      {/* ── Label — اسم الـ section: يبان عند hover، ويبقى ظاهر إذا كانت مختارة ── */}
-      <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
-        {SECTION_LABELS[type] || type}
-      </div>
-      {children}
-      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) ── */}
-      {isHighlighted && (
-        <div className="ps-add-below">
-          <button className="ps-add-below__btn" title="Add section" disabled>+</button>
-        </div>
-      )}
+    <div style={{
+      width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+      background: "#e9eaee", color: "#a3a7b0", fontWeight: 800,
+      fontSize: "clamp(22px,7vw,52px)", fontFamily: "'Inter', sans-serif",
+    }}>
+      {index + 1}
     </div>
   );
 }
 
-// ── AddBetween — محذوف من الـ preview (لا يظهر شي بين sections) ──
-function AddBetween({ isPreview }) {
-  return null;
-}
-
-// ── MAIN ─────────────────────────────────────────────────────
-function PublicStore() {
-  const { slug } = useParams();
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  // ✦ preview mode — نشغّلوه فقط من داخل ThemeEdit iframe
+function ProductDetails() {
+  const { slug, productId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const isPreview = new URLSearchParams(location.search).get("preview") === "1";
 
-  const [store,      setStore]      = useState(null);
-  const [products,   setProducts]   = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [activeCat,  setActiveCat]  = useState("all");
-  const [loading,    setLoading]    = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const { getCartCount } = useCart();
+  const [product,      setProduct]      = useState(null);
+  const [store,        setStore]        = useState(null);
+  const [activeImg,    setActiveImg]    = useState(0);
+  const [loading,      setLoading]      = useState(true);
+  const [ordering,     setOrdering]     = useState(false);
+  const [quantity,     setQuantity]     = useState(1);
+
+  // ── السلة (Cart) ──────────────────────────────────────────
+  const { addToCart, getCartCount } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
-  // ✦ themeConfig — يُحدَّث live من postMessage (page builder)
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
+
+  // ── حقول الفورم ──
+  const [customerName, setCustomerName] = useState("");
+  const [phone,        setPhone]        = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [address,      setAddress]      = useState("");
+  const [note,         setNote]         = useState("");
+  const [shippingPrice,setShippingPrice]= useState(0);
+
+  // ── Live theme من الـ builder (postMessage) ──
   const [themeConfig, setThemeConfig] = useState(null);
-  // ✦ highlighted section type من page builder
   const [highlightedSection, setHighlightedSection] = useState(null);
+  const checkoutRef = useRef(null);
 
-  const productsRef = useRef(null);
-  const loadMoreRef = useRef(null);
-  const carouselRef  = useRef(null); // ✦ مرجع الكاروسيل — لأزرار التنقل الجديدة
-  const [visibleCount, setVisibleCount] = useState(null); // ✦ يُهيّأ بحسب productsShown عند توفر إعدادات collection
-
-  // ✦ Listen for live updates from ThemeEdit (iframe postMessage)
   useEffect(() => {
     const handler = (e) => {
-      if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) {
-        setThemeConfig(e.data.themeConfig);
-      }
-      // ✦ تحديث فوري لاسم/لوجو المتجر من page builder (preview بدون حفظ)
-      if (e.data?.type === "STORE_UPDATE" && e.data.store) {
-        setStore(prev => (prev ? { ...prev, ...e.data.store } : prev));
-      }
-      // ✦ Highlight section في الـ preview
-      if (e.data?.type === "HIGHLIGHT_SECTION") {
-        setHighlightedSection(e.data.sectionType || null);
-      }
-      // ✦ Scroll لـ section معين من الـ left panel
+      if (e.data?.type === "THEME_UPDATE" && e.data.themeConfig) setThemeConfig(e.data.themeConfig);
+      if (e.data?.type === "STORE_UPDATE" && e.data.store) setStore(prev => (prev ? { ...prev, ...e.data.store } : prev));
+      if (e.data?.type === "HIGHLIGHT_SECTION") setHighlightedSection(e.data.sectionType || null);
       if (e.data?.type === "SCROLL_TO_SECTION") {
-        const type = e.data.sectionType;
-        // كل section عنده data-section attribute نحوسو عليه
-        const el = document.querySelector(`[data-section="${type}"]`);
+        const el = document.querySelector(`[data-section="${e.data.sectionType}"]`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     };
@@ -454,715 +265,626 @@ function PublicStore() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  // ✦ الـ config الفعلي — إذا وصل من postMessage استعمله، وإلا استعمل ما في store
-  const rawTc = themeConfig || (store?.themeConfig?.sections ? store.themeConfig : DEFAULT_TC);
+  // ── الإعدادات الفعلية — من postMessage إذا preview، وإلا من store.themeConfig، وإلا defaults ──
+  const rawTc      = themeConfig || store?.themeConfig || null;
+  const homeSections    = rawTc?.sections || DEFAULT_HOME_SECTIONS;
+  const productSections = rawTc?.product?.sections || DEFAULT_PRODUCT_SECTIONS;
+  const styles = rawTc?.styles || DEFAULT_STYLES;
 
-  // نفرض الـ 5 badges الثابتة على Trust Badges (نحافظ على enabled/title/sub القديمة لو متطابقة بالـ id)
-  const tc = (() => {
-    if (!rawTc?.sections) return rawTc;
-    const FIXED_BADGES = DEFAULT_TC.sections.find(s => s.type === "trust")?.settings?.badges || [];
-    return {
-      ...rawTc,
-      sections: rawTc.sections.map(sec => {
-        if (sec.type !== "trust") return sec;
-        const oldBadges = sec.settings?.badges || [];
-        const badges = FIXED_BADGES.map(fb => {
-          const old = oldBadges.find(b => b.id === fb.id);
-          return old ? { ...fb, enabled: old.enabled, title: old.title, sub: old.sub } : fb;
-        });
-        return { ...sec, settings: { ...sec.settings, badges } };
-      })
-    };
-  })();
-
-  // ✦ ترتيب الـ section حسب مكانه الحقيقي فـ themeConfig.sections
-  // (باش drag & drop ديال ThemeEdit يأثر فعلا على ترتيب العرض هنا، بلا ما يبقى الترتيب ثابت فالكود)
-  const sectionOrder = (type) => {
-    const idx = (tc?.sections || []).findIndex(s => s.type === type);
-    return idx === -1 ? 999 : idx;
+  // ✦ ترتيب ProductInfo/Checkout داخل العمود اليمين (Gallery ثابتة ديما فاليسار — العمود مقسوم
+  // 2 لصور/معلومات، ماشي stack، فالتحريك ما عندوش معنى بصري ليها) — حسب مكانهم فـ themeConfig.product.sections
+  const productOrder = (type) => {
+    const idx = (productSections || []).findIndex(s => s.type === type);
+    return idx === -1 ? 99 : idx;
   };
 
-  // derived theme values (من styles أو من store مباشرة كـ fallback)
-  const primary         = tc?.styles?.primaryColor    || store?.primaryColor   || "#111827";
-  const secondary       = tc?.styles?.secondaryColor  || store?.secondaryColor || "#1f2937";
-  const font            = tc?.styles?.fontFamily      || store?.fontFamily     || "Cairo";
-  const bgColor         = tc?.styles?.backgroundColor || "#ffffff";
-  const surfaceColor    = tc?.styles?.surfaceColor    || "#fafafa";
-  const textColor       = tc?.styles?.textColor       || "#111111";
-  const mutedTextColor  = tc?.styles?.mutedTextColor  || "#666666";
-  const borderColor     = tc?.styles?.borderColor     || "#ebebeb";
-  const direction       = tc?.styles?.direction       || "rtl";
+  const primary        = styles.primaryColor    || store?.primaryColor   || "#2563eb";
+  const secondary      = styles.secondaryColor  || store?.secondaryColor || "#0f172a";
+  const font           = styles.fontFamily      || store?.fontFamily     || "Cairo";
+  const bgColor        = styles.backgroundColor || "#ffffff";
+  const surfaceColor   = styles.surfaceColor    || "#f9fafb";
+  const textColor      = styles.textColor       || "#111111";
+  const mutedTextColor = styles.mutedTextColor  || "#888888";
+  const borderColor    = styles.borderColor     || "#eeeeee";
+  const direction      = styles.direction       || "rtl";
 
   useEffect(() => {
     injectCSS();
     loadFont("Cairo");
-    loadFont("Poppins");
-  }, []);
+    document.documentElement.style.setProperty("--pd-primary", primary);
+    document.documentElement.style.setProperty("--pd-border", borderColor);
+  }, [primary, borderColor]);
+
+  useEffect(() => { if (font) loadFont(font); }, [font]);
 
   useEffect(() => {
-    if (font) loadFont(font);
-  }, [font]);
-
-  useEffect(() => {
-    if (!slug) return;
+    if (!productId) return;
     (async () => {
       try {
-        const res  = await fetch(`${API()}/api/stores/public/${slug}`);
-        const data = await res.json();
-        if (data.store) {
-          setStore(data.store);
-          // fetch categories
-          const catRes  = await fetch(`${API()}/api/categories/public/${data.store._id}`);
-          const catData = await catRes.json();
-          if (Array.isArray(catData)) setCategories(catData);
+        const pRes  = await fetch(`${API()}/api/products/${productId}`);
+        const pData = await pRes.json();
+        if (pRes.ok) setProduct(pData);
+        if (slug) {
+          const sRes  = await fetch(`${API()}/api/stores/public/${slug}`);
+          const sData = await sRes.json();
+          if (sData.store) setStore(sData.store);
         }
-        if (Array.isArray(data.products)) setProducts(data.products);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     })();
-  }, [slug]);
+  }, [productId, slug]);
 
-  const filteredProducts = activeCat === "all"
-    ? products
-    : products.filter(p => {
-        const catId = p.categoryId?._id
-          ? String(p.categoryId._id)
-          : p.categoryId ? String(p.categoryId) : null;
-        return catId === String(activeCat);
-      });
+  const handleCityChange = (city) => {
+    setSelectedCity(city);
+    setShippingPrice(getShippingPrice(city));
+  };
 
-  // ✦ نرجّعو عداد العرض لقيمته الأصلية كي يتبدل القسم النشط
-  useEffect(() => {
-    setVisibleCount(null);
-  }, [activeCat]);
+  const checkoutSettings = sec(productSections, "checkout")?.settings || DEFAULT_PRODUCT_SECTIONS[2].settings;
+  // ✦ fullName/phone أساسيين لإتمام الطلب — نفرضو enabled:true ديما، حتى لو كاين إعداد قديم
+  // (من قبل الإصلاح) كيقول enabled:false، باش ما يبقاش الطلب يوصل بلا اسم/هاتف
+  const fieldCfg = (key) => {
+    const cfg = checkoutSettings.fields?.[key] || { enabled: true, required: true };
+    if (key === "fullName" || key === "phone") return { ...cfg, enabled: true };
+    return cfg;
+  };
 
-  // ✦ Infinite Scroll — يحمّل المزيد كل ما يوصل المستخدم للـ sentinel
-  useEffect(() => {
-    const collSettings = sec(tc, "collection")?.settings || {};
-    if (!collSettings.infiniteScroll || !loadMoreRef.current) return;
-    const productsShown = collSettings.productsShown || 8;
-    const el = loadMoreRef.current;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setVisibleCount(prev => Math.min((prev || productsShown) + productsShown, filteredProducts.length));
-      }
-    }, { rootMargin: "200px" });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [tc, filteredProducts.length, visibleCount]);
+  const scrollToCheckout = () => checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const handleDrawerNav = (item) => {
-    if (item === "التصنيفات") {
-      document.getElementById("ps-categories")?.scrollIntoView({ behavior: "smooth" });
-    } else if (item === "اتصل بنا") {
-      if (store?.whatsappNumber) window.open(`https://wa.me/${store.whatsappNumber}`, "_blank");
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleOrder = async () => {
+    const provinceOn = fieldCfg("province").enabled !== false;
+    if (!customerName.trim() || !phone.trim() || (provinceOn && fieldCfg("province").required !== false && !selectedCity)) {
+      alert("يرجى ملء جميع الحقول الإجبارية ⚠️"); return;
     }
+    const phoneRegex = /^0[5-7][0-9]{8}$/;
+    if (!phoneRegex.test(phone.trim().replace(/\s/g, ""))) {
+      alert("رقم الهاتف غير صحيح (مثال: 0550123456) ⚠️"); return;
+    }
+    setOrdering(true);
+    try {
+      const total = product.currentPrice * quantity + shippingPrice;
+      const res  = await fetch(`${API()}/api/orders/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          customerName,
+          phone: phone.trim().replace(/\s/g, ""),
+          address,
+          municipality,
+          note,
+          quantity,
+          shippingCity: selectedCity || "غير محدد",
+          shippingPrice,
+          totalPrice: total,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        navigate(`/store/${slug}/order-success`, { state: {
+          orderId: data.order?._id,
+          productName: product.name,
+          productImage: product.images?.[0] || product.image || "",
+          quantity,
+          totalPrice: total,
+          customerName, shippingCity: selectedCity, slug,
+        }});
+      } else {
+        alert(data.message || "حدث خطأ أثناء إرسال الطلب ❌");
+      }
+    } catch { alert("خطأ في الاتصال بالخادم ❌"); }
+    finally { setOrdering(false); }
   };
 
   // ── Loading ───────────────────────────────────────────────
   if (loading) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff" }}>
-      <div style={{ textAlign: "center" }}>
-        <div className="ps-spinner" style={{ width: 36, height: 36, border: "3px solid #eee", borderTopColor: "#111", borderRadius: "50%", margin: "0 auto 16px" }} />
-        <p style={{ color: "#555", fontSize: 13, letterSpacing: 2, textTransform: "uppercase" }}>جاري التحميل</p>
-      </div>
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="pd-spinner" style={{ width: 36, height: 36, border: "3px solid #eee", borderTopColor: "#111", borderRadius: "50%" }} />
     </div>
   );
 
-  const storeName = store?.name || "المتجر";
-  const logo      = store?.logo || "";
-  const banner    = store?.banner || "";
-  const phone     = store?.whatsappNumber || "";
+  if (!product) return (
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} dir="rtl">
+      <p style={{ color: "#ef4444", fontSize: 16 }}>المنتج غير موجود ❌</p>
+      <button onClick={() => navigate(`/store/${slug}`)} style={{ background: primary, color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
+        العودة للمتجر
+      </button>
+    </div>
+  );
+
+  const realImages = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
+  const PLACEHOLDER_TARGET = 5; // ✦ عدد سلوتات الـ Gallery المعروضة فـ preview الـ ThemeEdit (أمثلة فقط، ماشي صور المستخدم)
+  const images = isPreview
+    ? Array(PLACEHOLDER_TARGET).fill(null) // ✦ preview ديما كيبان بأمثلة احترافية — ما نوريوش صور المنتج الحقيقية تاع المستخدم
+    : (realImages.length ? realImages : [DEFAULT_IMG]);
+  const outOfStock = product.stock === 0;
+  const total = product.currentPrice * quantity + shippingPrice;
+
+  const gallerySettings     = sec(productSections, "gallery")?.settings || DEFAULT_PRODUCT_SECTIONS[0].settings;
+  const productInfoSettings = sec(productSections, "productInfo")?.settings || DEFAULT_PRODUCT_SECTIONS[1].settings;
+  // ✦ الأقسام هادو دابا قابلين للإخفاء من ThemeEdit — خاصنا نتأكدو من enabled فعليا هنا
+  const galleryEnabled     = sec(productSections, "gallery")?.enabled !== false;
+  const productInfoEnabled = sec(productSections, "productInfo")?.enabled !== false;
+  const checkoutEnabled    = sec(productSections, "checkout")?.enabled !== false;
+  const headerSettings      = sec(homeSections, "header")?.settings;
+  const announcementSec     = sec(homeSections, "announcement");
+  const footerSettings      = sec(homeSections, "footer")?.settings;
+
+  const aspectMap = { "1:1": "1/1", "3:4": "3/4", "4:3": "4/3" };
+  const galleryAspect = gallerySettings.imageRatio === "adapt" ? undefined : (aspectMap[gallerySettings.imageRatio] || "1/1");
+  const nextImg = () => setActiveImg(i => (i + 1) % images.length);
+  const prevImg = () => setActiveImg(i => (i - 1 + images.length) % images.length);
+
+  const isCompact = checkoutSettings.formStyle === "compact";
+  const dirMultiplier = direction === "rtl" ? 1 : -1; // ✦ اتجاه الـ carousel peek حسب RTL/LTR
+  const inputCls = `pd-input${isCompact ? " pd-input--compact" : ""}`;
+  const pulseCls = checkoutSettings.buttonAnimation === "pulse" ? " pd-btn-order--pulse" : "";
+  const titleAlignCss = { right: "right", center: "center", left: "left" }[checkoutSettings.titleAlign || "right"];
 
   return (
-    <div style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
+    <div
+      dir="rtl"
+      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
+    >
+      <style>{`
+        @media (max-width: 768px) {
+          .pd-grid { grid-template-columns: 1fr !important; }
+          .pd-gallery-outer { flex-direction: column !important; }
+          .pd-thumbs-col { flex-direction: row !important; order: 2 !important; }
+          .pd-thumb { width: 60px !important; height: 60px !important; }
+          .pd-thumb-carousel { width: 84px !important; height: 84px !important; }
+          .pd-thumbs-carousel-row { max-width: 100% !important; }
+          .pd-gallery-sticky { position: static !important; top: auto !important; }
+        }
+      `}</style>
 
-      {/* ── Announcement Bar ── */}
-      {(() => {
-        const s = sec(tc, "announcement");
-        if (!s?.enabled) return null;
-        const { message, bgColor, textColor, animation, showClose } = s.settings;
-        return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }}>
-          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
-            {animation ? (
-              <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
-                {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
-                    باش كل عنصر يحسب مساحته كاملة (النص + المسافة)، وتحريك -50% يبقى مضبوط 100% بلا أي قفزة */}
+      {/* ── Announcement Bar (مشترك مع Home) ── */}
+      {announcementSec?.enabled !== false && announcementSec?.settings && (
+        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
+            {announcementSec.settings.animation ? (
+              <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
                 {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
-                    {message}
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
+                    {announcementSec.settings.message}
                   </span>
                 ))}
               </div>
             ) : (
-              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: textColor, margin: 0, letterSpacing: 1 }}>{message}</p>
-            )}
-            {showClose && (
-              <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
-                style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
+              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>{announcementSec.settings.message}</p>
             )}
           </div>
-          </SectionWrapper>
-        );
-      })()}
-
-      {/* ── Navbar ── */}
-      {sec(tc, "header")?.enabled !== false && (
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }}>
-      <StoreNavbar
-        store={store}
-        slug={slug}
-        headerSettings={sec(tc, "header")?.settings}
-        themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-        cartCount={isPreview ? 2 : getCartCount(slug)}
-        onCartClick={() => setCartOpen(true)}
-      />
-      </SectionWrapper>
+        </SectionWrapper>
       )}
 
-      {/* ── Hero / Banner ── */}
-      {(() => {
-        const s = sec(tc, "hero");
-        if (!s?.enabled) return null;
-        const hs = s.settings;
-        const heroBanner = hs.image || banner;
-        const heroHeight = hs.height === "small" ? "clamp(200px,30vw,360px)" : hs.height === "full" ? "100vh" : "clamp(300px, 52vw, 580px)";
-        const overlayAlpha = (hs.overlayOpacity ?? 50) / 100;
-        const align = hs.textAlign || "center";
-        // ⚠️ الصفحة فيها direction:rtl، فـ flex-end/flex-start ينعكسوا بصرياً.
-        // نستعمل قيم بصرية صريحة باش "يمين" يطلع يمين فعلاً.
-        const justify = align === "right" ? "flex-start" : align === "left" ? "flex-end" : "center";
-        const handleCtaClick = () => {
-          const link = hs.ctaLink || "#products";
-          if (link.startsWith("#")) {
-            const id = link.slice(1);
-            if (id === "products") { productsRef.current?.scrollIntoView({ behavior: "smooth" }); return; }
-            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-          } else {
-            window.open(link, "_blank");
-          }
-        };
-        return (
-        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }}>
-        <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
-          {heroBanner ? (
-            <img src={heroBanner} alt="banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${secondary} 0%, ${secondary}cc 100%)` }} />
-          )}
-          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayAlpha})` }} />
+      {/* ── Navbar ── */}
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+        <StoreNavbar
+          store={store}
+          slug={slug}
+          headerSettings={headerSettings}
+          themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+          cartCount={isPreview ? 2 : getCartCount(slug)}
+          onCartClick={() => setCartOpen(true)}
+        />
+      </SectionWrapper>
 
-          {/* ── مجموعة واحدة: عنوان + وصف + زر، بمسافات ثابتة بينهم ── */}
-          <div style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", justifyContent: justify, padding: "0 24px" }}>
-            <div style={{
-              display: "flex", flexDirection: "column",
-              alignItems: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
-              textAlign: align, maxWidth: 640,
-            }}>
-              <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
-                {hs.title || storeName}
-              </p>
-              {hs.subtitle && (
-                <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(1rem,2.4vw,1.4rem)", fontWeight: 500, margin: "14px 0 0", letterSpacing: .2, lineHeight: 1.5, textShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
-                  {hs.subtitle}
-                </p>
-              )}
-              <button
-                onClick={handleCtaClick}
-                className="ps-btn-order"
-                style={{
-                  marginTop: 32,
-                  background: hs.ctaColor || primary, color: "#fff",
-                  border: "none", borderRadius: 50, padding: "14px 34px",
-                  fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "inherit", letterSpacing: .5,
-                  boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
-                }}
-              >
-                {hs.ctaText || "تسوق الآن"}
-              </button>
-            </div>
-          </div>
-        </section>
-        </SectionWrapper>
-        );
-      })()}
+      {/* ── Content ── */}
+      <div
+        className="pd-grid"
+        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
+      >
 
-      {/* ── Trust Badges ── */}
-      {(() => {
-        const s = sec(tc, "trust");
-        if (!s?.enabled) return null;
-        const { badges, layout } = s.settings; // ✦ bgColor تاع القسم تشال — Trust يتبع لون الـ Background الرئيسي ديما
-        const activeBadges = (badges || []).filter(b => b.enabled !== false);
-        if (!activeBadges.length) return null;
-
-        // أيقونات SVG لكل نوع
-        const ICONS = {
-          cod: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.33 12a19.79 19.79 0 01-3.07-8.67A2 2 0 013.24 1.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-            </svg>
-          ),
-          shipping: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/>
-              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
-            </svg>
-          ),
-          return: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-            </svg>
-          ),
-          support: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>
-            </svg>
-          ),
-          secure: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
-            </svg>
-          ),
-        };
-
-        const isRow = (layout || "row") === "row";
-
-        // بطاقة واحدة مدورة لكل مجموعة (4 بالأقصى) فيها فواصل بين الأعمدة
-        const renderRow = () => {
-          const groups = [];
-          for (let i = 0; i < activeBadges.length; i += 4) groups.push(activeBadges.slice(i, i + 4));
-          return (
-            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
-              {groups.map((group, gi) => (
-                <div key={gi} style={{
-                  background: surfaceColor, borderRadius: 20, overflow: "hidden",
-                  display: "grid", gridTemplateColumns: `repeat(${group.length}, 1fr)`,
-                }}>
-                  {group.map((b, i) => (
-                    <div key={i} style={{
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                      textAlign: "center", padding: "22px 10px",
-                      borderInlineStart: i !== 0 ? `1px solid ${borderColor}` : "none",
-                    }}>
-                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
-                        {ICONS[b.id] || ICONS.secure}
+        {/* ── Gallery ── */}
+        {galleryEnabled && (
+        <SectionWrapper
+          type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"}
+          style={{ minWidth: 0 }}
+        >
+          {/* ✦ الـ sticky نقلناها لـ div داخلية منفصلة عن الـ SectionWrapper — باش المربع
+              البنفسجي ديال الهايلايت (اللي مرتبط بـ SectionWrapper) يبقى ديما متزاوج صح مع
+              بلاصة الصورة الحقيقية، بلا ما يتأثر بسلوك position:sticky وقت السكرول */}
+          <div
+            className="pd-gallery-sticky"
+            style={{ position: "sticky", top: headerSettings?.sticky !== false ? 96 : 16, alignSelf: "start" }}
+          >
+          {gallerySettings.carouselMode ? (
+            /* ══════════ CAROUSEL MODE — peek slider + thumbnails شريط اختياري ══════════ */
+            <div className="pd-fade">
+              <div style={{ position: "relative", borderRadius: 18, overflow: "hidden" }}>
+                <div style={{ overflow: "hidden", borderRadius: 18 }}>
+                  <div style={{
+                    display: "flex", transition: "transform .38s cubic-bezier(.4,0,.2,1)",
+                    transform: `translateX(${activeImg * 89 * dirMultiplier}%)`,
+                  }}>
+                    {images.map((img, i) => (
+                      <div key={i} style={{
+                        flex: "0 0 86%", marginInlineEnd: "3%",
+                        aspectRatio: galleryAspect, background: surfaceColor,
+                        border: `1px solid ${borderColor}`, borderRadius: 18, overflow: "hidden",
+                      }}>
+                        <GallerySlot src={img} index={i} />
                       </div>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
-                      <p style={{ fontSize: 10, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
+                    ))}
+                  </div>
+                </div>
+                {outOfStock && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 18 }}>
+                    <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
+                  </div>
+                )}
+                {gallerySettings.showArrows !== false && images.length > 1 && (
+                  <>
+                    <button className="pd-gallery-nav" style={{ left: 10 }} onClick={prevImg}><IconChevronR/></button>
+                    <button className="pd-gallery-nav" style={{ right: 10 }} onClick={nextImg}><IconChevronL/></button>
+                  </>
+                )}
+              </div>
+
+              {gallerySettings.showThumbnails !== false && images.length > 1 && (
+                <div
+                  className="pd-thumbs-carousel-row"
+                  style={{
+                    display: "flex", gap: 10, marginTop: 12, overflowX: "auto",
+                    maxWidth: `calc(${Math.max(1, gallerySettings.thumbnailsShown || 4)} * 78px)`,
+                    paddingBottom: 2,
+                  }}
+                >
+                  {images.map((img, i) => (
+                    <div key={i} className={`pd-thumb pd-thumb-carousel ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
+                      <GallerySlot src={img} index={i} />
                     </div>
                   ))}
                 </div>
-              ))}
-            </div>
-          );
-        };
-
-        const renderGrid = () => (
-          <div style={{
-            maxWidth: 900, margin: "0 auto",
-            display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
-          }}>
-            {activeBadges.map((b, i) => (
-              <div key={i} style={{
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                textAlign: "center", padding: "20px 12px",
-                background: surfaceColor, borderRadius: 18, border: `1px solid ${borderColor}`,
-              }}>
-                <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
-                  {ICONS[b.id] || ICONS.secure}
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 2px", direction: "rtl" }}>{b.title}</p>
-                <p style={{ fontSize: 11, color: mutedTextColor, margin: 0, direction: "rtl" }}>{b.sub}</p>
-              </div>
-            ))}
-          </div>
-        );
-
-        return (
-        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }}>
-          <section style={{ background: bgColor, padding: "24px 16px" }}>
-            {isRow ? renderRow() : renderGrid()}
-          </section>
-        </SectionWrapper>
-        );
-      })()}
-
-      {/* ── Categories ── */}
-      {sec(tc, "categories")?.enabled !== false && (categories.length > 0 || isPreview) && (() => {
-        const s = sec(tc, "categories");
-        const catTitle = s?.settings?.title || "التصنيفات";
-        const catSubtitle = s?.settings?.subtitle || "اعثر على كل ما تريد";
-        const maxItems = s?.settings?.maxItems || 6;
-        const titleAlign = s?.settings?.titleAlign || "right";
-        const displayStyle = s?.settings?.displayStyle || "grid";
-        // ✦ كي التاجر مازال ما دار تصنيفات حقيقية، نعرضو أمثلة تجريبية جوه الـ builder فقط
-        // ✦ باش يفهم كيفاش غادي يبان الديزاين — ما تبانش عند الزبون الحقيقي (isPreview=false)
-        const usingDemo = categories.length === 0 && isPreview;
-        const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
-        return (
-        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }}>
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
-          {/* Header row */}
-          <div style={{
-            display: "flex", alignItems: "flex-end", marginBottom: 28, gap: 12,
-            justifyContent: titleAlign === "center" ? "center" : "flex-start",
-            flexDirection: titleAlign === "left" ? "row-reverse" : "row",
-          }}>
-            <div style={{ textAlign: titleAlign, width: titleAlign === "center" ? "100%" : "auto" }}>
-              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>{catTitle}</h2>
-              <p style={{ color: "#888", fontSize: 13, margin: 0 }}>{catSubtitle}</p>
-            </div>
-          </div>
-
-          {/* Category cards — Grid (ثابت 2 أعمدة ديما، mobile و desktop) أو Row (سطر واحد، سكرول أفقي) */}
-          <div style={{
-            display: displayStyle === "row" ? "flex" : "grid",
-            gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(2, 1fr)",
-            overflowX: displayStyle === "row" ? "auto" : undefined,
-            gap: 16,
-            paddingBottom: displayStyle === "row" ? 4 : 0,
-          }}>
-            {displayCategories.slice(0, maxItems).map(cat => (
-              <div
-                key={cat._id}
-                onClick={() => { if (!cat._demo) navigate(`/store/${slug}/collections/${cat._id}`); }}
-                style={{
-                  position: "relative",
-                  borderRadius: 16, overflow: "hidden", cursor: cat._demo ? "default" : "pointer",
-                  height: 280,
-                  boxShadow: "0 2px 8px rgba(0,0,0,.08)",
-                  transition: "transform .25s, box-shadow .25s",
-                  flexShrink: displayStyle === "row" ? 0 : undefined,
-                  width: displayStyle === "row" ? 240 : "auto",
-                  background: "#f1f1f3",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 34px rgba(0,0,0,.14)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.08)"; }}
-              >
-                {/* Background image (fills the whole card) — أو placeholder أنيق (❓) كي ماكايناش صورة */}
-                {cat.image ? (
-                  <img
-                    src={cat.image} alt={cat.name}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s" }}
-                    onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                    onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                  />
-                ) : (
-                  <div style={{
-                    position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "linear-gradient(160deg,#3a3f47,#1c1f24)",
-                  }}>
-                    <div style={{
-                      width: 56, height: 56, borderRadius: 12,
-                      border: "2px solid rgba(255,255,255,.28)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,.55)",
-                    }}>؟</div>
-                  </div>
-                )}
-                {/* Bottom gradient for text readability */}
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "62%", background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))" }} />
-                {/* Overlaid title + link */}
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "16px" }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "#fff", marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,.3)" }}>{cat.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,.85)" }}>
-                    تصفح المجموعة <span style={{ fontSize: 14 }}>←</span>
-                  </div>
-                </div>
-                {/* بادج "مثال" — يبان غير على التصنيفات التجريبية باش التاجر يعرف بلي ماهيش حقيقية */}
-                {cat._demo && (
-                  <div style={{
-                    position: "absolute", top: 10, insetInlineStart: 10,
-                    background: "rgba(255,255,255,.92)",
-                    color: "#1c1f24", fontSize: 10.5, fontWeight: 700,
-                    padding: "4px 10px", borderRadius: 999, letterSpacing: ".3px",
-                  }}>
-                    مثال
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-        </SectionWrapper>
-        );
-      })()}
-
-      {/* ── Products Grid ── */}
-      {sec(tc, "collection")?.enabled !== false && (() => {
-        const collSettings   = sec(tc, "collection")?.settings || {};
-        const titleAlign     = collSettings.titleAlign || "right";
-        const productsShown  = collSettings.productsShown || 8;
-        const carouselMode   = !!collSettings.carouselMode;
-        const columns        = collSettings.columns || 3;
-        const imageRatio     = collSettings.imageRatio || "1:1";
-        const cardStyle      = collSettings.cardStyle || "default";
-        const showBadge      = collSettings.showBadge !== false;
-        const showRating     = !!collSettings.showRating;
-        const showViewAll    = collSettings.showViewAll;
-        const viewAllText    = collSettings.viewAllText || "عرض الكل";
-        const viewAllStyle   = collSettings.viewAllStyle || "link";
-        const infiniteScroll = !!collSettings.infiniteScroll;
-
-        const effectiveCount = infiniteScroll ? (visibleCount || productsShown) : productsShown;
-        const visibleProducts = carouselMode ? filteredProducts : filteredProducts.slice(0, effectiveCount);
-        const aspectMap = { "1:1": "1/1", "3:4": "3/4" };
-
-        // ✦ Card style presets — Default | Minimal | Bordered
-        const CARD_STYLE_MAP = {
-          default:  { cardBorder: "none", cardPadding: 0,  imgRadius: 14, titleSize: 14, priceSize: 16, gap: 8  },
-          minimal:  { cardBorder: "none", cardPadding: 0,  imgRadius: 6,  titleSize: 13, priceSize: 14, gap: 6  },
-          bordered: { cardBorder: `1px solid ${borderColor}`, cardPadding: 8, imgRadius: 12, titleSize: 14, priceSize: 16, gap: 8 },
-        };
-        const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
-
-        const viewAllBtnStyle = {
-          link:    { background: "none", color: primary, border: "none", textDecoration: "underline" },
-          filled:  { background: primary, color: "#fff", border: "none" },
-          outline: { background: "none", color: primary, border: `1px solid ${primary}` },
-        }[viewAllStyle];
-
-        return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }}>
-        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
-          <div style={{
-            display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
-            justifyContent: titleAlign === "center" ? "center" : "space-between",
-            flexDirection: titleAlign === "left" ? "row-reverse" : "row",
-          }}>
-            <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: titleAlign }}>
-              {activeCat === "all"
-                ? (collSettings.title || "جميع المنتجات")
-                : categories.find(c => c._id === activeCat)?.name || "المنتجات"}
-            </h2>
-            {titleAlign !== "center" && (
-              <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>
-                {filteredProducts.length} منتج
-              </span>
-            )}
-          </div>
-
-          {filteredProducts.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 0", color: mutedTextColor }}>
-              <p style={{ fontSize: 40, marginBottom: 12 }}>🛍️</p>
-              <p style={{ fontSize: 14 }}>لا توجد منتجات في هذا القسم</p>
+              )}
             </div>
           ) : (
-            <div className={carouselMode ? "ps-carousel-wrap" : undefined} style={carouselMode ? { position: "relative" } : undefined}>
+            /* ══════════ CAROUSEL OFF — Stacked / Bottom rail (layout ثابت) ══════════ */
             <div
-              ref={carouselMode ? carouselRef : null}
-              className="ps-coll-grid"
-              data-cols={columns}
-              data-carousel={carouselMode ? "1" : "0"}
-              style={carouselMode ? {
-                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
-              } : {
-                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
-              }}
+              className="pd-fade pd-gallery-outer"
+              style={{ display: "flex", gap: 14, flexDirection: gallerySettings.layout === "bottom-rail" ? "column" : "row" }}
             >
-              {visibleProducts.map((product, idx) => {
-                const img = (product.images?.[0] || product.image || DEFAULT_IMG);
-                const outOfStock = product.stock === 0;
+              {/* Thumbnails */}
+              {images.length > 1 && (
+                <div
+                  className="pd-thumbs-col"
+                  style={{
+                    display: "flex", gap: 10,
+                    flexDirection: gallerySettings.layout === "bottom-rail" ? "row" : "column",
+                    order: gallerySettings.layout === "bottom-rail" ? 2 : 0,
+                  }}
+                >
+                  {images.map((img, i) => (
+                    <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
+                      <GallerySlot src={img} index={i} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Main image */}
+              <div style={{
+                flex: 1, borderRadius: 18, overflow: "hidden", background: surfaceColor,
+                border: `1px solid ${borderColor}`, position: "relative",
+                aspectRatio: galleryAspect,
+              }}>
+                <GallerySlot
+                  src={images[activeImg]}
+                  index={activeImg}
+                  className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
+                  style={{ height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%" }}
+                />
+                {outOfStock && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
+                  </div>
+                )}
+                {gallerySettings.showArrows !== false && images.length > 1 && (
+                  <>
+                    <button className="pd-gallery-nav" style={{ left: 10 }} onClick={prevImg}><IconChevronR/></button>
+                    <button className="pd-gallery-nav" style={{ right: 10 }} onClick={nextImg}><IconChevronL/></button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          </div>
+        </SectionWrapper>
+        )}
+
+        {/* ── RIGHT: Product Info + Checkout ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
+
+          {/* Product Info */}
+          {productInfoEnabled && (
+          <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }}>
+            <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
+              {productInfoSettings.badgeText?.trim() && (
+                <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
+                  {productInfoSettings.badgeText}
+                </span>
+              )}
+              {product.oldPrice && (
+                <span style={{ background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12, marginInlineStart: 8 }}>
+                  خصم {Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
+                </span>
+              )}
+              <h1 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: textColor, margin: "0 0 12px", lineHeight: 1.3 }}>
+                {product.name}
+              </h1>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
+                <span style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: textColor }}>
+                  {product.currentPrice.toLocaleString()}
+                  <span style={{ fontSize: 14, fontWeight: 600, color: mutedTextColor, marginRight: 4 }}>د.ج</span>
+                </span>
+                {product.oldPrice && (
+                  <span style={{ fontSize: 15, color: mutedTextColor, textDecoration: "line-through" }}>
+                    {product.oldPrice.toLocaleString()} د.ج
+                  </span>
+                )}
+              </div>
+              {product.description && (() => {
+                const isLong = product.description.length > 160;
                 return (
-                  <div
-                    key={product._id}
-                    className="ps-card ps-fade-up"
-                    style={{
-                      animationDelay: `${(idx % 6) * 0.07}s`,
-                      background: "transparent",
-                      border: cardStyleCfg.cardBorder,
-                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
-                      padding: cardStyleCfg.cardPadding,
-                      display: "flex", flexDirection: "column",
-                      cursor: "pointer",
-                      opacity: outOfStock ? 0.6 : 1,
-                      ...(carouselMode ? { flex: `0 0 calc((100% - ${(columns - 1) * 20}px) / ${columns})`, scrollSnapAlign: "start", minWidth: 220 } : {}),
-                    }}
-                    onClick={() => { if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
-                  >
-                    {/* Image (with hover/touch CTA overlay) */}
-                    <div style={{
-                      position: "relative", overflow: "hidden", background: surfaceColor,
-                      borderRadius: cardStyleCfg.imgRadius,
-                      ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
+                  <div>
+                    <p style={{
+                      fontSize: 14, color: mutedTextColor, lineHeight: 1.7, margin: 0,
+                      ...(isLong && !descExpanded ? {
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                      } : {}),
                     }}>
-                      <img
-                        src={img}
-                        alt={product.name}
-                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
-                        onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                      />
-                      {/* Badges */}
-                      {showBadge && product.oldPrice && !outOfStock && (
-                        <span style={{
-                          position: "absolute", top: 12, right: 12,
-                          background: "#ef4444", color: "#fff",
-                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
-                          letterSpacing: .5,
-                        }}>تخفيض</span>
-                      )}
-                      {outOfStock && (
-                        <div style={{
-                          position: "absolute", inset: 0,
-                          background: "rgba(0,0,0,.65)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>
-                          <span style={{ background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, padding: "6px 18px", borderRadius: 99 }}>
-                            نفد من المخزون
-                          </span>
-                        </div>
-                      )}
-                      {/* Stock warning */}
-                      {!outOfStock && product.stock <= 5 && (
-                        <span style={{
-                          position: "absolute", top: 12, left: 12,
-                          background: "rgba(245,158,11,.9)", color: "#fff",
-                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
-                        }}>⚠️ آخر {product.stock} قطع</span>
-                      )}
-
-                      {/* CTA overlay — appears on hover (desktop) / always on touch devices */}
-                      {!outOfStock && (
-                        <div
-                          className="ps-card-cta"
-                          style={{
-                            position: "absolute", left: 10, right: 10, bottom: 10,
-                          }}
-                        >
-                          <button
-                            onClick={e => { e.stopPropagation(); if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
-                            style={{
-                              width: "100%", border: "none", cursor: "pointer",
-                              borderRadius: 12, padding: "12px 0",
-                              background: primary, color: "#fff",
-                              fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                              boxShadow: "0 4px 16px rgba(0,0,0,.25)",
-                            }}
-                          >
-                            <IconCart />
-                            أضف للسلة
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info — simple, no background box */}
-                    <div style={{ padding: `${cardStyleCfg.gap}px 2px 0`, display: "flex", flexDirection: "column" }}>
-                      {showRating && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>5.0</span>
-                          <span style={{ fontSize: 15, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</span>
-                        </div>
-                      )}
-                      <p style={{ fontSize: cardStyleCfg.titleSize, fontWeight: 700, color: textColor, margin: `0 0 ${cardStyleCfg.gap - 2}px`, lineHeight: 1.4 }}>
-                        {product.name}
-                      </p>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                        <span style={{ fontSize: cardStyleCfg.priceSize, fontWeight: 800, color: textColor }}>
-                          {product.currentPrice.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
-                        </span>
-                        {product.oldPrice && (
-                          <span style={{ fontSize: 12.5, color: mutedTextColor, textDecoration: "line-through" }}>
-                            {product.oldPrice.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                      {product.description}
+                    </p>
+                    {isLong && (
+                      <button
+                        onClick={() => setDescExpanded(v => !v)}
+                        style={{
+                          background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: 6,
+                          fontSize: 13, fontWeight: 700, color: primary, fontFamily: "inherit",
+                        }}
+                      >
+                        {descExpanded ? "قراءة أقل" : "قراءة المزيد"}
+                      </button>
+                    )}
                   </div>
                 );
-              })}
-            </div>
-            {carouselMode && (
-              <>
+              })()}
+              {product.stock > 0 && product.stock <= 5 && (
+                <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>⚠️ بقي {product.stock} قطعة فقط</p>
+              )}
+
+              {/* Quantity selector */}
+              {productInfoSettings.showQuantitySelector !== false && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 20, marginBottom: 22 }}>
+                  <span style={{ fontSize: 13, color: mutedTextColor, fontWeight: 600 }}>الكمية</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button className="pd-qty-btn" onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
+                    <span style={{ minWidth: 22, textAlign: "center", fontWeight: 700 }}>{quantity}</span>
+                    <button className="pd-qty-btn" onClick={() => setQuantity(q => Math.min(product.stock || 99, q + 1))}>+</button>
+                  </div>
+                </div>
+              )}
+
+              {/* CTA + Add to cart — مرصوصين فوق بعض */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button
-                  aria-label="السابق"
-                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? 240 : -240, behavior: "smooth" })}
-                  className="ps-carousel-nav ps-carousel-nav--prev"
-                  style={{ background: primary }}
+                  onClick={scrollToCheckout}
+                  disabled={outOfStock}
+                  style={{
+                    width: "100%", border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
+                    borderRadius: 12, padding: "13px 0", background: outOfStock ? "#f3f4f6" : primary,
+                    color: outOfStock ? "#aaa" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "inherit",
+                  }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="15 6 9 12 15 18"/></svg>
+                  {outOfStock ? "نفد من المخزون" : (productInfoSettings.ctaButtonText || "اطلب الآن")}
                 </button>
-                <button
-                  aria-label="التالي"
-                  onClick={() => carouselRef.current?.scrollBy({ left: direction === "rtl" ? -240 : 240, behavior: "smooth" })}
-                  className="ps-carousel-nav ps-carousel-nav--next"
-                  style={{ background: primary }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="9 6 15 12 9 18"/></svg>
-                </button>
-              </>
-            )}
+                {productInfoSettings.showAddToCartButton !== false && !outOfStock && (
+                  <button
+                    onClick={() => {
+                      addToCart(slug, product, quantity);
+                      setAddedToCart(true);
+                      setTimeout(() => setAddedToCart(false), 1800);
+                    }}
+                    style={{
+                      width: "100%", border: `1.5px solid ${primary}`, cursor: "pointer",
+                      borderRadius: 12, padding: "13px 0", background: "transparent",
+                      color: primary, fontSize: 14, fontWeight: 800, fontFamily: "inherit",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    }}
+                  >
+                    <IconCart /> {addedToCart ? "أُضيف للسلة ✓" : "أضف للسلة"}
+                  </button>
+                )}
+              </div>
+
+              {productInfoSettings.showDeliveryNote !== false && productInfoSettings.deliveryNote?.trim() && (
+                <p style={{ marginTop: 14, fontSize: 12.5, color: mutedTextColor, textAlign: "center" }}>{productInfoSettings.deliveryNote}</p>
+              )}
             </div>
+          </SectionWrapper>
           )}
 
-          {/* ✦ Infinite scroll sentinel — يحمّل المزيد تلقائياً عند الوصول للأسفل */}
-          {!carouselMode && infiniteScroll && effectiveCount < filteredProducts.length && (
-            <div ref={loadMoreRef} style={{ height: 1 }} />
-          )}
+          {/* In-Page Checkout */}
+          {checkoutEnabled && (
+          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"} style={{ order: productOrder("checkout") }}>
+            <div
+              ref={checkoutRef} className="pd-fade pd-d2"
+              style={{
+                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px",
+                boxShadow: `0 -22px 40px -26px ${borderColor}, 0 22px 40px -26px ${borderColor}`,
+              }}
+            >
+              <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 16, color: textColor, textAlign: titleAlignCss }}>
+                {checkoutSettings.sectionTitle || "معلومات الطلب"}
+              </h3>
 
-          {/* ✦ View All */}
-          {!carouselMode && !infiniteScroll && showViewAll && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
-              <button
-                onClick={() => navigate(`/store/${slug}/collections`)}
-                style={{
-                  padding: "11px 28px", borderRadius: 12, cursor: "pointer",
-                  fontSize: 14, fontWeight: 700, fontFamily: "inherit",
-                  ...viewAllBtnStyle,
-                }}
-              >
-                {viewAllText}
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {fieldCfg("fullName").enabled !== false && (
+                  <div>
+                    <FieldLabel text="الاسم الكامل" required={fieldCfg("fullName").required !== false} color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={customerName} onChange={e => setCustomerName(e.target.value)}
+                        placeholder="الاسم واللقب..."
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.fullName}</span>}
+                    </div>
+                  </div>
+                )}
+
+                {fieldCfg("phone").enabled !== false && (
+                  <div>
+                    <FieldLabel text="رقم الهاتف" required={fieldCfg("phone").required !== false} color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={phone} onChange={e => setPhone(e.target.value)} type="tel"
+                        placeholder="06 59 24 23 17"
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.phone}</span>}
+                    </div>
+                    <p style={{ margin: "6px 2px 0", fontSize: 12, color: mutedTextColor }}>يجب أن يبدأ بـ 05، 06، أو 07</p>
+                  </div>
+                )}
+
+                {(fieldCfg("province").enabled !== false || fieldCfg("municipality").enabled !== false) && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {fieldCfg("province").enabled !== false && (
+                      <div>
+                        <FieldLabel text="الولاية" required={fieldCfg("province").required !== false} color={textColor} />
+                        <div className="pd-field-wrap">
+                          <select
+                            className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                            value={selectedCity} onChange={e => handleCityChange(e.target.value)} style={{ cursor: "pointer" }}
+                          >
+                            <option value="">اختر الولاية</option>
+                            {ALGERIAN_CITIES.map(city => <option key={city.id} value={city.name}>{city.name}</option>)}
+                          </select>
+                          {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.province}</span>}
+                        </div>
+                      </div>
+                    )}
+                    {fieldCfg("municipality").enabled !== false && (
+                      <div>
+                        <FieldLabel text="البلدية" required={fieldCfg("municipality").required} color={textColor} />
+                        <div className="pd-field-wrap">
+                          <input
+                            className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                            value={municipality} onChange={e => setMunicipality(e.target.value)}
+                            placeholder="اختر البلدية"
+                          />
+                          {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.municipality}</span>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {checkoutSettings.showAddressField && (
+                  <div>
+                    <FieldLabel text="العنوان التفصيلي" required={false} optionalLabel color={textColor} />
+                    <div className="pd-field-wrap">
+                      <input
+                        className={`${inputCls}${checkoutSettings.showFieldIcons !== false ? " pd-input--icon" : ""}`}
+                        value={address} onChange={e => setAddress(e.target.value)}
+                        placeholder="الشارع، رقم العمارة، الباب..."
+                      />
+                      {checkoutSettings.showFieldIcons !== false && <span className="pd-field-icon">{FIELD_ICONS.address}</span>}
+                    </div>
+                  </div>
+                )}
+
+                {checkoutSettings.showNoteField && (
+                  <div>
+                    <FieldLabel text="ملاحظة على الطلب" required={false} optionalLabel color={textColor} />
+                    <textarea
+                      className={inputCls}
+                      value={note} onChange={e => setNote(e.target.value)}
+                      placeholder="أي تفاصيل إضافية على طلبك..." rows={2}
+                      style={{ resize: "vertical", fontFamily: "inherit" }}
+                    />
+                  </div>
+                )}
+
+                {/* ── Order Summary — Surface + Border من التصميم ── */}
+                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 14, overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
+                    <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: textColor }}>ملخص الطلب</h4>
+                    <span style={{
+                      fontSize: 12, fontWeight: 700, color: primary, border: `1px solid ${borderColor}`,
+                      borderRadius: 99, padding: "3px 12px",
+                    }}>
+                      {quantity === 1 ? "منتج واحد" : quantity === 2 ? "منتجين" : `${quantity} منتجات`}
+                    </span>
+                  </div>
+
+                  <div style={{ borderTop: `1px solid ${borderColor}`, background: bgColor, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: textColor }}>المجموع الفرعي</span>
+                      <span style={{ fontSize: 13.5, color: textColor }}>{(product.currentPrice * quantity).toLocaleString()} د.ج</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: textColor }}>تكلفة التوصيل</span>
+                      <span style={{ fontSize: 12.5, color: mutedTextColor }}>
+                        {selectedCity ? `${shippingPrice.toLocaleString()} د.ج` : "تحدد عند اختيار الولاية"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: `1px solid ${borderColor}`, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, color: textColor }}>المجموع الإجمالي</div>
+                      <div style={{ fontSize: 12, color: mutedTextColor, marginTop: 2 }}>الدفع عند الاستلام</div>
+                    </div>
+                    <span style={{ fontSize: 20, fontWeight: 900, color: primary }}>{total.toLocaleString()} د.ج</span>
+                  </div>
+                </div>
+
+                <button
+                  className={`pd-btn-order${pulseCls}`}
+                  onClick={handleOrder}
+                  disabled={outOfStock || ordering}
+                  style={{
+                    width: "100%", padding: "15px 0", borderRadius: 14,
+                    border: "none", cursor: outOfStock || ordering ? "not-allowed" : "pointer",
+                    background: outOfStock ? "#f3f4f6" : primary,
+                    color: outOfStock ? "#aaa" : "#fff",
+                    fontSize: 15, fontWeight: 800, fontFamily: "inherit",
+                    opacity: ordering ? 0.7 : 1,
+                    boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
+                  }}
+                >
+                  {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
+                </button>
+              </div>
             </div>
+          </SectionWrapper>
           )}
-        </section>
-        </SectionWrapper>
-        );
-      })()}
+        </div>
+      </div>
 
       {/* ── Footer ── */}
-      {sec(tc, "footer")?.enabled !== false && (
-        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }}>
-          <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(tc, "footer")?.settings || {}} />
-        </SectionWrapper>
-      )}
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+        <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
+      </SectionWrapper>
 
-      {/* ── WhatsApp Floating ── */}
-      {phone && (
-        <a href={`https://wa.me/${phone}`} target="_blank" rel="noreferrer" className="ps-whatsapp" title="تواصل معنا على واتساب">
-          <IconWA />
-        </a>
+      {/* ── Sticky order bar ── */}
+      {checkoutEnabled && checkoutSettings.stickyButton !== false && !outOfStock && (
+        <div className="pd-sticky-bar">
+          <button
+            className={`pd-btn-order${pulseCls}`}
+            onClick={handleOrder}
+            disabled={ordering}
+            style={{
+              width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
+              cursor: ordering ? "not-allowed" : "pointer", background: primary, color: "#fff",
+              fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", opacity: ordering ? 0.7 : 1,
+            }}
+          >
+            {ordering ? "⏳ جاري الإرسال..." : `${checkoutSettings.stickyButtonText || "اطلب الآن"} — ${total.toLocaleString()} د.ج`}
+          </button>
+        </div>
       )}
-
-      {/* Responsive overrides */}
-      <style>{`
-        @media (max-width: 768px) {
-          .ps-desktop-nav { display: none !important; }
-          .ps-mobile-menu { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .ps-mobile-menu { display: none !important; }
-        }
-        /* ✦ Collection grid — يتقلص تلقائياً على الشاشات الصغيرة */
-        @media (max-width: 900px) {
-          .ps-coll-grid[data-carousel="0"][data-cols="4"],
-          .ps-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 480px) {
-          .ps-coll-grid[data-carousel="0"] { grid-template-columns: repeat(1, 1fr) !important; }
-          .ps-coll-grid[data-carousel="1"] > * { flex: 0 0 80% !important; }
-        }
-      `}</style>
 
       <CartDrawer
         open={cartOpen}
@@ -1180,4 +902,4 @@ function PublicStore() {
   );
 }
 
-export default PublicStore;
+export default ProductDetails;
