@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import CartDrawer from "../components/CartDrawer";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -98,6 +99,9 @@ function OrderSuccess() {
   // ── مرحلتين: أولاً الأنيميشن، بعدها التفاصيل ──
   const [showCheck,   setShowCheck]   = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+
+  // ── سلة التسوق (Drawer) — نفس المنطق ديال باقي صفحات المتجر ──
+  const [cartOpen, setCartOpen] = useState(false);
 
   // ── Live theme من الـ builder (postMessage) ──
   const [themeConfig, setThemeConfig] = useState(null);
@@ -246,6 +250,8 @@ function OrderSuccess() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+          cartCount={isPreview ? 2 : 0}
+          onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
 
@@ -379,6 +385,19 @@ function OrderSuccess() {
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
       </SectionWrapper>
+
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        slug={slug}
+        primary={primary}
+        textColor={textColor}
+        mutedTextColor={mutedTextColor}
+        borderColor={borderColor}
+        surfaceColor={surfaceColor}
+        bgColor={bgColor}
+        isPreview={isPreview}
+      />
     </div>
   );
 }
