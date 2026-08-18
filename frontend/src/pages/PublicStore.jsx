@@ -7,6 +7,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import FaqSection  from "../components/FaqSection";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartContext";
 
@@ -273,6 +274,7 @@ const SECTION_LABELS = {
   trust:        "Trust Badges",
   collection:   "Product Collection",
   categories:   "Categories",
+  faq:          "FAQ",
   footer:       "Footer",
 };
 
@@ -1129,6 +1131,17 @@ function PublicStore() {
         </SectionWrapper>
         );
       })()}
+
+      {/* ── FAQ ── */}
+      {sec(tc, "faq")?.enabled !== false && sec(tc, "faq") && (
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: sectionOrder("faq") }}>
+          <FaqSection
+            settings={sec(tc, "faq")?.settings}
+            primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
+            textColor={textColor} mutedTextColor={mutedTextColor} borderColor={borderColor}
+          />
+        </SectionWrapper>
+      )}
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (

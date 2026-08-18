@@ -10,6 +10,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import FaqSection from "../components/FaqSection";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
@@ -129,7 +130,7 @@ const DEFAULT_CHECKOUT_SECTIONS = [
 
 const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
-const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", trust: "Trust Badges", footer: "Footer" };
+const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", trust: "Trust Badges", faq: "FAQ", footer: "Footer" };
 
 // ── SectionWrapper — نفس منطق ProductDetails: label + كليك يبعث SECTION_CLICK للـ builder ──
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
@@ -702,6 +703,17 @@ function Checkout() {
           </SectionWrapper>
         );
       })()}
+
+      {/* ── FAQ ── */}
+      {sec(checkoutSections, "faq")?.enabled !== false && sec(checkoutSections, "faq") && (
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"}>
+          <FaqSection
+            settings={sec(checkoutSections, "faq")?.settings}
+            primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
+            textColor={textColor} mutedTextColor={mutedTextColor} borderColor={borderColor}
+          />
+        </SectionWrapper>
+      )}
 
       {/* ── Footer ── */}
       {sec(homeSections, "footer")?.enabled !== false && (

@@ -342,6 +342,7 @@ const SECTION_META = {
   trust:        { label: "Trust Badges",     icon: "trust" },
   collection:   { label: "Collection",       icon: "collection" },
   categories:   { label: "Categories",       icon: "categories" },
+  faq:          { label: "FAQ",              icon: "faq" },
   footer:       { label: "Footer",           icon: "footer", locked: true, fixed: true },
 };
 
@@ -352,6 +353,7 @@ const PRODUCT_SECTION_META = {
   gallery:     { label: "Gallery",           icon: "gallery",     fixed: true },
   productInfo: { label: "Product Info",      icon: "productInfo", criticalDelete: true },
   checkout:    { label: "In-Page Checkout",  icon: "checkout",    criticalDelete: true },
+  faq:         SECTION_META.faq,
 };
 
 // ✦ Sections خاصة بصفحة Category فقط
@@ -366,9 +368,10 @@ const SUCCESS_SECTION_META = {
   successMessage: { label: "Success Message", icon: "success", locked: true, fixed: true },
 };
 
-// ✦ Section اللي يقدر التاجر يزيدها لصفحة Checkout المستقلة (غير Trust Badges — الباقي ماعندوش معنى هنا)
+// ✦ Sections اللي يقدر التاجر يزيدها لصفحة Checkout المستقلة (Trust Badges + FAQ)
 const CHECKOUT_SECTION_META = {
   trust: SECTION_META.trust,
+  faq:   SECTION_META.faq,
 };
 
 // ✦ Overrides بالـ id — لـ sections كتشارك نفس الـ type مع Home (مثلا "collection")
@@ -510,6 +513,20 @@ function Icon({ name, size = 15 }) {
       return (
         <svg {...common}>
           <polyline points="6 9 12 15 18 9" />
+        </svg>
+      );
+    case "chevronUp":
+      return (
+        <svg {...common}>
+          <polyline points="18 15 12 9 6 15" />
+        </svg>
+      );
+    case "faq":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.2 9.3a2.8 2.8 0 0 1 5.4.9c0 1.9-2.4 2.1-2.6 3.6" />
+          <circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
         </svg>
       );
     case "alignRight":
@@ -1248,6 +1265,20 @@ const CSS = `
 }
 .pb-add-link-btn:hover { background: rgba(124,109,242,.09); border-color: #7c6df2; }
 
+/* FAQ question card (repeater — عنوان + أزرار ترتيب/حذف/تفعيل + Question/Answer) */
+.pb-faq-card__title {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; margin-inline-end: 8px;
+}
+.pb-faq-card__actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.pb-faq-card__iconbtn {
+  background: none; border: none; cursor: pointer; color: #94a3b8;
+  padding: 4px; border-radius: 6px; display: flex; align-items: center;
+  transition: color .15s, background .15s;
+}
+.pb-faq-card__iconbtn:hover:not(:disabled) { color: #5b3fd6; background: rgba(124,109,242,.1); }
+.pb-faq-card__iconbtn:disabled { opacity: .3; cursor: not-allowed; }
+
 /* Styles tab */
 .pb-no-selection {
   flex:1; display:flex; flex-direction:column;
@@ -1947,6 +1978,99 @@ function TrustSettings({ settings, onChange }) {
   );
 }
 
+// ✦ FAQ — Default questions تجيبها زر "Add Section" (نفس أسلوب باقي الديفولت: سوق جزائري، دفع عند الاستلام)
+const DEFAULT_FAQ_QUESTIONS = [
+  { id: "faq_1", enabled: true, question: "شحال ثمن التوصيل لولايتك؟",        answer: "التوصيل يختلف حسب الولاية (للبيت أو للمكتب). سعر التوصيل بيان لك مباشرة كي تختار ولايتك في نموذج الطلب." },
+  { id: "faq_2", enabled: true, question: "وقتاش يوصلني الطلب؟",              answer: "عادةً بين 24 و48 ساعة حسب الولاية. نتواصلو معاك بالهاتف باش نأكدو الطلب قبل الإرسال." },
+  { id: "faq_3", enabled: true, question: "كيفاش نخلّص؟",                     answer: "الدفع عند الاستلام — تخلّص كي توصلك السلعة لباب دارك، ما كاين حتى خلاص مسبق." },
+  { id: "faq_4", enabled: true, question: "نقدر نشوف السلعة قبل ما نخلّص؟",   answer: "إيه، تقدر تعاين السلعة قبل ما تخلّص. راحتك وثقتك يهمونا." },
+  { id: "faq_5", enabled: true, question: "كاين استبدال ولا إرجاع؟",         answer: "إيه، عندك إمكانية الاستبدال ولا الإرجاع حسب شروط المتجر. تواصل وحنا نعاونوك." },
+  { id: "faq_6", enabled: true, question: "السلعة أصلية؟",                   answer: "كل منتجاتنا أصلية ومضمونة الجودة. نحرصو على رضاك في كل طلب." },
+  { id: "faq_7", enabled: true, question: "توصلو لكل الولايات؟",             answer: "إيه، نوصلو لكامل الـ58 ولاية عبر الوطن." },
+];
+
+function FaqSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  const questions = settings.questions || [];
+
+  const updateQuestion = (id, patch) =>
+    s("questions", questions.map(q => (q.id === id ? { ...q, ...patch } : q)));
+
+  const deleteQuestion = (id) =>
+    s("questions", questions.filter(q => q.id !== id));
+
+  const addQuestion = () =>
+    s("questions", [...questions, { id: `faq_${Date.now()}`, enabled: true, question: "سؤال جديد", answer: "" }]);
+
+  const moveQuestion = (index, dir) => {
+    const target = index + dir;
+    if (target < 0 || target >= questions.length) return;
+    const next = [...questions];
+    [next[index], next[target]] = [next[target], next[index]];
+    s("questions", next);
+  };
+
+  return (
+    <>
+      <Collapse title="General">
+        <div className="pb-field">
+          <div className="pb-label">Title</div>
+          <input className="pb-input" value={settings.title || ""} onChange={e => s("title", e.target.value)} placeholder="أسئلة شائعة" />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Open first item</span>
+          <Toggle checked={!!settings.openFirstItem} onChange={v => s("openFirstItem", v)} />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Style</div>
+          <div className="pb-segment">
+            {[{ v: "divided", l: "Divided" }, { v: "cards", l: "Cards" }].map(o => (
+              <button key={o.v} type="button"
+                className={`pb-seg-btn ${(settings.style || "divided") === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s("style", o.v)}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </Collapse>
+
+      <Collapse title="Questions">
+        {questions.map((q, i) => (
+          <div key={q.id} className="pb-link-card">
+            <div className="pb-link-card__header">
+              <span className="pb-faq-card__title" title={q.question}>{q.question || `Question ${i + 1}`}</span>
+              <div className="pb-faq-card__actions">
+                <button type="button" className="pb-faq-card__iconbtn" title="Move up" disabled={i === 0} onClick={() => moveQuestion(i, -1)}>
+                  <Icon name="chevronUp" size={13} />
+                </button>
+                <button type="button" className="pb-faq-card__iconbtn" title="Move down" disabled={i === questions.length - 1} onClick={() => moveQuestion(i, 1)}>
+                  <Icon name="chevronDown" size={13} />
+                </button>
+                <button type="button" className="pb-link-card__delete" title="Delete" onClick={() => deleteQuestion(q.id)}>
+                  <Icon name="trash" size={14} />
+                </button>
+                <Toggle checked={q.enabled !== false} onChange={v => updateQuestion(q.id, { enabled: v })} />
+              </div>
+            </div>
+            <div className="pb-link-card__body">
+              <div className="pb-field">
+                <div className="pb-label">Question</div>
+                <input className="pb-input" value={q.question} onChange={e => updateQuestion(q.id, { question: e.target.value })} placeholder="مثال: شحال ثمن التوصيل؟" />
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Answer</div>
+                <textarea className="pb-textarea" value={q.answer} onChange={e => updateQuestion(q.id, { answer: e.target.value })} placeholder="اكتب الجواب هنا..." />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="pb-add-link-btn" onClick={addQuestion}>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add question
+        </button>
+      </Collapse>
+    </>
+  );
+}
+
 function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
@@ -2603,6 +2727,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} showSortToggle={isCategoryPage} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
+      case "faq":          return <FaqSettings          settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
       case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
       case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
@@ -3152,9 +3277,17 @@ function ThemeEdit() {
   // ── Add a section back (only types not already present فنفس الصفحة) ──
   // ✦ خدامة على Home وكذا على Product/Category — كل وحدة عندها "كتالوگ" ديال templates ديالها
   const PAGE_TEMPLATE_SOURCE = { home: DEFAULT_CONFIG, product: PRODUCT_DEFAULT_CONFIG, category: CATEGORY_DEFAULT_CONFIG, checkout: CHECKOUT_PAGE_DEFAULT_CONFIG };
+  // ✦ Sections "قابلة للإضافة" بصح ماشي جزء من الإعدادات الافتراضية لمتجر جديد (Recommended — تضاف يدوياً)
+  const EXTRA_SECTION_TEMPLATES = {
+    faq: {
+      type: "faq",
+      enabled: true,
+      settings: { title: "أسئلة شائعة", openFirstItem: false, style: "divided", questions: DEFAULT_FAQ_QUESTIONS },
+    },
+  };
   const addSection = useCallback((page, type) => {
     const source = PAGE_TEMPLATE_SOURCE[page] || DEFAULT_CONFIG;
-    const template = source.sections.find(s => s.type === type);
+    const template = source.sections.find(s => s.type === type) || EXTRA_SECTION_TEMPLATES[type];
     if (!template) return;
     const key = PAGE_SECTIONS_KEY[page] || "sections";
     const isHome = key === "sections";

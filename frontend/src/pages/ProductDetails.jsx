@@ -10,6 +10,7 @@ import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
+import FaqSection from "../components/FaqSection";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
@@ -143,6 +144,7 @@ const SECTION_LABELS = {
   gallery: "Gallery",
   productInfo: "Product Info",
   checkout: "In-Page Checkout",
+  faq: "FAQ",
   footer: "Footer",
 };
 
@@ -862,6 +864,17 @@ function ProductDetails() {
           )}
         </div>
       </div>
+
+      {/* ── FAQ ── */}
+      {sec(productSections, "faq")?.enabled !== false && sec(productSections, "faq") && (
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: productOrder("faq") }}>
+          <FaqSection
+            settings={sec(productSections, "faq")?.settings}
+            primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
+            textColor={textColor} mutedTextColor={mutedTextColor} borderColor={borderColor}
+          />
+        </SectionWrapper>
+      )}
 
       {/* ── Footer ── */}
       <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
