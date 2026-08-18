@@ -283,7 +283,7 @@ export default function SearchResults() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-          cartCount={getCartCount(slug)}
+          cartCount={isPreview ? 2 : getCartCount(slug)}
           onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
@@ -417,6 +417,7 @@ export default function SearchResults() {
         borderColor={borderColor}
         surfaceColor={surfaceColor}
         bgColor={bgColor}
+        isPreview={isPreview}
       />
     </div>
   );

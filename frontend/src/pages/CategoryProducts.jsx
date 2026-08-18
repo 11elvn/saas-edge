@@ -288,7 +288,7 @@ export default function CategoryProducts() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-          cartCount={getCartCount(slug)}
+          cartCount={isPreview ? 2 : getCartCount(slug)}
           onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
@@ -661,6 +661,7 @@ export default function CategoryProducts() {
         borderColor={borderColor}
         surfaceColor={surfaceColor}
         bgColor={bgColor}
+        isPreview={isPreview}
       />
     </div>
   );

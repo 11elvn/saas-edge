@@ -209,7 +209,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           {showCart && (
             <button className="sn-icon-btn sn-icon-btn--cart" onClick={onCartClick}>
               <IconCart />
-              {cartCount > 0 && <span className="sn-cart-badge">{cartCount > 9 ? "9+" : cartCount}</span>}
+              {cartCount > 0 && <span className="sn-cart-badge" style={{ background: primary }}>{cartCount > 9 ? "9+" : cartCount}</span>}
             </button>
           )}
         </div>
@@ -256,7 +256,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
           {showCart && (
             <button className="sn-icon-btn sn-icon-btn--cart" onClick={onCartClick}>
               <IconCart />
-              {cartCount > 0 && <span className="sn-cart-badge">{cartCount > 9 ? "9+" : cartCount}</span>}
+              {cartCount > 0 && <span className="sn-cart-badge" style={{ background: primary }}>{cartCount > 9 ? "9+" : cartCount}</span>}
             </button>
           )}
           {showSearch && (
@@ -277,7 +277,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         .sn-cart-badge {
           position: absolute; top: 2px; right: 2px;
           min-width: 16px; height: 16px; padding: 0 3px;
-          border-radius: 999px; background: #ef4444; color: #fff;
+          border-radius: 999px; color: #fff;
           font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
           font-family: inherit;
         }

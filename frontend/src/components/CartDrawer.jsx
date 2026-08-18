@@ -44,8 +44,8 @@ const IconPlus = () => (
 // ── منتجات تجريبية — تبان غير جوه ThemeEdit (isPreview) كي السلة الحقيقية فارغة ──
 // ✦ باش التاجر يشوف كيفاش يبان تصميم السلة بمنتجات، ماشي فارغة دايماً
 const DEFAULT_DEMO_ITEMS = [
-  { productId: "demo-cart-1", name: "منتج تجريبي 1", image: "", price: 2500, quantity: 1, stock: 99, _demo: true },
-  { productId: "demo-cart-2", name: "منتج تجريبي 2", image: "", price: 4200, quantity: 2, stock: 99, _demo: true },
+  { productId: "demo-cart-1", name: "منتج تجريبي 1", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=200", price: 2500, quantity: 1, stock: 99, _demo: true },
+  { productId: "demo-cart-2", name: "منتج تجريبي 2", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200", price: 4200, quantity: 2, stock: 99, _demo: true },
 ];
 
 export default function CartDrawer({

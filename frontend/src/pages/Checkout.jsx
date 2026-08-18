@@ -389,7 +389,7 @@ function Checkout() {
             headerSettings={headerSettings}
             themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
             cartCount={items.length}
-            onCartClick={() => navigate(`/store/${slug}`)}
+            onCartClick={() => {}}
           />
         </SectionWrapper>
       )}

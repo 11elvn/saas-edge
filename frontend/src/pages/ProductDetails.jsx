@@ -463,7 +463,7 @@ function ProductDetails() {
           slug={slug}
           headerSettings={headerSettings}
           themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-          cartCount={getCartCount(slug)}
+          cartCount={isPreview ? 2 : getCartCount(slug)}
           onCartClick={() => setCartOpen(true)}
         />
       </SectionWrapper>
@@ -889,6 +889,7 @@ function ProductDetails() {
         borderColor={borderColor}
         surfaceColor={surfaceColor}
         bgColor={bgColor}
+        isPreview={isPreview}
       />
     </div>
   );

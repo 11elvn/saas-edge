@@ -620,7 +620,7 @@ function PublicStore() {
         slug={slug}
         headerSettings={sec(tc, "header")?.settings}
         themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
-        cartCount={getCartCount(slug)}
+        cartCount={isPreview ? 2 : getCartCount(slug)}
         onCartClick={() => setCartOpen(true)}
       />
       </SectionWrapper>
