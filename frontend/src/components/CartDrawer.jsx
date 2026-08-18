@@ -61,7 +61,9 @@ export default function CartDrawer({
   // ✦ حالة محلية للمنتجات التجريبية (باش أزرار +/− والحذف يخدمو فـ preview بلا ما يمسو السلة الحقيقية)
   const [demoState, setDemoState] = useState(demoItems);
 
-  const usingDemo = isPreview && realItems.length === 0 && demoState.length > 0;
+  // ✦ preview خاصها ديما تبان بمنتجات ديمو ثابتة، بلا ما تتأثر بسلة المتجر الحقيقية
+  // (اللي ممكن تكون فيها منتجات إذا التاجر زار متجرو وزاد حاجة للسلة من قبل)
+  const usingDemo = isPreview && demoState.length > 0;
   const items = usingDemo ? demoState : realItems;
   const total = usingDemo
     ? demoState.reduce((sum, it) => sum + it.quantity * it.price, 0)
