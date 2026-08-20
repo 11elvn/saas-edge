@@ -160,6 +160,20 @@ export default function CategoryProducts() {
     return () => window.removeEventListener("resize", onResize);
   }, [isPreview]);
 
+  // ── الإعدادات الفعلية — من postMessage إذا preview، وإلا من store.themeConfig، وإلا defaults ──
+  const rawTc         = themeConfig || store?.themeConfig || null;
+  const homeSections  = rawTc?.sections || DEFAULT_HOME_SECTIONS;
+  const catSections    = rawTc?.category?.sections || DEFAULT_CATEGORY_SECTIONS;
+
+  // ✦ highlightedSection الجاي من ThemeEdit هو section.id (ماشي section.type) — وفـ الصفحات
+  // لي فيهم id مختلف عن type (مثلاً "categoryCollection" بـ type "collection")، المقارنة
+  // المباشرة بالـ type كتفشل. هنا كنرجعو للـ type الحقيقي باش نقارنو بيه فكل مكان.
+  const highlightedType = highlightedSection
+    ? (catSections.find(s => s.id === highlightedSection)?.type
+       || homeSections.find(s => s.id === highlightedSection)?.type
+       || highlightedSection)
+    : null;
+
   const measureOverlays = useCallback(() => {
     if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
     const activeEl = highlightedType ? sectionRefs.current[highlightedType] : null;
@@ -203,20 +217,6 @@ export default function CategoryProducts() {
     }
     return () => window.removeEventListener("message", handler);
   }, []);
-
-  // ── الإعدادات الفعلية — من postMessage إذا preview، وإلا من store.themeConfig، وإلا defaults ──
-  const rawTc         = themeConfig || store?.themeConfig || null;
-  const homeSections  = rawTc?.sections || DEFAULT_HOME_SECTIONS;
-  const catSections    = rawTc?.category?.sections || DEFAULT_CATEGORY_SECTIONS;
-
-  // ✦ highlightedSection الجاي من ThemeEdit هو section.id (ماشي section.type) — وفـ الصفحات
-  // لي فيهم id مختلف عن type (مثلاً "categoryCollection" بـ type "collection")، المقارنة
-  // المباشرة بالـ type كتفشل. هنا كنرجعو للـ type الحقيقي باش نقارنو بيه فكل مكان.
-  const highlightedType = highlightedSection
-    ? (catSections.find(s => s.id === highlightedSection)?.type
-       || homeSections.find(s => s.id === highlightedSection)?.type
-       || highlightedSection)
-    : null;
 
   const announcementSec = sec(homeSections, "announcement");
   const headerSettings  = sec(homeSections, "header")?.settings;
