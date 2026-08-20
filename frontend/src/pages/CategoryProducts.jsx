@@ -162,8 +162,8 @@ export default function CategoryProducts() {
 
   const measureOverlays = useCallback(() => {
     if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
-    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
-    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const activeEl = highlightedType ? sectionRefs.current[highlightedType] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedType;
     const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
     const toRect = (el) => {
       if (!el) return null;
@@ -171,7 +171,7 @@ export default function CategoryProducts() {
       return { top: r.top + window.scrollY, height: r.height };
     };
     setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
-  }, [highlightedSection, hoveredSection, isNarrowViewport]);
+  }, [highlightedType, hoveredSection, isNarrowViewport]);
 
   useEffect(() => {
     if (!isPreview || !isNarrowViewport) return;
@@ -208,6 +208,15 @@ export default function CategoryProducts() {
   const rawTc         = themeConfig || store?.themeConfig || null;
   const homeSections  = rawTc?.sections || DEFAULT_HOME_SECTIONS;
   const catSections    = rawTc?.category?.sections || DEFAULT_CATEGORY_SECTIONS;
+
+  // ✦ highlightedSection الجاي من ThemeEdit هو section.id (ماشي section.type) — وفـ الصفحات
+  // لي فيهم id مختلف عن type (مثلاً "categoryCollection" بـ type "collection")، المقارنة
+  // المباشرة بالـ type كتفشل. هنا كنرجعو للـ type الحقيقي باش نقارنو بيه فكل مكان.
+  const highlightedType = highlightedSection
+    ? (catSections.find(s => s.id === highlightedSection)?.type
+       || homeSections.find(s => s.id === highlightedSection)?.type
+       || highlightedSection)
+    : null;
 
   const announcementSec = sec(homeSections, "announcement");
   const headerSettings  = sec(homeSections, "header")?.settings;
@@ -342,7 +351,7 @@ export default function CategoryProducts() {
       {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
         const { message, bgColor, textColor, animation, showClose } = announcementSec.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: 0 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedType === "announcement"} style={{ order: 0 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
                 <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -365,7 +374,7 @@ export default function CategoryProducts() {
       })()}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: 1 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedType === "header"} style={{ order: 1 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -378,7 +387,7 @@ export default function CategoryProducts() {
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
       {bannerEnabled && (
-      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedType === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -441,7 +450,7 @@ export default function CategoryProducts() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedType === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
         {collSettings.showSortBar !== false && (
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", justifyContent: "flex-end" }}>
@@ -721,7 +730,7 @@ export default function CategoryProducts() {
       `}</style>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: 999 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedType === "footer"} style={{ order: 999 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
@@ -752,7 +761,7 @@ export default function CategoryProducts() {
         <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
       )}
       {overlayRects.active && (
-        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedType] || highlightedType} variant="active" />
       )}
     </div>
   );
