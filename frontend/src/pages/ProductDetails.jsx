@@ -121,10 +121,12 @@ const PREVIEW_CSS = `
   content: "";
   position: absolute;
   top: 0; bottom: 0;
-  /* ✦ full-bleed trick: كنكسرو حدود العنصر ونمدو المربع لعرض الشاشة كاملة (100vw) بدل عرض السكشن فقط */
-  left: 50%; right: 50%;
-  margin-left: -50vw; margin-right: -50vw;
+  /* ✦ full-bleed: كنمدو المربع لعرض الشاشة كاملة (100vw) بدل عرض السكشن فقط.
+     ✦ استعملنا left:50% + transform (ماشي left+right+margin) باش يخدم صح مع dir="rtl" —
+     الطريقة القديمة (left/right/margin-left/margin-right سوا) كانت كتتقلب فـ RTL. */
+  left: 50%;
   width: 100vw;
+  transform: translateX(-50%);
   pointer-events: none; z-index: 140;
 }
 .pd-section-wrapper:hover::after { border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); }
