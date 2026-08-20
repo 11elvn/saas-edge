@@ -2,7 +2,7 @@
 // 📁 pages/CategoryProducts.jsx — منتجات تصنيف معين
 // Route: /store/:slug/collections/:categoryId
 // ============================================================
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
@@ -66,15 +66,46 @@ const IconWA = () => (
 
 const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", categoryBanner: "Category Banner", collection: "Collection", footer: "Footer" };
 
+// ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين
+// بـ JS (getBoundingClientRect + scrollY) → position:absolute نسبة للدوكيمو (ماشي fixed)
+function SectionHighlightOverlay({ rect, label, variant }) {
+  if (!rect) return null;
+  const isActive = variant === "active";
+  return (
+    <>
+      <div style={{
+        position: "absolute", left: 0, width: "100vw",
+        top: rect.top, height: rect.height,
+        border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
+        background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
+        pointerEvents: "none", zIndex: 140,
+      }} />
+      <div style={{
+        position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
+        background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
+        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
+        boxShadow: "0 2px 8px rgba(124,109,242,.35)",
+      }}>
+        {label}
+      </div>
+    </>
+  );
+}
+
 // ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
+// ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", registerRef, onHoverChange }) {
   if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
+      ref={el => registerRef && registerRef(type, el)}
       style={{ position: "relative", ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
+      onMouseEnter={() => onHoverChange && onHoverChange(type)}
+      onMouseLeave={() => onHoverChange && onHoverChange(null)}
       className={`cp-section-wrapper${isHighlighted ? " cp-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
     >
       <div className="cp-section-label">{SECTION_LABELS[type] || type}</div>
@@ -108,6 +139,52 @@ export default function CategoryProducts() {
   // ── Live theme من الـ builder (postMessage) ──
   const [themeConfig, setThemeConfig] = useState(null);
   const [highlightedSection, setHighlightedSection] = useState(null);
+
+  // ── Highlight overlay (preview, mobile فقط) — قياس حقيقي بـ getBoundingClientRect لكل section ──
+  const sectionRefs = useRef({});
+  const registerSectionRef = useCallback((type, el) => {
+    if (el) sectionRefs.current[type] = el;
+    else delete sectionRefs.current[type];
+  }, []);
+  const [hoveredSection, setHoveredSection] = useState(null);
+  const [overlayRects, setOverlayRects] = useState({ hover: null, active: null });
+  const [isNarrowViewport, setIsNarrowViewport] = useState(
+    () => (typeof window !== "undefined" ? window.innerWidth <= 768 : false)
+  );
+
+  useEffect(() => {
+    if (!isPreview) return;
+    const onResize = () => setIsNarrowViewport(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isPreview]);
+
+  const measureOverlays = useCallback(() => {
+    if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
+    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    const toRect = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top + window.scrollY, height: r.height };
+    };
+    setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
+  }, [highlightedSection, hoveredSection, isNarrowViewport]);
+
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    measureOverlays();
+    window.addEventListener("resize", measureOverlays);
+    return () => window.removeEventListener("resize", measureOverlays);
+  }, [isPreview, isNarrowViewport, measureOverlays]);
+
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    const id = requestAnimationFrame(measureOverlays);
+    return () => cancelAnimationFrame(id);
+  }, [isPreview, isNarrowViewport, measureOverlays, themeConfig, store, category, products, loading]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -239,18 +316,24 @@ export default function CategoryProducts() {
 
       <style>{`
         .cp-section-wrapper { position: relative; }
-        .cp-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
-        .cp-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
-        .cp-section-label {
-          position: absolute; top: 8px; left: 8px; z-index: 150;
-          background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
-          padding: 3px 10px; border-radius: 6px; pointer-events: none;
-          font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
-          box-shadow: 0 2px 8px rgba(124,109,242,.35);
-          opacity: 0; transition: opacity .12s ease;
+        /* ✦ Desktop preview (iframe الحقيقي 1280px) — نفس السلوك الأصلي: مربع ملتصق بحدود السكشن (inset:0)
+           ✦ Mobile: الـ highlight/hover box والـ label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured، full-width) */
+        .cp-section-label { display: none; }
+        @media (min-width: 769px) {
+          .cp-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+          .cp-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+          .cp-section-label {
+            display: block;
+            position: absolute; top: 8px; left: 8px; z-index: 150;
+            background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 6px; pointer-events: none;
+            font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(124,109,242,.35);
+            opacity: 0; transition: opacity .12s ease;
+          }
+          .cp-section-wrapper:hover .cp-section-label,
+          .cp-section-wrapper--highlighted .cp-section-label { opacity: 1; }
         }
-        .cp-section-wrapper:hover .cp-section-label,
-        .cp-section-wrapper--highlighted .cp-section-label { opacity: 1; }
         @keyframes ps-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .ps-marquee-track { animation: ps-marquee 18s linear infinite; }
       `}</style>
@@ -259,7 +342,7 @@ export default function CategoryProducts() {
       {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
         const { message, bgColor, textColor, animation, showClose } = announcementSec.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: 0 }}>
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: 0 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
                 <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -282,7 +365,7 @@ export default function CategoryProducts() {
       })()}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: 1 }}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: 1 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -295,7 +378,7 @@ export default function CategoryProducts() {
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
       {bannerEnabled && (
-      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }}>
+      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedSection === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -358,7 +441,7 @@ export default function CategoryProducts() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: categoryOrder("collection") }}>
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
         {collSettings.showSortBar !== false && (
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", justifyContent: "flex-end" }}>
@@ -638,7 +721,7 @@ export default function CategoryProducts() {
       `}</style>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: 999 }}>
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: 999 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 
@@ -663,6 +746,14 @@ export default function CategoryProducts() {
         bgColor={bgColor}
         isPreview={isPreview}
       />
+
+      {/* ── Highlight overlay (preview, mobile فقط) — full-width، JS-measured ── */}
+      {overlayRects.hover && (
+        <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
+      )}
+      {overlayRects.active && (
+        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+      )}
     </div>
   );
 }
