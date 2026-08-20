@@ -116,26 +116,44 @@ const PD_CSS = `
 
 const PREVIEW_CSS = `
 .pd-section-wrapper { position: relative; }
+
+/* ✦ Desktop preview (iframe الحقيقي 1280px) — نفس السلوك الأصلي: مربع ملتصق بحدود السكشن (inset:0) */
+.pd-section-label { display: none; }
+@media (min-width: 769px) {
+  .pd-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+  .pd-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+  .pd-section-label {
+    display: block;
+    position: absolute; top: 8px; left: 8px; z-index: 150;
+    background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 6px; pointer-events: none;
+    font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(124,109,242,.35);
+    opacity: 0; transition: opacity .12s ease;
+  }
+  .pd-section-wrapper:hover .pd-section-label,
+  .pd-section-wrapper--highlighted .pd-section-label { opacity: 1; }
+}
 `;
 
-// ── SectionHighlightOverlay — مربع الهايلايت + الـ label، مبنيين بـ JS (getBoundingClientRect)
-// ✦ position:fixed + top/height محسوبين من القياس الحقيقي ديال السكشن = يوصل ديما لحواف الشاشة (100vw)
-// ✦ بلا ما يتأثر بعرض/padding الحاوية الأب (maxWidth/padding ديال .pd-grid) ولا بـ dir="rtl"
-// ✦ (بخلاف تقنية الـ CSS breakout اللي كانت كتتقلب فـ RTL أو تنقص الحواف الجانبية)
+// ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين
+// بـ JS (getBoundingClientRect + scrollY) → position:absolute نسبة للدوكيمو (ماشي fixed)
+// ✦ absolute + top محسوب مسبقاً (rect.top + scrollY) = كيتحرك بشكل طبيعي مع السكرول
+//   (الدوكيمو نفسه)، بلا ما نحتاجو نعاودو نحسبو فـ scroll listener → بلا اهتزاز/تأخر
 function SectionHighlightOverlay({ rect, label, variant }) {
   if (!rect) return null;
   const isActive = variant === "active";
   return (
     <>
       <div style={{
-        position: "fixed", left: 0, width: "100vw",
+        position: "absolute", left: 0, width: "100vw",
         top: rect.top, height: rect.height,
         border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
         background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
         pointerEvents: "none", zIndex: 140,
       }} />
       <div style={{
-        position: "fixed", top: rect.top + 8, left: 8, zIndex: 150,
+        position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
         padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
@@ -166,8 +184,8 @@ const SECTION_LABELS = {
 };
 
 // ── SectionWrapper — نفس منطق PublicStore: كليك يبعث للـ builder + يسجل ref للقياس ──
-// ✦ الـ highlight box + label ماعادوش هنا (::after/label ثابتين جوا الوصل) — دابا كيترسمو
-// ✦ عبر SectionHighlightOverlay (position:fixed مقاس بـ JS) باش يوصلو لحواف الشاشة ديما
+// ✦ label الأصلي (.pd-section-label) رجعناه هنا — كيبان غير فـ desktop (CSS media query أعلاه)
+// ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", registerRef, onHoverChange }) {
   if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
@@ -181,6 +199,7 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
       onMouseLeave={() => onHoverChange && onHoverChange(null)}
       className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
     >
+      <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>
       {children}
     </div>
   );
@@ -270,7 +289,7 @@ function ProductDetails() {
   const [highlightedSection, setHighlightedSection] = useState(null);
   const checkoutRef = useRef(null);
 
-  // ── Highlight overlay (preview) — قياس حقيقي بـ getBoundingClientRect لكل section ──
+  // ── Highlight overlay (preview, mobile فقط) — قياس حقيقي بـ getBoundingClientRect لكل section ──
   const sectionRefs = useRef({});
   const registerSectionRef = useCallback((type, el) => {
     if (el) sectionRefs.current[type] = el;
@@ -278,35 +297,51 @@ function ProductDetails() {
   }, []);
   const [hoveredSection, setHoveredSection] = useState(null);
   const [overlayRects, setOverlayRects] = useState({ hover: null, active: null });
+  // ✦ نفس breakpoint المستعمل فـ media query ديال الصفحة (768px) — كيفرق بين iframe الـ
+  // mobile (393px حقيقي) والـ desktop (1280px حقيقي) — الـ highlight الجديد يخدم غير فـ mobile
+  const [isNarrowViewport, setIsNarrowViewport] = useState(
+    () => (typeof window !== "undefined" ? window.innerWidth <= 768 : false)
+  );
 
+  useEffect(() => {
+    if (!isPreview) return;
+    const onResize = () => setIsNarrowViewport(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isPreview]);
+
+  // ✦ absolute (ماشي fixed) نسبة للدوكيمو كامل — top = rect.top (viewport) + scrollY (السكرول الحالي)
+  // ✦ بهاد الطريقة المربع كيبقى "معلق" فبلاصتو الحقيقية جوا الصفحة، وكيتحرك بشكل طبيعي مع
+  // السكرول (بحال أي عنصر عادي فالصفحة) — بلا حاجة لـ scroll listener يعاود يحسب فـ كل frame
+  // (هذا كان سبب الاهتزاز/التأخر لي كنا شايفينو قبل مع position:fixed + scroll listener)
   const measureOverlays = useCallback(() => {
+    if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
     const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
     const showHover = hoveredSection && hoveredSection !== highlightedSection;
     const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
-    setOverlayRects({
-      active: activeEl ? activeEl.getBoundingClientRect() : null,
-      hover:  hoverEl  ? hoverEl.getBoundingClientRect()  : null,
-    });
-  }, [highlightedSection, hoveredSection]);
+    const toRect = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top + window.scrollY, height: r.height };
+    };
+    setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
+  }, [highlightedSection, hoveredSection, isNarrowViewport]);
 
   useEffect(() => {
-    if (!isPreview) return;
+    if (!isPreview || !isNarrowViewport) return;
     measureOverlays();
-    window.addEventListener("scroll", measureOverlays, true);
     window.addEventListener("resize", measureOverlays);
-    return () => {
-      window.removeEventListener("scroll", measureOverlays, true);
-      window.removeEventListener("resize", measureOverlays);
-    };
-  }, [isPreview, measureOverlays]);
+    return () => window.removeEventListener("resize", measureOverlays);
+  }, [isPreview, isNarrowViewport, measureOverlays]);
 
   // ✦ إعادة القياس إذا تبدل ارتفاع المحتوى (تعديل إعدادات فالـ builder، تحميل صورة، تبديل ترتيب...)
-  // ✦ بلا هاذي، المربع يبقى بمقاسه القديم حتى يوقع scroll/resize/hover جديد
+  // ✦ بلا هاذي، المربع يبقى بمقاسه القديم حتى يوقع resize/hover جديد
   useEffect(() => {
-    if (!isPreview) return;
+    if (!isPreview || !isNarrowViewport) return;
     const id = requestAnimationFrame(measureOverlays);
     return () => cancelAnimationFrame(id);
-  }, [isPreview, measureOverlays, themeConfig, product, activeImg, descExpanded, quantity, selectedCity, addedToCart]);
+  }, [isPreview, isNarrowViewport, measureOverlays, themeConfig, product, activeImg, descExpanded, quantity, selectedCity, addedToCart]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -972,8 +1007,8 @@ function ProductDetails() {
         isPreview={isPreview}
       />
 
-      {/* ── Highlight overlays (preview فقط) — مربع + label، fixed ومقاسين بـ JS ── */}
-      {isPreview && (
+      {/* ── Highlight overlays — mobile فقط (preview): مربع + label، absolute ومقاسين بـ JS ── */}
+      {isPreview && isNarrowViewport && (
         <>
           {overlayRects.hover && (
             <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
