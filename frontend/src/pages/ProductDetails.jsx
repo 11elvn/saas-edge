@@ -116,8 +116,19 @@ const PD_CSS = `
 
 const PREVIEW_CSS = `
 .pd-section-wrapper { position: relative; }
-.pd-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
-.pd-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+.pd-section-wrapper:hover::after,
+.pd-section-wrapper--highlighted::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  /* ✦ full-bleed trick: كنكسرو حدود العنصر ونمدو المربع لعرض الشاشة كاملة (100vw) بدل عرض السكشن فقط */
+  left: 50%; right: 50%;
+  margin-left: -50vw; margin-right: -50vw;
+  width: 100vw;
+  pointer-events: none; z-index: 140;
+}
+.pd-section-wrapper:hover::after { border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); }
+.pd-section-wrapper--highlighted::after { border: 2px solid #7c6df2; background: rgba(124,109,242,.10); }
 .pd-section-label {
   position: absolute; top: 8px; left: 8px; z-index: 150;
   background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
@@ -425,7 +436,7 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
-      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
+      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0, overflowX: "hidden" }}
     >
       <style>{`
         @media (max-width: 768px) {
