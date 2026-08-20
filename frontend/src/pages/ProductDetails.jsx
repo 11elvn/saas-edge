@@ -4,7 +4,7 @@
 // كل شي مربوط بـ themeConfig.product.sections (يتحرر من ThemeEdit → Product tab)
 // ============================================================
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
@@ -116,32 +116,36 @@ const PD_CSS = `
 
 const PREVIEW_CSS = `
 .pd-section-wrapper { position: relative; }
-.pd-section-wrapper:hover::after,
-.pd-section-wrapper--highlighted::after {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0;
-  /* ✦ full-bleed: كنمدو المربع لعرض الشاشة كاملة (100vw) بدل عرض السكشن فقط.
-     ✦ استعملنا left:50% + transform (ماشي left+right+margin) باش يخدم صح مع dir="rtl" —
-     الطريقة القديمة (left/right/margin-left/margin-right سوا) كانت كتتقلب فـ RTL. */
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  pointer-events: none; z-index: 140;
-}
-.pd-section-wrapper:hover::after { border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); }
-.pd-section-wrapper--highlighted::after { border: 2px solid #7c6df2; background: rgba(124,109,242,.10); }
-.pd-section-label {
-  position: absolute; top: 8px; left: 8px; z-index: 150;
-  background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
-  padding: 3px 10px; border-radius: 6px; pointer-events: none;
-  font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(124,109,242,.35);
-  opacity: 0; transition: opacity .12s ease;
-}
-.pd-section-wrapper:hover .pd-section-label,
-.pd-section-wrapper--highlighted .pd-section-label { opacity: 1; }
 `;
+
+// ── SectionHighlightOverlay — مربع الهايلايت + الـ label، مبنيين بـ JS (getBoundingClientRect)
+// ✦ position:fixed + top/height محسوبين من القياس الحقيقي ديال السكشن = يوصل ديما لحواف الشاشة (100vw)
+// ✦ بلا ما يتأثر بعرض/padding الحاوية الأب (maxWidth/padding ديال .pd-grid) ولا بـ dir="rtl"
+// ✦ (بخلاف تقنية الـ CSS breakout اللي كانت كتتقلب فـ RTL أو تنقص الحواف الجانبية)
+function SectionHighlightOverlay({ rect, label, variant }) {
+  if (!rect) return null;
+  const isActive = variant === "active";
+  return (
+    <>
+      <div style={{
+        position: "fixed", left: 0, width: "100vw",
+        top: rect.top, height: rect.height,
+        border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
+        background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
+        pointerEvents: "none", zIndex: 140,
+      }} />
+      <div style={{
+        position: "fixed", top: rect.top + 8, left: 8, zIndex: 150,
+        background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
+        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
+        boxShadow: "0 2px 8px rgba(124,109,242,.35)",
+      }}>
+        {label}
+      </div>
+    </>
+  );
+}
 
 function injectCSS() {
   if (document.getElementById("pd-styles")) return;
@@ -161,18 +165,22 @@ const SECTION_LABELS = {
   footer: "Footer",
 };
 
-// ── SectionWrapper — نفس منطق PublicStore: label + border + كليك يبعث للـ builder ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "" }) {
+// ── SectionWrapper — نفس منطق PublicStore: كليك يبعث للـ builder + يسجل ref للقياس ──
+// ✦ الـ highlight box + label ماعادوش هنا (::after/label ثابتين جوا الوصل) — دابا كيترسمو
+// ✦ عبر SectionHighlightOverlay (position:fixed مقاس بـ JS) باش يوصلو لحواف الشاشة ديما
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", registerRef, onHoverChange }) {
   if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
+      ref={el => registerRef && registerRef(type, el)}
       style={{ position: "relative", ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
+      onMouseEnter={() => onHoverChange && onHoverChange(type)}
+      onMouseLeave={() => onHoverChange && onHoverChange(null)}
       className={`pd-section-wrapper${isHighlighted ? " pd-section-wrapper--highlighted" : ""}${className ? ` ${className}` : ""}`}
     >
-      <div className="pd-section-label">{SECTION_LABELS[type] || type}</div>
       {children}
     </div>
   );
@@ -261,6 +269,44 @@ function ProductDetails() {
   const [themeConfig, setThemeConfig] = useState(null);
   const [highlightedSection, setHighlightedSection] = useState(null);
   const checkoutRef = useRef(null);
+
+  // ── Highlight overlay (preview) — قياس حقيقي بـ getBoundingClientRect لكل section ──
+  const sectionRefs = useRef({});
+  const registerSectionRef = useCallback((type, el) => {
+    if (el) sectionRefs.current[type] = el;
+    else delete sectionRefs.current[type];
+  }, []);
+  const [hoveredSection, setHoveredSection] = useState(null);
+  const [overlayRects, setOverlayRects] = useState({ hover: null, active: null });
+
+  const measureOverlays = useCallback(() => {
+    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    setOverlayRects({
+      active: activeEl ? activeEl.getBoundingClientRect() : null,
+      hover:  hoverEl  ? hoverEl.getBoundingClientRect()  : null,
+    });
+  }, [highlightedSection, hoveredSection]);
+
+  useEffect(() => {
+    if (!isPreview) return;
+    measureOverlays();
+    window.addEventListener("scroll", measureOverlays, true);
+    window.addEventListener("resize", measureOverlays);
+    return () => {
+      window.removeEventListener("scroll", measureOverlays, true);
+      window.removeEventListener("resize", measureOverlays);
+    };
+  }, [isPreview, measureOverlays]);
+
+  // ✦ إعادة القياس إذا تبدل ارتفاع المحتوى (تعديل إعدادات فالـ builder، تحميل صورة، تبديل ترتيب...)
+  // ✦ بلا هاذي، المربع يبقى بمقاسه القديم حتى يوقع scroll/resize/hover جديد
+  useEffect(() => {
+    if (!isPreview) return;
+    const id = requestAnimationFrame(measureOverlays);
+    return () => cancelAnimationFrame(id);
+  }, [isPreview, measureOverlays, themeConfig, product, activeImg, descExpanded, quantity, selectedCity, addedToCart]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -438,7 +484,7 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
-      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0, overflowX: "hidden" }}
+      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
     >
       <style>{`
         @media (max-width: 768px) {
@@ -454,7 +500,7 @@ function ProductDetails() {
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
       {announcementSec?.enabled !== false && announcementSec?.settings && (
-        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
             {announcementSec.settings.animation ? (
               <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -472,7 +518,7 @@ function ProductDetails() {
       )}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -494,6 +540,7 @@ function ProductDetails() {
         <SectionWrapper
           type="gallery" isPreview={isPreview} isHighlighted={highlightedSection === "gallery"}
           style={{ minWidth: 0 }}
+          registerRef={registerSectionRef} onHoverChange={setHoveredSection}
         >
           {/* ✦ الـ sticky نقلناها لـ div داخلية منفصلة عن الـ SectionWrapper — باش المربع
               البنفسجي ديال الهايلايت (اللي مرتبط بـ SectionWrapper) يبقى ديما متزاوج صح مع
@@ -611,7 +658,7 @@ function ProductDetails() {
 
           {/* Product Info */}
           {productInfoEnabled && (
-          <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }}>
+          <SectionWrapper type="productInfo" isPreview={isPreview} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
               {productInfoSettings.badgeText?.trim() && (
                 <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
@@ -720,7 +767,7 @@ function ProductDetails() {
 
           {/* In-Page Checkout */}
           {checkoutEnabled && (
-          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"} style={{ order: productOrder("checkout") }}>
+          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={highlightedSection === "checkout"} style={{ order: productOrder("checkout") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div
               ref={checkoutRef} className="pd-fade pd-d2"
               style={{
@@ -880,7 +927,7 @@ function ProductDetails() {
 
       {/* ── FAQ ── */}
       {sec(productSections, "faq")?.enabled !== false && sec(productSections, "faq") && (
-        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: productOrder("faq") }}>
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: productOrder("faq") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <FaqSection
             settings={sec(productSections, "faq")?.settings}
             primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
@@ -890,7 +937,7 @@ function ProductDetails() {
       )}
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
       </SectionWrapper>
 
@@ -924,6 +971,18 @@ function ProductDetails() {
         bgColor={bgColor}
         isPreview={isPreview}
       />
+
+      {/* ── Highlight overlays (preview فقط) — مربع + label، fixed ومقاسين بـ JS ── */}
+      {isPreview && (
+        <>
+          {overlayRects.hover && (
+            <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
+          )}
+          {overlayRects.active && (
+            <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+          )}
+        </>
+      )}
     </div>
   );
 }
