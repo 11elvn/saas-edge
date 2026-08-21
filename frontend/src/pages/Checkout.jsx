@@ -136,9 +136,12 @@ const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
 const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", trust: "Trust Badges", faq: "FAQ", footer: "Footer" };
 
-// ── الـ id ديال section الـ checkout مختلف عن الـ type (id: "cartCheckout"، type: "checkout") —
-// ThemeEdit كيبعث الـ id فـ HIGHLIGHT_SECTION، فكنطبّعوه لـ "checkout" باش تتطابق مع type وتخدم الـ label ──
-const normalizeSection = (t) => (t === "cartCheckout" ? "checkout" : t);
+// ── نفس مبدأ الـ checkout: id ديال Trust Badges مختلف عن الـ type (id: "checkoutTrust"، type: "trust") ──
+const normalizeSection = (t) => {
+  if (t === "cartCheckout") return "checkout";
+  if (t === "checkoutTrust") return "trust";
+  return t;
+};
 
 // ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين بـ JS
 // (getBoundingClientRect + scrollY) → full-width حقيقي (left:0/right:0 بالنسبة لحاوية الصفحة) ──
@@ -782,7 +785,7 @@ function Checkout() {
         );
 
         return (
-          <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "trust"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <section style={{ background: bgColor, padding: "24px 16px" }}>
               {isRow ? renderRow() : renderGrid()}
             </section>
