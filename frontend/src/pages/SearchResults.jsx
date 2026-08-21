@@ -93,6 +93,10 @@ function injectPreviewCSS() {
   document.head.appendChild(s);
 }
 
+// ── الـ id ديال section الـ Collection فـ Search مختلف عن الـ type (id: "searchCollection"، type: "collection") —
+// ThemeEdit كيبعث الـ id فـ HIGHLIGHT_SECTION، فكنطبّعوه لـ "collection" باش تتطابق مع type وتخدم الـ label ──
+const normalizeSection = (t) => (t === "searchCollection" ? "collection" : t);
+
 // ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين بـ JS
 // (getBoundingClientRect + scrollY) → full-width حقيقي (left:0/right:0 بالنسبة لحاوية الصفحة، ماشي 100vw
 // لي كيدخل عرض الـ scrollbar وكيخرج عن حدود الفريم) — نفس الحل المطبق فـ OrderSuccess.jsx ──
@@ -186,9 +190,9 @@ export default function SearchResults() {
 
   const measureOverlays = useCallback(() => {
     if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
-    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
-    const showHover = hoveredSection && hoveredSection !== highlightedSection;
-    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    const activeEl = highlightedSection ? sectionRefs.current[normalizeSection(highlightedSection)] : null;
+    const showHover = hoveredSection && normalizeSection(hoveredSection) !== normalizeSection(highlightedSection);
+    const hoverEl = showHover ? sectionRefs.current[normalizeSection(hoveredSection)] : null;
     const toRect = (el) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
@@ -391,7 +395,7 @@ export default function SearchResults() {
       </div>
 
       {/* ── Collection grid — قابلة للتحكم كاملة (Columns / Card style / Badge / Rating...) ── */}
-      <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 80px" }}>
           {products.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
@@ -506,10 +510,10 @@ export default function SearchResults() {
 
       {/* ── Highlight overlay (preview, mobile فقط) — full-width، JS-measured ── */}
       {overlayRects.hover && (
-        <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
+        <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[normalizeSection(hoveredSection)] || hoveredSection} variant="hover" />
       )}
       {overlayRects.active && (
-        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[normalizeSection(highlightedSection)] || highlightedSection} variant="active" />
       )}
     </div>
   );
