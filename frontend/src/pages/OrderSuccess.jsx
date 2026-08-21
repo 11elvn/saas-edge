@@ -4,7 +4,7 @@
 // كل شي مربوط بـ themeConfig.success.sections (يتحرر من ThemeEdit → Success tab)
 // ============================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
@@ -57,27 +57,50 @@ const SECTION_LABELS = {
   footer:         "Footer",
 };
 
-// ── SectionWrapper — نفس مبدأ ProductDetails، كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
+// ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين بـ JS
+// (getBoundingClientRect + scrollY) → full-width، بلا ما يبقى محدود بحدود السكشن الداخلية ──
+function SectionHighlightOverlay({ rect, label, variant }) {
+  if (!rect) return null;
+  const isActive = variant === "active";
+  return (
+    <>
+      <div style={{
+        position: "absolute", left: 0, width: "100vw",
+        top: rect.top, height: rect.height,
+        border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
+        background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
+        pointerEvents: "none", zIndex: 140,
+      }} />
+      <div style={{
+        position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
+        background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
+        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
+        boxShadow: "0 2px 8px rgba(124,109,242,.35)",
+      }}>
+        {label}
+      </div>
+    </>
+  );
+}
+
+// ── SectionWrapper — نفس مبدأ ProductDetails/PublicStore: hover + highlight عبر ::after (desktop)،
+// وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
+// ✦ label ديما فالزاوية اليسرى الفيزيائية (left)، بحال باقي الصفحات (ماشي insetInlineStart لي كان كيقلب لليمين فـ RTL)
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, registerRef, onHoverChange }) {
   if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
-      style={{ position: "relative", ...style, cursor: "pointer", outline: isHighlighted ? "2px solid #7c6df2" : "none", outlineOffset: -2 }}
+      ref={el => registerRef && registerRef(type, el)}
+      style={{ position: "relative", ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
+      onMouseEnter={() => onHoverChange && onHoverChange(type)}
+      onMouseLeave={() => onHoverChange && onHoverChange(null)}
+      className={`os-section-wrapper${isHighlighted ? " os-section-wrapper--highlighted" : ""}`}
     >
-      {isHighlighted && (
-        <div style={{
-          position: "absolute", top: 8, insetInlineStart: 8, zIndex: 20,
-          background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-          padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
-          fontFamily: "'Inter', sans-serif", letterSpacing: ".3px", whiteSpace: "nowrap",
-          boxShadow: "0 2px 8px rgba(124,109,242,.35)",
-        }}>
-          {SECTION_LABELS[type] || type}
-        </div>
-      )}
+      <div className="os-section-label">{SECTION_LABELS[type] || type}</div>
       {children}
     </div>
   );
@@ -106,6 +129,53 @@ function OrderSuccess() {
   // ── Live theme من الـ builder (postMessage) ──
   const [themeConfig, setThemeConfig] = useState(null);
   const [highlightedSection, setHighlightedSection] = useState(null);
+
+  // ── Highlight overlay (preview, mobile فقط) — قياس حقيقي بـ getBoundingClientRect لكل section ──
+  const sectionRefs = useRef({});
+  const registerSectionRef = useCallback((type, el) => {
+    if (el) sectionRefs.current[type] = el;
+    else delete sectionRefs.current[type];
+  }, []);
+  const [hoveredSection, setHoveredSection] = useState(null);
+  const [overlayRects, setOverlayRects] = useState({ hover: null, active: null });
+  const [isNarrowViewport, setIsNarrowViewport] = useState(
+    () => (typeof window !== "undefined" ? window.innerWidth <= 768 : false)
+  );
+
+  useEffect(() => {
+    if (!isPreview) return;
+    const onResize = () => setIsNarrowViewport(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isPreview]);
+
+  const measureOverlays = useCallback(() => {
+    if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
+    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    const toRect = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top + window.scrollY, height: r.height };
+    };
+    setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
+  }, [highlightedSection, hoveredSection, isNarrowViewport]);
+
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    measureOverlays();
+    window.addEventListener("resize", measureOverlays);
+    return () => window.removeEventListener("resize", measureOverlays);
+  }, [isPreview, isNarrowViewport, measureOverlays]);
+
+  // ✦ إعادة القياس إذا تبدل ارتفاع المحتوى (تعديل إعدادات فالـ builder، مراحل الأنيميشن، تحميل store...)
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    const id = requestAnimationFrame(measureOverlays);
+    return () => cancelAnimationFrame(id);
+  }, [isPreview, isNarrowViewport, measureOverlays, themeConfig, store, showDetails]);
 
   useEffect(() => {
     const t1 = setTimeout(() => setShowCheck(true), 100);
@@ -216,11 +286,31 @@ function OrderSuccess() {
         .os-details.visible { opacity: 1; animation: os-fadeUp .5s ease forwards; }
         .os-btn:hover { filter: brightness(0.94); }
         .os-marquee-track { animation: os-marquee 18s linear infinite; }
+
+        .os-section-wrapper { position: relative; }
+        /* ✦ Desktop preview (iframe الحقيقي 1280px) — مربع ملتصق بحدود السكشن (inset:0)
+           ✦ Mobile: الـ highlight/hover box والـ label كيترسمو عبر SectionHighlightOverlay (JS-measured، full-width) */
+        .os-section-label { display: none; }
+        @media (min-width: 769px) {
+          .os-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
+          .os-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
+          .os-section-label {
+            display: block;
+            position: absolute; top: 8px; left: 8px; z-index: 150;
+            background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 6px; pointer-events: none;
+            font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(124,109,242,.35);
+            opacity: 0; transition: opacity .12s ease;
+          }
+          .os-section-wrapper:hover .os-section-label,
+          .os-section-wrapper--highlighted .os-section-label { opacity: 1; }
+        }
       `}</style>
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
       {announcementSec?.enabled !== false && announcementSec?.settings && (
-        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"}>
+        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {announcementSec.settings.animation ? (
               <div className="os-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -244,7 +334,7 @@ function OrderSuccess() {
       )}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -256,7 +346,7 @@ function OrderSuccess() {
       </SectionWrapper>
 
       {/* ── Success Message ── */}
-      <SectionWrapper type="successMessage" isPreview={isPreview} isHighlighted={highlightedSection === "successMessage"}>
+      <SectionWrapper type="successMessage" isPreview={isPreview} isHighlighted={highlightedSection === "successMessage"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <div style={{ maxWidth: 480, margin: "0 auto", padding: "48px 20px 64px", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
           {/* ✦ علامة الصح بأنيميشن */}
@@ -382,7 +472,7 @@ function OrderSuccess() {
       </SectionWrapper>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"}>
+      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
       </SectionWrapper>
 
@@ -398,6 +488,14 @@ function OrderSuccess() {
         bgColor={bgColor}
         isPreview={isPreview}
       />
+
+      {/* ── Highlight overlay (preview, mobile فقط) — full-width، JS-measured ── */}
+      {overlayRects.hover && (
+        <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
+      )}
+      {overlayRects.active && (
+        <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+      )}
     </div>
   );
 }
