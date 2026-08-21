@@ -567,7 +567,7 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
+        style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
@@ -689,7 +689,7 @@ function ProductDetails() {
         )}
 
         {/* ── RIGHT: Product Info + Checkout ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, minWidth: 0 }}>
 
           {/* Product Info */}
           {productInfoEnabled && (
