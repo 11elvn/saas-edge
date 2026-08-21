@@ -136,11 +136,14 @@ const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
 const SECTION_LABELS = { announcement: "Announcement Bar", header: "Header", checkout: "In-Page Checkout", trust: "Trust Badges", faq: "FAQ", footer: "Footer" };
 
-// ── نفس مبدأ الـ checkout: id ديال Trust Badges مختلف عن الـ type (id: "checkoutTrust"، type: "trust") ──
+// ── نفس مبدأ الـ checkout: id ديال Trust Badges مختلف عن الـ type (id: "checkoutTrust"، type: "trust").
+// وFAQ زادة عندها نفس المشكل، لكن الـ id ديالها متولد ديناميكياً (`faq-${Date.now()}`) كي تتزاد من
+// ThemeEdit "Add Section" — فكنستعملو regex باش نقطعو الـ timestamp ونرجعو للـ type الأصلي ──
 const normalizeSection = (t) => {
-  if (t === "cartCheckout") return "checkout";
+  if (!t) return t;
+  if (t === "cartCheckout")  return "checkout";
   if (t === "checkoutTrust") return "trust";
-  return t;
+  return t.replace(/-\d+$/, ""); // "faq-1735999999999" → "faq" (وكذا أي section ديناميكي آخر مستقبلاً)
 };
 
 // ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين بـ JS
@@ -795,7 +798,7 @@ function Checkout() {
 
       {/* ── FAQ ── */}
       {sec(checkoutSections, "faq")?.enabled !== false && sec(checkoutSections, "faq") && (
-        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "faq"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <FaqSection
             settings={sec(checkoutSections, "faq")?.settings}
             primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
