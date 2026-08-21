@@ -2883,8 +2883,31 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, activeSectio
     }
   }, [themeConfig]);
 
+  const hideIframeScrollbar = () => {
+    // ✦ نخبّي شريط التمرير الأصلي (native) لصفحة المتجر اللي جوا الـ iframe — بصريا فقط
+    // السكرول يبقى خدام عادي (SCROLL_TO_SECTION..)، غير الشكل ديالو يختفي (كيما صورة 2)
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      if (doc && !doc.getElementById("pb-hide-scrollbar")) {
+        const style = doc.createElement("style");
+        style.id = "pb-hide-scrollbar";
+        style.textContent = `
+          html, body {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Old Edge/IE */
+          }
+          html::-webkit-scrollbar, body::-webkit-scrollbar {
+            width: 0; height: 0; display: none; /* Chrome/Safari/new Edge */
+          }
+        `;
+        doc.head?.appendChild(style);
+      }
+    } catch (_) {}
+  };
+
   const handleLoad = () => {
     loadedRef.current = true;
+    hideIframeScrollbar();
     // أرسل أي config كان معلّق
     // ✦ الأولوية دايماً للـ themeConfig الحي (المحدّث) — pendingRef غير fallback نادر
     // (قبل: pendingRef.current كانت تاخد الأولوية وتبعث نسخة قديمة عند تبديل الصفحة → التصميم يرجع للقديم)
