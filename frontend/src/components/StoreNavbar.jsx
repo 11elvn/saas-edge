@@ -233,7 +233,6 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         position: navPosition, top:0, zIndex:100,
         background: navBg,
         backdropFilter:"blur(16px)",
-        borderBottom:`1px solid ${navBorder}`,
         height:60,
         display:"flex",
         alignItems:"center",
