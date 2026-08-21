@@ -2763,7 +2763,12 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
 // ─────────────────────────────────────────────
 // MINI PREVIEW (iframe-based)
 // ─────────────────────────────────────────────
-function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home", productId, categoryId, storePatch }) {
+function PreviewFrame({ slug, isMobile, themeConfig, activeSection, activeSectionType, page = "home", productId, categoryId, storePatch }) {
+  // ✦ الـ iframe (PublicStore/etc) كيقارن بـ section "type" (مثلاً "faq")، ماشي بالـ "id"
+  // ✦ (id يقدر يكون مختلف عن type — مثلاً sections اللي تزادت يدويا: "faq-1755789012345")
+  // ✦ activeSectionType جاي جاهز من فوق (ThemeEdit) — lookup على activeSectionObj.type
+  // ✦ fallback على activeSection (id) لو ماكانش type — باش ما تولي highlight تخسر تماما
+  const highlightPayload = activeSectionType || activeSection;
   const iframeRef  = useRef(null);
   const loadedRef  = useRef(false);
   const pendingRef = useRef(null);
@@ -2838,16 +2843,16 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     }
   }, [storePatch]);
 
-  // ✦ عند تغيير activeSection — نرسل highlight للـ iframe
+  // ✦ عند تغيير activeSection — نرسل highlight للـ iframe (نبعثو الـ type ماشي id)
   useEffect(() => {
     if (!loadedRef.current) return;
     try {
       iframeRef.current?.contentWindow?.postMessage(
-        { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+        { type: "HIGHLIGHT_SECTION", sectionType: highlightPayload },
         "*"
       );
     } catch (_) {}
-  }, [activeSection]);
+  }, [highlightPayload]);
 
   // ✦ الصفحة الجديدة (بعد ما تحمّل وتسجّل الـ listener ديالها) كتطلب آخر themeConfig بنفسها
   // هذا كيحل أي سباق توقيت مع حدث load (بلاصة الاعتماد بروحو على handleLoad)
@@ -2859,14 +2864,14 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
       if (storePatch) sendStorePatch(storePatch);
       try {
         iframeRef.current?.contentWindow?.postMessage(
-          { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+          { type: "HIGHLIGHT_SECTION", sectionType: highlightPayload },
           "*"
         );
       } catch (_) {}
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [themeConfig, storePatch, activeSection]);
+  }, [themeConfig, storePatch, highlightPayload]);
 
   // عند تغيير themeConfig — إذا الـ iframe محمّل أرسل مباشرة، وإلا احفظه كـ pending
   useEffect(() => {
@@ -2891,7 +2896,7 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, page = "home
     // ✦ أرسل الـ highlight الحالي (كان كيضيع قبل — الـ iframe كي يعاود يتحمّل، ما كانش عندو نظام pending كيما cfg/store)
     try {
       iframeRef.current?.contentWindow?.postMessage(
-        { type: "HIGHLIGHT_SECTION", sectionType: activeSection },
+        { type: "HIGHLIGHT_SECTION", sectionType: highlightPayload },
         "*"
       );
     } catch (_) {}
@@ -3771,6 +3776,7 @@ function ThemeEdit() {
             isMobile={isMobile}
             themeConfig={themeConfig}
             activeSection={activeSection}
+            activeSectionType={activeSectionObj?.type}
             page={currentPage}
             productId={previewProductId}
             categoryId={previewCategoryId}
