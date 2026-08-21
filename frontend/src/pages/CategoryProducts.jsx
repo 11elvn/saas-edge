@@ -403,7 +403,7 @@ export default function CategoryProducts() {
           </div>
         ) : (
           /* ══════ Overlay — صورة كاملة العرض + تعتيم + الاسم فوقها ══════ */
-          <div style={{ position: "relative", height: "clamp(180px,28vw,320px)", background: "#f3f4f6", marginTop: 20 }}>
+          <div style={{ position: "relative", height: "clamp(180px,28vw,320px)", background: "#f3f4f6" }}>
             {categoryImg && (
               <img src={categoryImg} alt={categoryName} onError={e => { e.target.style.opacity = 0; }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             )}
