@@ -376,26 +376,28 @@ export default function SearchResults() {
         />
       </SectionWrapper>
 
-      {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
-          flexDirection: (collSettings.titleAlign || "right") === "left" ? "row-reverse" : "row",
-        }}>
-          <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: collSettings.titleAlign || "right" }}>
-            {collSettings.title || "نتائج البحث"}
-          </h2>
-          {(collSettings.titleAlign || "right") !== "center" && (
-            <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>
-              {products.length} منتج
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ── Collection grid — قابلة للتحكم كاملة (Columns / Card style / Badge / Rating...) ── */}
+      {/* ── Collection grid — قابلة للتحكم كاملة (Columns / Card style / Badge / Rating...) ──
+           ✦ العنوان + badge عدد المنتجات دخلين توا جوا SectionWrapper باش الصندوق البنفسجي
+           فـ preview يغطي العنوان مع الگريد كوحدة واحدة، ماشي غير الگريد بروحه ── */}
       <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12,
+            justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
+            flexDirection: (collSettings.titleAlign || "right") === "left" ? "row-reverse" : "row",
+          }}>
+            <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.7rem)", fontWeight: 800, color: textColor, margin: 0, textAlign: collSettings.titleAlign || "right" }}>
+              {collSettings.title || "نتائج البحث"}
+            </h2>
+            {(collSettings.titleAlign || "right") !== "center" && (
+              <span style={{ fontSize: 13, color: mutedTextColor, background: surfaceColor, border: `1px solid ${borderColor}`, padding: "5px 14px", borderRadius: 50 }}>
+                {products.length} منتج
+              </span>
+            )}
+          </div>
+        </div>
+
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 80px" }}>
           {products.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
