@@ -2,7 +2,7 @@
 // 📁 pages/PublicStore.jsx — Day 23 Redesign (bat-caveee style)
 // ============================================================
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ALGERIAN_CITIES } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
@@ -279,63 +279,69 @@ const SECTION_LABELS = {
 };
 
 // ── CSS للـ preview overlays ──────────────────────────────────
+// ✦ Desktop (min-width:769px) — نفس السلوك الأصلي: CSS :hover + label ملتصقين بحدود السكشن (inset:0)
+// ✦ Mobile (<769px) — الهايلايت + label كيترسمو بـ JS (SectionHighlightOverlay) — الـ label هنا display:none باش ما تتكررش
 const PREVIEW_CSS = `
 .ps-section-wrapper {
   position: relative;
 }
+.ps-section-label { display: none; }
 
-/* Hover — تمرير الفار فوق أي section: طبقة overlay ملتصقة بالضبط بالحواف (inset:0)، فوق كل المحتوى */
-.ps-section-wrapper:hover::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px dashed rgba(124,109,242,.55);
-  background: rgba(124,109,242,.05);
-  pointer-events: none;
-  z-index: 140;
-}
+@media (min-width: 769px) {
+  /* Hover — تمرير الفار فوق أي section: طبقة overlay ملتصقة بالضبط بالحواف (inset:0)، فوق كل المحتوى */
+  .ps-section-wrapper:hover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(124,109,242,.55);
+    background: rgba(124,109,242,.05);
+    pointer-events: none;
+    z-index: 140;
+  }
 
-/* Selected/highlighted — الـ section المختارة فعليًا (كليك): نفس الطبقة بحدود صريحة + تلوين أقوى */
-.ps-section-wrapper--highlighted {
-  position: relative;
-}
-.ps-section-wrapper--highlighted::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px solid #7c6df2;
-  background: rgba(124,109,242,.10);
-  pointer-events: none;
-  z-index: 140;
-}
+  /* Selected/highlighted — الـ section المختارة فعليًا (كليك): نفس الطبقة بحدود صريحة + تلوين أقوى */
+  .ps-section-wrapper--highlighted {
+    position: relative;
+  }
+  .ps-section-wrapper--highlighted::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid #7c6df2;
+    background: rgba(124,109,242,.10);
+    pointer-events: none;
+    z-index: 140;
+  }
 
-/* Label اسم الـ section — دايمًا فالزاوية اليسرى الفيزيائية (left)، بغض النظر عن اتجاه الصفحة */
-.ps-section-label {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 150;
-  background: #7c6df2;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 6px;
-  pointer-events: none;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: .3px;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(124,109,242,.35);
-  opacity: 0;
-  transition: opacity .12s ease;
-}
-/* يبان عند hover حتى بلا اختيار، ويبقى ظاهر دايمًا كي الـ section مختارة */
-.ps-section-wrapper:hover .ps-section-label,
-.ps-section-wrapper--highlighted .ps-section-label {
-  opacity: 1;
-}
-.ps-section-label--active {
-  background: #7c6df2;
+  /* Label اسم الـ section — دايمًا فالزاوية اليسرى الفيزيائية (left)، بغض النظر عن اتجاه الصفحة */
+  .ps-section-label {
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 150;
+    background: #7c6df2;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: .3px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(124,109,242,.35);
+    opacity: 0;
+    transition: opacity .12s ease;
+  }
+  /* يبان عند hover حتى بلا اختيار، ويبقى ظاهر دايمًا كي الـ section مختارة */
+  .ps-section-wrapper:hover .ps-section-label,
+  .ps-section-wrapper--highlighted .ps-section-label {
+    opacity: 1;
+  }
+  .ps-section-label--active {
+    background: #7c6df2;
+  }
 }
 
 /* زر + أسفل الـ section المختار */
@@ -364,8 +370,37 @@ const PREVIEW_CSS = `
 }
 `;
 
+// ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين
+// بـ JS (getBoundingClientRect + scrollY) → position:absolute نسبة للدوكيمو (ماشي fixed)
+// ✦ left:0/right:0 (ماشي 100vw) — باش ما يفيضش عن عرض الصفحة الحقيقي عند وجود scrollbar
+function SectionHighlightOverlay({ rect, label, variant }) {
+  if (!rect) return null;
+  const isActive = variant === "active";
+  return (
+    <>
+      <div style={{
+        position: "absolute", left: 0, right: 0,
+        top: rect.top, height: rect.height,
+        border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
+        background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
+        pointerEvents: "none", zIndex: 140,
+      }} />
+      <div style={{
+        position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
+        background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
+        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
+        boxShadow: "0 2px 8px rgba(124,109,242,.35)",
+      }}>
+        {label}
+      </div>
+    </>
+  );
+}
+
 // ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }) {
+// ✦ فـ desktop: CSS :hover عادي (نفس القديم). فـ mobile: JS-measured overlay (registerRef/onHoverChange)
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, registerRef, onHoverChange }) {
   if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
 
   // ✦ عند كليك على أي مكان في الـ section → نرسل للـ ThemeEdit باش يفتح settings
@@ -375,12 +410,15 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {} }
 
   return (
     <div
+      ref={el => registerRef && registerRef(type, el)}
       style={{ ...style, position: "relative", cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
+      onMouseEnter={() => onHoverChange && onHoverChange(type)}
+      onMouseLeave={() => onHoverChange && onHoverChange(null)}
       className={`ps-section-wrapper${isHighlighted ? " ps-section-wrapper--highlighted" : ""}`}
     >
-      {/* ── Label — اسم الـ section: يبان عند hover، ويبقى ظاهر إذا كانت مختارة ── */}
+      {/* ── Label — اسم الـ section: يبان عند hover، ويبقى ظاهر إذا كانت مختارة (desktop فقط، CSS media query) ── */}
       <div className={`ps-section-label${isHighlighted ? " ps-section-label--active" : ""}`}>
         {SECTION_LABELS[type] || type}
       </div>
@@ -425,6 +463,53 @@ function PublicStore() {
   const loadMoreRef = useRef(null);
   const carouselRef  = useRef(null); // ✦ مرجع الكاروسيل — لأزرار التنقل الجديدة
   const [visibleCount, setVisibleCount] = useState(null); // ✦ يُهيّأ بحسب productsShown عند توفر إعدادات collection
+
+  // ── Highlight overlay (preview, mobile فقط) — قياس حقيقي بـ getBoundingClientRect لكل section ──
+  const sectionRefs = useRef({});
+  const registerSectionRef = useCallback((type, el) => {
+    if (el) sectionRefs.current[type] = el;
+    else delete sectionRefs.current[type];
+  }, []);
+  const [hoveredSection, setHoveredSection] = useState(null);
+  const [overlayRects, setOverlayRects] = useState({ hover: null, active: null });
+  const [isNarrowViewport, setIsNarrowViewport] = useState(
+    () => (typeof window !== "undefined" ? window.innerWidth <= 768 : false)
+  );
+
+  useEffect(() => {
+    if (!isPreview) return;
+    const onResize = () => setIsNarrowViewport(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isPreview]);
+
+  // ✦ absolute (ماشي fixed) نسبة للدوكيمو كامل — top = rect.top (viewport) + scrollY (السكرول الحالي)
+  const measureOverlays = useCallback(() => {
+    if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
+    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    const rectOf = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top + window.scrollY, height: r.height };
+    };
+    setOverlayRects({ hover: rectOf(hoverEl), active: rectOf(activeEl) });
+  }, [highlightedSection, hoveredSection, isNarrowViewport]);
+
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    measureOverlays();
+    window.addEventListener("resize", measureOverlays);
+    return () => window.removeEventListener("resize", measureOverlays);
+  }, [isPreview, isNarrowViewport, measureOverlays]);
+
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport) return;
+    const id = requestAnimationFrame(measureOverlays);
+    return () => cancelAnimationFrame(id);
+  }, [isPreview, isNarrowViewport, measureOverlays, themeConfig, store, products, categories, loading]);
 
   // ✦ Listen for live updates from ThemeEdit (iframe postMessage)
   useEffect(() => {
@@ -590,7 +675,7 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }}>
+          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -616,7 +701,7 @@ function PublicStore() {
 
       {/* ── Navbar ── */}
       {sec(tc, "header")?.enabled !== false && (
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }}>
+      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
       <StoreNavbar
         store={store}
         slug={slug}
@@ -651,7 +736,7 @@ function PublicStore() {
           }
         };
         return (
-        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }}>
+        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
           {heroBanner ? (
             <img src={heroBanner} alt="banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -788,7 +873,7 @@ function PublicStore() {
         );
 
         return (
-        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }}>
+        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <section style={{ background: bgColor, padding: "24px 16px" }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
@@ -809,7 +894,7 @@ function PublicStore() {
         const usingDemo = categories.length === 0 && isPreview;
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
-        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }}>
+        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
           <div style={{
@@ -932,7 +1017,7 @@ function PublicStore() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }}>
+        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
@@ -1134,7 +1219,7 @@ function PublicStore() {
 
       {/* ── FAQ ── */}
       {sec(tc, "faq")?.enabled !== false && sec(tc, "faq") && (
-        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: sectionOrder("faq") }}>
+        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: sectionOrder("faq") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <FaqSection
             settings={sec(tc, "faq")?.settings}
             primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
@@ -1145,7 +1230,7 @@ function PublicStore() {
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
-        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }}>
+        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(tc, "footer")?.settings || {}} />
         </SectionWrapper>
       )}
@@ -1189,6 +1274,18 @@ function PublicStore() {
         bgColor={bgColor}
         isPreview={isPreview}
       />
+
+      {/* ── Highlight overlays — mobile فقط (preview): مربع + label، absolute ومقاسين بـ JS ── */}
+      {isPreview && isNarrowViewport && (
+        <>
+          {overlayRects.hover && (
+            <SectionHighlightOverlay rect={overlayRects.hover} label={SECTION_LABELS[hoveredSection] || hoveredSection} variant="hover" />
+          )}
+          {overlayRects.active && (
+            <SectionHighlightOverlay rect={overlayRects.active} label={SECTION_LABELS[highlightedSection] || highlightedSection} variant="active" />
+          )}
+        </>
+      )}
     </div>
   );
 }

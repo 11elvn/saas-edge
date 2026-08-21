@@ -74,7 +74,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
   return (
     <>
       <div style={{
-        position: "absolute", left: 0, width: "100vw",
+        position: "absolute", left: 0, right: 0,
         top: rect.top, height: rect.height,
         border: isActive ? "2px solid #7c6df2" : "2px dashed rgba(124,109,242,.55)",
         background: isActive ? "rgba(124,109,242,.10)" : "rgba(124,109,242,.05)",
