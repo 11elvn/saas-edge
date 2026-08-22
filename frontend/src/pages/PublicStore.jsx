@@ -889,7 +889,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="trust" isPreview={isPreview} spacing={sec(tc, "trust")?.settings?.spacing} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <section style={{ background: bgColor, padding: "24px 16px" }}>
+          <section style={{ background: bgColor }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
         </SectionWrapper>
