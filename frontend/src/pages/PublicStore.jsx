@@ -493,12 +493,20 @@ function PublicStore() {
     const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
     const showHover = hoveredSection && hoveredSection !== highlightedSection;
     const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
-    const rectOf = (el) => {
+    const rectOf = (el, type) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      return { top: r.top + window.scrollY, height: r.height };
+      let top = r.top;
+      let nearestBottom = -Infinity;
+      Object.entries(sectionRefs.current).forEach(([t, node]) => {
+        if (t === type || !node) return;
+        const nr = node.getBoundingClientRect();
+        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottom) nearestBottom = nr.bottom;
+      });
+      if (nearestBottom > -Infinity) top = nearestBottom;
+      return { top: top + window.scrollY, height: r.bottom - top };
     };
-    setOverlayRects({ hover: rectOf(hoverEl), active: rectOf(activeEl) });
+    setOverlayRects({ hover: rectOf(hoverEl, hoveredSection), active: rectOf(activeEl, highlightedSection) });
   }, [highlightedSection, hoveredSection, isNarrowViewport]);
 
   useEffect(() => {
