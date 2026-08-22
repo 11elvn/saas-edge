@@ -691,7 +691,7 @@ function PublicStore() {
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
           <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(tc, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
+          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", position: "relative" }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
                 {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
@@ -910,7 +910,7 @@ function PublicStore() {
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
         <SectionWrapper type="categories" isPreview={isPreview} spacing={sec(tc, "categories")?.settings?.spacing} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
+        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto" }}>
           {/* Header row */}
           <div style={{
             display: "flex", alignItems: "flex-end", marginBottom: 28, gap: 12,
@@ -1033,7 +1033,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(tc, "collection")?.settings?.spacing} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
             justifyContent: titleAlign === "center" ? "center" : "space-between",
