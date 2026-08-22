@@ -127,13 +127,15 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — نفس منطق OrderSuccess/ProductDetails: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, registerRef, onHoverChange }) {
-  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
+  const sp = spacing || {};
+  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
       ref={el => registerRef && registerRef(type, el)}
-      style={{ position: "relative", ...style, cursor: "pointer" }}
+      style={{ position: "relative", ...extraPad, ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
       onMouseEnter={() => onHoverChange && onHoverChange(type)}
@@ -344,7 +346,7 @@ export default function SearchResults() {
       {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
         const { message, bgColor: abg, textColor: atx, animation, showClose } = announcementSec.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div style={{ background: abg, overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
                 <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -365,7 +367,7 @@ export default function SearchResults() {
       })()}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="header" isPreview={isPreview} spacing={sec(homeSections, "header")?.settings?.spacing} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -379,7 +381,7 @@ export default function SearchResults() {
       {/* ── Collection grid — قابلة للتحكم كاملة (Columns / Card style / Badge / Rating...) ──
            ✦ العنوان + badge عدد المنتجات دخلين توا جوا SectionWrapper باش الصندوق البنفسجي
            فـ preview يغطي العنوان مع الگريد كوحدة واحدة، ماشي غير الگريد بروحه ── */}
-      <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(searchSections, "collection")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
           <div style={{
@@ -493,7 +495,7 @@ export default function SearchResults() {
       </SectionWrapper>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="footer" isPreview={isPreview} spacing={sec(homeSections, "footer")?.settings?.spacing} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 

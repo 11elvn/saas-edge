@@ -95,13 +95,15 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", registerRef, onHoverChange }) {
-  if (!isPreview) return <div style={style} data-section={type} className={className || undefined}>{children}</div>;
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
+  const sp = spacing || {};
+  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
       ref={el => registerRef && registerRef(type, el)}
-      style={{ position: "relative", ...style, cursor: "pointer" }}
+      style={{ position: "relative", ...extraPad, ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
       onMouseEnter={() => onHoverChange && onHoverChange(type)}
@@ -351,7 +353,7 @@ export default function CategoryProducts() {
       {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
         const { message, bgColor, textColor, animation, showClose } = announcementSec.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedType === "announcement"} style={{ order: 0 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedType === "announcement"} style={{ order: 0 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
               {animation ? (
                 <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -374,7 +376,7 @@ export default function CategoryProducts() {
       })()}
 
       {/* ── Navbar ── */}
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedType === "header"} style={{ order: 1 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="header" isPreview={isPreview} spacing={sec(homeSections, "header")?.settings?.spacing} isHighlighted={highlightedType === "header"} style={{ order: 1 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreNavbar
           store={store}
           slug={slug}
@@ -387,7 +389,7 @@ export default function CategoryProducts() {
 
       {/* ── Category Banner (Overlay أو Compact) ── */}
       {bannerEnabled && (
-      <SectionWrapper type="categoryBanner" isPreview={isPreview} isHighlighted={highlightedType === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="categoryBanner" isPreview={isPreview} spacing={sec(catSections, "categoryBanner")?.settings?.spacing} isHighlighted={highlightedType === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -450,7 +452,7 @@ export default function CategoryProducts() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedType === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(catSections, "collection")?.settings?.spacing} isHighlighted={highlightedType === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
         {collSettings.showSortBar !== false && (
           <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", justifyContent: "flex-end" }}>
@@ -730,7 +732,7 @@ export default function CategoryProducts() {
       `}</style>
 
       {/* ── Footer ── */}
-      <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedType === "footer"} style={{ order: 999 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="footer" isPreview={isPreview} spacing={sec(homeSections, "footer")?.settings?.spacing} isHighlighted={highlightedType === "footer"} style={{ order: 999 }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(homeSections, "footer")?.settings} />
       </SectionWrapper>
 

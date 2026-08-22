@@ -175,13 +175,15 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — نفس منطق OrderSuccess/SearchResults: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, registerRef, onHoverChange }) {
-  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
+  const sp = spacing || {};
+  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
     <div
       ref={el => registerRef && registerRef(type, el)}
-      style={{ position: "relative", ...style, cursor: "pointer" }}
+      style={{ position: "relative", ...extraPad, ...style, cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
       onMouseEnter={() => onHoverChange && onHoverChange(type)}
@@ -450,7 +452,7 @@ function Checkout() {
     >
       {/* ── Announcement Bar ── */}
       {announcementSec?.enabled !== false && announcementSec && (
-        <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {announcementSec.settings.animation ? (
               <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -475,7 +477,7 @@ function Checkout() {
 
       {/* ── Header ── */}
       {sec(homeSections, "header")?.enabled !== false && (
-        <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="header" isPreview={isPreview} spacing={sec(homeSections, "header")?.settings?.spacing} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <StoreNavbar
             store={store}
             slug={slug}
@@ -507,7 +509,7 @@ function Checkout() {
             </button>
           </div>
         ) : (
-          <SectionWrapper type="checkout" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "checkout"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="checkout" isPreview={isPreview} spacing={sec(checkoutSections, "checkout")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "checkout"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <div
               className="pd-fade pd-d2"
               style={{
@@ -788,7 +790,7 @@ function Checkout() {
         );
 
         return (
-          <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "trust"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="trust" isPreview={isPreview} spacing={sec(checkoutSections, "trust")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "trust"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
             <section style={{ background: bgColor, padding: "24px 16px" }}>
               {isRow ? renderRow() : renderGrid()}
             </section>
@@ -798,7 +800,7 @@ function Checkout() {
 
       {/* ── FAQ ── */}
       {sec(checkoutSections, "faq")?.enabled !== false && sec(checkoutSections, "faq") && (
-        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={normalizeSection(highlightedSection) === "faq"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="faq" isPreview={isPreview} spacing={sec(checkoutSections, "faq")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "faq"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <FaqSection
             settings={sec(checkoutSections, "faq")?.settings}
             primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
@@ -809,7 +811,7 @@ function Checkout() {
 
       {/* ── Footer ── */}
       {sec(homeSections, "footer")?.enabled !== false && (
-        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="footer" isPreview={isPreview} spacing={sec(homeSections, "footer")?.settings?.spacing} isHighlighted={highlightedSection === "footer"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
         </SectionWrapper>
       )}
