@@ -497,14 +497,18 @@ function PublicStore() {
       if (!el) return null;
       const r = el.getBoundingClientRect();
       let top = r.top;
-      let nearestBottom = -Infinity;
+      let bottom = r.bottom;
+      let nearestBottomAbove = -Infinity;
+      let nearestTopBelow = Infinity;
       Object.entries(sectionRefs.current).forEach(([t, node]) => {
         if (t === type || !node) return;
         const nr = node.getBoundingClientRect();
-        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottom) nearestBottom = nr.bottom;
+        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottomAbove) nearestBottomAbove = nr.bottom;
+        if (nr.top >= r.bottom - 0.5 && nr.top < nearestTopBelow) nearestTopBelow = nr.top;
       });
-      if (nearestBottom > -Infinity) top = nearestBottom;
-      return { top: top + window.scrollY, height: r.bottom - top };
+      if (nearestBottomAbove > -Infinity) top = nearestBottomAbove;
+      if (nearestTopBelow < Infinity) bottom = nearestTopBelow;
+      return { top: top + window.scrollY, height: bottom - top };
     };
     setOverlayRects({ hover: rectOf(hoverEl, hoveredSection), active: rectOf(activeEl, highlightedSection) });
   }, [highlightedSection, hoveredSection, isNarrowViewport]);
