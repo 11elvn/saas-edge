@@ -2717,10 +2717,26 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
 // ── Spacing — Top/Bottom/Start/End padding (خدامة لكل أنواع الـ sections تلقائيا) ──
-// ✦ القيم الافتراضية 0px = بلا أي تأثير على الشكل الحالي حتى يبدل المستخدم شي حاجة
+// ✦ كل نوع section عندو قيم افتراضية محسّنة (تصميم جيد من البداية) — نفس القيم بالضبط
+// ✦ المطبقة فـ الصفحات الحقيقية (PublicStore/ProductDetails/...)، باش السلايدر يوري الرقم الصحيح
 // ✦ SpacingRow لازم يكون مستقل (برا SpacingSettings) — إيلا تبنى جوا function آخر، React
 //   كيشوفو كـ component جديد فـ كل render (كل حركة سلايدر) ويهدم/يعاود يبني الـ <input>،
 //   وهذا كان السبب اللي خلا السلايدر "مايتجبدش" بالماوس
+const SPACING_DEFAULTS = {
+  announcement:   { top: 8,  bottom: 8,  start: 0,  end: 0 },
+  header:         { top: 0,  bottom: 0,  start: 0,  end: 0 },
+  hero:           { top: 0,  bottom: 0,  start: 0,  end: 0 },
+  trust:          { top: 24, bottom: 24, start: 16, end: 16 },
+  categories:     { top: 48, bottom: 24, start: 24, end: 24 },
+  collection:     { top: 40, bottom: 60, start: 24, end: 24 },
+  faq:            { top: 48, bottom: 56, start: 24, end: 24 },
+  footer:         { top: 40, bottom: 32, start: 24, end: 24 },
+  gallery:        { top: 36, bottom: 60, start: 24, end: 24 },
+  productInfo:    { top: 36, bottom: 24, start: 24, end: 24 },
+  checkout:       { top: 20, bottom: 32, start: 0,  end: 0  },
+  categoryBanner: { top: 20, bottom: 20, start: 24, end: 24 },
+  successMessage: { top: 48, bottom: 56, start: 20, end: 20 },
+};
 function SpacingRow({ value, label, onChange }) {
   return (
     <div className="pb-field">
@@ -2734,15 +2750,16 @@ function SpacingRow({ value, label, onChange }) {
   );
 }
 
-function SpacingSettings({ settings, onChange }) {
+function SpacingSettings({ type, settings, onChange }) {
   const sp = settings?.spacing || {};
+  const d = SPACING_DEFAULTS[type] || {};
   const setSp = (k, v) => onChange({ ...settings, spacing: { ...sp, [k]: v } });
   return (
     <Collapse title="Spacing" defaultOpen={false}>
-      <SpacingRow label="Top padding"    value={sp.top ?? 0}    onChange={v => setSp("top", v)} />
-      <SpacingRow label="Bottom padding" value={sp.bottom ?? 0} onChange={v => setSp("bottom", v)} />
-      <SpacingRow label="Start padding"  value={sp.start ?? 0}  onChange={v => setSp("start", v)} />
-      <SpacingRow label="End padding"    value={sp.end ?? 0}    onChange={v => setSp("end", v)} />
+      <SpacingRow label="Top padding"    value={sp.top ?? d.top ?? 0}       onChange={v => setSp("top", v)} />
+      <SpacingRow label="Bottom padding" value={sp.bottom ?? d.bottom ?? 0} onChange={v => setSp("bottom", v)} />
+      <SpacingRow label="Start padding"  value={sp.start ?? d.start ?? 0}   onChange={v => setSp("start", v)} />
+      <SpacingRow label="End padding"    value={sp.end ?? d.end ?? 0}       onChange={v => setSp("end", v)} />
     </Collapse>
   );
 }
@@ -2786,7 +2803,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       </div>
       <div className="pb-right__body">
         {inner()}
-        <SpacingSettings settings={section.settings} onChange={updateSettings} />
+        <SpacingSettings type={section.type} settings={section.settings} onChange={updateSettings} />
       </div>
     </div>
   );
