@@ -329,14 +329,18 @@ function ProductDetails() {
       if (!el) return null;
       const r = el.getBoundingClientRect();
       let top = r.top;
-      let nearestBottom = -Infinity;
+      let bottom = r.bottom;
+      let nearestBottomAbove = -Infinity;
+      let nearestTopBelow = Infinity;
       Object.entries(sectionRefs.current).forEach(([t, node]) => {
         if (t === type || !node) return;
         const nr = node.getBoundingClientRect();
-        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottom) nearestBottom = nr.bottom;
+        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottomAbove) nearestBottomAbove = nr.bottom;
+        if (nr.top >= r.bottom - 0.5 && nr.top < nearestTopBelow) nearestTopBelow = nr.top;
       });
-      if (nearestBottom > -Infinity) top = nearestBottom;
-      return { top: top + window.scrollY, height: r.bottom - top };
+      if (nearestBottomAbove > -Infinity) top = nearestBottomAbove;
+      if (nearestTopBelow < Infinity) bottom = nearestTopBelow;
+      return { top: top + window.scrollY, height: bottom - top };
     };
     setOverlayRects({ active: toRect(activeEl, highlightedSection), hover: toRect(hoverEl, hoveredSection) });
   }, [highlightedSection, hoveredSection, isNarrowViewport]);
@@ -580,7 +584,7 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
+        style={{ maxWidth: 980, margin: "0 auto", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
@@ -702,12 +706,12 @@ function ProductDetails() {
         )}
 
         {/* ── RIGHT: Product Info + Checkout ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, minWidth: 0 }}>
 
           {/* Product Info */}
           {productInfoEnabled && (
           <SectionWrapper type="productInfo" isPreview={isPreview} spacing={sec(productSections, "productInfo")?.settings?.spacing} isHighlighted={highlightedSection === "productInfo"} style={{ order: productOrder("productInfo") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-            <div className="pd-fade pd-d1" style={{ padding: "8px 4px 28px" }}>
+            <div className="pd-fade pd-d1">
               {productInfoSettings.badgeText?.trim() && (
                 <span style={{ background: primary, color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12 }}>
                   {productInfoSettings.badgeText}
