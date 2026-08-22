@@ -2716,6 +2716,31 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 // ─────────────────────────────────────────────
 // SETTINGS PANEL ROUTER
 // ─────────────────────────────────────────────
+// ── Spacing — Top/Bottom/Start/End padding (خدامة لكل أنواع الـ sections تلقائيا) ──
+// ✦ القيم الافتراضية 0px = بلا أي تأثير على الشكل الحالي حتى يبدل المستخدم شي حاجة
+function SpacingSettings({ settings, onChange }) {
+  const sp = settings?.spacing || {};
+  const setSp = (k, v) => onChange({ ...settings, spacing: { ...sp, [k]: v } });
+  const Row = ({ k, label }) => (
+    <div className="pb-field">
+      <div className="pb-label" style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>{label}</span><span>{sp[k] ?? 0}px</span>
+      </div>
+      <input type="range" className="pb-range" min={0} max={100} step={1}
+        value={sp[k] ?? 0}
+        onChange={e => setSp(k, Number(e.target.value))} />
+    </div>
+  );
+  return (
+    <Collapse title="Spacing" defaultOpen={false}>
+      <Row k="top" label="Top padding" />
+      <Row k="bottom" label="Bottom padding" />
+      <Row k="start" label="Start padding" />
+      <Row k="end" label="End padding" />
+    </Collapse>
+  );
+}
+
 function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage, isCategoryPage }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
@@ -2755,6 +2780,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       </div>
       <div className="pb-right__body">
         {inner()}
+        <SpacingSettings settings={section.settings} onChange={updateSettings} />
       </div>
     </div>
   );

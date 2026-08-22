@@ -400,8 +400,11 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
 // ✦ فـ desktop: CSS :hover عادي (نفس القديم). فـ mobile: JS-measured overlay (registerRef/onHoverChange)
-function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, registerRef, onHoverChange }) {
-  if (!isPreview) return <div style={style} data-section={type}>{children}</div>;
+function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
+  // ✦ Spacing إضافي (اختياري) جاي من إعدادات الـ section — 0 افتراضيا = بلا تأثير على الشكل الحالي
+  const sp = spacing || {};
+  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
 
   // ✦ عند كليك على أي مكان في الـ section → نرسل للـ ThemeEdit باش يفتح settings
   const handleClick = () => {
@@ -411,7 +414,7 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
   return (
     <div
       ref={el => registerRef && registerRef(type, el)}
-      style={{ ...style, position: "relative", cursor: "pointer" }}
+      style={{ ...extraPad, ...style, position: "relative", cursor: "pointer" }}
       data-section={type}
       onClick={handleClick}
       onMouseEnter={() => onHoverChange && onHoverChange(type)}
@@ -675,7 +678,7 @@ function PublicStore() {
         if (!s?.enabled) return null;
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(tc, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
@@ -701,7 +704,7 @@ function PublicStore() {
 
       {/* ── Navbar ── */}
       {sec(tc, "header")?.enabled !== false && (
-      <SectionWrapper type="header" isPreview={isPreview} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="header" isPreview={isPreview} spacing={sec(tc, "header")?.settings?.spacing} isHighlighted={highlightedSection === "header"} style={{ order: sectionOrder("header") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
       <StoreNavbar
         store={store}
         slug={slug}
@@ -736,7 +739,7 @@ function PublicStore() {
           }
         };
         return (
-        <SectionWrapper type="hero" isPreview={isPreview} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="hero" isPreview={isPreview} spacing={sec(tc, "hero")?.settings?.spacing} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
           {heroBanner ? (
             <img src={heroBanner} alt="banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -873,7 +876,7 @@ function PublicStore() {
         );
 
         return (
-        <SectionWrapper type="trust" isPreview={isPreview} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="trust" isPreview={isPreview} spacing={sec(tc, "trust")?.settings?.spacing} isHighlighted={highlightedSection === "trust"} style={{ order: sectionOrder("trust") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <section style={{ background: bgColor, padding: "24px 16px" }}>
             {isRow ? renderRow() : renderGrid()}
           </section>
@@ -894,7 +897,7 @@ function PublicStore() {
         const usingDemo = categories.length === 0 && isPreview;
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
-        <SectionWrapper type="categories" isPreview={isPreview} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="categories" isPreview={isPreview} spacing={sec(tc, "categories")?.settings?.spacing} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "52px 24px 0" }}>
           {/* Header row */}
           <div style={{
@@ -1017,7 +1020,7 @@ function PublicStore() {
         }[viewAllStyle];
 
         return (
-        <SectionWrapper type="collection" isPreview={isPreview} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(tc, "collection")?.settings?.spacing} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "40px 24px 80px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
@@ -1219,7 +1222,7 @@ function PublicStore() {
 
       {/* ── FAQ ── */}
       {sec(tc, "faq")?.enabled !== false && sec(tc, "faq") && (
-        <SectionWrapper type="faq" isPreview={isPreview} isHighlighted={highlightedSection === "faq"} style={{ order: sectionOrder("faq") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="faq" isPreview={isPreview} spacing={sec(tc, "faq")?.settings?.spacing} isHighlighted={highlightedSection === "faq"} style={{ order: sectionOrder("faq") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <FaqSection
             settings={sec(tc, "faq")?.settings}
             primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
@@ -1230,7 +1233,7 @@ function PublicStore() {
 
       {/* ── Footer ── */}
       {sec(tc, "footer")?.enabled !== false && (
-        <SectionWrapper type="footer" isPreview={isPreview} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+        <SectionWrapper type="footer" isPreview={isPreview} spacing={sec(tc, "footer")?.settings?.spacing} isHighlighted={highlightedSection === "footer"} style={{ order: sectionOrder("footer") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
           <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={sec(tc, "footer")?.settings || {}} />
         </SectionWrapper>
       )}
