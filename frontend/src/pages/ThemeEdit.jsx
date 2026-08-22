@@ -2718,25 +2718,31 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 // ─────────────────────────────────────────────
 // ── Spacing — Top/Bottom/Start/End padding (خدامة لكل أنواع الـ sections تلقائيا) ──
 // ✦ القيم الافتراضية 0px = بلا أي تأثير على الشكل الحالي حتى يبدل المستخدم شي حاجة
+// ✦ SpacingRow لازم يكون مستقل (برا SpacingSettings) — إيلا تبنى جوا function آخر، React
+//   كيشوفو كـ component جديد فـ كل render (كل حركة سلايدر) ويهدم/يعاود يبني الـ <input>،
+//   وهذا كان السبب اللي خلا السلايدر "مايتجبدش" بالماوس
+function SpacingRow({ value, label, onChange }) {
+  return (
+    <div className="pb-field">
+      <div className="pb-label" style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>{label}</span><span>{value}px</span>
+      </div>
+      <input type="range" className="pb-range" min={0} max={100} step={1}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))} />
+    </div>
+  );
+}
+
 function SpacingSettings({ settings, onChange }) {
   const sp = settings?.spacing || {};
   const setSp = (k, v) => onChange({ ...settings, spacing: { ...sp, [k]: v } });
-  const Row = ({ k, label }) => (
-    <div className="pb-field">
-      <div className="pb-label" style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>{label}</span><span>{sp[k] ?? 0}px</span>
-      </div>
-      <input type="range" className="pb-range" min={0} max={100} step={1}
-        value={sp[k] ?? 0}
-        onChange={e => setSp(k, Number(e.target.value))} />
-    </div>
-  );
   return (
     <Collapse title="Spacing" defaultOpen={false}>
-      <Row k="top" label="Top padding" />
-      <Row k="bottom" label="Bottom padding" />
-      <Row k="start" label="Start padding" />
-      <Row k="end" label="End padding" />
+      <SpacingRow label="Top padding"    value={sp.top ?? 0}    onChange={v => setSp("top", v)} />
+      <SpacingRow label="Bottom padding" value={sp.bottom ?? 0} onChange={v => setSp("bottom", v)} />
+      <SpacingRow label="Start padding"  value={sp.start ?? 0}  onChange={v => setSp("start", v)} />
+      <SpacingRow label="End padding"    value={sp.end ?? 0}    onChange={v => setSp("end", v)} />
     </Collapse>
   );
 }
