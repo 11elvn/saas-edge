@@ -320,12 +320,23 @@ function ProductDetails() {
     const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
     const showHover = hoveredSection && hoveredSection !== highlightedSection;
     const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
-    const toRect = (el) => {
+    // ✦ نلقاو أقرب Section فوق هاذ العنصر (اللي bottom ديالو قريب لـ top ديالو) ونمدو
+    // المربع البنفسجي يبدا من هناك — كيبلع أي فراغ (padding/gap) فارغ بينهم بصريا برك،
+    // الموقع الحي (والـ DOM الحقيقي) ما يتبدلوش، غير شكل الـ overlay فـ الـ editor
+    const toRect = (el, type) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      return { top: r.top + window.scrollY, height: r.height };
+      let top = r.top;
+      let nearestBottom = -Infinity;
+      Object.entries(sectionRefs.current).forEach(([t, node]) => {
+        if (t === type || !node) return;
+        const nr = node.getBoundingClientRect();
+        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottom) nearestBottom = nr.bottom;
+      });
+      if (nearestBottom > -Infinity) top = nearestBottom;
+      return { top: top + window.scrollY, height: r.bottom - top };
     };
-    setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
+    setOverlayRects({ active: toRect(activeEl, highlightedSection), hover: toRect(hoverEl, hoveredSection) });
   }, [highlightedSection, hoveredSection, isNarrowViewport]);
 
   useEffect(() => {
@@ -567,7 +578,7 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
+        style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 60px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
@@ -689,7 +700,7 @@ function ProductDetails() {
         )}
 
         {/* ── RIGHT: Product Info + Checkout ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 0, minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
 
           {/* Product Info */}
           {productInfoEnabled && (
