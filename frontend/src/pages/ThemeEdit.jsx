@@ -2723,19 +2723,19 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 //   كيشوفو كـ component جديد فـ كل render (كل حركة سلايدر) ويهدم/يعاود يبني الـ <input>،
 //   وهذا كان السبب اللي خلا السلايدر "مايتجبدش" بالماوس
 const SPACING_DEFAULTS = {
-  announcement:   { top: 8,  bottom: 8,  start: 0,  end: 0 },
-  header:         { top: 0,  bottom: 0,  start: 0,  end: 0 },
-  hero:           { top: 0,  bottom: 0,  start: 0,  end: 0 },
-  trust:          { top: 24, bottom: 24, start: 16, end: 16 },
-  categories:     { top: 48, bottom: 24, start: 24, end: 24 },
-  collection:     { top: 40, bottom: 60, start: 24, end: 24 },
-  faq:            { top: 48, bottom: 56, start: 24, end: 24 },
-  footer:         { top: 40, bottom: 32, start: 24, end: 24 },
-  gallery:        { top: 36, bottom: 60, start: 24, end: 24 },
-  productInfo:    { top: 36, bottom: 24, start: 24, end: 24 },
-  checkout:       { top: 20, bottom: 32, start: 0,  end: 0  },
-  categoryBanner: { top: 20, bottom: 20, start: 24, end: 24 },
-  successMessage: { top: 48, bottom: 56, start: 20, end: 20 },
+  announcement:   { top: 0, bottom: 0, start: 0, end: 0 },
+  header:         { top: 0, bottom: 0, start: 0, end: 0 },
+  hero:           { top: 0, bottom: 0, start: 0, end: 0 },
+  trust:          { top: 0, bottom: 0, start: 0, end: 0 },
+  categories:     { top: 0, bottom: 0, start: 0, end: 0 },
+  collection:     { top: 0, bottom: 0, start: 0, end: 0 },
+  faq:            { top: 0, bottom: 0, start: 0, end: 0 },
+  footer:         { top: 0, bottom: 0, start: 0, end: 0 },
+  gallery:        { top: 0, bottom: 0, start: 0, end: 0 },
+  productInfo:    { top: 0, bottom: 0, start: 0, end: 0 },
+  checkout:       { top: 0, bottom: 0, start: 0, end: 0 },
+  categoryBanner: { top: 0, bottom: 0, start: 0, end: 0 },
+  successMessage: { top: 0, bottom: 0, start: 0, end: 0 },
 };
 function SpacingRow({ value, label, onChange }) {
   return (
