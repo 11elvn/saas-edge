@@ -711,7 +711,7 @@ function PublicStore() {
         const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
           <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(tc, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", position: "relative" }}>
+          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
             {animation ? (
               <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
                 {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
