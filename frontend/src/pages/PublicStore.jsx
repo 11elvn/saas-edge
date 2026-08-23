@@ -401,14 +401,14 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // ── قيم Spacing الافتراضية لكل نوع section — تصميم منسّق (ماشي 0 للجميع) ──
 // ✦ تبان فـ السلايدرز من البداية، وتتبدل بمجرد ما يبدل المستخدم القيمة (undefined فقط كيرجع للـ default)
 const SPACING_DEFAULTS = {
-  announcement: { top: 8,  bottom: 8,  start: 0,  end: 0 },
-  header:       { top: 0,  bottom: 0,  start: 0,  end: 0 },
-  hero:         { top: 0,  bottom: 0,  start: 0,  end: 0 },
-  trust:        { top: 24, bottom: 24, start: 16, end: 16 },
-  categories:   { top: 48, bottom: 24, start: 24, end: 24 },
-  collection:   { top: 40, bottom: 60, start: 24, end: 24 },
-  faq:          { top: 48, bottom: 56, start: 24, end: 24 },
-  footer:       { top: 40, bottom: 32, start: 24, end: 24 },
+  announcement: { top: 0, bottom: 0, start: 0, end: 0 },
+  header:       { top: 0, bottom: 0, start: 0, end: 0 },
+  hero:         { top: 0, bottom: 0, start: 0, end: 0 },
+  trust:        { top: 0, bottom: 0, start: 0, end: 0 },
+  categories:   { top: 0, bottom: 0, start: 0, end: 0 },
+  collection:   { top: 0, bottom: 0, start: 0, end: 0 },
+  faq:          { top: 0, bottom: 0, start: 0, end: 0 },
+  footer:       { top: 0, bottom: 0, start: 0, end: 0 },
 };
 
 // ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
