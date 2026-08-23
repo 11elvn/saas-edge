@@ -398,31 +398,15 @@ function SectionHighlightOverlay({ rect, label, variant }) {
   );
 }
 
-// ── قيم Spacing الافتراضية لكل نوع section — تصميم منسّق (ماشي 0 للجميع) ──
-// ✦ تبان فـ السلايدرز من البداية، وتتبدل بمجرد ما يبدل المستخدم القيمة (undefined فقط كيرجع للـ default)
-const SPACING_DEFAULTS = {
-  announcement: { top: 0, bottom: 0, start: 0, end: 0 },
-  header:       { top: 0, bottom: 0, start: 0, end: 0 },
-  hero:         { top: 0, bottom: 0, start: 0, end: 0 },
-  trust:        { top: 0, bottom: 0, start: 0, end: 0 },
-  categories:   { top: 0, bottom: 0, start: 0, end: 0 },
-  collection:   { top: 0, bottom: 0, start: 0, end: 0 },
-  faq:          { top: 0, bottom: 0, start: 0, end: 0 },
-  footer:       { top: 0, bottom: 0, start: 0, end: 0 },
-};
-
 // ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
 // ✦ فـ desktop: CSS :hover عادي (نفس القديم). فـ mobile: JS-measured overlay (registerRef/onHoverChange)
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
-  // ✦ Spacing جاية من إعدادات الـ section — إيلا المستخدم ما بدلش شي قيمة (undefined)، نستعملو
-  // القيمة الافتراضية المحسّنة ديال هاذ النوع، ماشي 0 مباشرة
   const sp = spacing || {};
-  const d = SPACING_DEFAULTS[type] || {};
   const extraPad = {
-    paddingTop: sp.top ?? d.top ?? 0,
-    paddingBottom: sp.bottom ?? d.bottom ?? 0,
-    paddingInlineStart: sp.start ?? d.start ?? 0,
-    paddingInlineEnd: sp.end ?? d.end ?? 0,
+    paddingTop: sp.top || 0,
+    paddingBottom: sp.bottom || 0,
+    paddingInlineStart: sp.start || 0,
+    paddingInlineEnd: sp.end || 0,
   };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
 
