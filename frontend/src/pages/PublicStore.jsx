@@ -914,7 +914,7 @@ function PublicStore() {
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
         <SectionWrapper type="categories" isPreview={isPreview} spacing={sec(tc, "categories")?.settings?.spacing} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto" }}>
+        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
           {/* Header row */}
           <div style={{
             display: "flex", alignItems: "flex-end", marginBottom: 28, gap: 12,
@@ -1037,7 +1037,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(tc, "collection")?.settings?.spacing} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto" }}>
+        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
             justifyContent: titleAlign === "center" ? "center" : "space-between",
