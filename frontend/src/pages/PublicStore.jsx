@@ -845,7 +845,7 @@ function PublicStore() {
           const groups = [];
           for (let i = 0; i < activeBadges.length; i += 4) groups.push(activeBadges.slice(i, i + 4));
           return (
-            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
               {groups.map((group, gi) => (
                 <div key={gi} style={{
                   background: surfaceColor, borderRadius: 20, overflow: "hidden",
@@ -872,7 +872,7 @@ function PublicStore() {
 
         const renderGrid = () => (
           <div style={{
-            maxWidth: 900, margin: "0 auto",
+            maxWidth: 900, margin: "0 auto", padding: "0 24px",
             display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
           }}>
             {activeBadges.map((b, i) => (
