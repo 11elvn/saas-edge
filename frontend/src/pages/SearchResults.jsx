@@ -127,9 +127,13 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — نفس منطق OrderSuccess/ProductDetails: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
+// ✦ collection: default 32/32 — نفس القيمة بالضبط ديال PS_SPACING_DEFAULTS.collection فـ PublicStore.jsx
+// (Home)، باش Search تبان مطابقة لـ Home فـ الفراغ الافتراضي حول القسم
+const SR_SPACING_DEFAULTS = { collection: { top: 32, bottom: 32 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
-  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const d = SR_SPACING_DEFAULTS[type] || {};
+  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
@@ -383,7 +387,7 @@ export default function SearchResults() {
            فـ preview يغطي العنوان مع الگريد كوحدة واحدة، ماشي غير الگريد بروحه ── */}
       <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(searchSections, "collection")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 24px 8px" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 24px 8px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
             justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
@@ -400,7 +404,7 @@ export default function SearchResults() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 80px" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 0" }}>
           {products.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
               <p style={{ fontSize: 13.5 }}>{(!isPreview && !q.trim()) ? "أدخل كلمة للبحث" : "لا توجد نتائج مطابقة"}</p>

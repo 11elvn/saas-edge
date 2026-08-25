@@ -2750,9 +2750,7 @@ const SPACING_DEFAULTS_BY_PAGE = {
     categoryBanner: { top: 0,  bottom: 0,  start: 0, end: 0 },
     collection:     { top: 20, bottom: 40, start: 0, end: 0 },
   },
-  search: {
-    collection:     { top: 32, bottom: 80, start: 0, end: 0 },
-  },
+  // ✦ search.collection تحيدات — دابا مطابقة للـ default العام (Home)، ماخصهاش override خاص
   checkout: {
     trust:          { top: 24, bottom: 24, start: 0, end: 0 },
   },
