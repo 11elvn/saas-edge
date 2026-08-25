@@ -2729,13 +2729,32 @@ const SPACING_DEFAULTS = {
   trust:          { top: 0, bottom: 0, start: 0, end: 0 },
   categories:     { top: 0, bottom: 0, start: 0, end: 0 },
   collection:     { top: 0, bottom: 0, start: 0, end: 0 },
-  faq:            { top: 0, bottom: 0, start: 0, end: 0 },
+  // ✦ faq كيستعمل شير component (FaqSection.jsx) عندو padding: "52px 24px 60px" مكتوب فيه ديما،
+  // ✦ بلا فرق بين الصفحات (Home/Product/Checkout) — فهاد القيمة صحيحة أينما بانت
+  faq:            { top: 52, bottom: 60, start: 0, end: 0 },
   footer:         { top: 0, bottom: 0, start: 0, end: 0 },
   gallery:        { top: 0, bottom: 0, start: 0, end: 0 },
   productInfo:    { top: 0, bottom: 0, start: 0, end: 0 },
   checkout:       { top: 0, bottom: 0, start: 0, end: 0 },
   categoryBanner: { top: 0, bottom: 0, start: 0, end: 0 },
   successMessage: { top: 0, bottom: 0, start: 0, end: 0 },
+};
+// ✦ بعض الأقسام (نفس النوع type) عندها padding حقيقي مكتوب مختلف حسب الصفحة (ماشي shared component) —
+// ✦ collection مثلاً: Category=16/80، Search=32/80، Home مازال 0/0 (ماتبدلش). هنا كنعطيو override بالصفحة.
+const SPACING_DEFAULTS_BY_PAGE = {
+  category: {
+    categoryBanner: { top: 20, bottom: 20, start: 0, end: 0 },
+    collection:     { top: 16, bottom: 80, start: 0, end: 0 },
+  },
+  search: {
+    collection:     { top: 32, bottom: 80, start: 0, end: 0 },
+  },
+  checkout: {
+    trust:          { top: 24, bottom: 24, start: 0, end: 0 },
+  },
+  success: {
+    successMessage: { top: 48, bottom: 64, start: 0, end: 0 },
+  },
 };
 function SpacingRow({ value, label, onChange }) {
   return (
@@ -2750,9 +2769,9 @@ function SpacingRow({ value, label, onChange }) {
   );
 }
 
-function SpacingSettings({ type, settings, onChange }) {
+function SpacingSettings({ type, page, settings, onChange }) {
   const sp = settings?.spacing || {};
-  const d = SPACING_DEFAULTS[type] || {};
+  const d = SPACING_DEFAULTS_BY_PAGE[page]?.[type] || SPACING_DEFAULTS[type] || {};
   const setSp = (k, v) => onChange({ ...settings, spacing: { ...sp, [k]: v } });
   return (
     <Collapse title="Spacing" defaultOpen={false}>
@@ -2764,7 +2783,7 @@ function SpacingSettings({ type, settings, onChange }) {
   );
 }
 
-function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage, isCategoryPage }) {
+function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange, onNameChange, onNamePreview, collapsed, isMobile, isSearchPage, isCategoryPage, page }) {
   const updateSettings = (newSettings) => onUpdate(section.id, newSettings);
 
   const inner = () => {
@@ -2803,7 +2822,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       </div>
       <div className="pb-right__body">
         {inner()}
-        <SpacingSettings type={section.type} settings={section.settings} onChange={updateSettings} />
+        <SpacingSettings type={section.type} page={page} settings={section.settings} onChange={updateSettings} />
       </div>
     </div>
   );
@@ -3877,6 +3896,7 @@ function ThemeEdit() {
             store={store}
             isSearchPage={activeIsSearchSection}
             isCategoryPage={activeIsCategorySection}
+            page={currentPage}
             onUpdate={
               activeIsProductSection ? updateProductSectionSettings
               : activeIsCategorySection ? updateCategorySectionSettings
