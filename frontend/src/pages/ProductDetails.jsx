@@ -187,8 +187,9 @@ const SECTION_LABELS = {
 // ✦ label الأصلي (.pd-section-label) رجعناه هنا — كيبان غير فـ desktop (CSS media query أعلاه)
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
 // ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
-// ✦ gallery/productInfo: 25/25 — فراغ متناسق فوق وتحت بجوج
-const PD_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, gallery: { top: 25, bottom: 25 }, productInfo: { top: 25, bottom: 25 } };
+// ✦ gallery.bottom / productInfo.top = 0 — باش يبقاو لاصقين ببعضهم (الـ grid rowGap تشال تاني،
+// ماشي مضاعف). gallery.top و productInfo.bottom خدامين عاديين (ماشي متجاورين مع حتى section).
+const PD_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, gallery: { top: 25, bottom: 0 }, productInfo: { top: 0, bottom: 25 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = PD_SPACING_DEFAULTS[type] || {};
@@ -597,7 +598,7 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}
+        style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", columnGap: 32, rowGap: 0, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
