@@ -95,9 +95,15 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
+const CP_SPACING_DEFAULTS = {
+  categoryBanner: { top: 20, bottom: 20 },
+  collection:     { top: 16, bottom: 80 },
+  faq:            { top: 52, bottom: 60 },
+};
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
-  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const d = CP_SPACING_DEFAULTS[type] || {};
+  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
@@ -392,7 +398,7 @@ export default function CategoryProducts() {
       <SectionWrapper type="categoryBanner" isPreview={isPreview} spacing={sec(catSections, "categoryBanner")?.settings?.spacing} isHighlighted={highlightedType === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
-          <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", background: "#f3f4f6", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               {categoryImg
                 ? <img src={categoryImg} alt={categoryName} onError={e => { e.target.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -455,7 +461,7 @@ export default function CategoryProducts() {
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(catSections, "collection")?.settings?.spacing} isHighlighted={highlightedType === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
         {collSettings.showSortBar !== false && (
-          <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 0", display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 16px", display: "flex", justifyContent: "flex-end" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 13, color: mutedTextColor }}>الترتيب حسب:</span>
               {[
@@ -475,7 +481,7 @@ export default function CategoryProducts() {
             </div>
           </div>
         )}
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 24px 80px" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 20, gap: 12,
             justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
