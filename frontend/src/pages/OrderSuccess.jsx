@@ -87,9 +87,12 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // ── SectionWrapper — نفس مبدأ ProductDetails/PublicStore: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
 // ✦ label ديما فالزاوية اليسرى الفيزيائية (left)، بحال باقي الصفحات (ماشي insetInlineStart لي كان كيقلب لليمين فـ RTL)
+// ✦ successMessage: default 48/64 — نفس القيمة ديال SPACING_DEFAULTS_BY_PAGE.success فـ ThemeEdit.jsx
+const OS_SPACING_DEFAULTS = { successMessage: { top: 48, bottom: 64 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
-  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const d = OS_SPACING_DEFAULTS[type] || {};
+  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
@@ -348,7 +351,7 @@ function OrderSuccess() {
       </SectionWrapper>
 
       {/* ── Success Message ── */}
-      <SectionWrapper type="successMessage" isPreview={isPreview} spacing={sec(homeSections, "successMessage")?.settings?.spacing} isHighlighted={highlightedSection === "successMessage"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+      <SectionWrapper type="successMessage" isPreview={isPreview} spacing={successSec?.settings?.spacing} isHighlighted={highlightedSection === "successMessage"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <div style={{ maxWidth: 480, margin: "0 auto", padding: "48px 20px 64px", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
           {/* ✦ علامة الصح بأنيميشن */}
