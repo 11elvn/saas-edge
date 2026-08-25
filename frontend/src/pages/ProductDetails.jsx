@@ -267,6 +267,9 @@ function ProductDetails() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPreview = new URLSearchParams(location.search).get("preview") === "1";
+  // ✦ "demo" — sentinel كيبعتو ThemeEdit كي التاجر مازال ما دار حتى منتج حقيقي
+  // ✦ باش يقدر يعاين ويعدل ديزاين صفحة Product قبل ما يزيد منتجات
+  const isDemoProduct = productId === "demo";
 
   const [product,      setProduct]      = useState(null);
   const [store,        setStore]        = useState(null);
@@ -416,6 +419,24 @@ function ProductDetails() {
 
   useEffect(() => {
     if (!productId) return;
+    // ✦ منتج تجريبي — بلا API call، نبني منتج + صور تجريبية مباشرة (نفس منطق DEMO_PRODUCTS فـ CategoryProducts)
+    if (isDemoProduct) {
+      setProduct({
+        _id: "demo-product", name: "منتج تجريبي", description: "هذا وصف تجريبي للمنتج، هنا يظهر شرح مختصر عن مميزات وتفاصيل المنتج.",
+        currentPrice: 4200, oldPrice: 5000, stock: 10, images: [], _demo: true,
+      });
+      if (slug) {
+        (async () => {
+          try {
+            const sRes  = await fetch(`${API()}/api/stores/public/${slug}`);
+            const sData = await sRes.json();
+            if (sData.store) setStore(sData.store);
+          } catch (e) { console.error(e); }
+          finally { setLoading(false); }
+        })();
+      } else setLoading(false);
+      return;
+    }
     (async () => {
       try {
         const pRes  = await fetch(`${API()}/api/products/${productId}`);
@@ -429,7 +450,7 @@ function ProductDetails() {
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     })();
-  }, [productId, slug]);
+  }, [productId, slug, isDemoProduct]);
 
   const handleCityChange = (city) => {
     setSelectedCity(city);
