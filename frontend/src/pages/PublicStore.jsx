@@ -400,11 +400,30 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 
 // ── SectionWrapper — يلف كل section بـ label + border + زر + في preview mode ──
 // ✦ فـ desktop: CSS :hover عادي (نفس القديم). فـ mobile: JS-measured overlay (registerRef/onHoverChange)
+// ── PS_SPACING_DEFAULTS — القيمة الافتراضية (top فقط) لكل section باش أول تاجر يدخل يلقى
+// فراغ مرتب بين الأقسام (ماشي ملتصقين). bottom كيبقى 0 ديما باش الفراغ ما يتضاعفش
+// (الفراغ بين section A و B = top ديال B غير). faq ماشي هنا لأن عندها padding مبني فالكومبونيت
+// نفسو (FaqSection.jsx: "52px 24px 60px") — زيادة default هنا غادي تضاعف الفراغ.
+// ── PS_SPACING_DEFAULTS — القيمة الافتراضية (top فقط، عدا faq) لكل section باش أول تاجر يدخل يلقى
+// فراغ متناسق بين الأقسام (ماشي ملتصقين). bottom كيبقى 0 ديما باش الفراغ ما يتضاعفش
+// (الفراغ بين section A و B = top ديال B غير). القيم متدرجة حسب وزن الـ section:
+// trust (شريط خفيف) < categories/collection (بلوكات رئيسية). footer عندها background + padding
+// خاص بيها فـ StoreFooter.jsx (40/32) — فما تحتاجش فراغ زيادة.
+// faq: top+bottom كيفكيف (52/60) — كانت مبنية قبل فـ FaqSection.jsx نفسها، دابا تحكم فيها
+// SectionWrapper بحال الباقي (نفس القيمة، غير القناة تبدلت).
+const PS_SPACING_DEFAULTS = {
+  trust:      { top: 32, bottom: 0 },
+  categories: { top: 40, bottom: 0 },
+  collection: { top: 40, bottom: 0 },
+  faq:        { top: 52, bottom: 60 },
+  footer:     { top: 0,  bottom: 0 },
+};
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
+  const d = PS_SPACING_DEFAULTS[type] || {};
   const extraPad = {
-    paddingTop: sp.top || 0,
-    paddingBottom: sp.bottom || 0,
+    paddingTop: sp.top ?? d.top ?? 0,
+    paddingBottom: sp.bottom ?? d.bottom ?? 0,
     paddingInlineStart: sp.start || 0,
     paddingInlineEnd: sp.end || 0,
   };

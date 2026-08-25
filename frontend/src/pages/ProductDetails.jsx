@@ -186,9 +186,12 @@ const SECTION_LABELS = {
 // ── SectionWrapper — نفس منطق PublicStore: كليك يبعث للـ builder + يسجل ref للقياس ──
 // ✦ label الأصلي (.pd-section-label) رجعناه هنا — كيبان غير فـ desktop (CSS media query أعلاه)
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
+// ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
+const PD_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
-  const extraPad = { paddingTop: sp.top || 0, paddingBottom: sp.bottom || 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const d = PD_SPACING_DEFAULTS[type] || {};
+  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (

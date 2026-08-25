@@ -34,7 +34,9 @@ export default function FaqSection({ settings, primary, bgColor, surfaceColor, t
   const isCards = style === "cards";
 
   return (
-    <section style={{ maxWidth: 780, margin: "0 auto", padding: "52px 24px 60px" }}>
+    // ✦ padding أفقي غير (24px) — الـ top/bottom كيتحكم فيهم SectionWrapper ديال كل صفحة
+    // (spacing.top/bottom) باش يبقى نفس منطق باقي الأقسام، القيمة الافتراضية 52/60 محطوطة تما
+    <section style={{ maxWidth: 780, margin: "0 auto", padding: "0 24px" }}>
       <h2
         style={{
           fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: textColor,

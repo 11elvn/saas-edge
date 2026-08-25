@@ -2726,12 +2726,19 @@ const SPACING_DEFAULTS = {
   announcement:   { top: 0, bottom: 0, start: 0, end: 0 },
   header:         { top: 0, bottom: 0, start: 0, end: 0 },
   hero:           { top: 0, bottom: 0, start: 0, end: 0 },
-  trust:          { top: 0, bottom: 0, start: 0, end: 0 },
-  categories:     { top: 0, bottom: 0, start: 0, end: 0 },
-  collection:     { top: 0, bottom: 0, start: 0, end: 0 },
-  // ✦ faq كيستعمل شير component (FaqSection.jsx) عندو padding: "52px 24px 60px" مكتوب فيه ديما،
-  // ✦ بلا فرق بين الصفحات (Home/Product/Checkout) — فهاد القيمة صحيحة أينما بانت
+  // ✦ trust/categories/collection/footer — نفس القيم ديال PS_SPACING_DEFAULTS فـ PublicStore.jsx
+  // (top:20 غير، bottom:0 ديما باش الفراغ بين الأقسام ما يتضاعفش). خاصهم يبقاو متطابقين
+  // بين الجوج ملفات وإلا الـ preview يبان مختلف عن الستور الحقيقي.
+  // ✦ trust/categories/collection/footer — نفس القيم ديال PS_SPACING_DEFAULTS فـ PublicStore.jsx
+  // (متدرجة حسب وزن الـ section، footer=0 لأن عندها background+padding خاص فـ StoreFooter.jsx).
+  // خاصهم يبقاو متطابقين بين الجوج ملفات وإلا الـ preview يبان مختلف عن الستور الحقيقي.
+  trust:          { top: 32, bottom: 0, start: 0, end: 0 },
+  categories:     { top: 40, bottom: 0, start: 0, end: 0 },
+  collection:     { top: 40, bottom: 0, start: 0, end: 0 },
+  // ✦ faq كيستعمل شير component (FaqSection.jsx) — دابا القيمة الافتراضية (52/60) كتطبق عبر
+  // ✦ SectionWrapper ديال كل صفحة (PublicStore/ProductDetails/Checkout)، بنفس منطق باقي الأقسام
   faq:            { top: 52, bottom: 60, start: 0, end: 0 },
+  // ✦ footer: 0 — الفوتر خاصو يبقى ملتصق بآخر section (ماشي فراغ)
   footer:         { top: 0, bottom: 0, start: 0, end: 0 },
   gallery:        { top: 0, bottom: 0, start: 0, end: 0 },
   productInfo:    { top: 0, bottom: 0, start: 0, end: 0 },
