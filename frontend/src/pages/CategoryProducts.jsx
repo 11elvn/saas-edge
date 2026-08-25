@@ -96,8 +96,8 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // ── SectionWrapper — نفس منطق ProductDetails/PublicStore: label + border + كليك يبعث للـ builder ──
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
 const CP_SPACING_DEFAULTS = {
-  categoryBanner: { top: 20, bottom: 20 },
-  collection:     { top: 16, bottom: 80 },
+  categoryBanner: { top: 0,  bottom: 0 },
+  collection:     { top: 20, bottom: 40 },
   faq:            { top: 52, bottom: 60 },
 };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {

@@ -2747,8 +2747,8 @@ const SPACING_DEFAULTS = {
 // ✦ collection مثلاً: Category=16/80، Search=32/80، Home مازال 0/0 (ماتبدلش). هنا كنعطيو override بالصفحة.
 const SPACING_DEFAULTS_BY_PAGE = {
   category: {
-    categoryBanner: { top: 20, bottom: 20, start: 0, end: 0 },
-    collection:     { top: 16, bottom: 80, start: 0, end: 0 },
+    categoryBanner: { top: 0,  bottom: 0,  start: 0, end: 0 },
+    collection:     { top: 20, bottom: 40, start: 0, end: 0 },
   },
   search: {
     collection:     { top: 32, bottom: 80, start: 0, end: 0 },
