@@ -87,8 +87,8 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // ── SectionWrapper — نفس مبدأ ProductDetails/PublicStore: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
 // ✦ label ديما فالزاوية اليسرى الفيزيائية (left)، بحال باقي الصفحات (ماشي insetInlineStart لي كان كيقلب لليمين فـ RTL)
-// ✦ successMessage: default 48/64 — نفس القيمة ديال SPACING_DEFAULTS_BY_PAGE.success فـ ThemeEdit.jsx
-const OS_SPACING_DEFAULTS = { successMessage: { top: 48, bottom: 64 } };
+// ✦ successMessage: default 0/0 — نفس القيمة ديال SPACING_DEFAULTS_BY_PAGE.success فـ ThemeEdit.jsx
+const OS_SPACING_DEFAULTS = { successMessage: { top: 0, bottom: 0 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = OS_SPACING_DEFAULTS[type] || {};

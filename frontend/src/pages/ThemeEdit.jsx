@@ -2757,7 +2757,7 @@ const SPACING_DEFAULTS_BY_PAGE = {
     trust:          { top: 24, bottom: 24, start: 0, end: 0 },
   },
   success: {
-    successMessage: { top: 48, bottom: 64, start: 0, end: 0 },
+    successMessage: { top: 0, bottom: 0, start: 0, end: 0 },
   },
 };
 function SpacingRow({ value, label, onChange }) {
