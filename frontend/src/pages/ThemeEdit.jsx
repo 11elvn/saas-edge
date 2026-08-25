@@ -3004,20 +3004,19 @@ function PreviewFrame({ slug, isMobile, themeConfig, activeSection, activeSectio
     </div>
   );
 
-  // ✦ صفحة Product محتاجة منتج حقيقي باش نعاينوه
-  if (page === "product" && !productId) return (
-    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9ca3af", flexDirection:"column", gap:12 }}>
-      <div style={{ fontSize:"2rem" }}>📦</div>
-      <div style={{ fontSize:".85rem" }}>Add at least one product to preview this page</div>
-    </div>
-  );
+  // ✦ صفحة Product — دابا كتعاين بـ productId="demo" كي ماكاينش منتج حقيقي (effectiveProductId تحت)،
+  // بلاصة ما تتحجب بالكامل — نفس منطق Category
+
+  // ✦ صفحة Product — كي ماكاينش منتج حقيقي، نعاينوها بـ productId="demo"
+  // ✦ (ProductDetails.jsx كيتعرف عليه وكيبني منتج تجريبي بلاصة الحجب الكامل)
+  const effectiveProductId = page === "product" ? (productId || "demo") : productId;
 
   // ✦ صفحة Category — كي ماكاينش تصنيف حقيقي، نعاينوها بـ categoryId="demo"
   // ✦ (CategoryProducts.jsx كيتعرف عليه وكيبني تصنيف + منتجات تجريبية بلاصة الحجب الكامل)
   const effectiveCategoryId = page === "category" ? (categoryId || "demo") : categoryId;
 
   const src = page === "product"
-    ? `/store/${slug}/product/${productId}?preview=1`
+    ? `/store/${slug}/product/${effectiveProductId}?preview=1`
     : page === "category"
     ? `/store/${slug}/collections/${effectiveCategoryId}?preview=1`
     : page === "success"
