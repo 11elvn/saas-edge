@@ -176,7 +176,8 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // ── SectionWrapper — نفس منطق OrderSuccess/SearchResults: hover + highlight عبر ::after (desktop)،
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
 // ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
-const CO_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 } };
+// ✦ trust: default 24/24 — نفس القيمة بالضبط ديال PS_SPACING_DEFAULTS.trust فـ PublicStore.jsx (Home)
+const CO_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, trust: { top: 24, bottom: 24 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = CO_SPACING_DEFAULTS[type] || {};
@@ -492,7 +493,7 @@ function Checkout() {
         </SectionWrapper>
       )}
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "28px 16px 40px" }}>
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "28px 16px 0" }}>
         <button
           onClick={() => navigate(`/store/${slug}`)}
           style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: mutedTextColor, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, marginBottom: 14, padding: 0 }}
