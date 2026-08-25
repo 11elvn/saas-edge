@@ -187,8 +187,8 @@ const SECTION_LABELS = {
 // ✦ label الأصلي (.pd-section-label) رجعناه هنا — كيبان غير فـ desktop (CSS media query أعلاه)
 // ✦ فـ mobile: الـ highlight box + label الجداد كيترسمو عبر SectionHighlightOverlay (JS-measured)
 // ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
-// ✦ gallery: bottom:30 — باش ما تلزقش الـ thumbnails مع section اللي جايه بعدها (Product Info) فـ mobile
-const PD_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, gallery: { top: 0, bottom: 30 } };
+// ✦ gallery/productInfo: 25/25 — فراغ متناسق فوق وتحت بجوج
+const PD_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, gallery: { top: 25, bottom: 25 }, productInfo: { top: 25, bottom: 25 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = PD_SPACING_DEFAULTS[type] || {};
