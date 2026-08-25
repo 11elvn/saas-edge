@@ -410,7 +410,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // القيم متدرجة حسب وزن الـ section: trust (شريط خفيف) < categories/collection/faq (بلوكات رئيسية).
 const PS_SPACING_DEFAULTS = {
   trust:      { top: 24, bottom: 24 },
-  categories: { top: 32, bottom: 32 },
+  categories: { top: 32, bottom: 20 },
   collection: { top: 32, bottom: 32 },
   faq:        { top: 32, bottom: 32 },
   footer:     { top: 0,  bottom: 0 },

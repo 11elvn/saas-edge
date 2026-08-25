@@ -2730,7 +2730,7 @@ const SPACING_DEFAULTS = {
   // (top+bottom منطقيين لكل section، متدرجة حسب وزنها). خاصهم يبقاو متطابقين بين الجوج ملفات
   // وإلا الـ preview يبان مختلف عن الستور الحقيقي.
   trust:          { top: 24, bottom: 24, start: 0, end: 0 },
-  categories:     { top: 32, bottom: 32, start: 0, end: 0 },
+  categories:     { top: 32, bottom: 20, start: 0, end: 0 },
   collection:     { top: 32, bottom: 32, start: 0, end: 0 },
   // ✦ faq كيستعمل شير component (FaqSection.jsx) — دابا القيمة الافتراضية كتطبق عبر
   // ✦ SectionWrapper ديال كل صفحة (PublicStore/ProductDetails/Checkout)، بنفس منطق باقي الأقسام
