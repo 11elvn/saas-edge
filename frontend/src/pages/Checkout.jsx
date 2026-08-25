@@ -795,7 +795,7 @@ function Checkout() {
 
         return (
           <SectionWrapper type="trust" isPreview={isPreview} spacing={sec(checkoutSections, "trust")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "trust"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-            <section style={{ background: bgColor, padding: "24px 16px" }}>
+            <section style={{ background: bgColor }}>
               {isRow ? renderRow() : renderGrid()}
             </section>
           </SectionWrapper>
