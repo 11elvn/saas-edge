@@ -35,7 +35,7 @@ export default function FaqSection({ settings, primary, bgColor, surfaceColor, t
 
   return (
     // ✦ padding أفقي غير (24px) — الـ top/bottom كيتحكم فيهم SectionWrapper ديال كل صفحة
-    // (spacing.top/bottom) باش يبقى نفس منطق باقي الأقسام، القيمة الافتراضية 52/60 محطوطة تما
+    // (spacing.top/bottom) باش يبقى نفس منطق باقي الأقسام، القيمة الافتراضية 32/32 محطوطة تما
     <section style={{ maxWidth: 780, margin: "0 auto", padding: "0 24px" }}>
       <h2
         style={{

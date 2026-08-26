@@ -98,7 +98,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 const CP_SPACING_DEFAULTS = {
   categoryBanner: { top: 0,  bottom: 0 },
   collection:     { top: 20, bottom: 40 },
-  faq:            { top: 52, bottom: 60 },
+  faq:            { top: 32, bottom: 32 },
 };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};

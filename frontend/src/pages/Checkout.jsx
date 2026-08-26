@@ -177,7 +177,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
 // وSectionHighlightOverlay مبني بـ JS (mobile) — كيبعث SECTION_CLICK للـ ThemeEdit فـ preview ──
 // ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
 // ✦ trust: default 24/24 — نفس القيمة بالضبط ديال PS_SPACING_DEFAULTS.trust فـ PublicStore.jsx (Home)
-const CO_SPACING_DEFAULTS = { faq: { top: 52, bottom: 60 }, trust: { top: 24, bottom: 24 } };
+const CO_SPACING_DEFAULTS = { faq: { top: 32, bottom: 32 }, trust: { top: 24, bottom: 24 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = CO_SPACING_DEFAULTS[type] || {};

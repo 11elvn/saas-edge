@@ -508,29 +508,21 @@ function PublicStore() {
   }, [isPreview]);
 
   // ✦ absolute (ماشي fixed) نسبة للدوكيمو كامل — top = rect.top (viewport) + scrollY (السكرول الحالي)
+  // ✦ الصندوق كيتبع الحدود الحقيقية ديال section ديالو بحال (getBoundingClientRect مباشرة) —
+  // بلا ما "يبلع" الفراغ لأقرب section جايه (كان كيدير هاذشي قبل كي الفراغ بين الأقسام = 0،
+  // دابا مع الـ spacing الحقيقي هاذشي كان كيخلي صندوق الهايلايت يبان أكبر أو أصغر من section
+  // الحقيقية). نفس التصحيح لي تدار فـ ProductDetails.jsx و Checkout.jsx.
   const measureOverlays = useCallback(() => {
     if (!isNarrowViewport) { setOverlayRects({ hover: null, active: null }); return; }
     const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
     const showHover = hoveredSection && hoveredSection !== highlightedSection;
     const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
-    const rectOf = (el, type) => {
+    const toRect = (el) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
-      let top = r.top;
-      let bottom = r.bottom;
-      let nearestBottomAbove = -Infinity;
-      let nearestTopBelow = Infinity;
-      Object.entries(sectionRefs.current).forEach(([t, node]) => {
-        if (t === type || !node) return;
-        const nr = node.getBoundingClientRect();
-        if (nr.bottom <= r.top + 0.5 && nr.bottom > nearestBottomAbove) nearestBottomAbove = nr.bottom;
-        if (nr.top >= r.bottom - 0.5 && nr.top < nearestTopBelow) nearestTopBelow = nr.top;
-      });
-      if (nearestBottomAbove > -Infinity) top = nearestBottomAbove;
-      if (nearestTopBelow < Infinity) bottom = nearestTopBelow;
-      return { top: top + window.scrollY, height: bottom - top };
+      return { top: r.top + window.scrollY, height: r.height };
     };
-    setOverlayRects({ hover: rectOf(hoverEl, hoveredSection), active: rectOf(activeEl, highlightedSection) });
+    setOverlayRects({ active: toRect(activeEl), hover: toRect(hoverEl) });
   }, [highlightedSection, hoveredSection, isNarrowViewport]);
 
   useEffect(() => {
