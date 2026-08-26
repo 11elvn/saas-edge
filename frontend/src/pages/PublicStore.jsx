@@ -23,6 +23,18 @@ const DEMO_CATEGORIES = [
   { _id: "demo-4", name: "أحذية",       image: null, _demo: true },
 ];
 
+// ── Demo products — تبان غير جوه ThemeEdit (isPreview) كي التاجر مازال ما زاد حتى منتج ──
+// ✦ نفس الشكل ديال SearchResults.jsx (PLACEHOLDER_PRODUCTS) — منتج تجريبي 1/2/3/4 بلا صور حقيقية
+const DEMO_PRODUCTS = [1, 2, 3, 4].map(n => ({
+  _id: `demo-product-${n}`,
+  name: `منتج تجريبي ${n}`,
+  currentPrice: 2000 + n * 300,
+  oldPrice: null,
+  stock: 10,
+  images: [],
+  _demo: true,
+}));
+
 // ── Google Font loader ──────────────────────────────────────
 function loadFont(font) {
   const id = `font-${font}`;
@@ -538,6 +550,21 @@ function PublicStore() {
     return () => cancelAnimationFrame(id);
   }, [isPreview, isNarrowViewport, measureOverlays, themeConfig, store, products, categories, loading]);
 
+  // ✦ بعض الأقسام كيتبدل الطول ديالها بحركة الزائر نفسو، ماشي بتغيير فـ themeConfig/store/...
+  // (مثال: فتح سؤال فـ FAQ). هاد الحالات ماكاينش ليهم dependency فالـ effect لي فوق، فالصندوق
+  // كان كيبقى بالمقاس القديم حتى توقع حركة أخرى (resize/hover). ResizeObserver كيتبع القسم
+  // المختار/اللي عليه الفار مباشرة، فأي تغيير حقيقي فـ الحجم ديالو كيعاود يقيس فوراً.
+  useEffect(() => {
+    if (!isPreview || !isNarrowViewport || typeof ResizeObserver === "undefined") return;
+    const activeEl = highlightedSection ? sectionRefs.current[highlightedSection] : null;
+    const showHover = hoveredSection && hoveredSection !== highlightedSection;
+    const hoverEl = showHover ? sectionRefs.current[hoveredSection] : null;
+    if (!activeEl && !hoverEl) return;
+    const ro = new ResizeObserver(() => measureOverlays());
+    if (activeEl) ro.observe(activeEl);
+    if (hoverEl) ro.observe(hoverEl);
+    return () => ro.disconnect();
+  }, [isPreview, isNarrowViewport, highlightedSection, hoveredSection, measureOverlays]);
   // ✦ Listen for live updates from ThemeEdit (iframe postMessage)
   useEffect(() => {
     const handler = (e) => {
@@ -639,7 +666,12 @@ function PublicStore() {
     })();
   }, [slug]);
 
-  const filteredProducts = activeCat === "all"
+  // ✦ التاجر مازال ما زاد حتى منتج — فـ preview كنوريو منتجات تجريبية بدل رسالة "لا توجد منتجات"
+  // (نفس المنطق ديال usingDemo/DEMO_CATEGORIES فوق، ونفس PLACEHOLDER_PRODUCTS ديال SearchResults.jsx)
+  const usingDemoProducts = products.length === 0 && isPreview;
+  const filteredProducts = usingDemoProducts
+    ? DEMO_PRODUCTS
+    : activeCat === "all"
     ? products
     : products.filter(p => {
         const catId = p.categoryId?._id
@@ -1142,6 +1174,17 @@ function PublicStore() {
                           background: "rgba(245,158,11,.9)", color: "#fff",
                           fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
                         }}>⚠️ آخر {product.stock} قطع</span>
+                      )}
+                      {/* بادج "مثال" — يبان غير على المنتجات التجريبية باش التاجر يعرف بلي ماهيش حقيقية */}
+                      {product._demo && (
+                        <div style={{
+                          position: "absolute", top: 10, insetInlineStart: 10,
+                          background: "rgba(255,255,255,.92)",
+                          color: "#1c1f24", fontSize: 10.5, fontWeight: 700,
+                          padding: "4px 10px", borderRadius: 999, letterSpacing: ".3px",
+                        }}>
+                          مثال
+                        </div>
                       )}
 
                       {/* CTA overlay — appears on hover (desktop) / always on touch devices */}
