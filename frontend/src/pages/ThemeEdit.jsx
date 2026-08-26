@@ -3354,6 +3354,12 @@ function ThemeEdit() {
       const arr = currentArr.map(s => s.id === id ? { ...s, enabled } : s);
       return isHome ? { ...prev, sections: arr } : { ...prev, [key]: { ...prev[key], sections: arr } };
     });
+    // ✦ إيلا كنا كنخفيو (enabled=false) الـ section اللي هي حالياً مفتوحة فـ settings panel —
+    // ✦ خاصنا نسدو الـ panel (بحال deleteSection بالضبط)، وإلا كيبقى مفتوح كيعدل settings ديال
+    // ✦ section ماشي ظاهرة فالصفحة، والصندوق البنفسجي يختفي بلا أي تفسير (ماكاين شي يتقاس)
+    if (!enabled) {
+      setActiveSection(prevActive => (prevActive === id ? null : prevActive));
+    }
     setIsDirty(true);
   }, []);
 
