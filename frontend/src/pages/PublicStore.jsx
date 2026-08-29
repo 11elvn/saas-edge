@@ -240,7 +240,7 @@ function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
         </div>
 
         {/* Nav links */}
-        {["الصفحة الرئيسية", "التصنيفات", "اتصل بنا"].map((item, i) => (
+        {["الصفحة الرئيسية", "المنتجات", "اتصل بنا"].map((item, i) => (
           <button
             key={i}
             onClick={() => { onNavigate(item); onClose(); }}
@@ -643,6 +643,14 @@ function PublicStore() {
     if (font) loadFont(font);
   }, [font]);
 
+  // ✦ سكرول لأي section عندو hash فالرابط (مثلا #ps-products جاي من "المنتجات" فالهيدر)
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: "smooth" }));
+  }, [location.hash, loading]);
+
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -700,8 +708,8 @@ function PublicStore() {
   }, [tc, filteredProducts.length, visibleCount]);
 
   const handleDrawerNav = (item) => {
-    if (item === "التصنيفات") {
-      document.getElementById("ps-categories")?.scrollIntoView({ behavior: "smooth" });
+    if (item === "المنتجات") {
+      productsRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (item === "اتصل بنا") {
       if (store?.whatsappNumber) window.open(`https://wa.me/${store.whatsappNumber}`, "_blank");
     } else {
@@ -1076,7 +1084,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(tc, "collection")?.settings?.spacing} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section ref={productsRef} style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
+        <section ref={productsRef} id="ps-products" style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
             justifyContent: titleAlign === "center" ? "center" : "space-between",

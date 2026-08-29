@@ -35,7 +35,7 @@ const DEFAULT_CONFIG = {
         sticky: true,
         links: [
           { id: "l1", title: "الصفحة الرئيسية", url: "/" },
-          { id: "l2", title: "التصنيفات", url: "/collections" },
+          { id: "l2", title: "المنتجات", url: "/#ps-products" },
           { id: "l3", title: "اتصل بنا", url: "#" },
         ],
       },
@@ -1730,7 +1730,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
   // للمتاجر القديمة اللي ماعندهاش settings.links بعد، نعرض نفس الروابط الافتراضية بدل قائمة فارغة
   const DEFAULT_HEADER_LINKS = [
     { id: "l1", title: "الصفحة الرئيسية", url: "/" },
-    { id: "l2", title: "التصنيفات", url: "/collections" },
+    { id: "l2", title: "المنتجات", url: "/#ps-products" },
     { id: "l3", title: "اتصل بنا", url: "#" },
   ];
   const navLinks = settings.links !== undefined ? settings.links : DEFAULT_HEADER_LINKS;
