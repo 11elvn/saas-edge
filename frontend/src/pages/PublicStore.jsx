@@ -12,7 +12,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
+const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
 
 // ── Demo categories — تبان غير جوه ThemeEdit (isPreview) كي التاجر مازال ما دار تصنيفات ──
 // ✦ بلا صور — نستعملو placeholder أنيق (❓ + خلفية غامقة) كيما Tassyir، ماشي صور حقيقية
@@ -77,7 +77,6 @@ const CSS = `
 }
 .ps-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0,0,0,.18);
 }
 .ps-cat-chip {
   transition: background .2s, color .2s, border-color .2s;
@@ -1144,8 +1143,6 @@ function PublicStore() {
                         alt={product.name}
                         onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
                         style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
-                        onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                        onMouseLeave={e => e.target.style.transform = "scale(1)"}
                       />
                       {/* Badges */}
                       {showBadge && product.oldPrice && !outOfStock && (
