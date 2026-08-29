@@ -160,6 +160,11 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
 
   const navLinks = links || (
     (headerSettings?.links?.length ? headerSettings.links : DEFAULT_NAV_LINKS)
+      // ✦ تصحيح تلقائي: أي رابط قديم "التصنيفات" (/collections) محفوظ فالـ themeConfig
+      // القديم كيتبدل لـ "المنتجات" (سكرول لسكشن المنتجات فالهوم) بلا ما نمسو الداتا الأصلية
+      .map(l => (l.url === "/collections" || l.title === "التصنيفات")
+        ? { ...l, title: "المنتجات", url: "/#ps-products" }
+        : l)
       .map(l => ({ label: l.title || "", action: goToLink(l.url) }))
   );
 
