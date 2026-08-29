@@ -1734,6 +1734,19 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
     { id: "l3", title: "اتصل بنا", url: "#" },
   ];
   const navLinks = settings.links !== undefined ? settings.links : DEFAULT_HEADER_LINKS;
+  // ✦ تصحيح تلقائي: أي رابط قديم "التصنيفات" (/collections) محفوظ فالمتجر
+  // كيتبدل لـ "المنتجات" وقت فتح المحرر، ويتسجل نهائيا كي تضغط Save
+  useEffect(() => {
+    if (!settings.links?.length) return;
+    const needsFix = settings.links.some(l => l.url === "/collections" || l.title === "التصنيفات");
+    if (needsFix) {
+      s("links", settings.links.map(l =>
+        (l.url === "/collections" || l.title === "التصنيفات")
+          ? { ...l, title: "المنتجات", url: "/#ps-products" }
+          : l
+      ));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const updateLink = (id, patch) => s("links", navLinks.map(l => l.id === id ? { ...l, ...patch } : l));
   const deleteLink = (id) => s("links", navLinks.filter(l => l.id !== id));
   const addLink = () => s("links", [...navLinks, { id: `l_${Date.now()}`, title: "New link", url: "#" }]);
