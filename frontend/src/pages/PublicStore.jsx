@@ -8,6 +8,7 @@ import { ALGERIAN_CITIES } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import FaqSection  from "../components/FaqSection";
+import ReviewsSection from "../components/ReviewsSection";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartContext";
 
@@ -1319,6 +1320,17 @@ function PublicStore() {
         </SectionWrapper>
         );
       })()}
+
+      {/* ── Reviews ── */}
+      {sec(tc, "reviews")?.enabled !== false && sec(tc, "reviews") && (
+        <SectionWrapper type="reviews" isPreview={isPreview} spacing={sec(tc, "reviews")?.settings?.spacing} isHighlighted={highlightedSection === "reviews"} style={{ order: sectionOrder("reviews") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <ReviewsSection
+            settings={sec(tc, "reviews")?.settings}
+            primary={primary} bgColor={bgColor} surfaceColor={surfaceColor}
+            textColor={textColor} mutedTextColor={mutedTextColor} borderColor={borderColor}
+          />
+        </SectionWrapper>
+      )}
 
       {/* ── FAQ ── */}
       {sec(tc, "faq")?.enabled !== false && sec(tc, "faq") && (

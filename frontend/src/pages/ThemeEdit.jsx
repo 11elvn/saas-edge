@@ -344,6 +344,7 @@ const SECTION_META = {
   trust:        { label: "Trust Badges",     icon: "trust" },
   collection:   { label: "Collection",       icon: "collection" },
   categories:   { label: "Categories",       icon: "categories" },
+  reviews:      { label: "Reviews",          icon: "reviews" },
   faq:          { label: "FAQ",              icon: "faq" },
   footer:       { label: "Footer",           icon: "footer", locked: true, fixed: true },
 };
@@ -355,6 +356,7 @@ const PRODUCT_SECTION_META = {
   gallery:     { label: "Gallery",           icon: "gallery",     fixed: true },
   productInfo: { label: "Product Info",      icon: "productInfo", criticalDelete: true },
   checkout:    { label: "In-Page Checkout",  icon: "checkout",    criticalDelete: true },
+  reviews:     SECTION_META.reviews,
   faq:         SECTION_META.faq,
 };
 
@@ -529,6 +531,12 @@ function Icon({ name, size = 15 }) {
           <circle cx="12" cy="12" r="9" />
           <path d="M9.2 9.3a2.8 2.8 0 0 1 5.4.9c0 1.9-2.4 2.1-2.6 3.6" />
           <circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case "reviews":
+      return (
+        <svg {...common}>
+          <polygon points="12 2.5 15 9 22 10 17 15 18.2 21.5 12 18.3 5.8 21.5 7 15 2 10 9 9 12 2.5" />
         </svg>
       );
     case "alignRight":
@@ -2004,6 +2012,139 @@ const DEFAULT_FAQ_QUESTIONS = [
   { id: "faq_7", enabled: true, question: "توصلو لكل الولايات؟",             answer: "إيه، نوصلو لكامل الـ58 ولاية عبر الوطن." },
 ];
 
+// ✦ Reviews — Default reviews تجيبها زر "Add Section" (نفس أسلوب FAQ: سوق جزائري، طلب مؤكد)
+const DEFAULT_REVIEWS = [
+  { id: "rev_1", enabled: true, rating: 5, name: "أمينة", wilaya: "وهران",   text: "السلعة وصلاتني في يومين، نفس الصورة بالضبط. خدمة نظيفة، نصحكم بيهم.", date: "2026-06-15", verified: true },
+  { id: "rev_2", enabled: true, rating: 4, name: "ياسين", wilaya: "الجزائر", text: "جودة مليحة والسعر معقول. التوصيل شوية بطيء بصح المنتج يستاهل.",        date: "2026-06-10", verified: true },
+  { id: "rev_3", enabled: true, rating: 5, name: "رانيا",  wilaya: "قسنطينة", text: "خدمة راقية، تواصلو معايا وأكدولي الطلب راني مبسوطة برشا.",            date: "2026-06-05", verified: false },
+];
+
+function ReviewsSettings({ settings, onChange }) {
+  const s = (k, v) => onChange({ ...settings, [k]: v });
+  const reviews = settings.reviews || [];
+
+  const updateReview = (id, patch) =>
+    s("reviews", reviews.map(r => (r.id === id ? { ...r, ...patch } : r)));
+
+  const deleteReview = (id) =>
+    s("reviews", reviews.filter(r => r.id !== id));
+
+  const addReview = () =>
+    s("reviews", [...reviews, { id: `rev_${Date.now()}`, enabled: true, rating: 5, name: "زبون جديد", wilaya: "", text: "", date: new Date().toISOString().slice(0, 10), verified: false }]);
+
+  const moveReview = (index, dir) => {
+    const target = index + dir;
+    if (target < 0 || target >= reviews.length) return;
+    const next = [...reviews];
+    [next[index], next[target]] = [next[target], next[index]];
+    s("reviews", next);
+  };
+
+  return (
+    <>
+      <Collapse title="General">
+        <div className="pb-field">
+          <div className="pb-label">Section title</div>
+          <input className="pb-input" value={settings.title || ""} onChange={e => s("title", e.target.value)} placeholder="آراء زبائننا" />
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Layout</div>
+          <select className="pb-input" value={settings.layout || "wall"} onChange={e => s("layout", e.target.value)}>
+            <option value="grid">Grid</option>
+            <option value="carousel">Carousel</option>
+            <option value="list">List</option>
+            <option value="wall">Wall</option>
+            <option value="spotlight">Spotlight</option>
+          </select>
+        </div>
+        <div className="pb-field">
+          <div className="pb-label">Sort</div>
+          <select className="pb-input" value={settings.sort || "manual"} onChange={e => s("sort", e.target.value)}>
+            <option value="manual">Manual</option>
+            <option value="newest">Newest first</option>
+            <option value="highest">Highest rating</option>
+          </select>
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show rating summary</span>
+          <Toggle checked={settings.showRatingSummary !== false} onChange={v => s("showRatingSummary", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show dates</span>
+          <Toggle checked={settings.showDates !== false} onChange={v => s("showDates", v)} />
+        </div>
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show wilaya</span>
+          <Toggle checked={settings.showWilaya !== false} onChange={v => s("showWilaya", v)} />
+        </div>
+      </Collapse>
+
+      <Collapse title="Reviews">
+        <p style={{ fontSize: 12.5, color: "#9ca3af", margin: "0 0 12px", lineHeight: 1.5 }}>
+          Real photo reviews in your dialect sell more — avoid copy-paste.
+        </p>
+        {reviews.map((r, i) => (
+          <div key={r.id} className="pb-link-card">
+            <div className="pb-link-card__header">
+              <span className="pb-faq-card__title" title={r.name}>
+                {"★".repeat(r.rating || 5)} {r.name || `Review ${i + 1}`}
+              </span>
+              <div className="pb-faq-card__actions">
+                <button type="button" className="pb-faq-card__iconbtn" title="Move up" disabled={i === 0} onClick={() => moveReview(i, -1)}>
+                  <Icon name="chevronUp" size={13} />
+                </button>
+                <button type="button" className="pb-faq-card__iconbtn" title="Move down" disabled={i === reviews.length - 1} onClick={() => moveReview(i, 1)}>
+                  <Icon name="chevronDown" size={13} />
+                </button>
+                <button type="button" className="pb-link-card__delete" title="Delete" onClick={() => deleteReview(r.id)}>
+                  <Icon name="trash" size={14} />
+                </button>
+                <Toggle checked={r.enabled !== false} onChange={v => updateReview(r.id, { enabled: v })} />
+              </div>
+            </div>
+            <div className="pb-link-card__body">
+              <div className="pb-field">
+                <div className="pb-label">Rating</div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} type="button" onClick={() => updateReview(r.id, { rating: n })}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 2, fontSize: 20, lineHeight: 1, color: n <= (r.rating || 5) ? "#f59e0b" : "#e5e7eb" }}>
+                      ★
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Name</div>
+                <input className="pb-input" value={r.name} onChange={e => updateReview(r.id, { name: e.target.value })} />
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Wilaya</div>
+                <input className="pb-input" value={r.wilaya || ""} onChange={e => updateReview(r.id, { wilaya: e.target.value })} placeholder="مثال: وهران" />
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Review text</div>
+                <textarea className="pb-textarea" value={r.text} onChange={e => updateReview(r.id, { text: e.target.value })} placeholder="اكتب رأي الزبون هنا..." />
+              </div>
+              <div className="pb-field">
+                <div className="pb-label">Date</div>
+                <input className="pb-input" type="date" value={r.date || ""} onChange={e => updateReview(r.id, { date: e.target.value })} />
+              </div>
+              <div className="pb-toggle-row">
+                <span className="pb-toggle-row__label">Verified badge</span>
+                <Toggle checked={!!r.verified} onChange={v => updateReview(r.id, { verified: v })} />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="pb-add-link-btn" onClick={addReview}>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add review
+        </button>
+      </Collapse>
+    </>
+  );
+}
+
 function FaqSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   const questions = settings.questions || [];
@@ -2769,6 +2910,7 @@ const SPACING_DEFAULTS = {
   // ✦ faq كيستعمل شير component (FaqSection.jsx) — دابا القيمة الافتراضية كتطبق عبر
   // ✦ SectionWrapper ديال كل صفحة (PublicStore/ProductDetails/Checkout)، بنفس منطق باقي الأقسام
   faq:            { top: 32, bottom: 32, start: 0, end: 0 },
+  reviews:        { top: 30, bottom: 30, start: 0, end: 0 },
   // ✦ footer: 0 — الفوتر خاصو يبقى ملتصق بآخر section (عندها background خاص بيها كيميز الانتقال)
   footer:         { top: 0, bottom: 0, start: 0, end: 0 },
   gallery:        { top: 25, bottom: 30, start: 0, end: 0 },
@@ -2831,6 +2973,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} showSortToggle={isCategoryPage} isMobile={isMobile} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "faq":          return <FaqSettings          settings={section.settings} onChange={updateSettings} />;
+      case "reviews":      return <ReviewsSettings      settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
       case "gallery":      return <GallerySettings      settings={section.settings} onChange={updateSettings} isMobile={isMobile} />;
       case "productInfo":  return <ProductInfoSettings  settings={section.settings} onChange={updateSettings} />;
@@ -3420,6 +3563,15 @@ function ThemeEdit() {
       type: "faq",
       enabled: true,
       settings: { title: "أسئلة شائعة", openFirstItem: false, style: "divided", questions: DEFAULT_FAQ_QUESTIONS },
+    },
+    reviews: {
+      type: "reviews",
+      enabled: true,
+      settings: {
+        title: "آراء زبائننا", layout: "wall", sort: "manual",
+        showRatingSummary: true, showDates: true, showWilaya: true,
+        reviews: DEFAULT_REVIEWS,
+      },
     },
   };
   const addSection = useCallback((page, type) => {
