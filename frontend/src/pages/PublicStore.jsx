@@ -495,6 +495,7 @@ function PublicStore() {
   const productsRef = useRef(null);
   const loadMoreRef = useRef(null);
   const carouselRef  = useRef(null); // ✦ مرجع الكاروسيل — لأزرار التنقل الجديدة
+  const catStripRef  = useRef(null); // ✦ مرجع سطر التصنيفات (displayStyle="row")
   const [visibleCount, setVisibleCount] = useState(null); // ✦ يُهيّأ بحسب productsShown عند توفر إعدادات collection
 
   // ── Highlight overlay (preview, mobile فقط) — قياس حقيقي بـ getBoundingClientRect لكل section ──
@@ -973,14 +974,19 @@ function PublicStore() {
             </div>
           </div>
 
-          {/* Category cards — Grid (ثابت 2 أعمدة ديما، mobile و desktop) أو Row (سطر واحد، سكرول أفقي) */}
-          <div style={{
-            display: displayStyle === "row" ? "flex" : "grid",
-            gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(2, 1fr)",
-            overflowX: displayStyle === "row" ? "auto" : undefined,
-            gap: 16,
-            paddingBottom: displayStyle === "row" ? 4 : 0,
-          }}>
+          {/* Category cards — Grid (ثابت 2 أعمدة ديما، mobile و desktop) أو Row (سطر واحد، سكرول أفقي بلا scrollbar + أزرار عائمة) */}
+          <div className={displayStyle === "row" ? "ps-carousel-wrap" : undefined} style={displayStyle === "row" ? { position: "relative" } : undefined}>
+          <div
+            ref={displayStyle === "row" ? catStripRef : null}
+            className={displayStyle === "row" ? "ps-cat-strip" : undefined}
+            style={{
+              display: displayStyle === "row" ? "flex" : "grid",
+              gridTemplateColumns: displayStyle === "row" ? undefined : "repeat(2, 1fr)",
+              overflowX: displayStyle === "row" ? "auto" : undefined,
+              scrollSnapType: displayStyle === "row" ? "x proximity" : undefined,
+              gap: 16,
+              paddingBottom: displayStyle === "row" ? 4 : 0,
+            }}>
             {displayCategories.slice(0, maxItems).map(cat => (
               <div
                 key={cat._id}
@@ -993,6 +999,7 @@ function PublicStore() {
                   transition: "transform .25s, box-shadow .25s",
                   flexShrink: displayStyle === "row" ? 0 : undefined,
                   width: displayStyle === "row" ? 240 : "auto",
+                  scrollSnapAlign: displayStyle === "row" ? "start" : undefined,
                   background: "#f1f1f3",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 34px rgba(0,0,0,.14)"; }}
@@ -1041,6 +1048,27 @@ function PublicStore() {
                 )}
               </div>
             ))}
+          </div>
+          {displayStyle === "row" && displayCategories.length > 2 && (
+            <>
+              <button
+                aria-label="السابق"
+                onClick={() => catStripRef.current?.scrollBy({ left: direction === "rtl" ? 240 : -240, behavior: "smooth" })}
+                className="ps-carousel-nav ps-carousel-nav--prev"
+                style={{ background: primary, top: "38%" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="15 6 9 12 15 18"/></svg>
+              </button>
+              <button
+                aria-label="التالي"
+                onClick={() => catStripRef.current?.scrollBy({ left: direction === "rtl" ? -240 : 240, behavior: "smooth" })}
+                className="ps-carousel-nav ps-carousel-nav--next"
+                style={{ background: primary, top: "38%" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+              </button>
+            </>
+          )}
           </div>
         </section>
         </SectionWrapper>
