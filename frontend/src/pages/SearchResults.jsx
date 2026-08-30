@@ -334,7 +334,8 @@ export default function SearchResults() {
         @keyframes ps-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .ps-marquee-track { animation: ps-marquee 18s linear infinite; }
         .sr-card { transition: transform .25s ease, box-shadow .25s ease; }
-        .sr-card:hover { transform: translateY(-4px); }
+        .sr-card-img { transition: transform .2s; }
+        .sr-card:hover .sr-card-img { transform: scale(1.05); }
         .sr-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
         .sr-card:hover .sr-card-cta { opacity: 1; transform: translateY(0); }
         @media (hover: none) { .sr-card-cta { opacity: 1; transform: translateY(0); } }
@@ -436,8 +437,9 @@ export default function SearchResults() {
                     }}>
                       <img
                         src={img} alt={product.name}
+                        className="sr-card-img"
                         onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
+                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                       />
                       {showBadge && product.oldPrice && !outOfStock && (
                         <span style={{ position: "absolute", top: 12, right: 12, background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, letterSpacing: .5 }}>

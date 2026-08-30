@@ -559,10 +559,9 @@ export default function CategoryProducts() {
                         <img
                           src={img}
                           alt={product.name}
+                          className="cp-card-img"
                           onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                          style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
-                          onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                          onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                          style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                         />
                       )}
                       {isDemo && (
@@ -707,7 +706,8 @@ export default function CategoryProducts() {
           .cp-coll-grid[data-carousel="1"] > * { flex: 0 0 80% !important; }
         }
         .cp-card { transition: transform .25s ease, box-shadow .25s ease; }
-        .cp-card:hover { transform: translateY(-4px); }
+        .cp-card-img { transition: transform .2s; }
+        .cp-card:hover .cp-card-img { transform: scale(1.05); }
         .cp-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
         .cp-card:hover .cp-card-cta { opacity: 1; transform: translateY(0); }
 

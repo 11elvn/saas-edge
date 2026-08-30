@@ -75,9 +75,8 @@ const CSS = `
 .ps-card {
   transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
 }
-.ps-card:hover {
-  transform: translateY(-4px);
-}
+.ps-card-img { transition: transform .2s; }
+.ps-card:hover .ps-card-img { transform: scale(1.05); }
 .ps-cat-chip {
   transition: background .2s, color .2s, border-color .2s;
   white-space: nowrap;
@@ -1149,8 +1148,9 @@ function PublicStore() {
                       <img
                         src={img}
                         alt={product.name}
+                        className="ps-card-img"
                         onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover", transition: "transform .5s ease" }}
+                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                       />
                       {/* Badges */}
                       {showBadge && product.oldPrice && !outOfStock && (
