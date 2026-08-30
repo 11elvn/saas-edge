@@ -94,6 +94,9 @@ select.pd-input { appearance:none; -webkit-appearance:none; -moz-appearance:none
 .pd-btn-order:not(:disabled):hover { transform:translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.5); }
 .pd-btn-order:not(:disabled):active { transform:scale(.97); }
 .pd-btn-order--pulse { animation: pd-pulse 1.8s ease-out infinite; }
+/* ✦ سطر الألوان — سكرول أفقي بلا scrollbar ظاهر لو زاد عدد الألوان عن المتاح */
+.pd-variant-strip::-webkit-scrollbar { display:none; }
+.pd-variant-strip { -ms-overflow-style:none; scrollbar-width:none; }
 .pd-qty-btn {
   width:34px; height:34px; border-radius:9px; border:1px solid #e5e7eb; background:#fff;
   display:flex; align-items:center; justify-content:center; cursor:pointer; color:#111;
@@ -416,7 +419,7 @@ function ProductDetails() {
       setProduct({
         _id: "demo-product", name: "منتج تجريبي", description: "هذا وصف تجريبي للمنتج، هنا يظهر شرح مختصر عن مميزات وتفاصيل المنتج.",
         currentPrice: 4200, oldPrice: 5000, stock: 10, images: [], _demo: true,
-        colors: [{ name: "أحمر", hex: "#ef4444" }, { name: "أزرق", hex: "#3b82f6" }, { name: "أبيض", hex: "#ffffff" }, { name: "أسود", hex: "#000000" }],
+        colors: [{ name: "أسود", hex: "#000000" }, { name: "أبيض", hex: "#ffffff" }, { name: "أحمر", hex: "#ef4444" }, { name: "أزرق", hex: "#3b82f6" }],
         sizes: ["XXL", "XL", "L", "M", "S"],
       });
       if (slug) {
@@ -811,7 +814,7 @@ function ProductDetails() {
                             {product.colors.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
                           </select>
                         ) : (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                          <div className="pd-variant-strip" style={{ display: "flex", flexWrap: "nowrap", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
                             {product.colors.map(c => {
                               const active = selectedColor === c.name;
                               return (
@@ -819,12 +822,13 @@ function ProductDetails() {
                                   key={c.name}
                                   onClick={() => setSelectedColor(c.name)}
                                   style={{
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    padding: "9px 14px", borderRadius: 10, cursor: "pointer",
+                                    display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                                    padding: "9px 12px", borderRadius: 10, cursor: "pointer",
                                     border: `1.5px solid ${active ? primary : borderColor}`,
                                     background: active ? primary : "transparent",
                                     color: active ? "#fff" : textColor,
-                                    fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
+                                    fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+                                    whiteSpace: "nowrap",
                                     transition: "all .15s",
                                   }}
                                 >
