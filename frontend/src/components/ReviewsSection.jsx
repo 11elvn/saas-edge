@@ -11,12 +11,21 @@ import { useRef } from "react";
 function Stars({ rating = 5, size = 13, color = "#f59e0b" }) {
   return (
     <span style={{ display: "inline-flex", gap: 1, direction: "ltr" }}>
-      {[1, 2, 3, 4, 5].map(n => (
-        <svg key={n} width={size} height={size} viewBox="0 0 24 24"
-          fill={n <= rating ? color : "none"} stroke={color} strokeWidth="1.5">
-          <polygon points="12 2.5 15 9 22 10 17 15 18.2 21.5 12 18.3 5.8 21.5 7 15 2 10 9 9 12 2.5" />
-        </svg>
-      ))}
+      {[1, 2, 3, 4, 5].map(n => {
+        const fillPct = Math.max(0, Math.min(1, rating - (n - 1))) * 100;
+        return (
+          <span key={n} style={{ position: "relative", width: size, height: size, display: "inline-block" }}>
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" style={{ position: "absolute", inset: 0 }}>
+              <polygon points="12 2.5 15 9 22 10 17 15 18.2 21.5 12 18.3 5.8 21.5 7 15 2 10 9 9 12 2.5" />
+            </svg>
+            <span style={{ position: "absolute", inset: 0, width: `${fillPct}%`, overflow: "hidden" }}>
+              <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="1.5">
+                <polygon points="12 2.5 15 9 22 10 17 15 18.2 21.5 12 18.3 5.8 21.5 7 15 2 10 9 9 12 2.5" />
+              </svg>
+            </span>
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -81,7 +90,7 @@ export default function ReviewsSection({ settings, primary, bgColor, surfaceColo
         {showRatingSummary && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, direction: "rtl" }}>
             <span style={{ fontSize: 13, color: mutedTextColor, fontWeight: 600 }}>{reviews.length}٠</span>
-            <Stars rating={Math.round(avg)} size={16} />
+            <Stars rating={Number(avg)} size={16} />
             <span style={{ fontSize: 15, fontWeight: 800, color: textColor }}>{avg}</span>
           </div>
         )}

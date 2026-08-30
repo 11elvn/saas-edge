@@ -2014,9 +2014,9 @@ const DEFAULT_FAQ_QUESTIONS = [
 
 // ✦ Reviews — Default reviews تجيبها زر "Add Section" (نفس أسلوب FAQ: سوق جزائري، طلب مؤكد)
 const DEFAULT_REVIEWS = [
-  { id: "rev_1", enabled: true, rating: 5, name: "أمينة", wilaya: "وهران",   text: "السلعة وصلاتني في يومين، نفس الصورة بالضبط. خدمة نظيفة، نصحكم بيهم.", date: "2026-06-15", verified: true },
-  { id: "rev_2", enabled: true, rating: 4, name: "ياسين", wilaya: "الجزائر", text: "جودة مليحة والسعر معقول. التوصيل شوية بطيء بصح المنتج يستاهل.",        date: "2026-06-10", verified: true },
-  { id: "rev_3", enabled: true, rating: 5, name: "رانيا",  wilaya: "قسنطينة", text: "خدمة راقية، تواصلو معايا وأكدولي الطلب راني مبسوطة برشا.",            date: "2026-06-05", verified: false },
+  { id: "rev_1", enabled: true, rating: 5,   name: "سارة",  wilaya: "البليدة",  text: "طلبت المنتج نهار الخميس ووصلني الجمعة، ما توقعتش السرعة هاذي. التغليف كان نظيف والسلعة مطابقة تماما للصورة.", date: "2026-07-02", verified: true },
+  { id: "rev_2", enabled: true, rating: 4.5, name: "عبد النور", wilaya: "سطيف", text: "جودة ممتازة، وخدمة الزبائن جاوبوني بسرعة كي كان عندي سؤال. غير التوصيل تأخر يوم زيادة على الموعد.",            date: "2026-06-28", verified: true },
+  { id: "rev_3", enabled: true, rating: 5,   name: "خولة",  wilaya: "تلمسان",  text: "ثاني مرة نشري من عندهم، وديما نفس الجودة. متجر يستاهل الثقة وننصح بيه لصحابي.",                       date: "2026-06-20", verified: false },
 ];
 
 function ReviewsSettings({ settings, onChange }) {
@@ -2086,8 +2086,9 @@ function ReviewsSettings({ settings, onChange }) {
         {reviews.map((r, i) => (
           <div key={r.id} className="pb-link-card">
             <div className="pb-link-card__header">
-              <span className="pb-faq-card__title" title={r.name}>
-                {"★".repeat(r.rating || 5)} {r.name || `Review ${i + 1}`}
+              <span className="pb-faq-card__title" title={r.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: "#f59e0b", fontSize: 14, lineHeight: 1 }}>★</span>
+                {r.name || `Review ${i + 1}`}
               </span>
               <div className="pb-faq-card__actions">
                 <button type="button" className="pb-faq-card__iconbtn" title="Move up" disabled={i === 0} onClick={() => moveReview(i, -1)}>
@@ -2104,14 +2105,23 @@ function ReviewsSettings({ settings, onChange }) {
             </div>
             <div className="pb-link-card__body">
               <div className="pb-field">
-                <div className="pb-label">Rating</div>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} type="button" onClick={() => updateReview(r.id, { rating: n })}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 2, fontSize: 20, lineHeight: 1, color: n <= (r.rating || 5) ? "#f59e0b" : "#e5e7eb" }}>
-                      ★
-                    </button>
-                  ))}
+                <div className="pb-label">Rating <span>{(r.rating || 5).toFixed(1)} / 5 — انقر نص النجمة للتنقيط بنص درجة</span></div>
+                <div style={{ display: "flex", gap: 6, direction: "ltr" }}>
+                  {[1,2,3,4,5].map(n => {
+                    const val = r.rating || 5;
+                    const fillPct = Math.max(0, Math.min(1, val - (n - 1))) * 100;
+                    const SIZE = 30;
+                    return (
+                      <div key={n} style={{ position: "relative", width: SIZE, height: SIZE }}>
+                        <span style={{ position: "absolute", inset: 0, fontSize: SIZE, lineHeight: 1, color: "#e5e7eb" }}>★</span>
+                        <span style={{ position: "absolute", inset: 0, fontSize: SIZE, lineHeight: 1, color: "#f59e0b", width: `${fillPct}%`, overflow: "hidden", whiteSpace: "nowrap" }}>★</span>
+                        <button type="button" title={`${n - 0.5}`} onClick={() => updateReview(r.id, { rating: n - 0.5 })}
+                          style={{ position: "absolute", inset: "0 50% 0 0", background: "none", border: "none", cursor: "pointer", padding: 0 }} />
+                        <button type="button" title={`${n}`} onClick={() => updateReview(r.id, { rating: n })}
+                          style={{ position: "absolute", inset: "0 0 0 50%", background: "none", border: "none", cursor: "pointer", padding: 0 }} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               <div className="pb-field">
