@@ -62,12 +62,14 @@ const DEFAULT_CONFIG = {
       enabled: true,
       settings: {
         layout: "row",
+        // ✦ 3 مفعّلين بالافتراضي، و2 (إرجاع/دعم) موجودين بصح مطفيين —
+        //   التاجر حر يشعلهم من التوگل فـ TrustSettings إذا حاب
         badges: [
-          { id: "cod",      enabled: true, title: "دفع عند الاستلام", sub: "دفع آمن وسهل" },
-          { id: "shipping", enabled: true, title: "توصيل سريع",       sub: "لجميع ولايات الجزائر" },
-          { id: "return",   enabled: true, title: "إرجاع مجاني",      sub: "خلال 7 أيام" },
-          { id: "support",  enabled: true, title: "دعم 24/7",         sub: "نحن هنا لمساعدتك" },
-          { id: "secure",   enabled: true, title: "متجر موثوق",       sub: "آلاف العملاء الراضين" },
+          { id: "cod",      enabled: true,  title: "دفع عند الاستلام", sub: "دفع آمن وسهل" },
+          { id: "shipping", enabled: true,  title: "توصيل سريع",       sub: "لجميع ولايات الجزائر" },
+          { id: "return",   enabled: false, title: "إرجاع مجاني",      sub: "خلال 7 أيام" },
+          { id: "support",  enabled: false, title: "دعم 24/7",         sub: "نحن هنا لمساعدتك" },
+          { id: "secure",   enabled: true,  title: "متجر موثوق",       sub: "آلاف العملاء الراضين" },
         ],
         bgColor: "#ffffff",
       },
