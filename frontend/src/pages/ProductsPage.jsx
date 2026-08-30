@@ -295,8 +295,30 @@ function ProductModal({ mode, initial, categories, onSave, onClose, saving }) {
   const [catId,       setCatId]       = useState(
     initial?.categoryId?._id || initial?.categoryId || ""
   );
+  const [colors,      setColors]      = useState(initial?.colors || []);
+  const [sizes,       setSizes]       = useState(initial?.sizes  || []);
+  const [colorName,   setColorName]   = useState("");
+  const [colorHex,    setColorHex]    = useState("#7c6df2");
+  const [sizeInput,   setSizeInput]   = useState("");
 
   const isEdit = mode === "edit";
+
+  const addColor = () => {
+    const nm = colorName.trim();
+    if (!nm) return;
+    setColors(c => [...c, { name: nm, hex: colorHex }]);
+    setColorName("");
+    setColorHex("#7c6df2");
+  };
+  const removeColor = (i) => setColors(c => c.filter((_, idx) => idx !== i));
+
+  const addSize = () => {
+    const sz = sizeInput.trim();
+    if (!sz || sizes.includes(sz)) return;
+    setSizes(s => [...s, sz]);
+    setSizeInput("");
+  };
+  const removeSize = (i) => setSizes(s => s.filter((_, idx) => idx !== i));
 
   return (
     <div className="prp-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -349,6 +371,69 @@ function ProductModal({ mode, initial, categories, onSave, onClose, saving }) {
             </div>
           </div>
 
+          {/* Colors & Sizes (Variants) */}
+          <div className="prp-msection">
+            <p className="prp-stitle">Colors</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+              {colors.map((c, i) => (
+                <span key={i} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: "#f4f3ff", border: "1px solid #e4e0ff", borderRadius: 999,
+                  padding: "5px 6px 5px 10px", fontSize: 13, fontWeight: 600, color: "#2b2440",
+                }}>
+                  <span style={{ width: 14, height: 14, borderRadius: "50%", background: c.hex, border: "1px solid rgba(0,0,0,.15)" }} />
+                  {c.name}
+                  <button type="button" onClick={() => removeColor(i)} style={{
+                    border: "none", background: "transparent", cursor: "pointer", color: "#94a3b8",
+                    fontSize: 13, lineHeight: 1, padding: 2,
+                  }}>✕</button>
+                </span>
+              ))}
+              {colors.length === 0 && <span style={{ fontSize: 12.5, color: "#94a3b8" }}>No colors added yet</span>}
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                className="prp-inp" placeholder="Color name (e.g. أحمر)" value={colorName}
+                onChange={e => setColorName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addColor())}
+                style={{ flex: 1 }}
+              />
+              <input
+                type="color" value={colorHex} onChange={e => setColorHex(e.target.value)}
+                style={{ width: 44, height: 44, border: "1px solid #e5e7eb", borderRadius: 10, padding: 2, cursor: "pointer", background: "#fff" }}
+                title="Color swatch"
+              />
+              <button type="button" onClick={addColor} className="prp-foot-cancel" style={{ whiteSpace: "nowrap" }}>+ Add</button>
+            </div>
+
+            <p className="prp-stitle" style={{ marginTop: 18 }}>Sizes</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+              {sizes.map((sz, i) => (
+                <span key={i} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: "#f4f3ff", border: "1px solid #e4e0ff", borderRadius: 999,
+                  padding: "5px 6px 5px 12px", fontSize: 13, fontWeight: 700, color: "#2b2440",
+                }}>
+                  {sz}
+                  <button type="button" onClick={() => removeSize(i)} style={{
+                    border: "none", background: "transparent", cursor: "pointer", color: "#94a3b8",
+                    fontSize: 13, lineHeight: 1, padding: 2,
+                  }}>✕</button>
+                </span>
+              ))}
+              {sizes.length === 0 && <span style={{ fontSize: 12.5, color: "#94a3b8" }}>No sizes added yet</span>}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                className="prp-inp" placeholder="Size (e.g. XL, 42, One Size)" value={sizeInput}
+                onChange={e => setSizeInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addSize())}
+                style={{ flex: 1 }}
+              />
+              <button type="button" onClick={addSize} className="prp-foot-cancel" style={{ whiteSpace: "nowrap" }}>+ Add</button>
+            </div>
+          </div>
+
           {/* Product Image */}
           <div className="prp-msection">
             <p className="prp-stitle">Product Image</p>
@@ -363,7 +448,7 @@ function ProductModal({ mode, initial, categories, onSave, onClose, saving }) {
           <button
             className="prp-foot-save"
             disabled={saving}
-            onClick={() => onSave({ name, desc, price, oldPrice, stock, image, catId })}
+            onClick={() => onSave({ name, desc, price, oldPrice, stock, image, catId, colors, sizes })}
           >
             {saving ? "Saving..." : isEdit ? "Save Changes" : "Add Product"}
           </button>
@@ -436,7 +521,7 @@ export default function ProductsPage() {
   const paged      = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   // Create
-  const handleCreate = async ({ name, desc, price, oldPrice, stock, image, catId }) => {
+  const handleCreate = async ({ name, desc, price, oldPrice, stock, image, catId, colors, sizes }) => {
     if (!name.trim() || !price) return toast("اسم المنتج والسعر مطلوبان", "err");
     setSaving(true);
     try {
@@ -448,6 +533,7 @@ export default function ProductsPage() {
           currentPrice: Number(price), oldPrice: Number(oldPrice) || undefined,
           stock: Number(stock) || 10,
           image, categoryId: catId || null,
+          colors: colors || [], sizes: sizes || [],
         }),
       });
       const d = await r.json();
@@ -458,7 +544,7 @@ export default function ProductsPage() {
   };
 
   // Edit
-  const handleEdit = async ({ name, desc, price, oldPrice, stock, image, catId }) => {
+  const handleEdit = async ({ name, desc, price, oldPrice, stock, image, catId, colors, sizes }) => {
     if (!name.trim()) return toast("اكتب اسم المنتج", "err");
     setSaving(true);
     try {
@@ -470,13 +556,14 @@ export default function ProductsPage() {
           currentPrice: Number(price), oldPrice: Number(oldPrice) || undefined,
           stock: Number(stock), image,
           categoryId: catId || null,
+          colors: colors || [], sizes: sizes || [],
         }),
       });
       const d = await r.json();
       if (r.ok) {
         toast("✅ تم التعديل"); setModal(null);
         setProducts(p => p.map(x => x._id === modal.product._id
-          ? { ...x, name, description: desc, currentPrice: Number(price), oldPrice: Number(oldPrice)||undefined, stock: Number(stock), image, categoryId: catId ? { _id: catId, name: cats.find(c=>c._id===catId)?.name } : null }
+          ? { ...x, name, description: desc, currentPrice: Number(price), oldPrice: Number(oldPrice)||undefined, stock: Number(stock), image, categoryId: catId ? { _id: catId, name: cats.find(c=>c._id===catId)?.name } : null, colors: colors || [], sizes: sizes || [] }
           : x
         ));
       } else toast(d.message || "خطأ", "err");

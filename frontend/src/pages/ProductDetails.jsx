@@ -279,6 +279,8 @@ function ProductDetails() {
   const [loading,      setLoading]      = useState(true);
   const [ordering,     setOrdering]     = useState(false);
   const [quantity,     setQuantity]     = useState(1);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize,  setSelectedSize]  = useState(null);
 
   // ── السلة (Cart) ──────────────────────────────────────────
   const { addToCart, getCartCount } = useCart();
@@ -414,6 +416,8 @@ function ProductDetails() {
       setProduct({
         _id: "demo-product", name: "منتج تجريبي", description: "هذا وصف تجريبي للمنتج، هنا يظهر شرح مختصر عن مميزات وتفاصيل المنتج.",
         currentPrice: 4200, oldPrice: 5000, stock: 10, images: [], _demo: true,
+        colors: [{ name: "أحمر", hex: "#ef4444" }, { name: "أزرق", hex: "#3b82f6" }, { name: "أبيض", hex: "#ffffff" }, { name: "أسود", hex: "#000000" }],
+        sizes: ["XXL", "XL", "L", "M", "S"],
       });
       if (slug) {
         (async () => {
@@ -441,6 +445,13 @@ function ProductDetails() {
       finally { setLoading(false); }
     })();
   }, [productId, slug, isDemoProduct]);
+
+  // ✦ اختيار افتراضي أول لون/مقاس متوفرين كي يتحمّل المنتج
+  useEffect(() => {
+    if (!product) return;
+    setSelectedColor(product.colors?.[0]?.name || null);
+    setSelectedSize(product.sizes?.[0] || null);
+  }, [product?._id]);
 
   const handleCityChange = (city) => {
     setSelectedCity(city);
@@ -777,6 +788,103 @@ function ProductDetails() {
                   </div>
                 );
               })()}
+
+              {/* Colors & Sizes (Product options) */}
+              {productInfoSettings.showVariants !== false && (product.colors?.length > 0 || product.sizes?.length > 0) && (() => {
+                const optionStyle = productInfoSettings.optionStyle || "buttons";
+                return (
+                  <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 16 }}>
+                    {product.colors?.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 8px" }}>اللون</p>
+                        {optionStyle === "dropdown" ? (
+                          <select
+                            className="pd-variant-select"
+                            value={selectedColor || ""}
+                            onChange={e => setSelectedColor(e.target.value)}
+                            style={{
+                              width: "100%", padding: "11px 14px", borderRadius: 10,
+                              border: `1.5px solid ${borderColor}`, fontSize: 14, fontFamily: "inherit",
+                              color: textColor, background: "#fff", cursor: "pointer",
+                            }}
+                          >
+                            {product.colors.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                          </select>
+                        ) : (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                            {product.colors.map(c => {
+                              const active = selectedColor === c.name;
+                              return (
+                                <button
+                                  key={c.name}
+                                  onClick={() => setSelectedColor(c.name)}
+                                  style={{
+                                    display: "flex", alignItems: "center", gap: 7,
+                                    padding: "8px 16px", borderRadius: 999, cursor: "pointer",
+                                    border: `1.5px solid ${active ? primary : borderColor}`,
+                                    background: active ? primary : "#fff",
+                                    color: active ? "#fff" : textColor,
+                                    fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
+                                    transition: "all .15s",
+                                  }}
+                                >
+                                  {c.name}
+                                  <span style={{
+                                    width: 15, height: 15, borderRadius: "50%", background: c.hex,
+                                    border: `1.5px solid ${active ? "#fff" : "rgba(0,0,0,.15)"}`, flexShrink: 0,
+                                  }} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {product.sizes?.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: textColor, margin: "0 0 8px" }}>المقاس</p>
+                        {optionStyle === "dropdown" ? (
+                          <select
+                            className="pd-variant-select"
+                            value={selectedSize || ""}
+                            onChange={e => setSelectedSize(e.target.value)}
+                            style={{
+                              width: "100%", padding: "11px 14px", borderRadius: 10,
+                              border: `1.5px solid ${borderColor}`, fontSize: 14, fontFamily: "inherit",
+                              color: textColor, background: "#fff", cursor: "pointer",
+                            }}
+                          >
+                            {product.sizes.map(sz => <option key={sz} value={sz}>{sz}</option>)}
+                          </select>
+                        ) : (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                            {product.sizes.map(sz => {
+                              const active = selectedSize === sz;
+                              return (
+                                <button
+                                  key={sz}
+                                  onClick={() => setSelectedSize(sz)}
+                                  style={{
+                                    minWidth: 46, padding: "9px 10px", borderRadius: 999, cursor: "pointer",
+                                    border: `1.5px solid ${active ? primary : borderColor}`,
+                                    background: active ? primary : "#fff",
+                                    color: active ? "#fff" : textColor,
+                                    fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
+                                    transition: "all .15s",
+                                  }}
+                                >
+                                  {sz}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {product.stock > 0 && product.stock <= 5 && (
                 <p style={{ marginTop: 12, fontSize: 13, color: "#f59e0b", fontWeight: 700 }}>⚠️ بقي {product.stock} قطعة فقط</p>
               )}

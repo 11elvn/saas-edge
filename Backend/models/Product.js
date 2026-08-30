@@ -42,6 +42,19 @@ const productSchema = new mongoose.Schema({
   stock: {
     type: Number,
     default: 10 
+  },
+  // 🆕 خيارات المنتج — الألوان والمقاييس (Product Variants)
+  colors: {
+    type: [{
+      name: { type: String, required: true, trim: true },
+      hex:  { type: String, default: "#000000" },
+      _id: false,
+    }],
+    default: []
+  },
+  sizes: {
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
 

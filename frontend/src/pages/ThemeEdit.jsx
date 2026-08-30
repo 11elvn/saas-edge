@@ -2426,6 +2426,25 @@ function ProductInfoSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
+      <Collapse title="Product options">
+        <div className="pb-toggle-row">
+          <span className="pb-toggle-row__label">Show colors & sizes</span>
+          <Toggle checked={settings.showVariants !== false} onChange={v => s("showVariants", v)} />
+        </div>
+        {settings.showVariants !== false && (
+          <div className="pb-field">
+            <div className="pb-label">Option style</div>
+            <div className="pb-segment">
+              {[{v:"buttons",l:"Buttons"},{v:"dropdown",l:"Dropdown"}].map(o => (
+                <button key={o.v}
+                  className={`pb-seg-btn ${(settings.optionStyle || "buttons") === o.v ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("optionStyle", o.v)}>{o.l}</button>
+              ))}
+            </div>
+          </div>
+        )}
+      </Collapse>
+
       <Collapse title="Badges & notes">
         <div className="pb-field">
           <div className="pb-label">Badge text <span>leave empty to hide it</span></div>

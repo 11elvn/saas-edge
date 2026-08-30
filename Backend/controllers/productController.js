@@ -19,6 +19,8 @@ exports.createProduct =
         images,
         stock,
         categoryId,
+        colors,
+        sizes,
       } = req.body;
 
       if (
@@ -66,6 +68,10 @@ exports.createProduct =
           categoryId:
             categoryId ||
             null,
+          colors:
+            colors || [],
+          sizes:
+            sizes || [],
         });
 
       await product.save();
