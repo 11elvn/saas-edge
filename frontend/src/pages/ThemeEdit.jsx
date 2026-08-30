@@ -2920,7 +2920,7 @@ const SPACING_DEFAULTS = {
   // ✦ faq كيستعمل شير component (FaqSection.jsx) — دابا القيمة الافتراضية كتطبق عبر
   // ✦ SectionWrapper ديال كل صفحة (PublicStore/ProductDetails/Checkout)، بنفس منطق باقي الأقسام
   faq:            { top: 32, bottom: 32, start: 0, end: 0 },
-  reviews:        { top: 30, bottom: 30, start: 0, end: 0 },
+  reviews:        { top: 15, bottom: 0, start: 0, end: 0 },
   // ✦ footer: 0 — الفوتر خاصو يبقى ملتصق بآخر section (عندها background خاص بيها كيميز الانتقال)
   footer:         { top: 0, bottom: 0, start: 0, end: 0 },
   gallery:        { top: 25, bottom: 30, start: 0, end: 0 },

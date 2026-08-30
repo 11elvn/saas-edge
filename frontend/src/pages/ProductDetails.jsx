@@ -194,7 +194,7 @@ const SECTION_LABELS = {
 // ✦ faq: default 52/60 — كان مبني قبل فـ FaqSection.jsx نفسها، دابا تحكم فيه هنا (نفس القيمة بالضبط)
 // ✦ gallery.bottom / productInfo.top = 0 — باش يبقاو لاصقين ببعضهم (الـ grid rowGap تشال تاني،
 // ماشي مضاعف). gallery.top و productInfo.bottom خدامين عاديين (ماشي متجاورين مع حتى section).
-const PD_SPACING_DEFAULTS = { faq: { top: 32, bottom: 32 }, reviews: { top: 30, bottom: 30 }, gallery: { top: 25, bottom: 30 }, productInfo: { top: 20, bottom: 25 } };
+const PD_SPACING_DEFAULTS = { faq: { top: 32, bottom: 32 }, reviews: { top: 15, bottom: 0 }, gallery: { top: 25, bottom: 30 }, productInfo: { top: 20, bottom: 25 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = PD_SPACING_DEFAULTS[type] || {};

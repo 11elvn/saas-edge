@@ -424,6 +424,7 @@ const PS_SPACING_DEFAULTS = {
   categories: { top: 32, bottom: 20 },
   collection: { top: 32, bottom: 32 },
   faq:        { top: 32, bottom: 32 },
+  reviews:    { top: 15, bottom: 0 },
   footer:     { top: 0,  bottom: 0 },
 };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
