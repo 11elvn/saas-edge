@@ -1332,7 +1332,8 @@ function PublicStore() {
           .ps-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
-          .ps-coll-grid[data-carousel="0"] { grid-template-columns: repeat(1, 1fr) !important; }
+          .ps-coll-grid[data-carousel="0"][data-cols="4"],
+          .ps-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(1, 1fr) !important; }
           .ps-coll-grid[data-carousel="1"] > * { flex: 0 0 80% !important; }
         }
       `}</style>

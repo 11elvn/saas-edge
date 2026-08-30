@@ -702,7 +702,8 @@ export default function CategoryProducts() {
           .cp-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
-          .cp-coll-grid[data-carousel="0"] { grid-template-columns: repeat(1, 1fr) !important; }
+          .cp-coll-grid[data-carousel="0"][data-cols="4"],
+          .cp-coll-grid[data-carousel="0"][data-cols="3"] { grid-template-columns: repeat(1, 1fr) !important; }
           .cp-coll-grid[data-carousel="1"] > * { flex: 0 0 80% !important; }
         }
         .cp-card { transition: transform .25s ease, box-shadow .25s ease; }
