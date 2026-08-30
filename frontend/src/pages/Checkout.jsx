@@ -493,13 +493,7 @@ function Checkout() {
         </SectionWrapper>
       )}
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "28px 16px 0" }}>
-        <button
-          onClick={() => navigate(`/store/${slug}`)}
-          style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: mutedTextColor, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, marginBottom: 14, padding: 0 }}
-        >
-          <IconBack /> متابعة التسوق
-        </button>
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px" }}>
 
         {items.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px", background: surfaceColor, borderRadius: 16 }}>
