@@ -54,6 +54,7 @@ const PD_CSS = `
 .pd-input--icon { padding-right: 38px; }
 .pd-input:focus { border-color: var(--pd-primary); background:#fff; }
 .pd-input::placeholder { color:#aaa; }
+select.pd-input { appearance:none; -webkit-appearance:none; -moz-appearance:none; }
 .pd-field-wrap { position:relative; }
 .pd-field-icon { position:absolute; top:50%; right:12px; transform:translateY(-50%); color:#9ca3af; pointer-events:none; display:flex; }
 .pd-btn-order {
