@@ -2086,7 +2086,7 @@ function FaqSettings({ settings, onChange }) {
   );
 }
 
-function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle }) {
+function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle, isMobile }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
@@ -2156,7 +2156,7 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle 
         <div className="pb-field">
           <div className="pb-label">Columns</div>
           <div className="pb-segment">
-            {[2,3,4].map(n => (
+            {(isMobile ? [1,2] : [2,3,4]).map(n => (
               <button key={n}
                 className={`pb-seg-btn ${settings.columns === n ? "pb-seg-btn--active" : ""}`}
                 onClick={() => s("columns", n)}>{n}</button>
@@ -2809,7 +2809,7 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
       case "header":       return <HeaderSettings       settings={section.settings} onChange={updateSettings} store={store} onLogoChange={onLogoChange} onNameChange={onNameChange} onNamePreview={onNamePreview} />;
       case "hero":         return <HeroSettings         settings={section.settings} onChange={updateSettings} />;
       case "trust":        return <TrustSettings        settings={section.settings} onChange={updateSettings} />;
-      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} showSortToggle={isCategoryPage} />;
+      case "collection":   return <CollectionSettings   settings={section.settings} onChange={updateSettings} hideForSearch={isSearchPage} showSortToggle={isCategoryPage} isMobile={isMobile} />;
       case "categories":   return <CategoriesSettings   settings={section.settings} onChange={updateSettings} />;
       case "faq":          return <FaqSettings          settings={section.settings} onChange={updateSettings} />;
       case "footer":       return <FooterSettings       settings={section.settings} onChange={updateSettings} />;
