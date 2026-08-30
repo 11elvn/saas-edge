@@ -819,10 +819,10 @@ function ProductDetails() {
                                   key={c.name}
                                   onClick={() => setSelectedColor(c.name)}
                                   style={{
-                                    display: "flex", alignItems: "center", gap: 7,
-                                    padding: "8px 16px", borderRadius: 999, cursor: "pointer",
+                                    display: "flex", alignItems: "center", gap: 8,
+                                    padding: "9px 14px", borderRadius: 10, cursor: "pointer",
                                     border: `1.5px solid ${active ? primary : borderColor}`,
-                                    background: active ? primary : "#fff",
+                                    background: active ? primary : "transparent",
                                     color: active ? "#fff" : textColor,
                                     fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
                                     transition: "all .15s",
@@ -830,8 +830,8 @@ function ProductDetails() {
                                 >
                                   {c.name}
                                   <span style={{
-                                    width: 15, height: 15, borderRadius: "50%", background: c.hex,
-                                    border: `1.5px solid ${active ? "#fff" : "rgba(0,0,0,.15)"}`, flexShrink: 0,
+                                    width: 14, height: 14, borderRadius: "50%", background: c.hex,
+                                    border: `1.5px solid ${active ? "#fff" : "rgba(255,255,255,.35)"}`, flexShrink: 0,
                                   }} />
                                 </button>
                               );
@@ -865,9 +865,9 @@ function ProductDetails() {
                                   key={sz}
                                   onClick={() => setSelectedSize(sz)}
                                   style={{
-                                    minWidth: 46, padding: "9px 10px", borderRadius: 999, cursor: "pointer",
+                                    minWidth: 50, height: 42, padding: "0 12px", borderRadius: 10, cursor: "pointer",
                                     border: `1.5px solid ${active ? primary : borderColor}`,
-                                    background: active ? primary : "#fff",
+                                    background: active ? primary : "transparent",
                                     color: active ? "#fff" : textColor,
                                     fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
                                     transition: "all .15s",
