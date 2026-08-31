@@ -1415,7 +1415,7 @@ function Collapse({ title, defaultOpen = true, children }) {
 // COLOR FIELD
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
-// COLOR PRESETS — 5 ready-made, coordinated color designs
+// COLOR PRESETS — 10 ready-made, coordinated color designs
 // ✦ Order matches the styles fields: primary/secondary/background/surface/text/mutedText/border
 // ─────────────────────────────────────────────
 const COLOR_PRESETS = [
@@ -1497,6 +1497,86 @@ const COLOR_PRESETS = [
     },
     onPrimary: "#ffffff",
     announcementBg: "#831843",
+    announcementText: "#ffffff",
+  },
+  {
+    id: "midnight-teal",
+    name: "Midnight teal",
+    colors: {
+      primaryColor: "#14b8a6",
+      secondaryColor: "#0f172a",
+      backgroundColor: "#0b1120",
+      surfaceColor: "#131b2c",
+      textColor: "#f1f5f9",
+      mutedTextColor: "#8b96a5",
+      borderColor: "#223047",
+    },
+    onPrimary: "#062e2a",
+    announcementBg: "#14b8a6",
+    announcementText: "#062e2a",
+  },
+  {
+    id: "soft-lavender",
+    name: "Soft lavender",
+    colors: {
+      primaryColor: "#7c6df2",
+      secondaryColor: "#4c3fb0",
+      backgroundColor: "#f5f3ff",
+      surfaceColor: "#e9e4ff",
+      textColor: "#2b2440",
+      mutedTextColor: "#6b6489",
+      borderColor: "#d9d2fb",
+    },
+    onPrimary: "#ffffff",
+    announcementBg: "#4c3fb0",
+    announcementText: "#ffffff",
+  },
+  {
+    id: "charcoal-mono",
+    name: "Charcoal mono",
+    colors: {
+      primaryColor: "#111111",
+      secondaryColor: "#444444",
+      backgroundColor: "#ffffff",
+      surfaceColor: "#f4f4f5",
+      textColor: "#111111",
+      mutedTextColor: "#6b7280",
+      borderColor: "#e4e4e7",
+    },
+    onPrimary: "#ffffff",
+    announcementBg: "#111111",
+    announcementText: "#ffffff",
+  },
+  {
+    id: "ocean-breeze",
+    name: "Ocean breeze",
+    colors: {
+      primaryColor: "#06b6d4",
+      secondaryColor: "#0e7490",
+      backgroundColor: "#ecfeff",
+      surfaceColor: "#cffafe",
+      textColor: "#083344",
+      mutedTextColor: "#4b7a86",
+      borderColor: "#a5f3fc",
+    },
+    onPrimary: "#ffffff",
+    announcementBg: "#0e7490",
+    announcementText: "#ffffff",
+  },
+  {
+    id: "sunset-orange",
+    name: "Sunset orange",
+    colors: {
+      primaryColor: "#f97316",
+      secondaryColor: "#9a3412",
+      backgroundColor: "#fff7ed",
+      surfaceColor: "#ffedd5",
+      textColor: "#431407",
+      mutedTextColor: "#92603f",
+      borderColor: "#fed7aa",
+    },
+    onPrimary: "#ffffff",
+    announcementBg: "#9a3412",
     announcementText: "#ffffff",
   },
 ];
