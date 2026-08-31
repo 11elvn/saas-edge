@@ -12,6 +12,7 @@ import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import FaqSection from "../components/FaqSection";
 import ReviewsSection from "../components/ReviewsSection";
+import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
@@ -56,7 +57,7 @@ const sec = (arr, type) => (arr || []).find(s => s.type === type);
 const PD_CSS = `
 @keyframes pd-fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pd-spin     { to{transform:rotate(360deg)} }
-@keyframes pd-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+${ANNOUNCEMENT_BAR_CSS}
 @keyframes pd-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(0,0,0,.35); }
   70%  { box-shadow: 0 0 0 12px rgba(0,0,0,0); }
@@ -66,7 +67,6 @@ const PD_CSS = `
 .pd-d1    { animation-delay: .08s; }
 .pd-d2    { animation-delay: .16s; }
 .pd-spinner { animation: pd-spin .7s linear infinite; }
-.pd-marquee-track { animation: pd-marquee 18s linear infinite; }
 .pd-thumb {
   cursor:pointer; border-radius:10px; overflow:hidden;
   border:2px solid transparent; flex-shrink:0;
@@ -581,21 +581,9 @@ function ProductDetails() {
       `}</style>
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
-      {announcementSec?.enabled !== false && announcementSec?.settings && (
+      {isAnnouncementEnabled(announcementSec) && (
         <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0" }}>
-            {announcementSec.settings.animation ? (
-              <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
-                {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
-                    {announcementSec.settings.message}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>{announcementSec.settings.message}</p>
-            )}
-          </div>
+          <AnnouncementBar settings={announcementSec.settings} slug={slug} isPreview={isPreview} />
         </SectionWrapper>
       )}
 

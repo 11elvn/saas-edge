@@ -9,6 +9,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
+import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -284,13 +285,12 @@ function OrderSuccess() {
           100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
         @keyframes os-fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes os-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        ${ANNOUNCEMENT_BAR_CSS}
         .os-check-circle { opacity: 0; }
         .os-check-circle.visible { opacity: 1; animation: os-checkPop .55s cubic-bezier(.34,1.56,.64,1) forwards; }
         .os-details { opacity: 0; }
         .os-details.visible { opacity: 1; animation: os-fadeUp .5s ease forwards; }
         .os-btn:hover { filter: brightness(0.94); }
-        .os-marquee-track { animation: os-marquee 18s linear infinite; }
 
         .os-section-wrapper { position: relative; }
         /* ✦ Desktop preview (iframe الحقيقي 1280px) — مربع ملتصق بحدود السكشن (inset:0)
@@ -314,27 +314,9 @@ function OrderSuccess() {
       `}</style>
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
-      {announcementSec?.enabled !== false && announcementSec?.settings && (
+      {isAnnouncementEnabled(announcementSec) && (
         <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
-            {announcementSec.settings.animation ? (
-              <div className="os-marquee-track" style={{ display: "flex", width: "max-content" }}>
-                {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
-                    {announcementSec.settings.message}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>
-                {announcementSec.settings.message}
-              </p>
-            )}
-            {announcementSec.settings.showClose && (
-              <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
-                style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: announcementSec.settings.textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
-            )}
-          </div>
+          <AnnouncementBar settings={announcementSec.settings} slug={slug} isPreview={isPreview} />
         </SectionWrapper>
       )}
 

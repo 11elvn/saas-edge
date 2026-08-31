@@ -8,6 +8,7 @@ import { useParams, useNavigate, useSearchParams, useLocation } from "react-rout
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
+import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
@@ -331,8 +332,7 @@ export default function SearchResults() {
   return (
     <div dir={direction} style={{ minHeight: "100vh", position: "relative", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
       <style>{`
-        @keyframes ps-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .ps-marquee-track { animation: ps-marquee 18s linear infinite; }
+        ${ANNOUNCEMENT_BAR_CSS}
         .sr-card { transition: transform .25s ease, box-shadow .25s ease; }
         .sr-card-img { transition: transform .2s; }
         .sr-card:hover .sr-card-img { transform: scale(1.05); }
@@ -348,28 +348,11 @@ export default function SearchResults() {
       `}</style>
 
       {/* ── Announcement Bar (مشترك مع Home) ── */}
-      {announcementSec?.enabled !== false && announcementSec?.settings && (() => {
-        const { message, bgColor: abg, textColor: atx, animation, showClose } = announcementSec.settings;
-        return (
-          <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-            <div style={{ background: abg, overflow: "hidden", padding: "9px 0", position: "relative" }}>
-              {animation ? (
-                <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
-                  {[...Array(6)].map((_, i) => (
-                    <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: atx, whiteSpace: "nowrap", marginInlineEnd: 64 }}>{message}</span>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: atx, margin: 0, letterSpacing: 1 }}>{message}</p>
-              )}
-              {showClose && (
-                <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
-                  style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: atx, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
-              )}
-            </div>
-          </SectionWrapper>
-        );
-      })()}
+      {isAnnouncementEnabled(announcementSec) && (
+        <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <AnnouncementBar settings={announcementSec.settings} slug={slug} isPreview={isPreview} />
+        </SectionWrapper>
+      )}
 
       {/* ── Navbar ── */}
       <SectionWrapper type="header" isPreview={isPreview} spacing={sec(homeSections, "header")?.settings?.spacing} isHighlighted={highlightedSection === "header"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>

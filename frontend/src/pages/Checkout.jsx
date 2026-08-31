@@ -11,6 +11,7 @@ import { ALGERIAN_CITIES, getShippingPrice } from "../constants/algerianCities";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import FaqSection from "../components/FaqSection";
+import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
@@ -32,7 +33,7 @@ function loadFont(font) {
 const PD_CSS = `
 @keyframes pd-fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pd-spin     { to{transform:rotate(360deg)} }
-@keyframes pd-marquee  { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+${ANNOUNCEMENT_BAR_CSS}
 @keyframes pd-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(0,0,0,.35); }
   70%  { box-shadow: 0 0 0 12px rgba(0,0,0,0); }
@@ -42,7 +43,6 @@ const PD_CSS = `
 .pd-d1    { animation-delay: .08s; }
 .pd-d2    { animation-delay: .16s; }
 .pd-spinner { animation: pd-spin .7s linear infinite; }
-.pd-marquee-track { animation: pd-marquee 18s linear infinite; }
 .pd-input {
   width:100%; padding:12px 14px; border-radius:12px;
   border:1px solid var(--pd-border, #e5e7eb); background:#f9fafb;
@@ -456,27 +456,9 @@ function Checkout() {
       style={{ minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, paddingBottom: checkoutSettings.stickyButton !== false && !isCompact ? 74 : 0 }}
     >
       {/* ── Announcement Bar ── */}
-      {announcementSec?.enabled !== false && announcementSec && (
+      {isAnnouncementEnabled(announcementSec) && (
         <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-          <div style={{ background: announcementSec.settings.bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
-            {announcementSec.settings.animation ? (
-              <div className="pd-marquee-track" style={{ display: "flex", width: "max-content" }}>
-                {[...Array(6)].map((_, i) => (
-                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: announcementSec.settings.textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
-                    {announcementSec.settings.message}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: announcementSec.settings.textColor, margin: 0, letterSpacing: 1 }}>
-                {announcementSec.settings.message}
-              </p>
-            )}
-            {announcementSec.settings.showClose && (
-              <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
-                style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: announcementSec.settings.textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
-            )}
-          </div>
+          <AnnouncementBar settings={announcementSec.settings} slug={slug} isPreview={isPreview} />
         </SectionWrapper>
       )}
 
