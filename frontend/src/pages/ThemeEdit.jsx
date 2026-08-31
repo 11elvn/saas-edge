@@ -3592,7 +3592,15 @@ function ThemeEdit() {
     const isHome = key === "sections";
     setThemeConfig(prev => {
       const currentArr = (isHome ? prev.sections : prev[key]?.sections) || [];
-      const newArr = [...currentArr, { ...template, id: `${type}-${Date.now()}` }];
+      const newSection = { ...template, id: `${type}-${Date.now()}` };
+      // ✦ Announcement/Header/Footer ثابتين ديما (fixed) — أي section جديدة خاصها تدخل
+      // قبل آخر section fixed فالقائمة (بحال footer)، ماشي بعدها. كي نلقاو آخر section
+      // ماشي fixed، نزيدو بعدها مباشرة (append عادي فآخر القائمة).
+      let insertAt = currentArr.length;
+      while (insertAt > 0 && getSectionMeta(currentArr[insertAt - 1].type, currentArr[insertAt - 1].id).fixed) {
+        insertAt--;
+      }
+      const newArr = [...currentArr.slice(0, insertAt), newSection, ...currentArr.slice(insertAt)];
       return isHome ? { ...prev, sections: newArr } : { ...prev, [key]: { ...prev[key], sections: newArr } };
     });
     setIsDirty(true);
@@ -3608,6 +3616,13 @@ function ThemeEdit() {
       const isHome = key === "sections";
       const currentArr = isHome ? prev.sections : prev[key]?.sections;
       if (!currentArr) return prev;
+      // ✦ ما نقبلوش drop فوق section fixed (Announcement/Header/Footer) — هادوك ثابتين
+      // فمكانهم ديما، حتى section أخرى ما تقدرش "تتحكر" فوقهم ولا تدخل بينهم.
+      const targetMeta = getSectionMeta(
+        currentArr.find(s => s.id === targetId)?.type,
+        targetId
+      );
+      if (targetMeta.fixed) return prev;
       const arr = [...currentArr];
       const fromIdx = arr.findIndex(s => s.id === draggedId);
       const toIdx = arr.findIndex(s => s.id === targetId);
@@ -3927,7 +3942,7 @@ function ThemeEdit() {
                           e.dataTransfer.effectAllowed = "move";
                         }}
                         onDragOver={e => {
-                          if (!draggedSectionId) return;
+                          if (!draggedSectionId || meta.fixed) return;
                           e.preventDefault(); // ✦ لازم باش onDrop يخدم
                           if (dragOverSectionId !== sec.id) setDragOverSectionId(sec.id);
                         }}
