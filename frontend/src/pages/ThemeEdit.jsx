@@ -1101,10 +1101,10 @@ const CSS = `
   display:flex; gap:4px;
   background: #ffffff;
   border: 1.5px solid #ece7fb;
-  padding: 4px; border-radius: 13px;
+  padding: 4px; border-radius: 9999px;
 }
 .pb-seg-btn {
-  flex: 1; padding: 9px 8px; border-radius: 10px;
+  flex: 1; padding: 9px 8px; border-radius: 9999px;
   border: none; background: transparent;
   font-size: .78rem; font-weight: 600; cursor: pointer;
   font-family: inherit; color: #8b7fae; transition: all .18s;
