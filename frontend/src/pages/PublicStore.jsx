@@ -10,11 +10,9 @@ import StoreFooter from "../components/StoreFooter";
 import FaqSection  from "../components/FaqSection";
 import ReviewsSection from "../components/ReviewsSection";
 import CartDrawer from "../components/CartDrawer";
-import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
 
 // ── Demo categories — تبان غير جوه ThemeEdit (isPreview) كي التاجر مازال ما دار تصنيفات ──
 // ✦ بلا صور — نستعملو placeholder أنيق (❓ + خلفية غامقة) كيما Tassyir، ماشي صور حقيقية
@@ -58,7 +56,10 @@ const CSS = `
   from { transform:translateX(100%); }
   to   { transform:translateX(0); }
 }
-${ANNOUNCEMENT_BAR_CSS}
+@keyframes ps-marquee {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
 @keyframes ps-spin { to { transform:rotate(360deg); } }
 
 .ps-fade-up  { animation: ps-fade-up .55s ease both; }
@@ -68,6 +69,7 @@ ${ANNOUNCEMENT_BAR_CSS}
 .ps-delay-4  { animation-delay:.32s; }
 
 .ps-drawer          { animation: ps-slide-in .3s cubic-bezier(.32,.72,0,1) both; }
+.ps-marquee-track   { animation: ps-marquee 18s linear infinite; }
 .ps-spinner         { animation: ps-spin .7s linear infinite; }
 
 .ps-card {
@@ -737,10 +739,29 @@ function PublicStore() {
       {/* ── Announcement Bar ── */}
       {(() => {
         const s = sec(tc, "announcement");
-        if (!isAnnouncementEnabled(s)) return null;
+        if (!s?.enabled) return null;
+        const { message, bgColor, textColor, animation, showClose } = s.settings;
         return (
-          <SectionWrapper type="announcement" isPreview={isPreview} spacing={s?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-            <AnnouncementBar settings={s.settings} slug={slug} isPreview={isPreview} />
+          <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(tc, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} style={{ order: sectionOrder("announcement") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+          <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
+            {animation ? (
+              <div className="ps-marquee-track" style={{ display: "flex", width: "max-content" }}>
+                {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
+                    باش كل عنصر يحسب مساحته كاملة (النص + المسافة)، وتحريك -50% يبقى مضبوط 100% بلا أي قفزة */}
+                {[...Array(6)].map((_, i) => (
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: 64 }}>
+                    {message}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: textColor, margin: 0, letterSpacing: 1 }}>{message}</p>
+            )}
+            {showClose && (
+              <button onClick={e => e.currentTarget.parentElement.style.display = "none"}
+                style={{ position: "absolute", top: "50%", left: 12, transform: "translateY(-50%)", background: "none", border: "none", color: textColor, cursor: "pointer", fontSize: 16, opacity: .7 }}>✕</button>
+            )}
+          </div>
           </SectionWrapper>
         );
       })()}
@@ -1128,7 +1149,8 @@ function PublicStore() {
               }}
             >
               {visibleProducts.map((product, idx) => {
-                const img = (product.images?.[0] || product.image || DEFAULT_IMG);
+                const img = (product.images?.[0] || product.image || "");
+                const hasImg = !!img;
                 const outOfStock = product.stock === 0;
                 return (
                   <div
@@ -1153,13 +1175,27 @@ function PublicStore() {
                       borderRadius: cardStyleCfg.imgRadius,
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
-                      <img
-                        src={img}
-                        alt={product.name}
-                        className="ps-card-img"
-                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
-                      />
+                      {hasImg ? (
+                        <img
+                          src={img}
+                          alt={product.name}
+                          className="ps-card-img"
+                          onError={e => { e.target.onerror = null; e.target.style.display = "none"; e.target.nextSibling && (e.target.nextSibling.style.display = "flex"); }}
+                          style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
+                        />
+                      ) : null}
+                      <div style={{
+                        position: "absolute", inset: 0, display: hasImg ? "none" : "flex",
+                        alignItems: "center", justifyContent: "center", overflow: "hidden",
+                        background: `${primary}14`,
+                      }}>
+                        <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(45deg, ${primary}33 0, ${primary}33 1px, transparent 1px, transparent 14px)`, opacity: .5 }} />
+                        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />
+                          </svg>
+                        </div>
+                      </div>
                       {/* Badges */}
                       {showBadge && product.oldPrice && !outOfStock && (
                         <span style={{
