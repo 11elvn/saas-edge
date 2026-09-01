@@ -8,8 +8,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
-const DEFAULT_IMG = "https://placehold.co/200x200/f9fafb/94a3b8?text=No+Image";
-
 const IconBag = () => (
   <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
@@ -146,12 +144,23 @@ export default function CartDrawer({
                   background: surfaceColor, borderRadius: 14, padding: 9,
                   border: `1px solid ${borderColor}`,
                 }}>
-                  {/* الصورة */}
+                  {/* الصورة — أو placeholder بلون المتجر كي ماكايناش صورة */}
                   <div style={{
                     width: 56, height: 56, borderRadius: 10, overflow: "hidden", flexShrink: 0,
-                    background: bgColor, backgroundImage: `url(${item.image || DEFAULT_IMG})`,
-                    backgroundSize: "cover", backgroundPosition: "center",
-                  }} />
+                    background: "#f1f2f4",
+                    ...(item.image ? {
+                      backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center",
+                    } : {}),
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {!item.image && (
+                      <div style={{ width: 34, height: 34, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
 
                   {/* الاسم + السعر + stepper */}
                   <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
