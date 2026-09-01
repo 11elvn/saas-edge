@@ -995,6 +995,14 @@ const CSS = `
 .pb-right__close:hover { background: #f5f3ff; color: #5b3fd6; border-color: #ddd4fb; }
 
 .pb-right__body { flex:1; overflow-y:auto; padding: 14px; display:flex; flex-direction:column; gap:12px; background: #faf9ff; }
+.pb-right__body {
+  scrollbar-width: thin;
+  scrollbar-color: #cabdf7 transparent;
+}
+.pb-right__body::-webkit-scrollbar { width: 6px; }
+.pb-right__body::-webkit-scrollbar-track { background: transparent; }
+.pb-right__body::-webkit-scrollbar-thumb { background: #cabdf7; border-radius: 99px; }
+.pb-right__body::-webkit-scrollbar-thumb:hover { background: #7c6df2; }
 
 /* ── FIELD GROUPS — rounded white cards ── */
 .pb-group {
