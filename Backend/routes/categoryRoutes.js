@@ -2,6 +2,7 @@ const express  = require("express");
 const router   = express.Router();
 const Category = require("../models/Category");
 const Store    = require("../models/Store");
+const Product  = require("../models/Product");
 const auth     = require("../middleware/auth");
 
 // ── 1. إنشاء قسم جديد (Protected) ──────────────────────────
@@ -68,6 +69,11 @@ router.delete("/delete/:id", auth, async (req, res) => {
     if (!category) return res.status(404).json({ message: "Category not found! ❌" });
     if (category.storeId.toString() !== store._id.toString())
       return res.status(401).json({ message: "Unauthorized ⛔" });
+
+    // ✦ نحيدو الربط من المنتجات اللي كانت مربوطة بهاد التصنيف قبل ما نحذفوه —
+    // بلا هادشي، يبقاو شايرين على id محذوف (orphaned reference) وممكن يكسرو
+    // الفرونت كي يديرو populate("categoryId")
+    await Product.updateMany({ categoryId: category._id }, { categoryId: null });
 
     await Category.findByIdAndDelete(req.params.id);
     res.json({ message: "Category deleted! ✅" });

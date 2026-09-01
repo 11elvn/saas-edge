@@ -194,9 +194,24 @@ exports.updateProduct =
           });
       }
 
+      // ✦ نحددو بالضبط الحقول المسموح تتبدل — ماشي كل req.body مباشرة (كان قبل يقدر
+      // التاجر يبعت storeId فالـ body ويبدل ملكية المنتج لمتجر آخر، حيت Object.assign
+      // كان كيمرج كل حاجة بلا فلترة)
+      const {
+        name, description, currentPrice, oldPrice,
+        image, images, stock, categoryId, colors, sizes,
+      } = req.body;
+      const allowedUpdates = {
+        name, description, currentPrice, oldPrice,
+        image, images, stock, categoryId, colors, sizes,
+      };
+      Object.keys(allowedUpdates).forEach(
+        key => allowedUpdates[key] === undefined && delete allowedUpdates[key]
+      );
+
       Object.assign(
         product,
-        req.body
+        allowedUpdates
       );
 
       await product.save();
@@ -315,9 +330,14 @@ exports.searchProducts =
         return res.status(200).json([]);
       }
 
+      // ✦ escape للـ regex special characters — بلا هادشي، q كيتحول مباشرة لـ
+      // regex pattern حقيقي، وأي زبون (endpoint عام بلا auth) يقدر يبعت pattern
+      // ثقيل (ReDoS) يعلق السيرفر
+      const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
       const products = await Product.find({
         storeId,
-        name: { $regex: q, $options: "i" },
+        name: { $regex: escapedQ, $options: "i" },
       }).populate("categoryId");
 
       res.status(200).json(products);

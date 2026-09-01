@@ -25,7 +25,8 @@ router.post("/create", async (req, res) => {
       note,
       shippingCity,
       shippingPrice,
-      totalPrice
+      // ✦ totalPrice ماعادش كيتقرا من req.body — كنحسبوه سيرفر-سايد ديما (شوف تحت).
+      // كان قبل التاجر/الزبون يقدر يبعت أي رقم من الفرونت ويتقبل كيف هو (تلاعب بالسعر).
     } = req.body;
 
     // ✦ التحقق من الحقول الإجبارية
@@ -50,18 +51,44 @@ router.post("/create", async (req, res) => {
       return res.status(400).json({ message: "لا توجد منتجات في الطلب ❌" });
     }
 
-    // ✦ نجيبو كل منتج، نتحققو من وجوده والمخزون ديالو، ونبنيو snapshot (اسم/صورة/سعر وقت الطلب)
+    // ✦ rollback — كي يفشل عنصر فنص الطريق (ستوك ماكفاش، متجر مختلف، منتج ماكاينش)،
+    // نرجعو الستوك ديال العناصر اللي نقصناها قبلو فنفس الطلب (ماعندناش DB transactions
+    // هنا — الستور ماشي replica set — فهاد rollback اليدوي هو البديل الآمن)
+    const rollbackStock = (decremented) => Promise.all(
+      decremented.map(it => Product.findByIdAndUpdate(it.productId, { $inc: { stock: it.quantity } }))
+    );
+
+    // ✦ نجيبو كل منتج، وننقصو الستوك ديالو بعملية atomic وحدة (check + decrement فـ query
+    // واحدة) — هادشي كيمنع فعلا الـ race condition: كي جوج طلبات يجيو فنفس اللحظة على
+    // آخر وحدة، غير وحدة منهم تنجح ($gte يمنع الثانية توصل للستوك السالب)
     const builtItems = [];
+    const decremented = [];
     let storeId = null;
     for (const it of rawItems) {
       const product = await Product.findById(it.productId);
       if (!product) {
+        await rollbackStock(decremented);
         return res.status(404).json({ message: "أحد المنتجات في طلبك لم يعد موجوداً ❌" });
       }
       const qty = Math.max(1, Number(it.quantity) || 1);
-      if (product.stock <= 0 || product.stock < qty) {
+
+      // ✦ منتجات من متاجر مختلفة فنفس الطلب — ماعندهاش معنى، الطلب لازم يكون كامل ديال متجر واحد
+      if (storeId && product.storeId.toString() !== storeId.toString()) {
+        await rollbackStock(decremented);
+        return res.status(400).json({ message: "لا يمكن الطلب بمنتجات من متاجر مختلفة في نفس الوقت ❌" });
+      }
+
+      const updatedProduct = await Product.findOneAndUpdate(
+        { _id: product._id, stock: { $gte: qty } },
+        { $inc: { stock: -qty } },
+        { new: true }
+      );
+      if (!updatedProduct) {
+        await rollbackStock(decremented);
         return res.status(400).json({ message: `عذراً، "${product.name}" نفد من المخزون 😔` });
       }
+      decremented.push({ productId: product._id, quantity: qty });
+
       if (!storeId) storeId = product.storeId;
       builtItems.push({
         productId: product._id,
@@ -72,31 +99,36 @@ router.post("/create", async (req, res) => {
       });
     }
 
+    // ✦ السعر الإجمالي كيتحسب هنا برك، من أسعار المنتجات الحقيقية فالداتابيز — ماشي من رقم جاي من الفرونت
     const itemsTotal = builtItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    const finalShippingPrice = Number(shippingPrice) || 0;
+    const computedTotal = itemsTotal + finalShippingPrice;
 
     // ✦ إنشاء الطلب — items هو المصدر الأساسي، productId/quantity كيتولدو من أول عنصر للتوافق القديم
-    const order = new Order({
-      items:        builtItems,
-      productId:    builtItems[0].productId,
-      quantity:     builtItems[0].quantity,
-      customerName,
-      phone:         cleanPhone,
-      address:       address || "",
-      municipality:  municipality || "",
-      note:          note || "",
-      shippingCity,
-      shippingPrice: Number(shippingPrice) || 0,
-      totalPrice:    Number(totalPrice) || (itemsTotal + (Number(shippingPrice) || 0)),
-      storeId,
-      status:        "pending",
-    });
-
-    await order.save();
-
-    // ✦ تناقص المخزون بعد حفظ الطلب لكل منتج — atomic يمنع race condition
-    await Promise.all(
-      builtItems.map(it => Product.findByIdAndUpdate(it.productId, { $inc: { stock: -it.quantity } }))
-    );
+    let order;
+    try {
+      order = new Order({
+        items:        builtItems,
+        productId:    builtItems[0].productId,
+        quantity:     builtItems[0].quantity,
+        customerName,
+        phone:         cleanPhone,
+        address:       address || "",
+        municipality:  municipality || "",
+        note:          note || "",
+        shippingCity,
+        shippingPrice: finalShippingPrice,
+        totalPrice:    computedTotal,
+        storeId,
+        status:        "pending",
+      });
+      await order.save();
+    } catch (saveError) {
+      // ✦ إذا فشل حفظ الطلب بعد ما نقصنا الستوك، نرجعوه (rollback) — بلا هاد try/catch
+      // كان الستوك يبقى منقوص لطلب ماتسجلش خالص
+      await rollbackStock(decremented);
+      throw saveError;
+    }
 
     res.status(201).json({
       message: "تم تسجيل طلبك بنجاح ✅",
