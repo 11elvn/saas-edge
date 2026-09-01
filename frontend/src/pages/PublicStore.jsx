@@ -366,18 +366,22 @@ const PREVIEW_CSS = `
   justify-content: center;
 }
 .ps-add-below__btn {
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   border-radius: 50%;
-  background: #7c6df2;
+  background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
   border: 2px solid #fff;
   color: #fff;
-  font-size: 18px;
-  font-weight: 700;
   line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  cursor: not-allowed;
-  box-shadow: 0 2px 8px rgba(124,109,242,.45);
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(108,79,224,.45);
+  transition: transform .15s, box-shadow .15s;
 }
+.ps-add-below__btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 5px 16px rgba(108,79,224,.55);
+}
+.ps-add-below__btn:active { transform: scale(.96); }
 `;
 
 // ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين
@@ -457,10 +461,21 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
         {SECTION_LABELS[type] || type}
       </div>
       {children}
-      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) ── */}
+      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) — يطلب من ThemeEdit زيادة section بعدها ── */}
       {isHighlighted && (
         <div className="ps-add-below">
-          <button className="ps-add-below__btn" title="Add section" disabled>+</button>
+          <button
+            className="ps-add-below__btn"
+            title="Add section"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.parent.postMessage({ type: "ADD_SECTION_AFTER", sectionType: type }, "*");
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
         </div>
       )}
     </div>
