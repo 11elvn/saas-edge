@@ -12,7 +12,6 @@ import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "..
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
 
 // ── DEFAULTS — نفس القيم الافتراضية ديال ThemeEdit ──
 const DEFAULT_HOME_SECTIONS = [
@@ -396,7 +395,8 @@ export default function SearchResults() {
           ) : (
             <div className="sr-grid" data-cols={columns} style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20 }}>
               {visibleProducts.map(product => {
-                const img        = product.images?.[0] || product.image || DEFAULT_IMG;
+                const img        = product.images?.[0] || product.image || "";
+                const hasImg     = !!img;
                 const outOfStock = product.stock === 0;
                 return (
                   <div
@@ -418,12 +418,25 @@ export default function SearchResults() {
                       borderRadius: cardStyleCfg.imgRadius,
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
-                      <img
-                        src={img} alt={product.name}
-                        className="sr-card-img"
-                        onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
-                        style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
-                      />
+                      {hasImg ? (
+                        <img
+                          src={img} alt={product.name}
+                          className="sr-card-img"
+                          onError={e => { e.target.onerror = null; e.target.style.display = "none"; e.target.nextSibling && (e.target.nextSibling.style.display = "flex"); }}
+                          style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
+                        />
+                      ) : null}
+                      <div style={{
+                        position: "absolute", inset: 0, display: hasImg ? "none" : "flex",
+                        alignItems: "center", justifyContent: "center", overflow: "hidden",
+                        background: "#f1f2f4",
+                      }}>
+                        <div style={{ width: 68, height: 68, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+                          </svg>
+                        </div>
+                      </div>
                       {showBadge && product.oldPrice && !outOfStock && (
                         <span style={{ position: "absolute", top: 12, right: 12, background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, letterSpacing: .5 }}>
                           تخفيض

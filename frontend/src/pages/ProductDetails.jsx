@@ -16,7 +16,6 @@ import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "..
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600";
 
 // ── Google Font loader (نفس المنطق ديال PublicStore) ─────────
 function loadFont(font) {
@@ -246,12 +245,13 @@ function FieldLabel({ text, required, optionalLabel, color }) {
   );
 }
 
-function GallerySlot({ src, index, className = "", style = {} }) {
-  if (src) {
+function GallerySlot({ src, index, className = "", style = {}, primary = "#2563eb" }) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
     return (
       <img
         src={src} alt={`img-${index + 1}`}
-        onError={e => { e.target.src = DEFAULT_IMG; }}
+        onError={() => setFailed(true)}
         className={className}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", ...style }}
       />
@@ -259,11 +259,15 @@ function GallerySlot({ src, index, className = "", style = {} }) {
   }
   return (
     <div style={{
-      width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "#e9eaee", color: "#a3a7b0", fontWeight: 800,
-      fontSize: "clamp(22px,7vw,52px)", fontFamily: "'Inter', sans-serif",
+      width: "100%", height: "100%", position: "relative", overflow: "hidden",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "#f1f2f4",
     }}>
-      {index + 1}
+      <div style={{ width: 68, height: 68, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+        </svg>
+      </div>
     </div>
   );
 }
@@ -538,7 +542,7 @@ function ProductDetails() {
   const PLACEHOLDER_TARGET = 5; // ✦ عدد سلوتات الـ Gallery المعروضة فـ preview الـ ThemeEdit (أمثلة فقط، ماشي صور المستخدم)
   const images = isPreview
     ? Array(PLACEHOLDER_TARGET).fill(null) // ✦ preview ديما كيبان بأمثلة احترافية — ما نوريوش صور المنتج الحقيقية تاع المستخدم
-    : (realImages.length ? realImages : [DEFAULT_IMG]);
+    : (realImages.length ? realImages : [null]);
   const outOfStock = product.stock === 0;
   const total = product.currentPrice * quantity + shippingPrice;
 
@@ -634,7 +638,7 @@ function ProductDetails() {
                         aspectRatio: galleryAspect, background: surfaceColor,
                         border: `1px solid ${borderColor}`, borderRadius: 18, overflow: "hidden",
                       }}>
-                        <GallerySlot src={img} index={i} />
+                        <GallerySlot src={img} index={i} primary={primary} />
                       </div>
                     ))}
                   </div>
@@ -663,7 +667,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb pd-thumb-carousel ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
-                      <GallerySlot src={img} index={i} />
+                      <GallerySlot src={img} index={i} primary={primary} />
                     </div>
                   ))}
                 </div>
@@ -687,7 +691,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
-                      <GallerySlot src={img} index={i} />
+                      <GallerySlot src={img} index={i} primary={primary} />
                     </div>
                   ))}
                 </div>
@@ -702,6 +706,7 @@ function ProductDetails() {
                 <GallerySlot
                   src={images[activeImg]}
                   index={activeImg}
+                  primary={primary}
                   className={`pd-gallery-zoom ${gallerySettings.enableZoom ? "pd-gallery-zoom--enabled" : ""}`}
                   style={{ height: gallerySettings.imageRatio === "adapt" ? "auto" : "100%" }}
                 />

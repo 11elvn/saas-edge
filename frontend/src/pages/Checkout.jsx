@@ -15,7 +15,6 @@ import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "..
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://placehold.co/200x200/f9fafb/94a3b8?text=No+Image";
 
 // ── Google Font loader (نفس المنطق ديال باقي الصفحات) ──
 function loadFont(font) {
@@ -606,10 +605,22 @@ function Checkout() {
                   <div style={{ borderTop: `1px solid ${borderColor}`, background: bgColor, padding: "10px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
                     {items.map(item => (
                       <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
-                        <div style={{
-                          width: 42, height: 42, borderRadius: 9, flexShrink: 0, overflow: "hidden", background: surfaceColor,
-                          backgroundImage: `url(${item.image || DEFAULT_IMG})`, backgroundSize: "cover", backgroundPosition: "center",
-                        }} />
+                        {item.image ? (
+                          <div style={{
+                            width: 42, height: 42, borderRadius: 9, flexShrink: 0, overflow: "hidden", background: surfaceColor,
+                            backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center",
+                          }} />
+                        ) : (
+                          <div style={{
+                            width: 42, height: 42, borderRadius: 9, flexShrink: 0,
+                            background: primary,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}>
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+                            </svg>
+                          </div>
+                        )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: textColor, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {item.name}

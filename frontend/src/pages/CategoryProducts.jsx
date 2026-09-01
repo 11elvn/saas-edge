@@ -11,7 +11,6 @@ import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "..
 import { useCart } from "../context/CartContext";
 
 const API = () => import.meta.env.VITE_API_URL;
-const DEFAULT_IMG = "https://placehold.co/600x400/f9fafb/94a3b8?text=No+Image";
 
 // ── Demo products — تبان غير كي التصنيف تجريبي (categoryId="demo") و 0 منتجات حقيقية ──
 // ✦ باش التاجر يقدر يعاين تصميم الـ grid (أعمدة، ستايل الكارد...) قبل ما يزيد منتجات
@@ -497,7 +496,8 @@ export default function CategoryProducts() {
               }}
             >
               {visibleProducts.map((product, idx) => {
-                const img        = product.images?.[0] || product.image || DEFAULT_IMG;
+                const img        = product.images?.[0] || product.image || "";
+                const hasImg     = !!img;
                 const outOfStock = product.stock === 0;
                 const isDemo     = !!product._demo;
                 return (
@@ -517,39 +517,37 @@ export default function CategoryProducts() {
                     }}
                     onClick={() => { if (!isDemo) navigate(`/store/${slug}/product/${product._id}`); }}
                   >
-                    {/* Image — أو placeholder أنيق (؟) للمنتجات التجريبية */}
+                    {/* Image — أو placeholder بلون المتجر كي ماكايناش صورة */}
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
                       borderRadius: cardStyleCfg.imgRadius,
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
-                      {isDemo ? (
-                        <div style={{
-                          width: "100%", height: "100%", minHeight: 140,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          background: "linear-gradient(160deg,#3a3f47,#1c1f24)",
-                        }}>
-                          <div style={{
-                            width: 44, height: 44, borderRadius: 10,
-                            border: "2px solid rgba(255,255,255,.28)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 19, fontWeight: 800, color: "rgba(255,255,255,.55)",
-                          }}>؟</div>
-                        </div>
-                      ) : (
+                      {hasImg ? (
                         <img
                           src={img}
                           alt={product.name}
                           className="cp-card-img"
-                          onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMG; }}
+                          onError={e => { e.target.onerror = null; e.target.style.display = "none"; e.target.nextSibling && (e.target.nextSibling.style.display = "flex"); }}
                           style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                         />
-                      )}
+                      ) : null}
+                      <div style={{
+                        position: "absolute", inset: 0, display: hasImg ? "none" : "flex", minHeight: 140,
+                        alignItems: "center", justifyContent: "center", overflow: "hidden",
+                        background: "#f1f2f4",
+                      }}>
+                        <div style={{ width: 68, height: 68, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+                          </svg>
+                        </div>
+                      </div>
                       {isDemo && (
                         <div style={{
                           position: "absolute", top: 10, insetInlineStart: 10,
                           background: "rgba(255,255,255,.92)",
-                          color: "#1c1f24", fontSize: 10, fontWeight: 700,
+                          color: primary, fontSize: 10, fontWeight: 700,
                           padding: "3px 9px", borderRadius: 999, letterSpacing: ".3px",
                         }}>مثال</div>
                       )}
