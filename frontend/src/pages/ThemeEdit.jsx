@@ -886,11 +886,6 @@ const CSS = `
   cursor: pointer; text-align: right; transition: background .12s;
 }
 .pb-add-menu__item:hover { background: rgba(124,109,242,.08); color: #5b3fd6; }
-.pb-add-menu__hint {
-  padding: 6px 10px 8px; margin-bottom: 4px;
-  border-bottom: 1px solid #f1edfd;
-  font-size: .72rem; font-weight: 600; color: #8b7fae;
-}
 .pb-add-menu__empty {
   padding: 12px 10px; font-size: .78rem; color: #94a3b8; text-align: center;
 }
@@ -3373,9 +3368,6 @@ function ThemeEdit() {
   const [collapsedLeft,  setCollapsedLeft]  = useState(false);
   const [collapsedRight, setCollapsedRight] = useState(false);
   const [showAddMenu,    setShowAddMenu]    = useState(false);
-  // ✦ id ديال السكشن اللي ضغط اليوزر على زر + تاعها فالـ preview (ADD_SECTION_AFTER) —
-  // كي تكون معمورة، السكشن الجديدة تدخل مباشرة بعدها ماشي فآخر الصفحة
-  const [insertAfterId,  setInsertAfterId]  = useState(null);
   const [previewProductId, setPreviewProductId] = useState(null); // ✦ أول منتج فالمتجر — نستعملوه لمعاينة صفحة Product
   const [previewCategoryId, setPreviewCategoryId] = useState(null); // ✦ أول تصنيف فالمتجر — نستعملوه لمعاينة صفحة Category
   const [draggedSectionId, setDraggedSectionId] = useState(null); // ✦ id ديال الـ section اللي كيتسحب دابا
@@ -3515,11 +3507,10 @@ function ThemeEdit() {
       .finally(() => setLoading(false));
   }, []);
 
-  // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح settings الـ section المختار،
-  // أو يفتح popover "زيادة section" مباشرة بعد section معينة (زر + فالـ preview)
+  // ✦ استقبال كليك من الـ iframe (PublicStore) — يفتح settings الـ section المختار
   useEffect(() => {
     const handler = (e) => {
-      if (e.data?.type !== "SECTION_CLICK" && e.data?.type !== "ADD_SECTION_AFTER") return;
+      if (e.data?.type !== "SECTION_CLICK") return;
       const sectionType = e.data.sectionType;
       // ✦ نبدأو بالبحث فـ sections ديال الصفحة الحالية (باش نتفاداو تصادم النوع "collection"
       // ✦ المشترك بين Home/Category/Search)، ثم نكملو بالبحث العام كـ fallback
@@ -3537,12 +3528,7 @@ function ThemeEdit() {
         || themeConfig?.success?.sections?.find(s => s.type === sectionType)
         || themeConfig?.search?.sections?.find(s => s.type === sectionType)
         || themeConfig?.checkout?.sections?.find(s => s.type === sectionType);
-      if (!matched) return;
-      if (e.data.type === "ADD_SECTION_AFTER") {
-        setInsertAfterId(matched.id);
-        setShowAddMenu(true);
-        setRightTab("sections");
-      } else {
+      if (matched) {
         setActiveSection(matched.id);
         setRightTab("sections");
       }
@@ -3550,6 +3536,32 @@ function ThemeEdit() {
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   }, [themeConfig, currentPage]);
+
+  // ✦ استقبال طلب "تكرار section" من زر + فالـ preview (DUPLICATE_SECTION) —
+  // كينسخ نفس الـ section بحذافيرها (settings كاملة) ويدخلها مباشرة تحتها
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type !== "DUPLICATE_SECTION") return;
+      const sectionType = e.data.sectionType;
+      const key = PAGE_SECTIONS_KEY[currentPage] || "sections";
+      const isHome = key === "sections";
+      setThemeConfig(prev => {
+        const currentArr = (isHome ? prev.sections : prev[key]?.sections) || [];
+        const idx = currentArr.findIndex(s => s.type === sectionType);
+        if (idx === -1) return prev;
+        const original = currentArr[idx];
+        // ✦ ماكاين فقيد للـ section المزدوجة (لا Header/Footer/Announcement تقدر تتكرر) —
+        // هوما ماعندهمش زر + أصلا (مستثنيين من الـ preview نفسها)
+        if (getSectionMeta(original.type, original.id).fixed) return prev;
+        const clone = { ...original, id: `${original.type}-${Date.now()}` };
+        const newArr = [...currentArr.slice(0, idx + 1), clone, ...currentArr.slice(idx + 1)];
+        return isHome ? { ...prev, sections: newArr } : { ...prev, [key]: { ...prev[key], sections: newArr } };
+      });
+      setIsDirty(true);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [currentPage]);
 
   // ── Update section settings ──────────────────────────────
   const updateSectionSettings = useCallback((id, newSettings) => {
@@ -3696,27 +3708,19 @@ function ThemeEdit() {
     setThemeConfig(prev => {
       const currentArr = (isHome ? prev.sections : prev[key]?.sections) || [];
       const newSection = { ...template, id: `${type}-${Date.now()}` };
-      // ✦ إذا جا الطلب من زر + فالـ preview (insertAfterId معمور) → السكشن الجديدة تدخل
-      // مباشرة بعد هاديك السكشن. ماعدا هاداك، نرجعو للسلوك القديم: Announcement/Header/Footer
-      // ثابتين ديما (fixed) — أي section جديدة خاصها تدخل قبل آخر section fixed فالقائمة
-      // (بحال footer)، ماشي بعدها. كي نلقاو آخر section ماشي fixed، نزيدو بعدها مباشرة.
-      const afterIdx = insertAfterId ? currentArr.findIndex(s => s.id === insertAfterId) : -1;
-      let insertAt;
-      if (afterIdx !== -1) {
-        insertAt = afterIdx + 1;
-      } else {
-        insertAt = currentArr.length;
-        while (insertAt > 0 && getSectionMeta(currentArr[insertAt - 1].type, currentArr[insertAt - 1].id).fixed) {
-          insertAt--;
-        }
+      // ✦ Announcement/Header/Footer ثابتين ديما (fixed) — أي section جديدة خاصها تدخل
+      // قبل آخر section fixed فالقائمة (بحال footer)، ماشي بعدها. كي نلقاو آخر section
+      // ماشي fixed، نزيدو بعدها مباشرة (append عادي فآخر القائمة).
+      let insertAt = currentArr.length;
+      while (insertAt > 0 && getSectionMeta(currentArr[insertAt - 1].type, currentArr[insertAt - 1].id).fixed) {
+        insertAt--;
       }
       const newArr = [...currentArr.slice(0, insertAt), newSection, ...currentArr.slice(insertAt)];
       return isHome ? { ...prev, sections: newArr } : { ...prev, [key]: { ...prev[key], sections: newArr } };
     });
     setIsDirty(true);
     setShowAddMenu(false);
-    setInsertAfterId(null);
-  }, [insertAfterId]);
+  }, []);
 
   // ── Reorder sections (drag & drop) — الترتيب هنا كيأثر فعلا على المتجر ─
   // (الـ section الـ fixed ما تقدرش تسحبها — Announcement/Header/Footer، وأي section وحدها فصفحتها)
@@ -4142,14 +4146,8 @@ function ThemeEdit() {
                     : currentPage === "checkout" ? (themeConfig?.checkout?.sections || [])
                     : (themeConfig?.sections || []);
                   const missingTypes = Object.entries(menuMeta).filter(([type]) => !existingSections.some(s => s.type === type));
-                  const afterSection = insertAfterId ? existingSections.find(s => s.id === insertAfterId) : null;
                   return (
                     <div className="pb-add-menu">
-                      {afterSection && (
-                        <div className="pb-add-menu__hint">
-                          Add after {getSectionMeta(afterSection.type, afterSection.id).label}
-                        </div>
-                      )}
                       {missingTypes.map(([type, meta]) => (
                         <button key={type} className="pb-add-menu__item" onClick={() => addSection(currentPage, type)}>
                           <Icon name={meta.icon} size={15} />
@@ -4162,7 +4160,7 @@ function ThemeEdit() {
                     </div>
                   );
                 })()}
-                <button className="pb-add-btn" onClick={() => { setShowAddMenu(v => !v); setInsertAfterId(null); }}>
+                <button className="pb-add-btn" onClick={() => setShowAddMenu(v => !v)}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>

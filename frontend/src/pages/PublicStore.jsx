@@ -354,34 +354,68 @@ const PREVIEW_CSS = `
   }
 }
 
-/* زر + أسفل الـ section المختار */
+/* زر + أسفل الـ section المختار — connector line + FAB + tooltip عند hover */
 .ps-add-below {
   position: absolute;
-  bottom: -14px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 101;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
+.ps-add-below__line {
+  width: 2px; height: 9px;
+  background: linear-gradient(180deg, rgba(124,109,242,.55), rgba(124,109,242,.15));
+}
+.ps-add-below__wrap { position: relative; display: flex; }
+.ps-add-below__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2430;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 7px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  transform-origin: bottom center;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: .2px;
+  box-shadow: 0 6px 16px rgba(15,23,42,.28);
+}
+.ps-add-below__tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2430;
+}
+.ps-add-below__wrap:hover .ps-add-below__tooltip { opacity: 1; }
 .ps-add-below__btn {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg,#8b7cf6,#6c4fe0);
-  border: 2px solid #fff;
+  border: 3px solid #fff;
   color: #fff;
   line-height: 1;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(108,79,224,.45);
-  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 14px rgba(108,79,224,.5), 0 0 0 4px rgba(124,109,242,.14);
+  transition: transform .18s ease, box-shadow .18s ease;
 }
 .ps-add-below__btn:hover {
-  transform: scale(1.12);
-  box-shadow: 0 5px 16px rgba(108,79,224,.55);
+  transform: scale(1.15);
+  box-shadow: 0 6px 20px rgba(108,79,224,.6), 0 0 0 6px rgba(124,109,242,.2);
 }
-.ps-add-below__btn:active { transform: scale(.96); }
+.ps-add-below__btn:active { transform: scale(.94); }
 `;
 
 // ── SectionHighlightOverlay — Mobile فقط (isNarrowViewport). مربع الهايلايت + label مبنيين
@@ -461,21 +495,26 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
         {SECTION_LABELS[type] || type}
       </div>
       {children}
-      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight) — يطلب من ThemeEdit زيادة section بعدها ── */}
-      {isHighlighted && (
+      {/* ── زر + أسفل الـ section (يظهر فقط عند highlight، وماشي فوق Announcement/Header/Footer) ──
+          كي تتضغط، كتطلب من ThemeEdit "تكرار" نفس الـ section وتزيدها مباشرة تحتها ── */}
+      {isHighlighted && !["announcement", "header", "footer"].includes(type) && (
         <div className="ps-add-below">
-          <button
-            className="ps-add-below__btn"
-            title="Add section"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.parent.postMessage({ type: "ADD_SECTION_AFTER", sectionType: type }, "*");
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
+          <span className="ps-add-below__line" />
+          <div className="ps-add-below__wrap">
+            <span className="ps-add-below__tooltip">Add section</span>
+            <button
+              className="ps-add-below__btn"
+              title="Add section"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.parent.postMessage({ type: "DUPLICATE_SECTION", sectionType: type }, "*");
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </div>
