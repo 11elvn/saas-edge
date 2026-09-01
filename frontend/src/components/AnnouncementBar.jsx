@@ -8,39 +8,41 @@
 // ✦ الإصلاحات مقارنة بالنسخة القديمة:
 //   1) فحص "enabled" موحّد فـ الكل (قبل: PublicStore وحدها كانت
 //      كتخبّي البار إذا "enabled" ماكانش معرّف/undefined، بينما
-//      باقي الصفحات كانو يبانو — نفس الستور كان يبان فـ صفحة
-//      ويختفي فـ الأخرى بلا سبب واضح).
-//   2) زر الإغلاق (✕) ماكانش كاين خالص فـ ProductDetails.jsx —
-//      دابا كاين فـ الكل.
+//      باقي الصفحات كانو يبانو).
+//   2) زر الإغلاق (✕) ماكانش كاين خالص فـ ProductDetails.jsx.
 //   3) الإغلاق كان كيبدّل style.display مباشرة على الـ DOM (بلا
-//      React state) — كل صفحة بروحها، فما كانش "تذكّر" الإغلاق
-//      كي تتبدّل الصفحة (البار كان يولي يبان من جديد) — دابا
-//      كنستعملو sessionStorage (مفتاح خاص بكل متجر) باش الإغلاق
-//      يبقى محترم فـ كل صفحات نفس المتجر خلال نفس الجلسة.
-//   4) سرعة الـ marquee كانت ثابتة 18s بغض النظر عن طول الرسالة —
-//      رسالة قصيرة كتلوّح بسرعة زايدة، رسالة طويلة كتبان بطيئة/
-//      متقطعة. دابا المدة كتتحسب حسب عرض المحتوى الحقيقي (px)
-//      باش السرعة البصرية (px/ثانية) تبقى ثابتة ديما.
-//   5) "GAP" فالدورة (النص يختفي من اليسار ويوقف شوية قبل ما
-//      يدخل من اليمين) — كان سببها عدد تكرارات ثابت (6) ماكانش
-//      ديما كافي باش يغطي عرض الحاوية. دابا كنقيسو عرض الحاوية
-//      وعرض عنصر وحد بالـ JS (ResizeObserver) ونحسبو عدد
-//      التكرارات ديناميكيًا باش كل "نص" (half) ديال التراك يغطي
-//      عرض الحاوية بالكامل — بهاد الطريقة الدورة كتبقى سلسة 100%
-//      بلا أي فراغ، بغض النظر عن طول الرسالة أو عرض الشاشة، وكتتأقلم
-//      أوتوماتيكيًا إذا تبدّل حجم النافذة.
-//   6) position:relative كانت ناقصة فـ ProductDetails (كانت
-//      كتخلي زر الإغلاق يتموقع غلط إذا تفعّل).
-//   7) preview mode (جوّة محرر الثيم) ما كيستعملش sessionStorage
-//      باش الإغلاق ديال التاجر وهو كيجرّب ما يأثرش على الجلسة
-//      الحقيقية ديال الزبون (نفس origin أحيانا).
+//      React state) — دابا sessionStorage (مفتاح خاص بكل متجر)
+//      باش الإغلاق يبقى محترم فـ كل صفحات نفس المتجر خلال الجلسة.
+//   4) سرعة الـ marquee كانت ثابتة 18s بغض النظر عن طول الرسالة.
+//   5) "GAP" فالدورة (النص يختفي من اليسار ويوقف شوية قبل ما يدخل
+//      من اليمين) — هذا هو الإصلاح المهم، بالتفصيل تحت.
+//   6) position:relative كانت ناقصة فـ ProductDetails.
+//   7) preview mode ما كيستعملش sessionStorage.
+//
+// ✦✦ الحل النهائي ديال الـ GAP (نقطة 5) ✦✦
+//    المحاولة السابقة كانت كتقيس عدد التكرارات "المناسب" بالـ JS —
+//    هادشي فيه مشكل: القياس async (ResizeObserver) وممكن يبان فراغ
+//    وقت ما القياس مازال ماوصلش، خصوصا جوّة iframe المحرر.
+//
+//    الحل الاحترافي (نفس اللي كتستعملو Shopify/متاجر كبار):
+//    عوض ما نحسبو "شحال من نسخة خاصنا"، كنبنيو مجموعتين (Group A / B)
+//    مطابقتين تمامًا (نفس المحتوى بالضبط)، وكل مجموعة كنفرضو عليها
+//    بالـ CSS مباشرة (min-width بالبيكسل الحقيقي ديال الحاوية):
+//      عرض المجموعة >= عرض الحاوية (الشريط) ديما.
+//    هكذا رياضيًا: نصف الشريط (Group A) دايما يغطي الشاشة بالكامل،
+//    ونصو الثاني (Group B) نفس الشيء — فكي الأنيميشن يوصل لمنتصف
+//    الشريط (translateX(-50%))، اللي كيبان هو بالضبط نفس اللي كان
+//    باين فالبداية (Group B بدل Group A) — بلا أي إطار واحد فيه فراغ.
+//    القياس هنا يستعمل غير عرض الحاوية (رقم وحد، ثابت وسهل)، ماشي
+//    عرض كل عنصر — أبسط وأقل عرضة للأخطاء.
 // ============================================================
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const CLOSE_KEY_PREFIX = "ann-bar-closed:";
-const GAP_PX = 64;          // المسافة بين كل تكرار (marginInlineEnd)
-const SPEED_PX_PER_SEC = 55; // سرعة ثابتة (px/ثانية) — كل الرسائل كتلوّح بنفس الإحساس بالسرعة
+const GAP_PX = 48;              // المسافة بين كل تكرار جوّة نفس المجموعة
+const ITEMS_PER_GROUP = 6;      // تكرار كثيف جوّة كل مجموعة (شكل احترافي متلاصق)
+const SPEED_PX_PER_SEC = 55;    // سرعة ثابتة (px/ثانية) — كل الرسائل بنفس الإحساس بالسرعة
 
 /**
  * @param {object}  props
@@ -59,31 +61,24 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
     } catch (_) { /* sessionStorage قد يكون محظور (private mode) — نتجاهلو بهدوء */ }
   }, [slug, isPreview]);
 
-  const message    = settings?.message;
+  const message     = settings?.message;
   const showMarquee = !!settings?.animation && !!message;
 
-  // ── قياس عرض الحاوية + عرض عنصر وحد باش نحسبو عدد التكرارات الكافي ──
+  // ── قياس عرض الحاوية فقط (رقم وحد بسيط) — هذا كافي باش نضمنو
+  //    أن كل مجموعة (Group) تغطي الشاشة بالكامل، بلا حاجة نقيسو
+  //    عرض كل عنصر بوحدو (كان مصدر مشاكل فالمحاولة السابقة) ──
   const containerRef = useRef(null);
-  const itemRef       = useRef(null);
   const [containerW, setContainerW] = useState(0);
-  const [itemW, setItemW]           = useState(0);
 
   useEffect(() => {
     if (!showMarquee || !containerRef.current) return;
     const el = containerRef.current;
-    const ro = new ResizeObserver(entries => {
-      const w = entries[0]?.contentRect?.width;
-      if (w) setContainerW(w);
-    });
+    const measure = () => setContainerW(el.getBoundingClientRect().width || 0);
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setContainerW(el.offsetWidth || 0);
     return () => ro.disconnect();
   }, [showMarquee]);
-
-  useLayoutEffect(() => {
-    if (!showMarquee || !itemRef.current) return;
-    setItemW(itemRef.current.offsetWidth || 0);
-  }, [showMarquee, message]);
 
   if (!settings || closed || !message) return null;
 
@@ -96,20 +91,29 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
     }
   };
 
-  // ── عدد التكرارات لكل "نص" (half) ديال التراك — خاصو يغطي عرض الحاوية
-  //    بالكامل + هامش أمان، حتى ما يبانش أي فراغ فوقت الدورة. قبل ما توصل
-  //    القياسات الحقيقية (أول رندر)، نستعملو fallback كبير (12) باش
-  //    البار يبان مليان مباشرة بلا وميض ("flash of gap") ──
-  const singleItemWidth = itemW > 0 ? itemW + GAP_PX : 0;
-  const itemsPerHalf = singleItemWidth > 0 && containerW > 0
-    ? Math.max(2, Math.ceil(containerW / singleItemWidth) + 1)
-    : 12;
-  const REPEAT_COUNT = itemsPerHalf * 2;
+  // ── مدة الدورة تتناسب مع عرض الحاوية (المسافة الحقيقية اللي كيقطعها
+  //    نص الشريط) ÷ سرعة ثابتة، باش الإحساس بالسرعة يبقى نفسه ديما ──
+  const groupWidthPx = containerW > 0 ? containerW : 600; // fallback معقول قبل القياس
+  const duration = Math.min(60, Math.max(8, groupWidthPx / SPEED_PX_PER_SEC));
 
-  // ── مدة الدورة = مسافة "نص" وحد (itemsPerHalf عنصر) ÷ سرعة ثابتة px/s —
-  //    هكذا كل الرسائل (طويلة/قصيرة) كتلوّح بنفس الإحساس بالسرعة ديما ──
-  const halfWidthPx = singleItemWidth > 0 ? singleItemWidth * itemsPerHalf : (message.length || 1) * 9 * itemsPerHalf;
-  const duration = Math.min(60, Math.max(8, halfWidthPx / SPEED_PX_PER_SEC));
+  // ── مجموعة وحدة = تكرار كثيف ديال الرسالة، و min-width تفرض عليها
+  //    تغطي عرض الحاوية بالكامل حتى لو الرسالة قصيرة — هذا بالضبط
+  //    اللي كيمنع الـ "gap" ✦ ──
+  const renderGroup = (groupKey) => (
+    <div
+      key={groupKey}
+      style={{
+        display: "flex", flexShrink: 0, alignItems: "center",
+        minWidth: containerW > 0 ? `${containerW}px` : "100%",
+      }}
+    >
+      {[...Array(ITEMS_PER_GROUP)].map((_, i) => (
+        <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: GAP_PX }}>
+          {message}
+        </span>
+      ))}
+    </div>
+  );
 
   return (
     <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
@@ -117,27 +121,13 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
         <div ref={containerRef} style={{ width: "100%", overflow: "hidden" }}>
           <div
             className="ann-bar-marquee-track"
-            style={{
-              display: "flex", width: "max-content",
-              animationDuration: `${duration}s`,
-              // ✦ نخبّيو التراك بصريًا لحد ما نقيسو الأبعاد الحقيقية (itemW/containerW)
-              //   باش ما يبانش "gap" فـ أول رندر قبل ما يتصحح عدد التكرارات
-              visibility: itemW > 0 ? "visible" : "hidden",
-            }}
+            style={{ display: "flex", width: "max-content", animationDuration: `${duration}s` }}
           >
-            {/* ✦ مسافة على كل عنصر بوحدو (marginInlineEnd) بدل gap على الـ container —
-                باش كل عنصر يحسب مساحته كاملة (النص + المسافة)، وتحريك -50% يبقى مضبوط 100% بلا أي قفزة.
-                عدد التكرارات (REPEAT_COUNT) محسوب ديناميكيًا باش كل "نص" من التراك يغطي عرض
-                الحاوية بالكامل — هذا هو اللي كيمنع الفراغ/التوقف فالدورة */}
-            {[...Array(REPEAT_COUNT)].map((_, i) => (
-              <span
-                key={i}
-                ref={i === 0 ? itemRef : null}
-                style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: GAP_PX }}
-              >
-                {message}
-              </span>
-            ))}
+            {/* ✦ مجموعتين مطابقتين تمامًا — كل وحدة عرضها الأقل = عرض الحاوية
+                (min-width بالبيكسل الحقيقي)، فالأنيميشن (-50%) كيبدّل من
+                مجموعة للأخرى بلا أي فراغ ممكن يبان بينهم ✦ */}
+            {renderGroup("a")}
+            {renderGroup("b")}
           </div>
         </div>
       ) : (
