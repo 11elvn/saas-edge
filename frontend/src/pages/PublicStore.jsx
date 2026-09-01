@@ -1136,8 +1136,8 @@ function PublicStore() {
                         alignItems: "center", justifyContent: "center", overflow: "hidden",
                         background: `linear-gradient(135deg, color-mix(in srgb, ${primary} 65%, white), ${primary})`,
                       }}>
-                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <div style={{ width: 68, height: 68, borderRadius: "50%", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
                           </svg>
                         </div>
