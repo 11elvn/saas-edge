@@ -1301,21 +1301,21 @@ const CSS = `
 .pb-no-selection__icon { font-size: 2.6rem; opacity:.35; }
 .pb-no-selection__text { font-size: .83rem; line-height: 1.6; max-width: 190px; }
 
-/* Tabs — segmented pill control */
+/* Tabs — sliding accent pill */
 .pb-tabs {
-  display:flex; gap:4px;
-  padding: 12px; margin: 0 2px;
-  background: #ffffff;
-  border-radius: 12px;
+  display:flex; gap:3px;
+  padding: 4px; margin: 10px 10px 4px;
+  background: #f1eefd;
+  border-radius: 10px;
 }
 .pb-tab {
   flex: 1;
   padding: 9px 14px; font-size: .82rem; font-weight: 600;
-  color: #64748b; border: none; background: none; cursor: pointer;
-  font-family: inherit; border-radius: 9px;
+  color: #6b7280; border: none; background: none; cursor: pointer;
+  font-family: inherit; border-radius: 8px;
   transition: all .18s;
 }
-.pb-tab--active { background: #fff; color: #5b3fd6; font-weight: 700; box-shadow: 0 2px 8px rgba(15,23,42,.1); }
+.pb-tab--active { background: #7c6df2; color: #fff; font-weight: 700; }
 
 /* ── TOAST ── */
 .pb-toast {
