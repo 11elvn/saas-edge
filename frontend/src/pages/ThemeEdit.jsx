@@ -1362,8 +1362,8 @@ const CSS = `
 .pb-font-btn:hover   { border-color: rgba(124,109,242,.3); }
 .pb-font-btn--active {
   border-color: transparent;
-  background: linear-gradient(135deg,#8b7cf6,#6c4fe0); color: #fff;
-  box-shadow: 0 6px 16px rgba(108,79,224,.3);
+  background: #7c6df2; color: #fff;
+  box-shadow: none;
 }
 
 /* ── COLLAPSIBLE GROUP (accordion) — لصفحة Product settings ── */
