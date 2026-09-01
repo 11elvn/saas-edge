@@ -4173,22 +4173,24 @@ function ThemeEdit() {
           />
         </div>
 
-        {/* ── Collapse toggle: Right panel ── */}
-        <button
-          className="pb-collapse-btn"
-          style={{ right: collapsedRight ? 8 : PANEL_W - 13 }}
-          onClick={() => setCollapsedRight(v => !v)}
-          title={collapsedRight ? "Show settings" : "Hide settings"}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            {collapsedRight
-              ? <polyline points="15 6 9 12 15 18" />
-              : <polyline points="9 6 15 12 9 18" />}
-          </svg>
-        </button>
+        {/* ── Collapse toggle: Right panel (فقط كاين إلا كاين section مختار) ── */}
+        {activeSectionObj && (
+          <button
+            className="pb-collapse-btn"
+            style={{ right: collapsedRight ? 8 : PANEL_W - 13 }}
+            onClick={() => setCollapsedRight(v => !v)}
+            title={collapsedRight ? "Show settings" : "Hide settings"}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              {collapsedRight
+                ? <polyline points="15 6 9 12 15 18" />
+                : <polyline points="9 6 15 12 9 18" />}
+            </svg>
+          </button>
+        )}
 
-        {/* ── RIGHT: Section Settings ── */}
-        {activeSectionObj ? (
+        {/* ── RIGHT: Section Settings (كايختفي بالكامل إلا ماكاين حتى section مختار) ── */}
+        {activeSectionObj && (
           <SectionSettingsPanel
             section={activeSectionObj}
             store={store}
@@ -4210,15 +4212,6 @@ function ThemeEdit() {
             collapsed={collapsedRight}
             isMobile={isMobile}
           />
-        ) : (
-          <div className="pb-right" style={{ width: collapsedRight ? 0 : PANEL_W }}>
-            <div className="pb-no-selection">
-              <div className="pb-no-selection__icon">👈</div>
-              <div className="pb-no-selection__text">
-                Choose a section from the list on the left to edit its settings
-              </div>
-            </div>
-          </div>
         )}
 
       </div>
