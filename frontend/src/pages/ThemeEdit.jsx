@@ -3537,32 +3537,6 @@ function ThemeEdit() {
     return () => window.removeEventListener("message", handler);
   }, [themeConfig, currentPage]);
 
-  // ✦ استقبال طلب "تكرار section" من زر + فالـ preview (DUPLICATE_SECTION) —
-  // كينسخ نفس الـ section بحذافيرها (settings كاملة) ويدخلها مباشرة تحتها
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.data?.type !== "DUPLICATE_SECTION") return;
-      const sectionType = e.data.sectionType;
-      const key = PAGE_SECTIONS_KEY[currentPage] || "sections";
-      const isHome = key === "sections";
-      setThemeConfig(prev => {
-        const currentArr = (isHome ? prev.sections : prev[key]?.sections) || [];
-        const idx = currentArr.findIndex(s => s.type === sectionType);
-        if (idx === -1) return prev;
-        const original = currentArr[idx];
-        // ✦ ماكاين فقيد للـ section المزدوجة (لا Header/Footer/Announcement تقدر تتكرر) —
-        // هوما ماعندهمش زر + أصلا (مستثنيين من الـ preview نفسها)
-        if (getSectionMeta(original.type, original.id).fixed) return prev;
-        const clone = { ...original, id: `${original.type}-${Date.now()}` };
-        const newArr = [...currentArr.slice(0, idx + 1), clone, ...currentArr.slice(idx + 1)];
-        return isHome ? { ...prev, sections: newArr } : { ...prev, [key]: { ...prev[key], sections: newArr } };
-      });
-      setIsDirty(true);
-    };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, [currentPage]);
-
   // ── Update section settings ──────────────────────────────
   const updateSectionSettings = useCallback((id, newSettings) => {
     setThemeConfig(prev => ({
