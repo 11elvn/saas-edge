@@ -264,9 +264,7 @@ function GallerySlot({ src, index, className = "", style = {}, primary = "#2563e
       background: "#f1f2f4",
     }}>
       <div style={{ width: 68, height: 68, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
-        </svg>
+        <span style={{ color: "#fff", fontWeight: 800, fontSize: 26, fontFamily: "'Inter', sans-serif" }}>{index + 1}</span>
       </div>
     </div>
   );
