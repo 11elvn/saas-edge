@@ -953,7 +953,7 @@ function PublicStore() {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 34px rgba(0,0,0,.14)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.08)"; }}
               >
-                {/* Background image (fills the whole card) — أو placeholder أنيق (❓) كي ماكايناش صورة */}
+                {/* Background image (fills the whole card) — أو كتلة لونية بلون المتجر كي ماكايناش صورة */}
                 {cat.image ? (
                   <img
                     src={cat.image} alt={cat.name}
@@ -962,20 +962,17 @@ function PublicStore() {
                     onMouseLeave={e => e.target.style.transform = "scale(1)"}
                   />
                 ) : (
-                  <div style={{
-                    position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "linear-gradient(160deg,#3a3f47,#1c1f24)",
-                  }}>
-                    <div style={{
-                      width: 56, height: 56, borderRadius: 12,
-                      border: "2px solid rgba(255,255,255,.28)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,.55)",
-                    }}>؟</div>
+                  <div style={{ position: "absolute", inset: 0, background: primary, overflow: "hidden" }}>
+                    <svg width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5"
+                      style={{ position: "absolute", top: -18, insetInlineEnd: -18, opacity: .16 }}>
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
                   </div>
                 )}
-                {/* Bottom gradient for text readability */}
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "62%", background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))" }} />
+                {/* Bottom gradient for text readability — غير كي كاينة صورة حقيقية */}
+                {cat.image && (
+                  <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "62%", background: "linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0))" }} />
+                )}
                 {/* Overlaid title + link */}
                 <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "16px" }}>
                   <div style={{ fontWeight: 800, fontSize: 17, color: "#fff", marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,.3)" }}>{cat.name}</div>
