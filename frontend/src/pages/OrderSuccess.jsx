@@ -380,19 +380,18 @@ function OrderSuccess() {
                 border: `1px solid ${borderColor}`, borderRadius: 14, padding: 14, marginBottom: 20,
               }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 10, background: "#f1f2f4", flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 10, flexShrink: 0,
                   backgroundImage: orderData.productImage ? `url(${orderData.productImage})` : undefined,
                   backgroundSize: "cover", backgroundPosition: "center",
+                  background: orderData.productImage ? undefined : primary,
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   {!orderData.productImage && (
-                    <div style={{ width: 34, height: 34, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <path d="M21 15l-5-5L5 21" />
-                      </svg>
-                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
