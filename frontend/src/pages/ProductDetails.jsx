@@ -245,7 +245,7 @@ function FieldLabel({ text, required, optionalLabel, color }) {
   );
 }
 
-function GallerySlot({ src, index, className = "", style = {}, primary = "#2563eb" }) {
+function GallerySlot({ src, index, className = "", style = {}, primary = "#2563eb", compact = false }) {
   const [failed, setFailed] = useState(false);
   if (src && !failed) {
     return (
@@ -257,14 +257,16 @@ function GallerySlot({ src, index, className = "", style = {}, primary = "#2563e
       />
     );
   }
+  const circleSize = compact ? 30 : 68;
+  const fontSize   = compact ? 12 : 26;
   return (
     <div style={{
       width: "100%", height: "100%", position: "relative", overflow: "hidden",
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "#f1f2f4",
     }}>
-      <div style={{ width: 68, height: 68, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ color: "#fff", fontWeight: 800, fontSize: 26, fontFamily: "'Inter', sans-serif" }}>{index + 1}</span>
+      <div style={{ width: circleSize, height: circleSize, borderRadius: "50%", background: primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ color: "#fff", fontWeight: 800, fontSize, fontFamily: "'Inter', sans-serif" }}>{index + 1}</span>
       </div>
     </div>
   );
@@ -665,7 +667,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb pd-thumb-carousel ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 68, height: 68 }}>
-                      <GallerySlot src={img} index={i} primary={primary} />
+                      <GallerySlot src={img} index={i} primary={primary} compact />
                     </div>
                   ))}
                 </div>
@@ -689,7 +691,7 @@ function ProductDetails() {
                 >
                   {images.map((img, i) => (
                     <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)} style={{ width: 70, height: 70 }}>
-                      <GallerySlot src={img} index={i} primary={primary} />
+                      <GallerySlot src={img} index={i} primary={primary} compact />
                     </div>
                   ))}
                 </div>
