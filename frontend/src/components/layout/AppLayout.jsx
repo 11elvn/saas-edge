@@ -26,8 +26,13 @@ function AppLayout({ children, title, flush = false }) {
     fetch(`${import.meta.env.VITE_API_URL}/api/stores/my-store`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((r) => r.json())
-      .then((d) => { if (d.store) setStore(d.store); })
+      .then((r) => {
+        // ✦ إصلاح: التوكن كي يخلص (401)، الداشبورد كان يبقى فارغ بلا ما
+        // المستخدم يفهم علاش — دابا كنمسحو التوكن ونرجعوه للـ login مباشرة
+        if (r.status === 401) { localStorage.removeItem("token"); navigate("/login"); return null; }
+        return r.json();
+      })
+      .then((d) => { if (d?.store) setStore(d.store); })
       .catch(console.error);
   }, []);
 
@@ -52,6 +57,9 @@ function AppLayout({ children, title, flush = false }) {
       const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // ✦ إصلاح: نفس معالجة انتهاء التوكن هنا زادة — الـ polling كان غير كيسكت
+      // ويوقف بلا ما يوري حتى إشارة للمستخدم
+      if (res.status === 401) { localStorage.removeItem("token"); navigate("/login"); return; }
       if (!res.ok) return;
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) return;

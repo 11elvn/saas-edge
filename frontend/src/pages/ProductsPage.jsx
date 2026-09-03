@@ -531,7 +531,8 @@ export default function ProductsPage() {
         body: JSON.stringify({
           name, description: desc,
           currentPrice: Number(price), oldPrice: Number(oldPrice) || undefined,
-          stock: Number(stock) || 10,
+          // ✦ إصلاح: `Number(stock) || 10` كان كيبدل stock:0 بـ 10 تلقائياً (0 falsy)
+          stock: stock === "" || stock === null || stock === undefined ? 10 : Number(stock),
           image, categoryId: catId || null,
           colors: colors || [], sizes: sizes || [],
         }),

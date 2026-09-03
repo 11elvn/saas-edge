@@ -5,6 +5,7 @@ const Order   = require("../models/Order");
 const Product = require("../models/Product");
 const Store   = require("../models/Store");
 const auth    = require("../middleware/auth");
+const { getShippingPrice } = require("../constants/algerianCities");
 
 // ✦ regex للتحقق من رقم هاتف جزائري
 const ALGERIAN_PHONE_REGEX = /^0[5-7][0-9]{8}$/;
@@ -17,14 +18,19 @@ router.post("/create", async (req, res) => {
     const {
       productId,       // ✦ الشراء المباشر (منتج واحد) — بقات كيما هي، ما تبدلتش
       quantity,
-      items,           // ✦ جديد — سلة بعدة منتجات: [{ productId, quantity }]
+      color,           // ✦ اللون المختار — للشراء المباشر (منتج واحد) فقط
+      size,            // ✦ المقاس المختار — للشراء المباشر (منتج واحد) فقط
+      items,           // ✦ جديد — سلة بعدة منتجات: [{ productId, quantity, color, size }]
       customerName,
       phone,
       address,
       municipality,
       note,
+      // ✦ shippingPrice ماعادش كيتقرا من req.body — كنحسبوه سيرفر-سايد ديما من
+      // shippingCity (شوف تحت). كان قبل أي حد يقدر يبعت shippingPrice: 0 أو حتى
+      // رقم سالب مباشرة للـ API ويلاعب فـ totalPrice (نفس المشكل اللي تصلح
+      // قبل مع أسعار المنتجات — دابا التوصيل زادة محسوب من مصدر موثوق).
       shippingCity,
-      shippingPrice,
       // ✦ totalPrice ماعادش كيتقرا من req.body — كنحسبوه سيرفر-سايد ديما (شوف تحت).
       // كان قبل التاجر/الزبون يقدر يبعت أي رقم من الفرونت ويتقبل كيف هو (تلاعب بالسعر).
     } = req.body;
@@ -32,6 +38,12 @@ router.post("/create", async (req, res) => {
     // ✦ التحقق من الحقول الإجبارية
     if (!customerName || !phone || !shippingCity) {
       return res.status(400).json({ message: "جميع الحقول الإجبارية مطلوبة ❌" });
+    }
+
+    // ✦ سعر التوصيل الحقيقي — من جدول الولايات على السيرفر، ماشي من الفرونت
+    const resolvedShippingPrice = getShippingPrice(shippingCity);
+    if (resolvedShippingPrice === null) {
+      return res.status(400).json({ message: "الولاية المختارة غير صحيحة ❌" });
     }
 
     // ✦ التحقق من رقم الهاتف الجزائري
@@ -45,7 +57,7 @@ router.post("/create", async (req, res) => {
     // ✦ نبنيو لائحة عناصر موحدة — سواء جات من "items" (سلة) ولا productId مفرد (شراء مباشر)
     const rawItems = Array.isArray(items) && items.length
       ? items
-      : (productId ? [{ productId, quantity: quantity || 1 }] : []);
+      : (productId ? [{ productId, quantity: quantity || 1, color, size }] : []);
 
     if (!rawItems.length) {
       return res.status(400).json({ message: "لا توجد منتجات في الطلب ❌" });
@@ -96,12 +108,14 @@ router.post("/create", async (req, res) => {
         image:     product.images?.[0] || product.image || "",
         price:     product.currentPrice,
         quantity:  qty,
+        color:     it.color || null,
+        size:      it.size  || null,
       });
     }
 
     // ✦ السعر الإجمالي كيتحسب هنا برك، من أسعار المنتجات الحقيقية فالداتابيز — ماشي من رقم جاي من الفرونت
     const itemsTotal = builtItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
-    const finalShippingPrice = Number(shippingPrice) || 0;
+    const finalShippingPrice = resolvedShippingPrice;
     const computedTotal = itemsTotal + finalShippingPrice;
 
     // ✦ إنشاء الطلب — items هو المصدر الأساسي، productId/quantity كيتولدو من أول عنصر للتوافق القديم

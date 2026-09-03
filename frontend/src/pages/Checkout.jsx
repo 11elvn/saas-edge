@@ -382,10 +382,13 @@ function Checkout() {
     if (!items.length) { setErrorMsg("السلة فارغة ⚠️"); return; }
 
     const provinceOn = fieldCfg("province").enabled !== false;
+    const municipalityOn = fieldCfg("municipality").enabled !== false;
     if (
       (fieldCfg("fullName").enabled !== false && !customerName.trim()) ||
       (fieldCfg("phone").enabled !== false && !phone.trim()) ||
-      (provinceOn && fieldCfg("province").required !== false && !selectedCity)
+      (provinceOn && fieldCfg("province").required !== false && !selectedCity) ||
+      // ✦ إصلاح: البلدية كانت "required" فالإعدادات بلا ما تكون validated فعلا هنا
+      (municipalityOn && fieldCfg("municipality").required !== false && !municipality.trim())
     ) {
       setErrorMsg("يرجى ملء جميع الحقول الإجبارية ⚠️"); return;
     }
@@ -401,7 +404,7 @@ function Checkout() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map(it => ({ productId: it.productId, quantity: it.quantity })),
+          items: items.map(it => ({ productId: it.productId, quantity: it.quantity, color: it.color || null, size: it.size || null })),
           customerName,
           phone: cleanPhone,
           address,

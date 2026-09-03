@@ -289,6 +289,22 @@ function ProductDetails() {
   const [quantity,     setQuantity]     = useState(1);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize,  setSelectedSize]  = useState(null);
+  const [variantError,  setVariantError]  = useState("");
+
+  // ✦ إذا المنتج فيه ألوان/مقاسات، لازم الزبون يختار قبل ما يزيد للسلة أو يطلب —
+  // بلا هادشي كان الطلب يوصل للتاجر بلا ما يعرف شنو بغى الزبون بالضبط
+  const validateVariantSelected = () => {
+    if (product?.colors?.length > 0 && !selectedColor) {
+      setVariantError("⚠️ اختر اللون أولاً");
+      return false;
+    }
+    if (product?.sizes?.length > 0 && !selectedSize) {
+      setVariantError("⚠️ اختر المقاس أولاً");
+      return false;
+    }
+    setVariantError("");
+    return true;
+  };
 
   // ── السلة (Cart) ──────────────────────────────────────────
   const { addToCart, getCartCount } = useCart();
@@ -478,8 +494,15 @@ function ProductDetails() {
   const scrollToCheckout = () => checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const handleOrder = async () => {
+    if (!validateVariantSelected()) { checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     const provinceOn = fieldCfg("province").enabled !== false;
-    if (!customerName.trim() || !phone.trim() || (provinceOn && fieldCfg("province").required !== false && !selectedCity)) {
+    const municipalityOn = fieldCfg("municipality").enabled !== false;
+    if (
+      !customerName.trim() || !phone.trim() ||
+      (provinceOn && fieldCfg("province").required !== false && !selectedCity) ||
+      // ✦ إصلاح: البلدية كانت "required" فالإعدادات بلا ما تكون validated فعلا هنا
+      (municipalityOn && fieldCfg("municipality").required !== false && !municipality.trim())
+    ) {
       alert("يرجى ملء جميع الحقول الإجبارية ⚠️"); return;
     }
     const phoneRegex = /^0[5-7][0-9]{8}$/;
@@ -500,6 +523,8 @@ function ProductDetails() {
           municipality,
           note,
           quantity,
+          color: selectedColor || null,
+          size:  selectedSize  || null,
           shippingCity: selectedCity || "غير محدد",
           shippingPrice,
           totalPrice: total,
@@ -912,10 +937,14 @@ function ProductDetails() {
                 >
                   {outOfStock ? "نفد من المخزون" : (productInfoSettings.ctaButtonText || "اطلب الآن")}
                 </button>
+                {variantError && (
+                  <p style={{ margin: "-2px 0 0", fontSize: 12.5, fontWeight: 700, color: "#ef4444", textAlign: "center" }}>{variantError}</p>
+                )}
                 {productInfoSettings.showAddToCartButton !== false && !outOfStock && (
                   <button
                     onClick={() => {
-                      addToCart(slug, product, quantity);
+                      if (!validateVariantSelected()) return;
+                      addToCart(slug, product, quantity, { color: selectedColor, size: selectedSize });
                       setAddedToCart(true);
                       setTimeout(() => setAddedToCart(false), 1800);
                     }}

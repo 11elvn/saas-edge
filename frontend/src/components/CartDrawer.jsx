@@ -67,18 +67,21 @@ export default function CartDrawer({
     ? demoState.reduce((sum, it) => sum + it.quantity * it.price, 0)
     : getCartTotal(slug);
 
-  const handleQty = (productId, nextQty) => {
+  // ✦ نخدمو بـ cartItemId (productId+color+size) ماشي productId وحدو — باش سطرين
+  // ديال نفس المنتج بلونين مختلفين ما يتخلطوش مع بعض
+  const itemKey = (it) => it.cartItemId || it.productId;
+  const handleQty = (cartItemId, nextQty) => {
     if (usingDemo) {
       setDemoState(prev => nextQty <= 0
-        ? prev.filter(it => it.productId !== productId)
-        : prev.map(it => it.productId === productId ? { ...it, quantity: Math.min(nextQty, it.stock ?? 99) } : it));
+        ? prev.filter(it => itemKey(it) !== cartItemId)
+        : prev.map(it => itemKey(it) === cartItemId ? { ...it, quantity: Math.min(nextQty, it.stock ?? 99) } : it));
     } else {
-      updateQuantity(slug, productId, nextQty);
+      updateQuantity(slug, cartItemId, nextQty);
     }
   };
-  const handleRemove = (productId) => {
-    if (usingDemo) setDemoState(prev => prev.filter(it => it.productId !== productId));
-    else removeFromCart(slug, productId);
+  const handleRemove = (cartItemId) => {
+    if (usingDemo) setDemoState(prev => prev.filter(it => itemKey(it) !== cartItemId));
+    else removeFromCart(slug, cartItemId);
   };
 
   if (!open) return null;
@@ -139,7 +142,7 @@ export default function CartDrawer({
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {items.map(item => (
-                <div key={item.productId} style={{
+                <div key={itemKey(item)} style={{
                   display: "flex", alignItems: "center", gap: 11,
                   background: surfaceColor, borderRadius: 14, padding: 9,
                   border: `1px solid ${borderColor}`,
@@ -170,6 +173,11 @@ export default function CartDrawer({
                     }}>
                       {item.name}
                     </span>
+                    {(item.color || item.size) && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: mutedTextColor }}>
+                        {[item.color, item.size].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <span style={{ fontSize: 12.5, fontWeight: 700, color: primary, whiteSpace: "nowrap" }}>
                         {item.price.toLocaleString()} <span style={{ fontSize: 10.5, fontWeight: 600, color: mutedTextColor }}>د.ج</span>
@@ -181,13 +189,13 @@ export default function CartDrawer({
                         background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 10, padding: "3px 8px",
                       }}>
                         <button
-                          onClick={() => handleQty(item.productId, item.quantity - 1)}
+                          onClick={() => handleQty(itemKey(item), item.quantity - 1)}
                           className="cd-step-btn"
                           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, color: mutedTextColor, borderRadius: 6 }}
                         ><IconMinus /></button>
                         <span style={{ fontSize: 11.5, fontWeight: 800, color: textColor, minWidth: 16, textAlign: "center" }}>{item.quantity}</span>
                         <button
-                          onClick={() => handleQty(item.productId, item.quantity + 1)}
+                          onClick={() => handleQty(itemKey(item), item.quantity + 1)}
                           disabled={item.quantity >= (item.stock ?? 99)}
                           className="cd-step-btn"
                           style={{
@@ -203,7 +211,7 @@ export default function CartDrawer({
 
                   {/* حذف */}
                   <button
-                    onClick={() => handleRemove(item.productId)}
+                    onClick={() => handleRemove(itemKey(item))}
                     className="cd-remove-btn"
                     style={{ background: "none", border: "none", cursor: "pointer", color: mutedTextColor, padding: 6, flexShrink: 0, borderRadius: 8 }}
                   >

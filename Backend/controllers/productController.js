@@ -4,6 +4,9 @@ const Product =
 const Store =
   require("../models/Store");
 
+const Category =
+  require("../models/Category");
+
 // ======================
 // CREATE PRODUCT
 // ======================
@@ -23,10 +26,16 @@ exports.createProduct =
         sizes,
       } = req.body;
 
+      // ✦ إصلاح: `!currentPrice` كان كيرفض السعر 0 (منتج مجاني) حيت 0 falsy —
+      // دابا كنتحققو من undefined/null/"" برك
       if (
         !name ||
         !description ||
-        !currentPrice
+        currentPrice === undefined ||
+        currentPrice === null ||
+        currentPrice === "" ||
+        isNaN(Number(currentPrice)) ||
+        Number(currentPrice) < 0
       ) {
         return res
           .status(400)
@@ -50,6 +59,17 @@ exports.createProduct =
               "Store not found ❌",
           });
 
+      // ✦ إصلاح: كنتحققو إلا categoryId مبعوث فعلا تبع نفس المتجر — بلا هادشي
+      // التاجر كان يقدر (بقصد ولا بالغلط) يربط منتجو بقسم تبع متجر آخر
+      if (categoryId) {
+        const categoryDoc = await Category.findById(categoryId);
+        if (!categoryDoc || categoryDoc.storeId.toString() !== store._id.toString()) {
+          return res
+            .status(400)
+            .json({ message: "القسم المختار غير صالح ❌" });
+        }
+      }
+
       const product =
         new Product({
           name,
@@ -63,8 +83,11 @@ exports.createProduct =
             "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400",
           images:
             images || [],
+          // ✦ إصلاح: stock كان `stock || 10` — هادشي كان كيبدل stock:0 (منتج نافد
+          // عمداً) بـ 10 تلقائياً حيت 0 falsy فجافاسكريبت. دابا كنتحققو من
+          // undefined/null/"" برك، ونخلو 0 كيف هي.
           stock:
-            stock || 10,
+            (stock === undefined || stock === null || stock === "") ? 10 : Number(stock),
           categoryId:
             categoryId ||
             null,
@@ -201,6 +224,17 @@ exports.updateProduct =
         name, description, currentPrice, oldPrice,
         image, images, stock, categoryId, colors, sizes,
       } = req.body;
+
+      // ✦ نفس التحقق ديال createProduct — categoryId لازم يكون تبع نفس المتجر
+      if (categoryId) {
+        const categoryDoc = await Category.findById(categoryId);
+        if (!categoryDoc || categoryDoc.storeId.toString() !== store._id.toString()) {
+          return res
+            .status(400)
+            .json({ message: "القسم المختار غير صالح ❌" });
+        }
+      }
+
       const allowedUpdates = {
         name, description, currentPrice, oldPrice,
         image, images, stock, categoryId, colors, sizes,

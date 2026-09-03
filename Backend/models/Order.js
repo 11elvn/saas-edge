@@ -8,6 +8,8 @@ const orderItemSchema = new mongoose.Schema({
   image:     { type: String, default: "" },
   price:     { type: Number, required: true }, // سعر الوحدة وقت الطلب
   quantity:  { type: Number, default: 1 },
+  color:     { type: String, default: null }, // ✦ اللون المختار (إذا كان المنتج فيه ألوان)
+  size:      { type: String, default: null }, // ✦ المقاس المختار (إذا كان المنتج فيه مقاسات)
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({

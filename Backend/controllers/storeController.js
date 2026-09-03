@@ -7,12 +7,20 @@ const Product = require("../models/Product");
 exports.createStore = async (req, res) => {
   const { name } = req.body;
   try {
+    // ✦ إصلاح: قبل، إلا name فارغة/undefined كان `.toLowerCase()` كيكسر
+    // مع خطأ 500 عام بلا رسالة واضحة
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: "اسم المتجر مطلوب ❌" });
+    }
+
     const existingStore = await Store.findOne({ owner: req.user.id });
     if (existingStore) return res.status(400).json({ message: "You already have a store" });
 
     const baseSlug   = name.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/\s+/g,"-");
-    const slugExists = await Store.findOne({ slug: baseSlug });
-    const finalSlug  = slugExists ? `${baseSlug}-${Date.now()}` : baseSlug;
+    // ✦ إذا الاسم كان كامل رموز/أحرف غير مدعومة (مثال: بالعربية)، baseSlug يقدر يولي فارغ
+    const safeSlug    = baseSlug || `store-${Date.now()}`;
+    const slugExists = await Store.findOne({ slug: safeSlug });
+    const finalSlug  = slugExists ? `${safeSlug}-${Date.now()}` : safeSlug;
 
     const newStore = new Store({ name, owner: req.user.id, slug: finalSlug });
     await newStore.save();

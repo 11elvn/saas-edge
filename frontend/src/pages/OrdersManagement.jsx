@@ -161,11 +161,26 @@ const OrdersManagement = () => {
                       </span>
                     </td>
 
-                    {/* المنتج */}
-                    <td style={{ padding: "12px 16px", maxWidth: 160 }}>
-                      <span style={{ color: "#374151", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
-                      </span>
+                    {/* المنتج — نعرضو items كاملين (كي تكون سلة بعدة منتجات) مع اللون/المقاس */}
+                    <td style={{ padding: "12px 16px", maxWidth: 220 }}>
+                      {order.items?.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                          {order.items.map((it, idx) => (
+                            <span key={idx} style={{ color: "#374151", fontSize: ".8rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {it.name} <span style={{ color: "#9ca3af" }}>×{it.quantity}</span>
+                              {(it.color || it.size) && (
+                                <span style={{ color: "#6366f1", fontSize: ".7rem", fontWeight: 600 }}>
+                                  {" "}({[it.color, it.size].filter(Boolean).join(" · ")})
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: "#374151", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
+                        </span>
+                      )}
                     </td>
 
                     {/* الولاية */}

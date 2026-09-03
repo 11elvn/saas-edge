@@ -77,6 +77,9 @@ function App() {
         <Route path="/store/:slug/search"                             element={<SearchResults />} />
         <Route path="/store/:slug/checkout"                           element={<Checkout />} />
         <Route path="/store/:slug/order-success"                     element={<OrderSuccess />} />
+
+        {/* ── 404 — أي رابط غير معروف ── */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
     </CartProvider>

@@ -424,7 +424,9 @@ function Dashboard() {
           name, description, currentPrice, oldPrice, image,
           // نحوّل الصور الإضافية من string مفصول بفاصلة إلى array
           images: images ? images.split(",").map(i => i.trim()) : [],
-          stock: Number(stock) || 10, // ✦ يتبعث للباك-أند
+          // ✦ إصلاح: `Number(stock) || 10` كان كيبدل stock:0 بـ 10 تلقائياً (0 falsy).
+          // دابا نتحققو من "" فقط، ونخلو 0 كيف هي (منتج نافد عمداً).
+          stock: stock === "" || stock === null || stock === undefined ? 10 : Number(stock),
           categoryId: selectedCategory || null,
         })
       });
