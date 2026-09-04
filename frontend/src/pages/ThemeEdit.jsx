@@ -3490,11 +3490,8 @@ function ThemeEdit() {
 
           setThemeConfig(cfg);
 
-          // ✦ نجيبو أول منتج فالمتجر باش نعاينو بيه صفحة Product فالـ builder
-          fetch(`${API()}/api/products/store/${d.store._id}`)
-            .then(r => r.json())
-            .then(list => { if (Array.isArray(list) && list.length) setPreviewProductId(list[0]._id); })
-            .catch(() => {});
+          // ✦ معاينة صفحة Product فالـ builder ديمًا بالمنتج التجريبي (demo) — بلوانو ومقاساتو الجاهزين —
+          // ماشي بأول منتج حقيقي فالمتجر (previewProductId يبقى null فيبقى effectiveProductId="demo")
 
           // ✦ نجيبو أول تصنيف فالمتجر باش نعاينو بيه صفحة Category فالـ builder
           fetch(`${API()}/api/categories/public/${d.store._id}`)

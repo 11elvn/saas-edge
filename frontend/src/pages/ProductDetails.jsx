@@ -438,7 +438,7 @@ function ProductDetails() {
     // ✦ منتج تجريبي — بلا API call، نبني منتج + صور تجريبية مباشرة (نفس منطق DEMO_PRODUCTS فـ CategoryProducts)
     if (isDemoProduct) {
       setProduct({
-        _id: "demo-product", name: "منتج تجريبي", description: "هذا وصف تجريبي للمنتج، هنا يظهر شرح مختصر عن مميزات وتفاصيل المنتج.",
+        _id: "demo-product", name: "اسم المنتج الرئيسي", description: "هذا وصف تجريبي للمنتج، هنا يظهر شرح مختصر عن مميزات وتفاصيل المنتج.",
         currentPrice: 4200, oldPrice: 5000, stock: 10, images: [], _demo: true,
         colors: [{ name: "أسود", hex: "#000000" }, { name: "أبيض", hex: "#ffffff" }, { name: "أحمر", hex: "#ef4444" }, { name: "أزرق", hex: "#3b82f6" }],
         sizes: ["XXL", "XL", "L", "M", "S"],
