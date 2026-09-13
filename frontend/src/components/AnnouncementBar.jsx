@@ -87,6 +87,17 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
   useLayoutEffect(() => {
     if (!showMarquee || !probeRef.current) return;
     setItemW(probeRef.current.offsetWidth || 0);
+
+    // ✦ إعادة القياس بعد اكتمال تحميل الخطوط (document.fonts.ready) — يحل
+    //   مشكل الفراغ الدائم اللي كيصير كي القياس الأول (فأول رندر) يتم
+    //   بخط احتياطي (fallback) أضيق من الخط الحقيقي ديال الموقع اللي
+    //   مازال كيتحمل؛ بلا هاد الإصلاح، itemW يبقى محفوظ بالقيمة القديمة
+    //   الضيقة حتى بعد ما الخط الحقيقي (أعرض) يتحمل ويبان بصريا ──
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        if (probeRef.current) setItemW(probeRef.current.offsetWidth || 0);
+      });
+    }
   }, [showMarquee, message]);
 
   if (!settings || closed || !message) return null;

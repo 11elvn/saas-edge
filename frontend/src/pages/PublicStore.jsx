@@ -917,8 +917,8 @@ function PublicStore() {
             flexDirection: titleAlign === "left" ? "row-reverse" : "row",
           }}>
             <div style={{ textAlign: titleAlign, width: titleAlign === "center" ? "100%" : "auto" }}>
-              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#111", margin: "0 0 6px" }}>{catTitle}</h2>
-              <p style={{ color: "#888", fontSize: 13, margin: 0 }}>{catSubtitle}</p>
+              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: textColor, margin: "0 0 6px" }}>{catTitle}</h2>
+              <p style={{ color: mutedTextColor, fontSize: 13, margin: 0 }}>{catSubtitle}</p>
             </div>
           </div>
 
