@@ -3,6 +3,8 @@
 // ✦ تصميم بسيط: Newsletter + Copyright + Terms + Social Icons
 // ============================================================
 
+import { rs } from "../utils/themeStyles";
+
 // (لا حاجة لاستيراد React/useState هنا — ماعادش عندنا state محلي بعد حذف Newsletter)
 
 const IconTikTok = () => (
@@ -91,7 +93,7 @@ export default function StoreFooter({ store, slug, light = false, bgColor, muted
 
         {/* Bottom box: copyright + terms + socials */}
         <div style={{
-          border: `1px solid ${colors.border}`, borderRadius: 14, padding: "20px 20px",
+          border: `1px solid ${colors.border}`, borderRadius: rs(14), padding: "20px 20px",
           display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
         }}>
           <p style={{ color: colors.muted, fontSize: 12.5, margin: 0, textAlign: "center" }}>

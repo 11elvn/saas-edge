@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { rs } from "../utils/themeStyles";
 
 const IconMenu = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
@@ -53,7 +54,7 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
         </button>
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"20px 0 32px" }}>
           {logo
-            ? <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius:16 }} />
+            ? <img src={logo} alt="logo" style={{ width:80, height:80, objectFit:"contain", borderRadius: rs(16) }} />
             : <div style={{ fontWeight:900, fontSize:22, color: navText || "#111", textAlign:"center", lineHeight:1.2 }}>{storeName}</div>
           }
         </div>
@@ -62,7 +63,7 @@ function MobileDrawer({ open, onClose, logo, storeName, primaryColor, secondaryC
             <button key={i} onClick={() => { item.action(); onClose(); }} style={{
               background:"none", border:"none", cursor:"pointer",
               color: navText || "#333", fontFamily:"inherit", fontSize:15, fontWeight:600,
-              padding:"12px 16px", borderRadius:10, textAlign:"right", transition:"background .2s",
+              padding:"12px 16px", borderRadius: rs(10), textAlign:"right", transition:"background .2s",
             }}
             onMouseEnter={e => e.currentTarget.style.background = hoverBg}
             onMouseLeave={e => e.currentTarget.style.background = "none"}
@@ -104,7 +105,7 @@ function SearchBox({ open, onClose, slug, primaryColor, navBg, navText, navBorde
             placeholder="ابحث عن منتج..."
             style={{ flex:1, border:"none", outline:"none", fontSize:16, fontFamily:"inherit", background:"none", color: navText || "#111", textAlign:"right" }}
           />
-          <button type="submit" style={{ background:primaryColor, color:"#fff", border:"none", borderRadius:10, padding:"9px 18px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>بحث</button>
+          <button type="submit" style={{ background:primaryColor, color:"#fff", border:"none", borderRadius: rs(10), padding:"9px 18px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>بحث</button>
           <button type="button" onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color: navText || "#888", padding:6, opacity:.7 }}><IconX /></button>
         </form>
       </div>
@@ -272,7 +273,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
       <style>{`
         .sn-icon-btn {
           background: none; border: none; cursor: pointer;
-          color: #555; padding: 8px; border-radius: 8px;
+          color: #555; padding: 8px; border-radius: calc(8px * var(--r-scale, 1));
           display: flex; align-items: center;
           transition: background .2s, color .2s;
         }
@@ -289,7 +290,7 @@ export default function StoreNavbar({ store, slug, cartCount = 0, onCartClick, o
         .sn-nav-link {
           background: none; border: none; cursor: pointer;
           color: #444; font-family: inherit; font-size: 15px; font-weight: 600;
-          padding: 8px 18px; border-radius: 8px;
+          padding: 8px 18px; border-radius: calc(8px * var(--r-scale, 1));
           transition: color .2s, background .2s; white-space: nowrap;
         }
         .sn-nav-link:hover { color: #111; background: #f3f4f6; }

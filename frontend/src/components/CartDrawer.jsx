@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { rs, btnStyle } from "../utils/themeStyles";
 
 const IconBag = () => (
   <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -51,6 +52,7 @@ export default function CartDrawer({
   primary = "#2563eb", textColor = "#111111", mutedTextColor = "#888888",
   borderColor = "#eeeeee", surfaceColor = "#fafafa", bgColor = "#ffffff",
   isPreview = false, demoItems = DEFAULT_DEMO_ITEMS,
+  buttonStyle = "filled",
 }) {
   const navigate = useNavigate();
   const { getCart, updateQuantity, removeFromCart, getCartTotal } = useCart();
@@ -101,7 +103,7 @@ export default function CartDrawer({
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 34, height: 34, borderRadius: 10, background: `${primary}17`,
+              width: 34, height: 34, borderRadius: rs(10), background: `${primary}17`,
               display: "flex", alignItems: "center", justifyContent: "center", color: primary,
             }}>
               <IconBag />
@@ -120,7 +122,7 @@ export default function CartDrawer({
           <button
             onClick={onClose}
             className="cd-close-btn"
-            style={{ background: surfaceColor, border: "none", cursor: "pointer", color: textColor, padding: 7, borderRadius: 10, display: "flex" }}
+            style={{ background: surfaceColor, border: "none", cursor: "pointer", color: textColor, padding: 7, borderRadius: rs(10), display: "flex" }}
           >
             <IconX size={18} />
           </button>
@@ -144,12 +146,12 @@ export default function CartDrawer({
               {items.map(item => (
                 <div key={itemKey(item)} style={{
                   display: "flex", alignItems: "center", gap: 11,
-                  background: surfaceColor, borderRadius: 14, padding: 9,
+                  background: surfaceColor, borderRadius: rs(14), padding: 9,
                   border: `1px solid ${borderColor}`,
                 }}>
                   {/* الصورة — أو placeholder بلون المتجر كي ماكايناش صورة */}
                   <div style={{
-                    width: 56, height: 56, borderRadius: 10, overflow: "hidden", flexShrink: 0,
+                    width: 56, height: 56, borderRadius: rs(10), overflow: "hidden", flexShrink: 0,
                     background: "#f1f2f4",
                     ...(item.image ? {
                       backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center",
@@ -186,12 +188,12 @@ export default function CartDrawer({
                       {/* stepper */}
                       <div style={{
                         display: "flex", alignItems: "center", gap: 4,
-                        background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 10, padding: "3px 8px",
+                        background: bgColor, border: `1px solid ${borderColor}`, borderRadius: rs(10), padding: "3px 8px",
                       }}>
                         <button
                           onClick={() => handleQty(itemKey(item), item.quantity - 1)}
                           className="cd-step-btn"
-                          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, color: mutedTextColor, borderRadius: 6 }}
+                          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, color: mutedTextColor, borderRadius: rs(6) }}
                         ><IconMinus /></button>
                         <span style={{ fontSize: 11.5, fontWeight: 800, color: textColor, minWidth: 16, textAlign: "center" }}>{item.quantity}</span>
                         <button
@@ -199,7 +201,7 @@ export default function CartDrawer({
                           disabled={item.quantity >= (item.stock ?? 99)}
                           className="cd-step-btn"
                           style={{
-                            background: "none", border: "none", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, borderRadius: 6,
+                            background: "none", border: "none", display: "flex", alignItems: "center", justifyContent: "center", padding: 2, borderRadius: rs(6),
                             cursor: item.quantity >= (item.stock ?? 99) ? "not-allowed" : "pointer",
                             color: item.quantity >= (item.stock ?? 99) ? mutedTextColor : textColor,
                             opacity: item.quantity >= (item.stock ?? 99) ? .5 : 1,
@@ -213,7 +215,7 @@ export default function CartDrawer({
                   <button
                     onClick={() => handleRemove(itemKey(item))}
                     className="cd-remove-btn"
-                    style={{ background: "none", border: "none", cursor: "pointer", color: mutedTextColor, padding: 6, flexShrink: 0, borderRadius: 8 }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: mutedTextColor, padding: 6, flexShrink: 0, borderRadius: rs(8) }}
                   >
                     <IconTrash />
                   </button>
@@ -236,10 +238,11 @@ export default function CartDrawer({
               onClick={() => { if (usingDemo) return; onClose?.(); navigate(`/store/${slug}/checkout`); }}
               className="cd-checkout-btn"
               style={{
-                width: "100%", padding: "15px 0", border: "none", borderRadius: 14, background: primary, color: "#fff",
+                width: "100%", padding: "15px 0", border: "none", borderRadius: rs(14), background: primary, color: "#fff",
                 fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", cursor: usingDemo ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 opacity: usingDemo ? .85 : 1,
+                ...btnStyle({ buttonStyle }, primary),
               }}
             >
               <IconBag />

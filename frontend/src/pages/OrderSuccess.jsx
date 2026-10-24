@@ -10,6 +10,7 @@ import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -75,7 +76,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -277,7 +278,7 @@ function OrderSuccess() {
   );
 
   return (
-    <div dir="rtl" style={{ minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction }}>
+    <div dir="rtl" style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction }}>
       <style>{`
         @keyframes os-checkPop {
           0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
@@ -377,10 +378,10 @@ function OrderSuccess() {
               <div style={{
                 display: "flex", gap: 12, alignItems: "center", textAlign: "right",
                 background: tinted ? `${primary}0d` : surfaceColor,
-                border: `1px solid ${borderColor}`, borderRadius: 14, padding: 14, marginBottom: 20,
+                border: `1px solid ${borderColor}`, borderRadius: rs(14), padding: 14, marginBottom: 20,
               }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 10, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: rs(10), flexShrink: 0,
                   backgroundImage: orderData.productImage ? `url(${orderData.productImage})` : undefined,
                   backgroundSize: "cover", backgroundPosition: "center",
                   background: orderData.productImage ? undefined : primary,
@@ -431,8 +432,9 @@ function OrderSuccess() {
                 onClick={() => !isPreview && navigate(s.ctaButtonLink && s.ctaButtonLink !== "/" ? s.ctaButtonLink : (slug ? `/store/${slug}` : "/"))}
                 style={{
                   width: "100%", padding: "13px", background: primary, color: "#fff",
-                  border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: ".92rem",
+                  border: "none", borderRadius: rs(12), fontFamily: "inherit", fontSize: ".92rem",
                   fontWeight: 700, cursor: "pointer", transition: "filter .15s",
+                  ...btnStyle(styles, primary),
                 }}
               >
                 {s.ctaButtonText || "تابع التسوق"}
@@ -446,7 +448,7 @@ function OrderSuccess() {
                   className="os-btn"
                   style={{
                     width: "100%", padding: "13px", background: "transparent", color: textColor,
-                    border: `1px solid ${borderColor}`, borderRadius: 12, fontFamily: "inherit",
+                    border: `1px solid ${borderColor}`, borderRadius: rs(12), fontFamily: "inherit",
                     fontSize: ".88rem", fontWeight: 600, cursor: "pointer", textAlign: "center",
                     textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                   }}
@@ -465,6 +467,7 @@ function OrderSuccess() {
       </SectionWrapper>
 
       <CartDrawer
+        buttonStyle={styles.buttonStyle}
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         slug={slug}

@@ -13,6 +13,7 @@ import StoreFooter from "../components/StoreFooter";
 import FaqSection from "../components/FaqSection";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -43,13 +44,13 @@ ${ANNOUNCEMENT_BAR_CSS}
 .pd-d2    { animation-delay: .16s; }
 .pd-spinner { animation: pd-spin .7s linear infinite; }
 .pd-input {
-  width:100%; padding:12px 14px; border-radius:12px;
+  width:100%; padding:12px 14px; border-radius: calc(12px * var(--r-scale, 1));
   border:1px solid var(--pd-border, #e5e7eb); background:#f9fafb;
   color:#111; font-family:inherit; font-size:14px;
   outline:none; transition: border-color .2s, background .2s;
   text-align:right; box-sizing:border-box;
 }
-.pd-input--compact { padding:9px 12px; font-size:13px; border-radius:10px; }
+.pd-input--compact { padding:9px 12px; font-size:13px; border-radius: calc(10px * var(--r-scale, 1)); }
 .pd-input--icon { padding-right: 38px; }
 .pd-input:focus { border-color: var(--pd-primary); background:#fff; }
 .pd-input::placeholder { color:#aaa; }
@@ -163,7 +164,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -455,7 +456,7 @@ function Checkout() {
   return (
     <div
       dir={direction}
-      style={{ minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, paddingBottom: checkoutSettings.stickyButton !== false && !isCompact ? 74 : 0 }}
+      style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, paddingBottom: checkoutSettings.stickyButton !== false && !isCompact ? 74 : 0 }}
     >
       {/* ── Announcement Bar ── */}
       {isAnnouncementEnabled(announcementSec) && (
@@ -481,12 +482,12 @@ function Checkout() {
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px" }}>
 
         {items.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 20px", background: surfaceColor, borderRadius: 16 }}>
+          <div style={{ textAlign: "center", padding: "60px 20px", background: surfaceColor, borderRadius: rs(16) }}>
             <p style={{ fontSize: 15, fontWeight: 700, color: textColor, margin: "0 0 6px" }}>السلة فارغة</p>
             <p style={{ fontSize: 13, color: mutedTextColor, margin: "0 0 20px" }}>زيد منتجات باش تقدر تكمل الطلب</p>
             <button
               onClick={() => navigate(`/store/${slug}`)}
-              style={{ background: primary, color: "#fff", border: "none", borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}
+              style={{ background: primary, color: "#fff", border: "none", borderRadius: rs(10), padding: "12px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit", ...btnStyle(styles, primary) }}
             >
               العودة للمتجر
             </button>
@@ -496,7 +497,7 @@ function Checkout() {
             <div
               className="pd-fade pd-d2"
               style={{
-                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px",
+                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: rs(18), padding: "24px 22px",
                 boxShadow: `0 -22px 40px -26px ${borderColor}, 0 22px 40px -26px ${borderColor}`,
               }}
             >
@@ -594,7 +595,7 @@ function Checkout() {
                 )}
 
                 {/* ── Order Summary ── */}
-                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 14, overflow: "hidden" }}>
+                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: rs(14), overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
                     <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: textColor }}>ملخص الطلب</h4>
                     <span style={{
@@ -610,12 +611,12 @@ function Checkout() {
                       <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
                         {item.image ? (
                           <div style={{
-                            width: 42, height: 42, borderRadius: 9, flexShrink: 0, overflow: "hidden", background: surfaceColor,
+                            width: 42, height: 42, borderRadius: rs(9), flexShrink: 0, overflow: "hidden", background: surfaceColor,
                             backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center",
                           }} />
                         ) : (
                           <div style={{
-                            width: 42, height: 42, borderRadius: 9, flexShrink: 0,
+                            width: 42, height: 42, borderRadius: rs(9), flexShrink: 0,
                             background: primary,
                             display: "flex", alignItems: "center", justifyContent: "center",
                           }}>
@@ -666,7 +667,7 @@ function Checkout() {
                 </div>
 
                 {errorMsg && (
-                  <div style={{ padding: "12px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, color: "#b91c1c", fontSize: 13, fontWeight: 700 }}>
+                  <div style={{ padding: "12px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: rs(10), color: "#b91c1c", fontSize: 13, fontWeight: 700 }}>
                     {errorMsg}
                   </div>
                 )}
@@ -677,12 +678,13 @@ function Checkout() {
                     onClick={handleOrder}
                     disabled={ordering}
                     style={{
-                      width: "100%", padding: "15px 0", borderRadius: 14,
+                      width: "100%", padding: "15px 0", borderRadius: rs(14),
                       border: "none", cursor: ordering ? "not-allowed" : "pointer",
                       background: primary, color: "#fff",
                       fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                       opacity: ordering ? 0.7 : 1,
                       boxShadow: `0 4px 20px ${primary}44`,
+                      ...btnStyle(styles, primary),
                     }}
                   >
                     {ordering ? "⏳ جاري الإرسال..." : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
@@ -741,7 +743,7 @@ function Checkout() {
             <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
               {groups.map((group, gi) => (
                 <div key={gi} style={{
-                  background: surfaceColor, borderRadius: 20, overflow: "hidden",
+                  background: surfaceColor, borderRadius: rs(20), overflow: "hidden",
                   display: "grid", gridTemplateColumns: `repeat(${group.length}, 1fr)`,
                 }}>
                   {group.map((b, i) => (
@@ -772,7 +774,7 @@ function Checkout() {
               <div key={i} style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
                 textAlign: "center", padding: "20px 12px",
-                background: surfaceColor, borderRadius: 18, border: `1px solid ${borderColor}`,
+                background: surfaceColor, borderRadius: rs(18), border: `1px solid ${borderColor}`,
               }}>
                 <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                   {ICONS[b.id] || ICONS.secure}
@@ -819,9 +821,10 @@ function Checkout() {
             onClick={handleOrder}
             disabled={ordering}
             style={{
-              width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
+              width: "100%", padding: "14px 0", borderRadius: rs(12), border: "none",
               cursor: ordering ? "not-allowed" : "pointer", background: primary, color: "#fff",
               fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", opacity: ordering ? 0.7 : 1,
+              ...btnStyle(styles, primary),
             }}
           >
             {ordering ? "⏳ جاري الإرسال..." : `${checkoutSettings.stickyButtonText || "تأكيد الطلب الآن"} — ${total.toLocaleString()} د.ج`}

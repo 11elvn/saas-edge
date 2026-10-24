@@ -9,6 +9,7 @@ import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -83,7 +84,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -329,7 +330,7 @@ export default function CategoryProducts() {
   );
 
   return (
-    <div dir={direction} style={{ minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction, display: "flex", flexDirection: "column" }}>
+    <div dir={direction} style={{ ...themeVars(styles), minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction, display: "flex", flexDirection: "column" }}>
 
       <style>{`
         .cp-section-wrapper { position: relative; }
@@ -450,7 +451,7 @@ export default function CategoryProducts() {
                 { val: "price_desc", label: "الثمن ↓" },
               ].map(s => (
                 <button key={s.val} onClick={() => setSort(s.val)} style={{
-                  padding: "6px 13px", borderRadius: 8,
+                  padding: "6px 13px", borderRadius: rs(8),
                   border: `1px solid ${sort === s.val ? primary : borderColor}`,
                   background: sort === s.val ? primary : surfaceColor,
                   color: sort === s.val ? "#fff" : mutedTextColor,
@@ -508,7 +509,7 @@ export default function CategoryProducts() {
                       animationDelay: `${(idx % 6) * 0.07}s`,
                       background: "transparent",
                       border: cardStyleCfg.cardBorder,
-                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
+                      borderRadius: rs(cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0)),
                       padding: cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: isDemo ? "default" : "pointer",
@@ -520,7 +521,7 @@ export default function CategoryProducts() {
                     {/* Image — أو placeholder بلون المتجر كي ماكايناش صورة */}
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
-                      borderRadius: cardStyleCfg.imgRadius,
+                      borderRadius: rs(cardStyleCfg.imgRadius),
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
                       {hasImg ? (
@@ -586,11 +587,12 @@ export default function CategoryProducts() {
                             onClick={e => { e.stopPropagation(); if (!isDemo) navigate(`/store/${slug}/product/${product._id}`); }}
                             style={{
                               width: "100%", border: "none", cursor: isDemo ? "default" : "pointer",
-                              borderRadius: 12, padding: "12px 0",
+                              borderRadius: rs(12), padding: "12px 0",
                               background: primary, color: "#fff",
                               fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
                               display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                               boxShadow: "0 4px 16px rgba(0,0,0,.25)",
+                              ...btnStyle(styles, primary, { onImage: true }),
                             }}
                           >
                             <IconCart />
@@ -660,7 +662,7 @@ export default function CategoryProducts() {
               <button
                 onClick={() => navigate(`/store/${slug}/collections`)}
                 style={{
-                  padding: "11px 28px", borderRadius: 12, cursor: "pointer",
+                  padding: "11px 28px", borderRadius: rs(12), cursor: "pointer",
                   fontSize: 14, fontWeight: 700, fontFamily: "inherit",
                   ...viewAllBtnStyle,
                 }}
@@ -732,6 +734,7 @@ export default function CategoryProducts() {
       )}
 
       <CartDrawer
+        buttonStyle={styles.buttonStyle}
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         slug={slug}

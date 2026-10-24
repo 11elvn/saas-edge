@@ -14,6 +14,7 @@ import FaqSection from "../components/FaqSection";
 import ReviewsSection from "../components/ReviewsSection";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -67,20 +68,20 @@ ${ANNOUNCEMENT_BAR_CSS}
 .pd-d2    { animation-delay: .16s; }
 .pd-spinner { animation: pd-spin .7s linear infinite; }
 .pd-thumb {
-  cursor:pointer; border-radius:10px; overflow:hidden;
+  cursor:pointer; border-radius: calc(10px * var(--r-scale, 1)); overflow:hidden;
   border:2px solid transparent; flex-shrink:0;
   transition: border-color .2s, transform .2s;
 }
 .pd-thumb:hover { transform:scale(1.05); }
 .pd-thumb.active { border-color: var(--pd-primary); }
 .pd-input {
-  width:100%; padding:12px 14px; border-radius:12px;
+  width:100%; padding:12px 14px; border-radius: calc(12px * var(--r-scale, 1));
   border:1px solid var(--pd-border, #e5e7eb); background:#f9fafb;
   color:#111; font-family:inherit; font-size:14px;
   outline:none; transition: border-color .2s, background .2s;
   text-align:right; box-sizing:border-box;
 }
-.pd-input--compact { padding:9px 12px; font-size:13px; border-radius:10px; }
+.pd-input--compact { padding:9px 12px; font-size:13px; border-radius: calc(10px * var(--r-scale, 1)); }
 .pd-input--icon { padding-right: 38px; }
 .pd-input:focus { border-color: var(--pd-primary); background:#fff; }
 .pd-input::placeholder { color:#aaa; }
@@ -98,7 +99,7 @@ select.pd-input { appearance:none; -webkit-appearance:none; -moz-appearance:none
 .pd-variant-strip::-webkit-scrollbar { display:none; }
 .pd-variant-strip { -ms-overflow-style:none; scrollbar-width:none; }
 .pd-qty-btn {
-  width:34px; height:34px; border-radius:9px; border:1px solid #e5e7eb; background:#fff;
+  width:34px; height:34px; border-radius: calc(9px * var(--r-scale, 1)); border:1px solid #e5e7eb; background:#fff;
   display:flex; align-items:center; justify-content:center; cursor:pointer; color:#111;
   transition: background .15s;
 }
@@ -159,7 +160,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -557,7 +558,7 @@ function ProductDetails() {
   if (!product) return (
     <div style={{ minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }} dir="rtl">
       <p style={{ color: "#ef4444", fontSize: 16 }}>المنتج غير موجود ❌</p>
-      <button onClick={() => navigate(`/store/${slug}`)} style={{ background: primary, color: "#fff", border: "none", padding: "10px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
+      <button onClick={() => navigate(`/store/${slug}`)} style={{ background: primary, color: "#fff", border: "none", padding: "10px 24px", borderRadius: rs(10), cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
         العودة للمتجر
       </button>
     </div>
@@ -595,7 +596,7 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
-      style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
+      style={{ ...themeVars(styles), minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
     >
       <style>{`
         @media (max-width: 768px) {
@@ -651,8 +652,8 @@ function ProductDetails() {
           {gallerySettings.carouselMode ? (
             /* ══════════ CAROUSEL MODE — peek slider + thumbnails شريط اختياري ══════════ */
             <div className="pd-fade">
-              <div style={{ position: "relative", borderRadius: 18, overflow: "hidden" }}>
-                <div style={{ overflow: "hidden", borderRadius: 18 }}>
+              <div style={{ position: "relative", borderRadius: rs(18), overflow: "hidden" }}>
+                <div style={{ overflow: "hidden", borderRadius: rs(18) }}>
                   <div style={{
                     display: "flex", transition: "transform .38s cubic-bezier(.4,0,.2,1)",
                     transform: `translateX(${activeImg * 89 * dirMultiplier}%)`,
@@ -661,7 +662,7 @@ function ProductDetails() {
                       <div key={i} style={{
                         flex: "0 0 86%", marginInlineEnd: "3%",
                         aspectRatio: galleryAspect, background: surfaceColor,
-                        border: `1px solid ${borderColor}`, borderRadius: 18, overflow: "hidden",
+                        border: `1px solid ${borderColor}`, borderRadius: rs(18), overflow: "hidden",
                       }}>
                         <GallerySlot src={img} index={i} primary={primary} />
                       </div>
@@ -669,7 +670,7 @@ function ProductDetails() {
                   </div>
                 </div>
                 {outOfStock && (
-                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 18 }}>
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: rs(18) }}>
                     <span style={{ background: "#fff", color: "#111", fontWeight: 800, fontSize: 13, padding: "8px 22px", borderRadius: 99 }}>نفد من المخزون</span>
                   </div>
                 )}
@@ -724,7 +725,7 @@ function ProductDetails() {
 
               {/* Main image */}
               <div style={{
-                flex: 1, borderRadius: 18, overflow: "hidden", background: surfaceColor,
+                flex: 1, borderRadius: rs(18), overflow: "hidden", background: surfaceColor,
                 border: `1px solid ${borderColor}`, position: "relative",
                 aspectRatio: galleryAspect,
               }}>
@@ -825,7 +826,7 @@ function ProductDetails() {
                             value={selectedColor || ""}
                             onChange={e => setSelectedColor(e.target.value)}
                             style={{
-                              width: "100%", padding: "11px 14px", borderRadius: 10,
+                              width: "100%", padding: "11px 14px", borderRadius: rs(10),
                               border: `1.5px solid ${borderColor}`, fontSize: 14, fontFamily: "inherit",
                               color: textColor, background: "#fff", cursor: "pointer",
                             }}
@@ -842,7 +843,7 @@ function ProductDetails() {
                                   onClick={() => setSelectedColor(c.name)}
                                   style={{
                                     display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
-                                    padding: "9px 12px", borderRadius: 10, cursor: "pointer",
+                                    padding: "9px 12px", borderRadius: rs(10), cursor: "pointer",
                                     border: `1.5px solid ${active ? primary : borderColor}`,
                                     background: active ? primary : "transparent",
                                     color: active ? "#fff" : textColor,
@@ -872,7 +873,7 @@ function ProductDetails() {
                             value={selectedSize || ""}
                             onChange={e => setSelectedSize(e.target.value)}
                             style={{
-                              width: "100%", padding: "11px 14px", borderRadius: 10,
+                              width: "100%", padding: "11px 14px", borderRadius: rs(10),
                               border: `1.5px solid ${borderColor}`, fontSize: 14, fontFamily: "inherit",
                               color: textColor, background: "#fff", cursor: "pointer",
                             }}
@@ -888,7 +889,7 @@ function ProductDetails() {
                                   key={sz}
                                   onClick={() => setSelectedSize(sz)}
                                   style={{
-                                    minWidth: 50, height: 42, padding: "0 12px", borderRadius: 10, cursor: "pointer",
+                                    minWidth: 50, height: 42, padding: "0 12px", borderRadius: rs(10), cursor: "pointer",
                                     border: `1.5px solid ${active ? primary : borderColor}`,
                                     background: active ? primary : "transparent",
                                     color: active ? "#fff" : textColor,
@@ -931,8 +932,9 @@ function ProductDetails() {
                   disabled={outOfStock}
                   style={{
                     width: "100%", border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
-                    borderRadius: 12, padding: "13px 0", background: outOfStock ? "#f3f4f6" : primary,
+                    borderRadius: rs(12), padding: "13px 0", background: outOfStock ? "#f3f4f6" : primary,
                     color: outOfStock ? "#aaa" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "inherit",
+                    ...(outOfStock ? {} : btnStyle(styles, primary)),
                   }}
                 >
                   {outOfStock ? "نفد من المخزون" : (productInfoSettings.ctaButtonText || "اطلب الآن")}
@@ -950,9 +952,10 @@ function ProductDetails() {
                     }}
                     style={{
                       width: "100%", border: `1.5px solid ${primary}`, cursor: "pointer",
-                      borderRadius: 12, padding: "13px 0", background: "transparent",
+                      borderRadius: rs(12), padding: "13px 0", background: "transparent",
                       color: primary, fontSize: 14, fontWeight: 800, fontFamily: "inherit",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      ...btnStyle(styles, primary, { secondary: true }),
                     }}
                   >
                     <IconCart /> {addedToCart ? "أُضيف للسلة ✓" : "أضف للسلة"}
@@ -973,7 +976,7 @@ function ProductDetails() {
             <div
               ref={checkoutRef} className="pd-fade pd-d2"
               style={{
-                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 18, padding: "24px 22px",
+                background: bgColor, border: `1px solid ${borderColor}`, borderRadius: rs(18), padding: "24px 22px",
                 boxShadow: `0 -22px 40px -26px ${borderColor}, 0 22px 40px -26px ${borderColor}`,
               }}
             >
@@ -1071,7 +1074,7 @@ function ProductDetails() {
                 )}
 
                 {/* ── Order Summary — Surface + Border من التصميم ── */}
-                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 14, overflow: "hidden" }}>
+                <div style={{ background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: rs(14), overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px" }}>
                     <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 800, color: textColor }}>ملخص الطلب</h4>
                     <span style={{
@@ -1109,13 +1112,14 @@ function ProductDetails() {
                   onClick={handleOrder}
                   disabled={outOfStock || ordering}
                   style={{
-                    width: "100%", padding: "15px 0", borderRadius: 14,
+                    width: "100%", padding: "15px 0", borderRadius: rs(14),
                     border: "none", cursor: outOfStock || ordering ? "not-allowed" : "pointer",
                     background: outOfStock ? "#f3f4f6" : primary,
                     color: outOfStock ? "#aaa" : "#fff",
                     fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                     opacity: ordering ? 0.7 : 1,
                     boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
+                    ...(outOfStock ? {} : btnStyle(styles, primary)),
                   }}
                 >
                   {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
@@ -1162,9 +1166,10 @@ function ProductDetails() {
             onClick={handleOrder}
             disabled={ordering}
             style={{
-              width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
+              width: "100%", padding: "14px 0", borderRadius: rs(12), border: "none",
               cursor: ordering ? "not-allowed" : "pointer", background: primary, color: "#fff",
               fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", opacity: ordering ? 0.7 : 1,
+              ...btnStyle(styles, primary),
             }}
           >
             {ordering ? "⏳ جاري الإرسال..." : `${checkoutSettings.stickyButtonText || "اطلب الآن"} — ${total.toLocaleString()} د.ج`}
@@ -1173,6 +1178,7 @@ function ProductDetails() {
       )}
 
       <CartDrawer
+        buttonStyle={styles.buttonStyle}
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         slug={slug}

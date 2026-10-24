@@ -10,6 +10,7 @@ import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -115,7 +116,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -329,7 +330,7 @@ export default function SearchResults() {
   const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
 
   return (
-    <div dir={direction} style={{ minHeight: "100vh", position: "relative", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
+    <div dir={direction} style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
       <style>{`
         ${ANNOUNCEMENT_BAR_CSS}
         .sr-card { transition: transform .25s ease, box-shadow .25s ease; }
@@ -406,7 +407,7 @@ export default function SearchResults() {
                     style={{
                       background: "transparent",
                       border: cardStyleCfg.cardBorder,
-                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
+                      borderRadius: rs(cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0)),
                       padding: cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: isPreview ? "default" : "pointer",
@@ -415,7 +416,7 @@ export default function SearchResults() {
                   >
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
-                      borderRadius: cardStyleCfg.imgRadius,
+                      borderRadius: rs(cardStyleCfg.imgRadius),
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
                       {hasImg ? (
@@ -453,10 +454,11 @@ export default function SearchResults() {
                             onClick={e => { e.stopPropagation(); if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
                             style={{
                               width: "100%", border: "none", cursor: isPreview ? "default" : "pointer",
-                              borderRadius: 12, padding: "12px 0",
+                              borderRadius: rs(12), padding: "12px 0",
                               background: primary, color: "#fff",
                               fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
                               boxShadow: "0 4px 16px rgba(0,0,0,.25)",
+                              ...btnStyle(styles, primary, { onImage: true }),
                             }}
                           >
                             اطلب الآن
@@ -502,6 +504,7 @@ export default function SearchResults() {
       </SectionWrapper>
 
       <CartDrawer
+        buttonStyle={styles.buttonStyle}
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         slug={slug}

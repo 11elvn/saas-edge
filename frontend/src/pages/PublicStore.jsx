@@ -12,6 +12,7 @@ import ReviewsSection from "../components/ReviewsSection";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
+import { rs, themeVars, btnStyle } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -217,8 +218,8 @@ function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
         <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {logo
-              ? <img src={logo} alt="logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} />
-              : <div style={{ width: 36, height: 36, borderRadius: 8, background: primaryColor, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>{storeName?.charAt(0) || "م"}</div>
+              ? <img src={logo} alt="logo" style={{ width: 36, height: 36, borderRadius: rs(8), objectFit: "cover" }} />
+              : <div style={{ width: 36, height: 36, borderRadius: rs(8), background: primaryColor, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16 }}>{storeName?.charAt(0) || "م"}</div>
             }
             <span style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>{storeName}</span>
           </div>
@@ -229,7 +230,7 @@ function Drawer({ open, onClose, logo, storeName, primaryColor, onNavigate }) {
 
         {/* Search */}
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #f0f0f0" }}>
-          <div style={{ background: "#f9fafb", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #e5e7eb" }}>
+          <div style={{ background: "#f9fafb", borderRadius: rs(10), padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #e5e7eb" }}>
             <svg width="16" height="16" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input placeholder="البحث عن منتج" style={{ border: "none", background: "none", outline: "none", fontSize: 14, color: "#374151", width: "100%", textAlign: "right" }} />
           </div>
@@ -370,7 +371,7 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
         background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: 6, pointerEvents: "none",
+        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
         fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
         boxShadow: "0 2px 8px rgba(124,109,242,.35)",
       }}>
@@ -700,7 +701,7 @@ function PublicStore() {
   const phone     = store?.whatsappNumber || "";
 
   return (
-    <div style={{ minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
+    <div style={{ ...themeVars(tc?.styles), minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
 
       {/* ── Announcement Bar ── */}
       {(() => {
@@ -780,10 +781,11 @@ function PublicStore() {
                 style={{
                   marginTop: 32,
                   background: hs.ctaColor || primary, color: "#fff",
-                  border: "none", borderRadius: 50, padding: "14px 34px",
+                  border: "none", borderRadius: rs(50), padding: "14px 34px",
                   fontSize: 15, fontWeight: 700, cursor: "pointer",
                   fontFamily: "inherit", letterSpacing: .5,
                   boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
+                  ...btnStyle(tc?.styles, hs.ctaColor || primary, { onImage: true }),
                 }}
               >
                 {hs.ctaText || "تسوق الآن"}
@@ -843,7 +845,7 @@ function PublicStore() {
             <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
               {groups.map((group, gi) => (
                 <div key={gi} style={{
-                  background: surfaceColor, borderRadius: 20, overflow: "hidden",
+                  background: surfaceColor, borderRadius: rs(20), overflow: "hidden",
                   display: "grid", gridTemplateColumns: `repeat(${group.length}, 1fr)`,
                 }}>
                   {group.map((b, i) => (
@@ -874,7 +876,7 @@ function PublicStore() {
               <div key={i} style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
                 textAlign: "center", padding: "20px 12px",
-                background: surfaceColor, borderRadius: 18, border: `1px solid ${borderColor}`,
+                background: surfaceColor, borderRadius: rs(18), border: `1px solid ${borderColor}`,
               }}>
                 <div style={{ width: 48, height: 48, borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", color: primary }}>
                   {ICONS[b.id] || ICONS.secure}
@@ -941,7 +943,7 @@ function PublicStore() {
                 onClick={() => { if (!cat._demo) navigate(`/store/${slug}/collections/${cat._id}`); }}
                 style={{
                   position: "relative",
-                  borderRadius: 16, overflow: "hidden", cursor: cat._demo ? "default" : "pointer",
+                  borderRadius: rs(16), overflow: "hidden", cursor: cat._demo ? "default" : "pointer",
                   height: 280,
                   boxShadow: "0 2px 8px rgba(0,0,0,.08)",
                   transition: "transform .25s, box-shadow .25s",
@@ -1104,7 +1106,7 @@ function PublicStore() {
                       animationDelay: `${(idx % 6) * 0.07}s`,
                       background: "transparent",
                       border: cardStyleCfg.cardBorder,
-                      borderRadius: cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0),
+                      borderRadius: rs(cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0)),
                       padding: cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: "pointer",
@@ -1116,7 +1118,7 @@ function PublicStore() {
                     {/* Image (with hover/touch CTA overlay) */}
                     <div style={{
                       position: "relative", overflow: "hidden", background: surfaceColor,
-                      borderRadius: cardStyleCfg.imgRadius,
+                      borderRadius: rs(cardStyleCfg.imgRadius),
                       ...(imageRatio === "adapt" ? {} : { aspectRatio: aspectMap[imageRatio] || "1/1" }),
                     }}>
                       {hasImg ? (
@@ -1191,11 +1193,12 @@ function PublicStore() {
                             onClick={e => { e.stopPropagation(); if (!isPreview) navigate(`/store/${slug}/product/${product._id}`); }}
                             style={{
                               width: "100%", border: "none", cursor: "pointer",
-                              borderRadius: 12, padding: "12px 0",
+                              borderRadius: rs(12), padding: "12px 0",
                               background: primary, color: "#fff",
                               fontSize: 13.5, fontWeight: 700, fontFamily: "inherit",
                               display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                               boxShadow: "0 4px 16px rgba(0,0,0,.25)",
+                              ...btnStyle(tc?.styles, primary, { onImage: true }),
                             }}
                           >
                             <IconCart />
@@ -1265,7 +1268,7 @@ function PublicStore() {
               <button
                 onClick={() => navigate(`/store/${slug}/collections`)}
                 style={{
-                  padding: "11px 28px", borderRadius: 12, cursor: "pointer",
+                  padding: "11px 28px", borderRadius: rs(12), cursor: "pointer",
                   fontSize: 14, fontWeight: 700, fontFamily: "inherit",
                   ...viewAllBtnStyle,
                 }}
@@ -1337,6 +1340,7 @@ function PublicStore() {
       `}</style>
 
       <CartDrawer
+        buttonStyle={tc?.styles?.buttonStyle}
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         slug={slug}

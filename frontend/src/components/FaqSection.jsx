@@ -5,6 +5,7 @@
 // ✦ settings: { title, openFirstItem, style: "divided"|"cards", questions:[{id,enabled,question,answer}] }
 // ============================================================
 import { useState } from "react";
+import { rs } from "../utils/themeStyles";
 
 function Chevron({ open }) {
   return (
@@ -50,7 +51,7 @@ export default function FaqSection({ settings, primary, bgColor, surfaceColor, t
         style={
           isCards
             ? { display: "flex", flexDirection: "column", gap: 12 }
-            : { background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 16, padding: "2px 18px" }
+            : { background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: rs(16), padding: "2px 18px" }
         }
       >
         {questions.map((q, i) => {
@@ -61,7 +62,7 @@ export default function FaqSection({ settings, primary, bgColor, surfaceColor, t
               key={q.id}
               style={
                 isCards
-                  ? { background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 14, overflow: "hidden" }
+                  ? { background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: rs(14), overflow: "hidden" }
                   : { borderBottom: isLast ? "none" : `1px solid ${borderColor}` }
               }
             >

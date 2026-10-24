@@ -7,6 +7,7 @@
 //               reviews:[{id,enabled,rating,name,wilaya,text,date,verified}] }
 // ============================================================
 import { useRef } from "react";
+import { rs } from "../utils/themeStyles";
 
 function Stars({ rating = 5, size = 13, color = "#f59e0b" }) {
   return (
@@ -33,7 +34,7 @@ function Stars({ rating = 5, size = 13, color = "#f59e0b" }) {
 function ReviewCard({ r, surfaceColor, textColor, mutedTextColor, borderColor, showDates, showWilaya, big }) {
   return (
     <div style={{
-      background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: 16,
+      background: surfaceColor, border: `1px solid ${borderColor}`, borderRadius: rs(16),
       padding: big ? "24px 26px" : "18px 20px", display: "flex", flexDirection: "column", gap: 10,
       textAlign: big ? "center" : "right", alignItems: big ? "center" : "stretch",
     }}>
