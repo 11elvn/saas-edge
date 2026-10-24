@@ -17,6 +17,11 @@
 //   6) position:relative كانت ناقصة فـ ProductDetails.
 //   7) preview mode ما كيستعملش sessionStorage.
 //
+// ✦✦ إصلاح إضافي (سبب الفراغ الحقيقي): صفحات المتجر direction:rtl، وفـ RTL
+//    التراك كيبدا من اليمين وكيتمدد لليسار، فـ translateX(-50%) كان كيبعد
+//    المحتوى ويكشف فراغ. الحاوية والتراك دابا direction:ltr ثابت، فالحركة
+//    ديما صحيحة مهما كان اتجاه الصفحة.
+//
 // ✦✦ الحل النهائي ديال الـ GAP (نقطة 5) ✦✦
 //    محاولة سابقة استعملت "min-width: عرض الحاوية" على كل مجموعة —
 //    هذا خلق بالضبط المشكل: إذا الرسالة قصيرة (مثلا "9999999999")
@@ -129,7 +134,7 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
   const renderGroup = (groupKey) => (
     <div key={groupKey} style={{ display: "flex", flexShrink: 0, alignItems: "center" }}>
       {[...Array(itemsPerGroup)].map((_, i) => (
-        <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginInlineEnd: GAP_PX }}>
+        <span key={i} style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: textColor, whiteSpace: "nowrap", marginRight: GAP_PX, unicodeBidi: "plaintext" }}>
           {message}
         </span>
       ))}
@@ -139,20 +144,20 @@ export default function AnnouncementBar({ settings, slug, isPreview }) {
   return (
     <div style={{ background: bgColor, borderBottom: "1px solid rgba(0,0,0,.1)", overflow: "hidden", padding: "9px 0", position: "relative" }}>
       {showMarquee ? (
-        <div ref={containerRef} style={{ width: "100%", overflow: "hidden", position: "relative" }}>
+        <div ref={containerRef} style={{ width: "100%", overflow: "hidden", position: "relative", direction: "ltr" }}>
           {/* ✦ span مخفي (خارج الشاشة، لا يشغل مكان) غير باش نقيسو عرض
               نسخة وحدة ديال الرسالة بدقة — ماشي جزء من الماركيه المرئي ✦ */}
           <span
             ref={probeRef}
             aria-hidden="true"
-            style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, letterSpacing: 1.5, pointerEvents: "none", top: 0, insetInlineStart: 0 }}
+            style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, letterSpacing: 1.5, pointerEvents: "none", top: 0, left: 0, unicodeBidi: "plaintext" }}
           >
             {message}
           </span>
           <div
             className="ann-bar-marquee-track"
             style={{
-              display: "flex", width: "max-content", animationDuration: `${duration}s`,
+              display: "flex", width: "max-content", direction: "ltr", animationDuration: `${duration}s`,
               // ✦ نخبّيو التراك المرئي لحد ما نتوصل بقياس حقيقي، باش ما
               //   يبانش فراغ لحظي فأول تحميل قبل ما يتصحح العدد ✦
               visibility: itemW > 0 ? "visible" : "hidden",
