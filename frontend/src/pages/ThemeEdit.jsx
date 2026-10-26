@@ -4,6 +4,7 @@
 // ============================================================
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { btnStyle, getRadiusScale } from "../utils/themeStyles";
 
 const API   = () => import.meta.env.VITE_API_URL;
 const token = () => localStorage.getItem("token");
@@ -1379,6 +1380,35 @@ const CSS = `
 .pb-acc__chevron { display:flex; color: #a89ccb; transition: transform .2s; }
 .pb-acc__chevron--open { transform: rotate(180deg); }
 .pb-acc__body { display:flex; flex-direction:column; gap:11px; padding-bottom: 14px; }
+
+/* ── STYLES PANEL — summary cards ── */
+.pb-scard {
+  display:flex; flex-direction:column; gap:10px; width:100%;
+  background:#ffffff; border:1px solid #efeafd; border-radius:16px;
+  padding:14px 16px; cursor:pointer; text-align:start; font-family:inherit;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.pb-scard:hover { border-color:#cabdf7; box-shadow:0 4px 16px rgba(124,109,242,.10); }
+.pb-scard:active { transform: scale(.995); }
+.pb-scard__head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pb-scard__title { display:flex; align-items:center; gap:8px; font-size:.86rem; font-weight:700; color:#443a63; }
+.pb-scard__chev { display:flex; color:#a89ccb; }
+.pb-scard__new { font-size:.64rem; font-weight:700; color:#fff; background:#7c6df2; padding:2px 8px; border-radius:999px; }
+.pb-scard__preview { display:flex; align-items:center; }
+.pb-scard__swatches { display:flex; flex-direction:row-reverse; }
+.pb-scard__dot { width:26px; height:26px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #e7e1fa; margin-inline-start:-8px; }
+.pb-scard__swatches .pb-scard__dot:last-child { margin-inline-start:0; }
+.pb-scard__fontTitle { font-size:1.15rem; font-weight:800; color:#1f1a33; }
+.pb-scard__fontSub { font-size:.82rem; color:#8b7fae; margin-top:2px; }
+.pb-scard__btn { display:inline-block; padding:7px 20px; font-size:.82rem; font-weight:700; }
+.pb-scard__text { font-size:.8rem; color:#8b7fae; }
+.pb-sback {
+  display:flex; align-items:center; gap:6px; align-self:flex-start;
+  background:none; border:none; cursor:pointer; font-family:inherit;
+  font-size:.86rem; font-weight:700; color:#5b3fd6; padding:4px 6px; border-radius:999px;
+  transition: background .18s;
+}
+.pb-sback:hover { background:#f5f3ff; }
 
 /* ── FIELD CARD (checkout form fields list) ── */
 .pb-field-card {
@@ -2927,62 +2957,171 @@ function SuccessMessageSettings({ settings, onChange }) {
   );
 }
 
-function StylesPanel({ styles, onChange, onApplyPreset }) {
-  const s = (k, v) => onChange({ ...styles, [k]: v });
+// ─────────────────────────────────────────────
+// STYLES PANEL — بطاقات ملخّصة (Colors / Fonts / Buttons & corners / Components / Layout & motion)
+// ✦ كل بطاقة تعرض معاينة حية للقيمة الحالية، والضغط عليها يفتح تفاصيلها فنفس اللوحة مع زر رجوع
+// ─────────────────────────────────────────────
+const SChevron = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 6 15 12 9 18" />
+  </svg>
+);
+
+function StyleCard({ title, isNew, onClick, children }) {
   return (
-    <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
-      <ColorPresetsPanel styles={styles} onApplyPreset={onApplyPreset} />
-      <div className="pb-group">
-        <div className="pb-group__label">Colors</div>
-        <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
-        <ColorField label="Secondary"  value={styles.secondaryColor}  onChange={v => s("secondaryColor",  v)} />
-        <ColorField label="Background" value={styles.backgroundColor} onChange={v => s("backgroundColor", v)} />
-        <ColorField label="Surface"    value={styles.surfaceColor}    onChange={v => s("surfaceColor",    v)} />
-        <ColorField label="Text"       value={styles.textColor}       onChange={v => s("textColor",       v)} />
-        <ColorField label="Muted text" value={styles.mutedTextColor}  onChange={v => s("mutedTextColor",  v)} />
-        <ColorField label="Border"     value={styles.borderColor}     onChange={v => s("borderColor",     v)} />
+    <button type="button" className="pb-scard" onClick={onClick}>
+      <div className="pb-scard__head">
+        <span className="pb-scard__title">
+          {title}
+          {isNew && <span className="pb-scard__new">New</span>}
+        </span>
+        <span className="pb-scard__chev"><SChevron /></span>
       </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Typography</div>
-        <div className="pb-field">
-          <div className="pb-label">Direction</div>
-          <div className="pb-segment">
-            {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("direction", o.v)}>{o.l}</button>
+      {children && <div className="pb-scard__preview">{children}</div>}
+    </button>
+  );
+}
+
+const STYLE_VIEW_TITLES = {
+  colors:     "Colors",
+  fonts:      "Fonts",
+  buttons:    "Buttons & corners",
+  components: "Components",
+  layout:     "Layout & motion",
+};
+
+function StylesPanel({ styles, onChange, onApplyPreset }) {
+  const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
+  const s = (k, v) => onChange({ ...styles, [k]: v });
+
+  const font    = styles.fontFamily || "Cairo";
+  const primary = styles.primaryColor || "#2563eb";
+  const scale   = getRadiusScale(styles);
+  const swatches = [styles.primaryColor, styles.secondaryColor, styles.backgroundColor, styles.surfaceColor, styles.textColor].filter(Boolean);
+
+  const wrapStyle = { padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" };
+
+  // ═══════ LIST ═══════
+  if (view === "list") {
+    return (
+      <div style={wrapStyle}>
+        <StyleCard title="Colors" onClick={() => setView("colors")}>
+          <div className="pb-scard__swatches">
+            {swatches.map((c, i) => (
+              <span key={i} className="pb-scard__dot" style={{ background: c, zIndex: swatches.length - i }} />
+            ))}
+          </div>
+        </StyleCard>
+
+        <StyleCard title="Fonts" onClick={() => setView("fonts")}>
+          <div style={{ fontFamily: `'${font}', sans-serif`, direction: "rtl", textAlign: "right" }}>
+            <div className="pb-scard__fontTitle">متجرك</div>
+            <div className="pb-scard__fontSub">نص تجريبي قصير</div>
+          </div>
+        </StyleCard>
+
+        <StyleCard title="Buttons & corners" onClick={() => setView("buttons")}>
+          <span
+            className="pb-scard__btn"
+            style={{ fontFamily: `'${font}', sans-serif`, borderRadius: 10 * scale, ...btnStyle(styles, primary) }}
+          >
+            اشترِ الآن
+          </span>
+        </StyleCard>
+
+        <StyleCard title="Components" isNew onClick={() => setView("components")}>
+          <span className="pb-scard__text">Cards, badges, fields</span>
+        </StyleCard>
+
+        <StyleCard title="Layout & motion" onClick={() => setView("layout")}>
+          <span className="pb-scard__text">Width, density, motion</span>
+        </StyleCard>
+      </div>
+    );
+  }
+
+  // ═══════ DETAIL ═══════
+  return (
+    <div style={wrapStyle}>
+      <button type="button" className="pb-sback" onClick={() => setView("list")}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 6 9 12 15 18" />
+        </svg>
+        <span>{STYLE_VIEW_TITLES[view]}</span>
+      </button>
+
+      {view === "colors" && (
+        <>
+          <ColorPresetsPanel styles={styles} onApplyPreset={onApplyPreset} />
+          <div className="pb-group">
+            <div className="pb-group__label">Colors</div>
+            <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
+            <ColorField label="Secondary"  value={styles.secondaryColor}  onChange={v => s("secondaryColor",  v)} />
+            <ColorField label="Background" value={styles.backgroundColor} onChange={v => s("backgroundColor", v)} />
+            <ColorField label="Surface"    value={styles.surfaceColor}    onChange={v => s("surfaceColor",    v)} />
+            <ColorField label="Text"       value={styles.textColor}       onChange={v => s("textColor",       v)} />
+            <ColorField label="Muted text" value={styles.mutedTextColor}  onChange={v => s("mutedTextColor",  v)} />
+            <ColorField label="Border"     value={styles.borderColor}     onChange={v => s("borderColor",     v)} />
+          </div>
+        </>
+      )}
+
+      {view === "fonts" && (
+        <div className="pb-group">
+          <div className="pb-group__label">Typography</div>
+          <div className="pb-field">
+            <div className="pb-label">Direction</div>
+            <div className="pb-segment">
+              {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
+                <button key={o.v}
+                  className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("direction", o.v)}>{o.l}</button>
+              ))}
+            </div>
+          </div>
+          <div className="pb-font-grid">
+            {FONTS.map(f => (
+              <button key={f}
+                className={`pb-font-btn ${styles.fontFamily === f ? "pb-font-btn--active" : ""}`}
+                style={{ fontFamily: f }}
+                onClick={() => s("fontFamily", f)}>{f}</button>
             ))}
           </div>
         </div>
-        <div className="pb-font-grid">
-          {FONTS.map(f => (
-            <button key={f}
-              className={`pb-font-btn ${styles.fontFamily === f ? "pb-font-btn--active" : ""}`}
-              style={{ fontFamily: f }}
-              onClick={() => s("fontFamily", f)}>{f}</button>
-          ))}
+      )}
+
+      {view === "buttons" && (
+        <>
+          <div className="pb-group">
+            <div className="pb-group__label">Border radius</div>
+            <div className="pb-segment">
+              {RADII.map(r => (
+                <button key={r.v}
+                  className={`pb-seg-btn ${styles.borderRadius === r.v ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("borderRadius", r.v)}>{r.l}</button>
+              ))}
+            </div>
+          </div>
+          <div className="pb-group">
+            <div className="pb-group__label">Button style</div>
+            <div className="pb-segment">
+              {BTN_STYLE.map(b => (
+                <button key={b.v}
+                  className={`pb-seg-btn ${styles.buttonStyle === b.v ? "pb-seg-btn--active" : ""}`}
+                  onClick={() => s("buttonStyle", b.v)}>{b.l}</button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {(view === "components" || view === "layout") && (
+        <div className="pb-group">
+          <div className="pb-scard__text" style={{ textAlign: "center", padding: "18px 6px" }}>
+            Details for this group will be added in the next step.
+          </div>
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Border radius</div>
-        <div className="pb-segment">
-          {RADII.map(r => (
-            <button key={r.v}
-              className={`pb-seg-btn ${styles.borderRadius === r.v ? "pb-seg-btn--active" : ""}`}
-              onClick={() => s("borderRadius", r.v)}>{r.l}</button>
-          ))}
-        </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Button style</div>
-        <div className="pb-segment">
-          {BTN_STYLE.map(b => (
-            <button key={b.v}
-              className={`pb-seg-btn ${styles.buttonStyle === b.v ? "pb-seg-btn--active" : ""}`}
-              onClick={() => s("buttonStyle", b.v)}>{b.l}</button>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
