@@ -1381,26 +1381,35 @@ const CSS = `
 .pb-acc__chevron--open { transform: rotate(180deg); }
 .pb-acc__body { display:flex; flex-direction:column; gap:11px; padding-bottom: 14px; }
 
-/* ── STYLES PANEL — summary cards ── */
-.pb-scard {
-  display:flex; flex-direction:column; gap:10px; width:100%;
-  background:#ffffff; border:1px solid #efeafd; border-radius:16px;
-  padding:14px 16px; cursor:pointer; text-align:start; font-family:inherit;
-  transition: border-color .18s, box-shadow .18s, transform .18s;
+/* ── STYLES PANEL — grouped list rows ── */
+.pb-slist { background:#ffffff; border:1px solid #efeafd; border-radius:16px; overflow:hidden; }
+.pb-srow {
+  display:flex; gap:12px; width:100%; padding:14px; text-align:start;
+  background:transparent; border:none; border-bottom:1px solid #f1eefd;
+  cursor:pointer; font-family:inherit; transition: background .15s;
 }
-.pb-scard:hover { border-color:#cabdf7; box-shadow:0 4px 16px rgba(124,109,242,.10); }
-.pb-scard:active { transform: scale(.995); }
-.pb-scard__head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.pb-scard__title { display:flex; align-items:center; gap:8px; font-size:.86rem; font-weight:700; color:#443a63; }
-.pb-scard__chev { display:flex; color:#a89ccb; }
-.pb-scard__new { font-size:.64rem; font-weight:700; color:#fff; background:#7c6df2; padding:2px 8px; border-radius:999px; }
-.pb-scard__preview { display:flex; align-items:center; }
-.pb-scard__swatches { display:flex; flex-direction:row-reverse; }
-.pb-scard__dot { width:26px; height:26px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #e7e1fa; margin-inline-start:-8px; }
-.pb-scard__swatches .pb-scard__dot:last-child { margin-inline-start:0; }
-.pb-scard__fontTitle { font-size:1.15rem; font-weight:800; color:#1f1a33; }
-.pb-scard__fontSub { font-size:.82rem; color:#8b7fae; margin-top:2px; }
-.pb-scard__btn { display:inline-block; padding:7px 20px; font-size:.82rem; font-weight:700; }
+.pb-srow:last-child { border-bottom:none; }
+.pb-srow:hover { background:#faf8ff; }
+.pb-srow:active { background:#f5f3ff; }
+.pb-srow__icon {
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  background:#f1eefd; color:#7c6df2; display:flex; align-items:center; justify-content:center;
+}
+.pb-srow__body { flex:1; min-width:0; }
+.pb-srow__title { display:flex; align-items:center; gap:6px; font-size:.86rem; font-weight:700; color:#443a63; }
+.pb-srow__new { font-size:.64rem; font-weight:700; color:#fff; background:#7c6df2; padding:2px 8px; border-radius:999px; }
+.pb-srow__sub { font-size:.72rem; color:#8b7fae; margin-top:2px; }
+.pb-srow__pv { margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.pb-srow__chev { display:flex; align-self:center; color:#a89ccb; }
+.pb-srow__dots { display:flex; flex-direction:row-reverse; justify-content:flex-end; }
+.pb-srow__dot { width:24px; height:24px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #e7e1fa; margin-inline-start:-8px; }
+.pb-srow__dots .pb-srow__dot:last-child { margin-inline-start:0; }
+.pb-srow__fontTitle { font-size:1.2rem; font-weight:800; color:#1f1a33; }
+.pb-srow__fontSub { font-size:.76rem; color:#8b7fae; }
+.pb-srow__btn { display:inline-block; padding:5px 12px; font-size:.7rem; font-weight:700; transition: opacity .15s; }
+.pb-srow__badge { font-size:.66rem; font-weight:700; color:#fff; padding:3px 9px; border-radius:999px; }
+.pb-srow__field { flex:1; min-width:70px; height:28px; display:flex; align-items:center; padding:0 9px; font-size:.7rem; color:#a89ccb; background:#fff; border:1.5px solid #e7e1fa; }
+.pb-srow__chip { font-size:.7rem; padding:3px 9px; border-radius:999px; background:#f1eefd; color:#5b3fd6; }
 .pb-scard__text { font-size:.8rem; color:#8b7fae; }
 .pb-sback {
   display:flex; align-items:center; gap:6px; align-self:flex-start;
@@ -2967,17 +2976,53 @@ const SChevron = () => (
   </svg>
 );
 
-function StyleCard({ title, isNew, onClick, children }) {
+// ✦ أيقونات صفوف لوحة Styles (SVG خفيف، بدون أي تبعية)
+const SROW_ICONS = {
+  colors: (
+    <>
+      <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
+      <circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" />
+      <circle cx="8.5" cy="7.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" />
+    </>
+  ),
+  fonts: (
+    <>
+      <polyline points="4 7 4 4 20 4 20 7" />
+      <line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="4" x2="12" y2="20" />
+    </>
+  ),
+  buttons: <rect x="2" y="6" width="20" height="12" rx="2" />,
+  components: (
+    <>
+      <path d="m12 2 10 5-10 5L2 7z" />
+      <path d="m2 17 10 5 10-5" /><path d="m2 12 10 5 10-5" />
+    </>
+  ),
+  layout: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
+    </>
+  ),
+};
+
+function StyleRow({ icon, title, sub, isNew, onClick, children }) {
   return (
-    <button type="button" className="pb-scard" onClick={onClick}>
-      <div className="pb-scard__head">
-        <span className="pb-scard__title">
+    <button type="button" className="pb-srow" onClick={onClick}>
+      <span className="pb-srow__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {SROW_ICONS[icon]}
+        </svg>
+      </span>
+      <span className="pb-srow__body">
+        <span className="pb-srow__title">
           {title}
-          {isNew && <span className="pb-scard__new">New</span>}
+          {isNew && <span className="pb-srow__new">New</span>}
         </span>
-        <span className="pb-scard__chev"><SChevron /></span>
-      </div>
-      {children && <div className="pb-scard__preview">{children}</div>}
+        {sub && <div className="pb-srow__sub">{sub}</div>}
+        {children && <div className="pb-srow__pv">{children}</div>}
+      </span>
+      <span className="pb-srow__chev"><SChevron /></span>
     </button>
   );
 }
@@ -3003,39 +3048,62 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 
   // ═══════ LIST ═══════
   if (view === "list") {
+    const presetName = COLOR_PRESETS.find(p =>
+      PRESET_COLOR_KEYS.every(k => (styles?.[k] || "").toLowerCase() === p.colors[k].toLowerCase())
+    )?.name;
+    const dir      = (styles.direction || "rtl").toUpperCase();
+    const btnLabel = BTN_STYLE.find(b => b.v === (styles.buttonStyle || "filled"))?.l || "Filled";
+    const radLabel = RADII.find(r => r.v === (styles.borderRadius || "medium"))?.l || "Medium";
+    const border   = styles.borderColor || "#ebebeb";
+    const surface  = styles.surfaceColor || "#fafafa";
+
     return (
       <div style={wrapStyle}>
-        <StyleCard title="Colors" onClick={() => setView("colors")}>
-          <div className="pb-scard__swatches">
-            {swatches.map((c, i) => (
-              <span key={i} className="pb-scard__dot" style={{ background: c, zIndex: swatches.length - i }} />
+        <div className="pb-slist">
+          <StyleRow icon="colors" title="Colors" sub={`${swatches.length} colors · ${presetName || "Custom"}`} onClick={() => setView("colors")}>
+            <div className="pb-srow__dots">
+              {swatches.map((c, i) => (
+                <span key={i} className="pb-srow__dot" style={{ background: c, zIndex: swatches.length - i }} />
+              ))}
+            </div>
+          </StyleRow>
+
+          <StyleRow icon="fonts" title="Fonts" sub={`${font} · ${dir}`} onClick={() => setView("fonts")}>
+            <div style={{ fontFamily: `'${font}', sans-serif`, direction: "rtl", display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span className="pb-srow__fontTitle">متجرك</span>
+              <span className="pb-srow__fontSub">نص تجريبي قصير</span>
+            </div>
+          </StyleRow>
+
+          <StyleRow icon="buttons" title="Buttons & corners" sub={`${btnLabel} · ${radLabel} radius`} onClick={() => setView("buttons")}>
+            {BTN_STYLE.map(b => (
+              <span
+                key={b.v}
+                className="pb-srow__btn"
+                style={{
+                  fontFamily: `'${font}', sans-serif`,
+                  borderRadius: 9 * scale,
+                  opacity: (styles.buttonStyle || "filled") === b.v ? 1 : 0.45,
+                  ...btnStyle({ ...styles, buttonStyle: b.v }, primary),
+                }}
+              >
+                {b.v === (styles.buttonStyle || "filled") ? "اشترِ الآن" : b.l}
+              </span>
             ))}
-          </div>
-        </StyleCard>
+          </StyleRow>
 
-        <StyleCard title="Fonts" onClick={() => setView("fonts")}>
-          <div style={{ fontFamily: `'${font}', sans-serif`, direction: "rtl", textAlign: "right" }}>
-            <div className="pb-scard__fontTitle">متجرك</div>
-            <div className="pb-scard__fontSub">نص تجريبي قصير</div>
-          </div>
-        </StyleCard>
+          <StyleRow icon="components" title="Components" isNew sub="Cards, badges, fields" onClick={() => setView("components")}>
+            <span style={{ width: 44, height: 30, borderRadius: 10 * scale, background: surface, border: `1px solid ${border}` }} />
+            <span className="pb-srow__badge" style={{ background: primary }}>-20%</span>
+            <span className="pb-srow__field" style={{ borderRadius: 8 * scale, borderColor: border }}>Email</span>
+          </StyleRow>
 
-        <StyleCard title="Buttons & corners" onClick={() => setView("buttons")}>
-          <span
-            className="pb-scard__btn"
-            style={{ fontFamily: `'${font}', sans-serif`, borderRadius: 10 * scale, ...btnStyle(styles, primary) }}
-          >
-            اشترِ الآن
-          </span>
-        </StyleCard>
-
-        <StyleCard title="Components" isNew onClick={() => setView("components")}>
-          <span className="pb-scard__text">Cards, badges, fields</span>
-        </StyleCard>
-
-        <StyleCard title="Layout & motion" onClick={() => setView("layout")}>
-          <span className="pb-scard__text">Width, density, motion</span>
-        </StyleCard>
+          <StyleRow icon="layout" title="Layout & motion" sub="Width, density, motion" onClick={() => setView("layout")}>
+            <span className="pb-srow__chip">Wide 1200px</span>
+            <span className="pb-srow__chip">Comfortable</span>
+            <span className="pb-srow__chip">Subtle motion</span>
+          </StyleRow>
+        </div>
       </div>
     );
   }
