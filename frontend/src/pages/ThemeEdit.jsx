@@ -1438,8 +1438,8 @@ const CSS = `
 .pb-bhead { display:flex; align-items:center; justify-content:space-between; font-size:.8rem; font-weight:600; color:#6f6590; }
 .pb-bhead b { font-weight:700; color:#1f1a33; }
 .pb-bhint { font-size:.7rem; line-height:1.6; color:#8b7fae; }
-.pb-cstage { border-radius:14px; border:1px solid #e7e1fa; padding:16px; display:flex; flex-direction:column; align-items:center; gap:12px; transition:background .2s; }
-.pb-acc { border:1px solid #ece7fb; border-radius:14px; background:#fff; overflow:hidden; }
+.pb-cstage { flex-shrink:0; border-radius:14px; border:1px solid #e7e1fa; padding:16px; display:flex; flex-direction:column; align-items:center; gap:12px; transition:background .2s; }
+.pb-acc { flex-shrink:0; border:1px solid #ece7fb; border-radius:14px; background:#fff; overflow:hidden; }
 .pb-acc__head { width:100%; display:flex; align-items:center; gap:10px; padding:11px 12px; background:none; border:none; font-family:inherit; cursor:pointer; text-align:start; }
 .pb-acc__head:hover { background:#faf8ff; }
 .pb-acc__icon { width:32px; height:32px; border-radius:10px; background:#f1eefd; color:#7c6df2; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
