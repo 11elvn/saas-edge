@@ -3100,7 +3100,7 @@ function loadEditorFonts() {
   const link = document.createElement("link");
   link.id = id;
   link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Noto+Kufi+Arabic:wght@500;700&family=Noto+Sans+Arabic:wght@400;700&family=Rubik:wght@400;700&family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap";
+  link.href = "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;800;900&family=Noto+Kufi+Arabic:wght@400;500;700;800;900&family=Noto+Sans+Arabic:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&family=Inter:wght@400;500;700;800;900&family=Poppins:wght@400;500;700;800;900&display=swap";
   document.head.appendChild(link);
 }
 
@@ -3277,7 +3277,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             {items.map(o => (
               <button key={o.v ?? o} type="button"
                 className={`pb-seg-btn ${isActive(o.v ?? o) ? "pb-seg-btn--active" : ""}`}
-                onClick={() => onPick(o.v ?? o)}>{o.l ?? o}</button>
+                title={o.t} onClick={() => onPick(o.v ?? o)}>{o.l ?? o}</button>
             ))}
           </div>
         );
@@ -3350,7 +3350,14 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                 <div className="pb-label">Size</div>
                 {seg(ORDER_SIZES, v => (styles.orderButtonSize || "M") === v, v => s("orderButtonSize", v))}
                 <div className="pb-label">Weight</div>
-                {seg(ORDER_WEIGHTS, v => Number(styles.orderButtonWeight || 800) === v, v => s("orderButtonWeight", v))}
+                {seg(
+                  ORDER_WEIGHTS.map(w => ({
+                    v: w.v, t: w.l,
+                    l: <span style={{ fontFamily: fam, fontWeight: w.v, fontSize: "1.1rem", lineHeight: 1 }}>Aa</span>,
+                  })),
+                  v => Number(styles.orderButtonWeight || 800) === v,
+                  v => s("orderButtonWeight", v)
+                )}
                 <div className="pb-bhint">Applies to the order and checkout buttons, which should stay the most visible button on the page.</div>
               </div>
             )}
