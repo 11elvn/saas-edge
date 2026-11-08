@@ -785,7 +785,7 @@ function PublicStore() {
                   fontSize: 15, fontWeight: 700, cursor: "pointer",
                   fontFamily: "inherit", letterSpacing: .5,
                   boxShadow: `0 4px 24px ${hs.ctaColor || primary}55`,
-                  ...btnStyle(tc?.styles, hs.ctaColor || primary, { onImage: true }),
+                  ...btnStyle(tc?.styles, hs.ctaColor || primary, { onImage: true, padX: 34 }),
                 }}
               >
                 {hs.ctaText || "تسوق الآن"}

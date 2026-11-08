@@ -487,7 +487,7 @@ function Checkout() {
             <p style={{ fontSize: 13, color: mutedTextColor, margin: "0 0 20px" }}>زيد منتجات باش تقدر تكمل الطلب</p>
             <button
               onClick={() => navigate(`/store/${slug}`)}
-              style={{ background: primary, color: "#fff", border: "none", borderRadius: rs(10), padding: "12px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit", ...btnStyle(styles, primary) }}
+              style={{ background: primary, color: "#fff", border: "none", borderRadius: rs(10), padding: "12px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit", ...btnStyle(styles, primary, { padX: 28 }) }}
             >
               العودة للمتجر
             </button>
@@ -684,7 +684,7 @@ function Checkout() {
                       fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                       opacity: ordering ? 0.7 : 1,
                       boxShadow: `0 4px 20px ${primary}44`,
-                      ...btnStyle(styles, primary),
+                      ...btnStyle(styles, primary, { role: "order" }),
                     }}
                   >
                     {ordering ? "⏳ جاري الإرسال..." : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
@@ -824,7 +824,7 @@ function Checkout() {
               width: "100%", padding: "14px 0", borderRadius: rs(12), border: "none",
               cursor: ordering ? "not-allowed" : "pointer", background: primary, color: "#fff",
               fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", opacity: ordering ? 0.7 : 1,
-              ...btnStyle(styles, primary),
+              ...btnStyle(styles, primary, { role: "order" }),
             }}
           >
             {ordering ? "⏳ جاري الإرسال..." : `${checkoutSettings.stickyButtonText || "تأكيد الطلب الآن"} — ${total.toLocaleString()} د.ج`}

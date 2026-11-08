@@ -4,7 +4,7 @@
 // ============================================================
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { btnStyle, getRadiusScale } from "../utils/themeStyles";
+import { btnStyle, getRadiusScale, getSecondaryKind } from "../utils/themeStyles";
 
 const API   = () => import.meta.env.VITE_API_URL;
 const token = () => localStorage.getItem("token");
@@ -602,8 +602,14 @@ function Icon({ name, size = 15 }) {
   }
 }
 
-const RADII     = [{ v:"small", l:"Small" },{ v:"medium", l:"Medium" },{ v:"large", l:"Large" }];
-const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"ghost", l:"Ghost" }];
+const RADII     = [{ v:"square", l:"Square" },{ v:"small", l:"Small" },{ v:"medium", l:"Medium" },{ v:"large", l:"Large" },{ v:"pill", l:"Pill" }];
+const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"ghost", l:"Soft" }];
+const BTN_SIZES     = ["S","M","L"];
+const ORDER_SIZES   = ["M","L","XL"];
+const ORDER_WEIGHTS = [{ v:500, l:"Medium" },{ v:700, l:"Bold" },{ v:800, l:"Extra" },{ v:900, l:"Black" }];
+const INVERTED_OPTS = [{ v:"brand", l:"Brand color" },{ v:"contrast", l:"High contrast" }];
+const BTN_TABS      = [{ id:"primary", l:"Primary" },{ id:"secondary", l:"Secondary" },{ id:"order", l:"Order" },{ id:"dark", l:"On dark" }];
+const CORNER_PREVIEW = { square: 0, small: 3, medium: 6, large: 9, pill: "50%" };
 
 // ─────────────────────────────────────────────
 // CSS
@@ -1413,6 +1419,24 @@ const CSS = `
 .pb-srow__field { flex:1; min-width:70px; height:28px; display:flex; align-items:center; padding:0 9px; font-size:.7rem; color:#a89ccb; background:#fff; border:1.5px solid #e7e1fa; }
 .pb-srow__chip { font-size:.7rem; padding:3px 9px; border-radius:999px; background:#f1eefd; color:#5b3fd6; }
 .pb-scard__text { font-size:.8rem; color:#8b7fae; }
+.pb-btabs { display:flex; background:#f1eefd; border-radius:99px; padding:3px; gap:2px; }
+.pb-btab { flex:1; border:none; background:none; font-family:inherit; font-size:.74rem; font-weight:600; color:#7d7a96; padding:7px 2px; border-radius:99px; cursor:pointer; transition:all .15s; }
+.pb-btab--active { background:#7c6df2; color:#fff; }
+.pb-bstage { border-radius:14px; min-height:84px; display:flex; align-items:center; justify-content:center; padding:16px; transition:background .2s; }
+.pb-btiles { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.pb-btiles--2 { grid-template-columns:repeat(2,1fr); }
+.pb-btile { display:flex; flex-direction:column; align-items:center; gap:7px; padding:9px 4px; font-family:inherit; font-size:.72rem; font-weight:600; color:#6f6590; background:#fff; border:1.5px solid #e7e1fa; border-radius:12px; cursor:pointer; transition:all .15s; }
+.pb-btile:hover { border-color:#cabdf7; }
+.pb-btile--active { border-color:#7c6df2; background:#faf8ff; color:#5b3fd6; }
+.pb-btile__pv { display:flex; align-items:center; justify-content:center; width:100%; padding:4px 0; border-radius:8px; }
+.pb-btile__pv--dark { background:#1f2a24; }
+.pb-bcorners { display:flex; gap:6px; }
+.pb-bcorner { flex:1; height:38px; border-radius:10px; border:1.5px solid #e7e1fa; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; }
+.pb-bcorner:hover { border-color:#cabdf7; }
+.pb-bcorner--active { border-color:#7c6df2; background:#faf8ff; }
+.pb-bcorner i { display:block; width:18px; height:18px; border:2px solid #9a96ad; background:#ebe8f5; }
+.pb-bcorner--active i { border-color:#7c6df2; background:#e4defb; }
+.pb-bhint { font-size:.7rem; line-height:1.6; color:#8b7fae; }
 .pb-fpv { border-radius:16px; padding:14px 16px; }
 .pb-fpv__k { font-size:.62rem; letter-spacing:.04em; opacity:.6; margin-bottom:6px; direction:ltr; text-align:left; text-transform:uppercase; }
 .pb-fpv__h { font-size:1.3rem; line-height:1.35; font-weight:700; direction:rtl; text-align:right; }
@@ -3090,6 +3114,7 @@ const STYLE_VIEW_TITLES = {
 function StylesPanel({ styles, onChange, onApplyPreset }) {
   const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
   useEffect(() => { loadEditorFonts(); }, []);
+  const [btab, setBtab] = useState("primary"); // primary | secondary | order | dark
   const s = (k, v) => onChange({ ...styles, [k]: v });
 
   const font    = styles.fontFamily || "Cairo";
@@ -3129,7 +3154,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             </div>
           </StyleRow>
 
-          <StyleRow icon="buttons" title="Buttons & corners" sub={`${btnLabel} · ${radLabel} radius`} onClick={() => setView("buttons")}>
+          <StyleRow icon="buttons" title="Buttons & corners" sub={`${btnLabel} · ${radLabel} corners`} onClick={() => setView("buttons")}>
             {BTN_STYLE.map(b => (
               <span
                 key={b.v}
@@ -3138,7 +3163,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                   fontFamily: `'${font}', sans-serif`,
                   borderRadius: 9 * scale,
                   opacity: (styles.buttonStyle || "filled") === b.v ? 1 : 0.45,
-                  ...btnStyle({ ...styles, buttonStyle: b.v }, primary),
+                  ...btnStyle({ ...styles, buttonStyle: b.v, buttonSize: "M" }, primary),
                 }}
               >
                 {b.v === (styles.buttonStyle || "filled") ? "اشترِ الآن" : b.l}
@@ -3240,30 +3265,111 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         );
       })()}
 
-      {view === "buttons" && (
-        <>
-          <div className="pb-group">
-            <div className="pb-group__label">Border radius</div>
-            <div className="pb-segment">
-              {RADII.map(r => (
-                <button key={r.v}
-                  className={`pb-seg-btn ${styles.borderRadius === r.v ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("borderRadius", r.v)}>{r.l}</button>
+      {view === "buttons" && (() => {
+        const kind   = styles.buttonStyle || "filled";
+        const secK   = getSecondaryKind(styles);
+        const inv    = styles.buttonOnInverted || "brand";
+        const fam    = `'${font}', sans-serif`;
+        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "9px 22px", fontSize: 13 };
+        const mini   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 8 * scale, padding: "4px 11px", fontSize: 11 };
+        const seg    = (items, isActive, onPick) => (
+          <div className="pb-segment">
+            {items.map(o => (
+              <button key={o.v ?? o} type="button"
+                className={`pb-seg-btn ${isActive(o.v ?? o) ? "pb-seg-btn--active" : ""}`}
+                onClick={() => onPick(o.v ?? o)}>{o.l ?? o}</button>
+            ))}
+          </div>
+        );
+
+        let stageBg = "#f6f3ff", stageBtn;
+        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 22 }) }}>اشترِ الآن</span>;
+        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 22 }) }}>المزيد</span>;
+        if (btab === "order")     stageBtn = <span style={{ ...base, padding: "13px 34px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 34 }) }}>اطلب الآن</span>;
+        if (btab === "dark")    { stageBg = "#1f2a24"; stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { onImage: true, padX: 22 }) }}>اشترِ الآن</span>; }
+
+        return (
+          <>
+            <div className="pb-btabs">
+              {BTN_TABS.map(t => (
+                <button key={t.id} type="button"
+                  className={`pb-btab ${btab === t.id ? "pb-btab--active" : ""}`}
+                  onClick={() => setBtab(t.id)}>{t.l}</button>
               ))}
             </div>
-          </div>
-          <div className="pb-group">
-            <div className="pb-group__label">Button style</div>
-            <div className="pb-segment">
-              {BTN_STYLE.map(b => (
-                <button key={b.v}
-                  className={`pb-seg-btn ${styles.buttonStyle === b.v ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("buttonStyle", b.v)}>{b.l}</button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
+
+            <div className="pb-bstage" style={{ background: stageBg }}>{stageBtn}</div>
+
+            {btab === "primary" && (
+              <div className="pb-group">
+                <div className="pb-label">Style</div>
+                <div className="pb-btiles">
+                  {BTN_STYLE.map(o => (
+                    <button key={o.v} type="button" className={`pb-btile ${kind === o.v ? "pb-btile--active" : ""}`} onClick={() => s("buttonStyle", o.v)}>
+                      <span className="pb-btile__pv"><span style={{ ...mini, ...btnStyle({ ...styles, buttonStyle: o.v, buttonSize: "M" }, primary) }}>اشترِ</span></span>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                <div className="pb-label">Size</div>
+                {seg(BTN_SIZES, v => (styles.buttonSize || "M") === v, v => s("buttonSize", v))}
+                <div className="pb-label">Corners</div>
+                <div className="pb-bcorners">
+                  {RADII.map(o => (
+                    <button key={o.v} type="button" title={o.l}
+                      className={`pb-bcorner ${(styles.borderRadius || "medium") === o.v ? "pb-bcorner--active" : ""}`}
+                      onClick={() => s("borderRadius", o.v)}>
+                      <i style={{ borderRadius: CORNER_PREVIEW[o.v] }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {btab === "secondary" && (
+              <div className="pb-group">
+                <div className="pb-label">Style</div>
+                <div className="pb-btiles">
+                  {BTN_STYLE.map(o => (
+                    <button key={o.v} type="button" className={`pb-btile ${secK === o.v ? "pb-btile--active" : ""}`} onClick={() => s("secondaryButtonStyle", o.v)}>
+                      <span className="pb-btile__pv"><span style={{ ...mini, ...btnStyle({ ...styles, secondaryButtonStyle: o.v, buttonSize: "M" }, primary, { secondary: true }) }}>اشترِ</span></span>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                <div className="pb-bhint">Used for secondary actions, such as Add to cart next to the main order button.</div>
+              </div>
+            )}
+
+            {btab === "order" && (
+              <div className="pb-group">
+                <div className="pb-label">Size</div>
+                {seg(ORDER_SIZES, v => (styles.orderButtonSize || "M") === v, v => s("orderButtonSize", v))}
+                <div className="pb-label">Weight</div>
+                {seg(ORDER_WEIGHTS, v => Number(styles.orderButtonWeight || 800) === v, v => s("orderButtonWeight", v))}
+                <div className="pb-bhint">Applies to the order and checkout buttons, which should stay the most visible button on the page.</div>
+              </div>
+            )}
+
+            {btab === "dark" && (
+              <div className="pb-group">
+                <div className="pb-label">Buttons on images and dark areas</div>
+                <div className="pb-btiles pb-btiles--2">
+                  {INVERTED_OPTS.map(o => (
+                    <button key={o.v} type="button" className={`pb-btile ${inv === o.v ? "pb-btile--active" : ""}`} onClick={() => s("buttonOnInverted", o.v)}>
+                      <span className="pb-btile__pv pb-btile__pv--dark">
+                        <span style={{ ...mini, background: o.v === "brand" ? primary : "#ffffff", color: o.v === "brand" ? "#fff" : "#111827" }}>اشترِ</span>
+                      </span>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                <div className="pb-bhint">Applies to filled buttons over banner images and product cards. Pick high contrast when your brand color is light or hard to read on photos.</div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {(view === "components" || view === "layout") && (
         <div className="pb-group">

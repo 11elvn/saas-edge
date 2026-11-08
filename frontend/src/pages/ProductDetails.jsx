@@ -934,7 +934,7 @@ function ProductDetails() {
                     width: "100%", border: "none", cursor: outOfStock ? "not-allowed" : "pointer",
                     borderRadius: rs(12), padding: "13px 0", background: outOfStock ? "#f3f4f6" : primary,
                     color: outOfStock ? "#aaa" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "inherit",
-                    ...(outOfStock ? {} : btnStyle(styles, primary)),
+                    ...(outOfStock ? {} : btnStyle(styles, primary, { role: "order" })),
                   }}
                 >
                   {outOfStock ? "نفد من المخزون" : (productInfoSettings.ctaButtonText || "اطلب الآن")}
@@ -1119,7 +1119,7 @@ function ProductDetails() {
                     fontSize: 15, fontWeight: 800, fontFamily: "inherit",
                     opacity: ordering ? 0.7 : 1,
                     boxShadow: outOfStock ? "none" : `0 4px 20px ${primary}44`,
-                    ...(outOfStock ? {} : btnStyle(styles, primary)),
+                    ...(outOfStock ? {} : btnStyle(styles, primary, { role: "order" })),
                   }}
                 >
                   {ordering ? "⏳ جاري الإرسال..." : outOfStock ? "نفد من المخزون" : (checkoutSettings.submitButtonText || "تأكيد الطلب")}
@@ -1169,7 +1169,7 @@ function ProductDetails() {
               width: "100%", padding: "14px 0", borderRadius: rs(12), border: "none",
               cursor: ordering ? "not-allowed" : "pointer", background: primary, color: "#fff",
               fontSize: 14.5, fontWeight: 800, fontFamily: "inherit", opacity: ordering ? 0.7 : 1,
-              ...btnStyle(styles, primary),
+              ...btnStyle(styles, primary, { role: "order" }),
             }}
           >
             {ordering ? "⏳ جاري الإرسال..." : `${checkoutSettings.stickyButtonText || "اطلب الآن"} — ${total.toLocaleString()} د.ج`}
