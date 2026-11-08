@@ -17,7 +17,7 @@
 
 // مضاعف الاستدارة — medium = القيم الأصلية بدون أي تغيير
 // pill: البطاقات والحقول كتبقى بحجم large، والأزرار وحدها كتولي كبسولة (فـ btnStyle)
-export const RADIUS_SCALE = { square: 0, small: 0.35, medium: 1, large: 1.7, pill: 1.7 };
+export const RADIUS_SCALE = { square: 0, small: 0.35, medium: 1, large: 1.45, pill: 1.45 };
 
 export const getRadiusScale = (styles) => RADIUS_SCALE[styles?.borderRadius] ?? 1;
 

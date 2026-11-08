@@ -609,7 +609,7 @@ const ORDER_SIZES   = ["M","L","XL"];
 const ORDER_WEIGHTS = [{ v:500, l:"Medium" },{ v:700, l:"Bold" },{ v:800, l:"Extra" },{ v:900, l:"Black" }];
 const INVERTED_OPTS = [{ v:"brand", l:"Brand color" },{ v:"contrast", l:"High contrast" }];
 const BTN_TABS      = [{ id:"primary", l:"Primary" },{ id:"secondary", l:"Secondary" },{ id:"order", l:"Order" },{ id:"dark", l:"On dark" }];
-const CORNER_PREVIEW = { square: 0, small: 4, medium: 7, large: 10, pill: "50%" };
+const CORNER_PREVIEW = { square: 0, small: 4, medium: 8, large: 12, pill: "50%" };
 
 // ─────────────────────────────────────────────
 // CSS
@@ -1431,11 +1431,13 @@ const CSS = `
 .pb-btile__pv { display:flex; align-items:center; justify-content:center; width:100%; padding:4px 0; border-radius:8px; }
 .pb-btile__pv--dark { background:#1f2a24; }
 .pb-bcorners { display:flex; gap:6px; }
-.pb-bcorner { flex:1; height:48px; border-radius:10px; border:1.5px solid #e7e1fa; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; }
+.pb-bcorner { flex:1; min-width:0; height:68px; border-radius:12px; border:1.5px solid #e7e1fa; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; font-family:inherit; transition:all .15s; }
 .pb-bcorner:hover { border-color:#cabdf7; }
 .pb-bcorner--active { border-color:#7c6df2; background:#faf8ff; }
-.pb-bcorner i { display:block; width:24px; height:24px; border:2px solid #9a96ad; background:#ebe8f5; }
+.pb-bcorner i { display:block; width:30px; height:30px; border:2px solid #9a96ad; background:#ebe8f5; }
 .pb-bcorner--active i { border-color:#7c6df2; background:#e4defb; }
+.pb-bcorner span { font-size:.62rem; font-weight:600; color:#8b7fae; line-height:1; }
+.pb-bcorner--active span { color:#5b3fd6; }
 .pb-bhead { display:flex; align-items:center; justify-content:space-between; font-size:.8rem; font-weight:600; color:#6f6590; }
 .pb-bhead b { font-weight:700; color:#1f1a33; }
 .pb-bhint { font-size:.7rem; line-height:1.6; color:#8b7fae; }
@@ -3272,7 +3274,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         const secK   = getSecondaryKind(styles);
         const inv    = styles.buttonOnInverted || "brand";
         const fam    = `'${font}', sans-serif`;
-        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "9px 22px", fontSize: 13 };
+        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "14px 28px", fontSize: 14 };
         const mini   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 8 * scale, padding: "4px 11px", fontSize: 11 };
         const seg    = (items, isActive, onPick) => (
           <div className="pb-segment">
@@ -3285,10 +3287,10 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         );
 
         let stageBg = "#f6f3ff", stageBtn;
-        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 22 }) }}>اشترِ الآن</span>;
-        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 22 }) }}>المزيد</span>;
-        if (btab === "order")     stageBtn = <span style={{ ...base, padding: "13px 34px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 34 }) }}>اطلب الآن</span>;
-        if (btab === "dark")    { stageBg = "#1f2a24"; stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { onImage: true, padX: 22 }) }}>اشترِ الآن</span>; }
+        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 28 }) }}>اشترِ الآن</span>;
+        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 28 }) }}>المزيد</span>;
+        if (btab === "order")     stageBtn = <span style={{ ...base, padding: "16px 36px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 36 }) }}>اطلب الآن</span>;
+        if (btab === "dark")    { stageBg = "#1f2a24"; stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { onImage: true, padX: 28 }) }}>اشترِ الآن</span>; }
 
         return (
           <>
@@ -3325,6 +3327,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                       className={`pb-bcorner ${(styles.borderRadius || "medium") === o.v ? "pb-bcorner--active" : ""}`}
                       onClick={() => s("borderRadius", o.v)}>
                       <i style={{ borderRadius: CORNER_PREVIEW[o.v] }} />
+                      <span>{o.l}</span>
                     </button>
                   ))}
                 </div>
