@@ -779,39 +779,41 @@ const CSS = `
 }
 
 .pb-sections-list {
-  flex: 1; overflow-y: auto; padding: 8px 10px;
+  flex: 1; overflow-y: auto; padding: 14px 16px;
 }
 
 .pb-section-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 10px 10px 12px; border-radius: 8px; cursor: pointer;
-  margin-bottom: 1px; transition: background .12s ease, border-color .12s ease;
-  border-left: 2px solid transparent;
+  padding: 10px 12px; cursor: pointer;
+  background: transparent; transition: background .15s ease;
   position: relative;
   animation: pb-fade .25s ease both;
 }
-.pb-section-item:hover   { background: rgba(15,23,42,.035); }
-.pb-section-item--active {
-  background: rgba(124,109,242,.07);
-  border-left-color: #7c6df2;
-  border-radius: 0 8px 8px 0;
-}
+.pb-slist > div + div .pb-section-item { border-top: 1px solid #f1eefd; }
+.pb-section-item:hover   { background: #faf8ff; }
+.pb-section-item--active { background: #f5f3ff; }
 .pb-section-item--disabled { opacity: .42; }
 .pb-section-item--dragging { opacity: .4; }
 .pb-section-item--drag-over { box-shadow: inset 0 2px 0 #7c6df2, inset 0 -2px 0 transparent; }
 
 .pb-section-item__drag {
-  cursor: grab; color: #cbd5e1; flex-shrink: 0; padding: 2px;
+  cursor: grab; color: #c9c0e6; flex-shrink: 0; width: 14px;
   display: flex; align-items: center; justify-content: center;
 }
-.pb-section-item__drag--disabled { cursor: default; opacity: .5; }
-.pb-section-item__icon  { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; color: #94a3b8; }
-.pb-section-item--active .pb-section-item__icon { color: #7c6df2; }
-.pb-section-item__label { flex: 1; font-size: .82rem; font-weight: 500; color: #475569; }
-.pb-section-item--active .pb-section-item__label { color: #5b3fd6; font-weight: 600; }
+.pb-section-item__drag--disabled { cursor: default; opacity: 1; color: #cfc8e8; }
+.pb-section-item__icon {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  background: #f1eefd; color: #7c6df2;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+}
+.pb-section-item--fixed .pb-section-item__icon { background: #f5f4f8; color: #9a96ad; }
+.pb-section-item--active .pb-section-item__icon { background: #7c6df2; color: #fff; }
+.pb-section-item__label { flex: 1; font-size: .86rem; font-weight: 600; color: #443a63; }
+.pb-section-item--active .pb-section-item__label { color: #5b3fd6; font-weight: 700; }
 
 .pb-section-item__actions {
-  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
   opacity: 0; transition: opacity .12s ease;
 }
 .pb-section-item:hover .pb-section-item__actions,
@@ -819,14 +821,14 @@ const CSS = `
   opacity: 1;
 }
 .pb-section-item__action {
-  width: 24px; height: 24px; border-radius: 6px;
+  width: 28px; height: 28px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   background: none; border: none;
-  color: #94a3b8; cursor: pointer; padding: 0;
+  color: #a89ccb; cursor: pointer; padding: 0;
   transition: all .14s ease;
 }
-.pb-section-item__action:hover { background: rgba(124,109,242,.1); color: #5b3fd6; }
-.pb-section-item__action--danger:hover { background: rgba(220,38,38,.08); color: #dc2626; }
+.pb-section-item__action:hover { background: #f1eefd; color: #5b3fd6; }
+.pb-section-item__action--danger:hover { background: #fdecec; color: #c0392b; }
 
 .pb-toggle {
   position: relative;
@@ -853,23 +855,23 @@ const CSS = `
 
 
 .pb-add-section {
-  padding: 11px 11px 13px;
-  border-top: 1px solid rgba(15,23,42,.05);
+  padding: 12px 16px 14px;
+  border-top: 1px solid #f1eefd;
 }
 .pb-add-btn {
-  width: 100%; padding: 10px;
-  border: 1.5px dashed rgba(124,109,242,.3); border-radius: 12px;
-  background: none; cursor: pointer; color: #94a3b8;
-  font-size: .8rem; font-weight: 600; font-family: inherit;
+  width: 100%; padding: 11px;
+  border: 1.5px dashed #cabdf7; border-radius: 14px;
+  background: none; cursor: pointer; color: #7c6df2;
+  font-size: .84rem; font-weight: 600; font-family: inherit;
   display: flex; align-items: center; justify-content: center; gap: 6px;
   transition: all .18s;
 }
-.pb-add-btn:hover { border-color: #7c6df2; color: #7c6df2; background: rgba(124,109,242,.05); }
+.pb-add-btn:hover { border-color: #7c6df2; color: #5b3fd6; background: #f5f3ff; }
 
 .pb-add-menu {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 11px; right: 11px;
+  left: 16px; right: 16px;
   background: #fff;
   border-radius: 12px;
   border: 1px solid rgba(15,23,42,.08);
@@ -1310,21 +1312,21 @@ const CSS = `
 .pb-no-selection__icon { font-size: 2.6rem; opacity:.35; }
 .pb-no-selection__text { font-size: .83rem; line-height: 1.6; max-width: 190px; }
 
-/* Tabs — sliding accent pill */
+/* Tabs — underline with icons */
 .pb-tabs {
-  display:flex; gap:3px;
-  padding: 4px; margin: 10px 10px 4px;
-  background: #f1eefd;
-  border-radius: 9999px;
+  display:flex; padding: 0 16px; margin: 0;
+  border-bottom: 1px solid #e7e1fa;
 }
 .pb-tab {
-  flex: 1;
-  padding: 9px 14px; font-size: .82rem; font-weight: 600;
-  color: #6b7280; border: none; background: none; cursor: pointer;
-  font-family: inherit; border-radius: 9999px;
-  transition: all .18s;
+  flex: 1; display:flex; align-items:center; justify-content:center; gap:7px;
+  padding: 14px 8px 13px; font-size: .86rem; font-weight: 600;
+  color: #8b87a3; border: none; background: none; cursor: pointer;
+  font-family: inherit; border-radius: 0;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  transition: color .18s, border-color .18s;
 }
-.pb-tab--active { background: #7c6df2; color: #fff; font-weight: 700; }
+.pb-tab:hover { color: #5b3fd6; }
+.pb-tab--active { color: #5b3fd6; border-bottom-color: #7c6df2; font-weight: 700; }
 
 /* ── TOAST ── */
 .pb-toast {
@@ -2978,6 +2980,12 @@ const SChevron = () => (
 
 // ✦ أيقونات صفوف لوحة Styles (SVG خفيف، بدون أي تبعية)
 const SROW_ICONS = {
+  sections: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 4h7" /><path d="M14 9h7" /><path d="M14 15h7" /><path d="M14 20h7" />
+    </>
+  ),
   colors: (
     <>
       <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
@@ -4210,14 +4218,21 @@ function ThemeEdit() {
           {/* Tabs: Sections | Styles */}
           <div className="pb-tabs">
             <button className={`pb-tab ${rightTab === "sections" ? "pb-tab--active" : ""}`}
-              onClick={() => setRightTab("sections")}>Sections</button>
+              onClick={() => setRightTab("sections")}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS.sections}</svg>
+              Sections
+            </button>
             <button className={`pb-tab ${rightTab === "styles" ? "pb-tab--active" : ""}`}
-              onClick={() => { setRightTab("styles"); setActiveSection(null); }}>Styles</button>
+              onClick={() => { setRightTab("styles"); setActiveSection(null); }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS.colors}</svg>
+              Styles
+            </button>
           </div>
 
           {rightTab === "sections" ? (
             <>
               <div className="pb-sections-list">
+                <div className="pb-slist">
                 {displaySections.map((sec, idx) => {
                   const meta = getSectionMeta(sec.type, sec.id);
                   // ✦ الـ drag & drop خدام فكل الصفحات دابا — غير على sections الماشي fixed
@@ -4227,7 +4242,7 @@ function ThemeEdit() {
                     <div key={sec.id}>
                       {/* ── Section Item ── */}
                       <div
-                        className={`pb-section-item ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""} ${draggedSectionId === sec.id ? "pb-section-item--dragging" : ""} ${dragOverSectionId === sec.id && draggedSectionId !== sec.id ? "pb-section-item--drag-over" : ""}`}
+                        className={`pb-section-item ${meta.fixed ? "pb-section-item--fixed" : ""} ${activeSection === sec.id ? "pb-section-item--active" : ""} ${!sec.enabled ? "pb-section-item--disabled" : ""} ${draggedSectionId === sec.id ? "pb-section-item--dragging" : ""} ${dragOverSectionId === sec.id && draggedSectionId !== sec.id ? "pb-section-item--drag-over" : ""}`}
                         draggable={canDrag}
                         onDragStart={e => {
                           if (!canDrag) return;
@@ -4311,6 +4326,7 @@ function ThemeEdit() {
                     </div>
                   );
                 })}
+                </div>
               </div>
               {["home", "product", "category", "checkout"].includes(currentPage) && (
               <div className="pb-add-section" style={{ position: "relative" }}>
