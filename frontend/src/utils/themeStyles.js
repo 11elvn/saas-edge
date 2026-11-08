@@ -17,7 +17,7 @@
 
 // مضاعف الاستدارة — medium = القيم الأصلية بدون أي تغيير
 // pill: البطاقات والحقول كتبقى بحجم large، والأزرار وحدها كتولي كبسولة (فـ btnStyle)
-export const RADIUS_SCALE = { square: 0, small: 0.35, medium: 1, large: 1.45, pill: 1.45 };
+export const RADIUS_SCALE = { square: 0, small: 0.35, medium: 1, large: 1.7, pill: 1.7 };
 
 export const getRadiusScale = (styles) => RADIUS_SCALE[styles?.borderRadius] ?? 1;
 
@@ -26,6 +26,11 @@ export const themeVars = (styles) => ({ "--r-scale": getRadiusScale(styles) });
 
 // يحوّل رقم px إلى قيمة تتأثر بالمضاعف (بدون JS إضافي في كل عنصر)
 export const rs = (n) => `calc(${n}px * var(--r-scale, 1))`;
+
+// استدارة الأزرار: قيم px ثابتة لكل مستوى، باش يبان الفرق فعلا بين Medium / Large / Pill
+// (قبل: كل زر عندو rs(n) خاص بيه — الـ hero مثلا rs(50) = كبسولة فـ كل المستويات!)
+// كتتطبق فقط إيلا styles.borderRadius محدد (باش أزرار فيها styles ناقصة تبقى على الأصل)
+const BTN_RADIUS = { square: 0, small: 4, medium: 8, large: 14, pill: 999 };
 
 // أحجام الأزرار (M = بلا override → القيم الأصلية لكل زر)
 const BTN_SIZE   = { S: { pad: 9,  fs: 12.5 }, L: { pad: 16, fs: 15.5 } };
@@ -88,8 +93,9 @@ export function btnStyle(styles, color, opts = {}) {
   }
   // وزن زر الطلب
   if (role === "order" && styles?.orderButtonWeight) out.fontWeight = Number(styles.orderButtonWeight);
-  // كبسولة (للأزرار فقط)
-  if (styles?.borderRadius === "pill") out.borderRadius = 999;
+  // استدارة الأزرار (للأزرار فقط — البطاقات والحقول كتبقى على rs())
+  const br = BTN_RADIUS[styles?.borderRadius];
+  if (br !== undefined) out.borderRadius = br;
 
   return out;
 }
