@@ -607,7 +607,6 @@ const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"
 const BTN_SIZES     = ["S","M","L"];
 const ORDER_SIZES   = ["M","L","XL"];
 const ORDER_WEIGHTS = [{ v:500, l:"Medium" },{ v:700, l:"Bold" },{ v:800, l:"Extra" },{ v:900, l:"Black" }];
-const BTN_TABS      = [{ id:"primary", l:"Primary" },{ id:"secondary", l:"Secondary" },{ id:"order", l:"Order" }];
 const CORNER_PREVIEW = { square: 0, small: 4, medium: 8, large: 12, pill: "50%" };
 
 // ─────────────────────────────────────────────
@@ -1446,6 +1445,8 @@ const CSS = `
 .pb-acc__body { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
 .pb-acc__title { font-size:.84rem; font-weight:700; color:#1f1a33; }
 .pb-acc__sub { font-size:.7rem; color:#8b7fae; }
+.pb-acc__dots { display:flex; padding-inline-start:4px; }
+.pb-acc__dots span { width:14px; height:14px; border-radius:50%; border:1.5px solid #fff; box-shadow:0 0 0 1px #e7e1fa; margin-inline-start:-4px; }
 .pb-acc__chev { color:#a89ccb; display:flex; transition:transform .18s; }
 .pb-acc--open .pb-acc__chev { transform:rotate(90deg); }
 .pb-acc__panel { padding:2px 12px 14px; display:flex; flex-direction:column; gap:10px; }
@@ -1700,14 +1701,14 @@ const PRESET_STRIP_KEYS = [
   "primaryColor", "secondaryColor", "surfaceColor", "mutedTextColor", "borderColor",
 ];
 
-function ColorPresetsPanel({ styles, onApplyPreset }) {
+function ColorPresetsPanel({ styles, onApplyPreset, bare = false }) {
   const activeId = COLOR_PRESETS.find(p =>
     PRESET_COLOR_KEYS.every(k => (styles?.[k] || "").toLowerCase() === p.colors[k].toLowerCase())
   )?.id || null;
 
   return (
-    <div className="pb-group">
-      <div className="pb-group__label">Presets</div>
+    <div className={bare ? undefined : "pb-group"}>
+      {!bare && <div className="pb-group__label">Presets</div>}
       <div className="pb-preset-grid">
         {COLOR_PRESETS.map(p => {
           const isActive = activeId === p.id;
@@ -3086,6 +3087,39 @@ const SROW_ICONS = {
       <rect x="3" y="7" width="18" height="10" rx="2" /><path d="M7 12h5" />
     </>
   ),
+  presets: (
+    <>
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" /><path d="M19 3v4" /><path d="M17 5h4" />
+    </>
+  ),
+  surfaces: (
+    <>
+      <rect x="3" y="3" width="13" height="13" rx="2" /><rect x="8" y="8" width="13" height="13" rx="2" />
+    </>
+  ),
+  textcolor: (
+    <>
+      <path d="M4 20 10 5l6 15" /><path d="M6.5 15h7" /><path d="M19 20v-7" />
+    </>
+  ),
+  direction: (
+    <>
+      <path d="M3 6h18" /><path d="M3 12h12" /><path d="M3 18h18" />
+    </>
+  ),
+  customfont: (
+    <>
+      <path d="M4 20 9 6l5 14" /><path d="M5.5 15h7" /><path d="M17 20v-8" /><path d="M17 12h3" />
+    </>
+  ),
+  click: <path d="M5 3l14 7-6 2-2 6z" />,
+  cart: (
+    <>
+      <circle cx="9" cy="20" r="1.3" /><circle cx="18" cy="20" r="1.3" />
+      <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6" />
+    </>
+  ),
+  corners: <path d="M4 20V10a6 6 0 0 1 6-6h10" />,
 };
 
 function StyleRow({ icon, title, sub, isNew, onClick, children }) {
@@ -3142,8 +3176,7 @@ const STYLE_VIEW_TITLES = {
 function StylesPanel({ styles, onChange, onApplyPreset }) {
   const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
   useEffect(() => { loadEditorFonts(); }, []);
-  const [btab, setBtab] = useState("primary"); // primary | secondary | order
-  const [acc, setAcc] = useState("cards");     // cards | badges | fields | ""  (Components accordion)
+  const [acc, setAcc] = useState("brand");      // الصف المفتوح فـ accordion (كل view عندو ids ديالو)
   const s = (k, v) => onChange({ ...styles, [k]: v });
 
   const font    = styles.fontFamily || "Cairo";
@@ -3153,6 +3186,29 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
   const swatches = [styles.primaryColor, styles.secondaryColor, styles.backgroundColor, styles.surfaceColor, styles.textColor].filter(Boolean);
 
   const wrapStyle = { padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" };
+
+  // ✦ صف accordion مشترك (Colors / Fonts / Buttons / Components) — صف واحد مفتوح فكل مرة
+  const accRow = (id, icon, title, sub, body, trail) => (
+    <div className={`pb-acc ${acc === id ? "pb-acc--open" : ""}`}>
+      <button type="button" className="pb-acc__head" onClick={() => setAcc(acc === id ? "" : id)}>
+        <span className="pb-acc__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS[icon]}</svg>
+        </span>
+        <span className="pb-acc__body">
+          <span className="pb-acc__title">{title}</span>
+          <span className="pb-acc__sub">{sub}</span>
+        </span>
+        {trail}
+        <span className="pb-acc__chev"><SChevron /></span>
+      </button>
+      {acc === id && <div className="pb-acc__panel">{body}</div>}
+    </div>
+  );
+  const dotsOf = (keys) => (
+    <span className="pb-acc__dots">
+      {keys.map(k => <span key={k} style={{ background: styles[k] || "#ffffff" }} />)}
+    </span>
+  );
 
   // ═══════ LIST ═══════
   if (view === "list") {
@@ -3168,7 +3224,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
     return (
       <div style={wrapStyle}>
         <div className="pb-slist">
-          <StyleRow icon="colors" title="Colors" sub={`${swatches.length} colors · ${presetName || "Custom"}`} onClick={() => setView("colors")}>
+          <StyleRow icon="colors" title="Colors" sub={`${swatches.length} colors · ${presetName || "Custom"}`} onClick={() => { setView("colors"); setAcc("brand"); }}>
             <div className="pb-srow__dots">
               {swatches.map((c, i) => (
                 <span key={i} className="pb-srow__dot" style={{ background: c, zIndex: swatches.length - i }} />
@@ -3176,14 +3232,14 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             </div>
           </StyleRow>
 
-          <StyleRow icon="fonts" title="Fonts" sub={`${headFont === font ? font : `${headFont} + ${font}`} · ${dir}`} onClick={() => setView("fonts")}>
+          <StyleRow icon="fonts" title="Fonts" sub={`${headFont === font ? font : `${headFont} + ${font}`} · ${dir}`} onClick={() => { setView("fonts"); setAcc("pairs"); }}>
             <div style={{ direction: "rtl", display: "flex", alignItems: "baseline", gap: 8 }}>
               <span className="pb-srow__fontTitle" style={{ fontFamily: `'${headFont}', sans-serif` }}>متجرك</span>
               <span className="pb-srow__fontSub" style={{ fontFamily: `'${font}', sans-serif` }}>نص تجريبي قصير</span>
             </div>
           </StyleRow>
 
-          <StyleRow icon="buttons" title="Buttons & corners" sub={`${btnLabel} · ${radLabel} corners`} onClick={() => setView("buttons")}>
+          <StyleRow icon="buttons" title="Buttons & corners" sub={`${btnLabel} · ${radLabel} corners`} onClick={() => { setView("buttons"); setAcc("primary"); }}>
             {BTN_STYLE.map(b => (
               <span
                 key={b.v}
@@ -3200,7 +3256,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             ))}
           </StyleRow>
 
-          <StyleRow icon="components" title="Components" isNew sub="Cards, badges, fields" onClick={() => setView("components")}>
+          <StyleRow icon="components" title="Components" isNew sub="Cards, badges, fields" onClick={() => { setView("components"); setAcc("cards"); }}>
             {(() => {
               const cl = cardLook(styles, { border, bg: "#ffffff" });
               return <span style={{ width: 44, height: 30, borderRadius: 10 * scale, background: cl ? "#ffffff" : surface, border: cl && cl.border !== "none" ? cl.border : `1px solid ${cl ? "transparent" : border}`, boxShadow: cl ? cl.boxShadow : "none" }} />;
@@ -3232,26 +3288,65 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         <span>{STYLE_VIEW_TITLES[view]}</span>
       </button>
 
-      {view === "colors" && (
-        <>
-          <ColorPresetsPanel styles={styles} onApplyPreset={onApplyPreset} />
-          <div className="pb-group">
-            <div className="pb-group__label">Colors</div>
-            <ColorField label="Primary"    value={styles.primaryColor}    onChange={v => s("primaryColor",    v)} />
-            <ColorField label="Secondary"  value={styles.secondaryColor}  onChange={v => s("secondaryColor",  v)} />
-            <ColorField label="Background" value={styles.backgroundColor} onChange={v => s("backgroundColor", v)} />
-            <ColorField label="Surface"    value={styles.surfaceColor}    onChange={v => s("surfaceColor",    v)} />
-            <ColorField label="Text"       value={styles.textColor}       onChange={v => s("textColor",       v)} />
-            <ColorField label="Muted text" value={styles.mutedTextColor}  onChange={v => s("mutedTextColor",  v)} />
-            <ColorField label="Border"     value={styles.borderColor}     onChange={v => s("borderColor",     v)} />
-          </div>
-        </>
-      )}
+      {view === "colors" && (() => {
+        const bgc   = styles.backgroundColor || "#ffffff";
+        const txt   = styles.textColor       || "#111827";
+        const muted = styles.mutedTextColor  || "#6b7280";
+        const surf  = styles.surfaceColor    || "#fafafa";
+        const brd   = styles.borderColor     || "#ebebeb";
+        const sec   = styles.secondaryColor  || "#0f172a";
+        const fam   = `'${font}', sans-serif`;
+        const presetName = COLOR_PRESETS.find(p =>
+          PRESET_COLOR_KEYS.every(k => (styles?.[k] || "").toLowerCase() === p.colors[k].toLowerCase())
+        )?.name;
+
+        return (
+          <>
+            <div className="pb-cstage" style={{ background: bgc, alignItems: "stretch", gap: 8, padding: 12 }}>
+              <div style={{ height: 14, background: sec, borderRadius: 6 * scale }} />
+              <div style={{ background: surf, border: `1px solid ${brd}`, borderRadius: 12 * scale, padding: 12, display: "flex", flexDirection: "column", gap: 5, fontFamily: fam, direction: "rtl" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: txt }}>منتج مميز</div>
+                <div style={{ fontSize: 11, color: muted }}>وصف قصير للمنتج يظهر هنا</div>
+                <span style={{ alignSelf: "flex-start", display: "inline-block", marginTop: 4, fontFamily: fam, fontSize: 12, fontWeight: 700, padding: "7px 16px", borderRadius: 8 * scale, ...btnStyle(styles, primary, { padX: 16 }) }}>اطلب الآن</span>
+              </div>
+            </div>
+
+            {accRow("presets", "presets", "Presets", presetName || "Custom",
+              <ColorPresetsPanel styles={styles} onApplyPreset={onApplyPreset} bare />
+            )}
+
+            {accRow("brand", "colors", "Brand", "Primary, secondary", (
+              <>
+                <ColorField label="Primary"   value={styles.primaryColor}   onChange={v => s("primaryColor",   v)} />
+                <ColorField label="Secondary" value={styles.secondaryColor} onChange={v => s("secondaryColor", v)} />
+              </>
+            ), dotsOf(["primaryColor", "secondaryColor"]))}
+
+            {accRow("surfaces", "surfaces", "Surfaces", "Background, surface, border", (
+              <>
+                <ColorField label="Background" value={styles.backgroundColor} onChange={v => s("backgroundColor", v)} />
+                <ColorField label="Surface"    value={styles.surfaceColor}    onChange={v => s("surfaceColor",    v)} />
+                <ColorField label="Border"     value={styles.borderColor}     onChange={v => s("borderColor",     v)} />
+              </>
+            ), dotsOf(["backgroundColor", "surfaceColor", "borderColor"]))}
+
+            {accRow("text", "textcolor", "Text", "Text, muted text", (
+              <>
+                <ColorField label="Text"       value={styles.textColor}      onChange={v => s("textColor",      v)} />
+                <ColorField label="Muted text" value={styles.mutedTextColor} onChange={v => s("mutedTextColor", v)} />
+              </>
+            ), dotsOf(["textColor", "mutedTextColor"]))}
+          </>
+        );
+      })()}
 
       {view === "fonts" && (() => {
         const activePair = FONT_PAIRS.find(p => p.h === headFont && p.b === font);
         const pvBg = styles.textColor || "#111111";
         const pvFg = styles.backgroundColor || "#ffffff";
+        const dirNow = (styles.direction || "rtl").toUpperCase();
+        const FNAMES = ["Cairo", "Noto Kufi Arabic", "Noto Sans Arabic", "Rubik", "Inter", "Poppins"];
+
         return (
           <>
             <div className="pb-fpv" style={{ background: pvBg, color: pvFg }}>
@@ -3263,39 +3358,49 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
               </div>
             </div>
 
-            <div className="pb-flbl">
-              <span>Font pairs</span>
-              {!activePair && <small>Custom · {headFont} + {font}</small>}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {FONT_PAIRS.map(p => {
-                const active = activePair?.id === p.id;
-                const align = p.latin ? { direction: "ltr", textAlign: "left" } : { direction: "rtl", textAlign: "right" };
-                return (
-                  <button key={p.id} type="button"
-                    className={`pb-fpair ${active ? "pb-fpair--active" : ""}`}
-                    onClick={() => onChange({ ...styles, fontFamily: p.b, headingFont: p.h })}>
-                    <div className="pb-fpair__top">
-                      <span className="pb-fpair__name"><span className="pb-fpair__ck">✓</span>{p.name}</span>
-                      <span className="pb-fpair__fonts">{p.h === p.b ? p.h : `${p.h} + ${p.b}`}</span>
-                    </div>
-                    <div className="pb-fpair__h" style={{ fontFamily: `'${p.h}', sans-serif`, fontWeight: p.w, ...align }}>{p.t}</div>
-                    <div className="pb-fpair__b" style={{ fontFamily: `'${p.b}', sans-serif`, ...align }}>{p.s}</div>
-                  </button>
-                );
-              })}
-            </div>
+            {accRow("pairs", "fonts", "Font pairs", headFont === font ? font : `${headFont} + ${font}`, (
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {FONT_PAIRS.map(p => {
+                  const active = activePair?.id === p.id;
+                  const align = p.latin ? { direction: "ltr", textAlign: "left" } : { direction: "rtl", textAlign: "right" };
+                  return (
+                    <button key={p.id} type="button"
+                      className={`pb-fpair ${active ? "pb-fpair--active" : ""}`}
+                      onClick={() => onChange({ ...styles, fontFamily: p.b, headingFont: p.h })}>
+                      <div className="pb-fpair__top">
+                        <span className="pb-fpair__name"><span className="pb-fpair__ck">✓</span>{p.name}</span>
+                        <span className="pb-fpair__fonts">{p.h === p.b ? p.h : `${p.h} + ${p.b}`}</span>
+                      </div>
+                      <div className="pb-fpair__h" style={{ fontFamily: `'${p.h}', sans-serif`, fontWeight: p.w, ...align }}>{p.t}</div>
+                      <div className="pb-fpair__b" style={{ fontFamily: `'${p.b}', sans-serif`, ...align }}>{p.s}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
 
-            <div className="pb-group">
-              <div className="pb-group__label">Direction</div>
+            {accRow("direction", "direction", "Direction", dirNow, (
               <div className="pb-segment">
-                {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
-                  <button key={o.v}
+                {[{ v: "rtl", l: "RTL" }, { v: "ltr", l: "LTR" }].map(o => (
+                  <button key={o.v} type="button"
                     className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
                     onClick={() => s("direction", o.v)}>{o.l}</button>
                 ))}
               </div>
-            </div>
+            ))}
+
+            {accRow("customfont", "customfont", "Custom fonts", "Heading, body", (
+              <>
+                <div className="pb-label">Heading font</div>
+                <select className="pb-input" value={headFont} onChange={e => s("headingFont", e.target.value)}>
+                  {FNAMES.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+                <div className="pb-label">Body font</div>
+                <select className="pb-input" value={font} onChange={e => s("fontFamily", e.target.value)}>
+                  {FNAMES.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </>
+            ))}
           </>
         );
       })()}
@@ -3304,8 +3409,10 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         const kind   = styles.buttonStyle || "filled";
         const secK   = getSecondaryKind(styles);
         const fam    = `'${font}', sans-serif`;
-        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "19px 34px", fontSize: 15 };
+        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "13px 30px", fontSize: 14 };
         const mini   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 8 * scale, padding: "4px 11px", fontSize: 11 };
+        const lbl    = v => BTN_STYLE.find(b => b.v === v)?.l;
+        const wLabel = ORDER_WEIGHTS.find(w => w.v === Number(styles.orderButtonWeight || 800))?.l;
         const seg    = (items, isActive, onPick) => (
           <div className="pb-segment">
             {items.map(o => (
@@ -3316,26 +3423,16 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
           </div>
         );
 
-        const stageBg = "#f6f3ff";
-        let stageBtn;
-        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 34 }) }}>اشترِ الآن</span>;
-        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 34 }) }}>المزيد</span>;
-        if (btab === "order")     stageBtn = <span style={{ ...base, padding: "16px 36px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 36 }) }}>اطلب الآن</span>;
-
         return (
           <>
-            <div className="pb-btabs">
-              {BTN_TABS.map(t => (
-                <button key={t.id} type="button"
-                  className={`pb-btab ${btab === t.id ? "pb-btab--active" : ""}`}
-                  onClick={() => setBtab(t.id)}>{t.l}</button>
-              ))}
+            <div className="pb-bstage" style={{ background: "#f6f3ff", flexDirection: "column", gap: 10 }}>
+              <span style={{ ...base, ...btnStyle(styles, primary, { padX: 30 }) }}>اشترِ الآن</span>
+              <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 30 }) }}>المزيد</span>
+              <span style={{ ...base, padding: "16px 36px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 36 }) }}>اطلب الآن</span>
             </div>
 
-            <div className="pb-bstage" style={{ background: stageBg }}>{stageBtn}</div>
-
-            {btab === "primary" && (
-              <div className="pb-group">
+            {accRow("primary", "click", "Primary", `${lbl(kind)} · ${styles.buttonSize || "M"}`, (
+              <>
                 <div className="pb-label">Style</div>
                 <div className="pb-btiles">
                   {BTN_STYLE.map(o => (
@@ -3347,25 +3444,11 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                 </div>
                 <div className="pb-label">Size</div>
                 {seg(BTN_SIZES, v => (styles.buttonSize || "M") === v, v => s("buttonSize", v))}
-                <div className="pb-bhead">
-                  <span>Corners</span>
-                  <b>{RADII.find(r => r.v === (styles.borderRadius || "medium"))?.l}</b>
-                </div>
-                <div className="pb-bcorners">
-                  {RADII.map(o => (
-                    <button key={o.v} type="button" title={o.l}
-                      className={`pb-bcorner ${(styles.borderRadius || "medium") === o.v ? "pb-bcorner--active" : ""}`}
-                      onClick={() => s("borderRadius", o.v)}>
-                      <i style={{ borderRadius: CORNER_PREVIEW[o.v] }} />
-                      <span>{o.l}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              </>
+            ))}
 
-            {btab === "secondary" && (
-              <div className="pb-group">
+            {accRow("secondary", "click", "Secondary", lbl(secK), (
+              <>
                 <div className="pb-label">Style</div>
                 <div className="pb-btiles">
                   {BTN_STYLE.map(o => (
@@ -3376,11 +3459,11 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                   ))}
                 </div>
                 <div className="pb-bhint">Used for secondary actions, such as Add to cart next to the main order button.</div>
-              </div>
-            )}
+              </>
+            ))}
 
-            {btab === "order" && (
-              <div className="pb-group">
+            {accRow("order", "cart", "Order button", `${styles.orderButtonSize || "M"} · ${wLabel}`, (
+              <>
                 <div className="pb-label">Size</div>
                 {seg(ORDER_SIZES, v => (styles.orderButtonSize || "M") === v, v => s("orderButtonSize", v))}
                 <div className="pb-label">Weight</div>
@@ -3393,8 +3476,21 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                   v => s("orderButtonWeight", v)
                 )}
                 <div className="pb-bhint">Applies to the order and checkout buttons, which should stay the most visible button on the page.</div>
+              </>
+            ))}
+
+            {accRow("corners", "corners", "Corners", RADII.find(r => r.v === (styles.borderRadius || "medium"))?.l, (
+              <div className="pb-bcorners">
+                {RADII.map(o => (
+                  <button key={o.v} type="button" title={o.l}
+                    className={`pb-bcorner ${(styles.borderRadius || "medium") === o.v ? "pb-bcorner--active" : ""}`}
+                    onClick={() => s("borderRadius", o.v)}>
+                    <i style={{ borderRadius: CORNER_PREVIEW[o.v] }} />
+                    <span>{o.l}</span>
+                  </button>
+                ))}
               </div>
-            )}
+            ))}
           </>
         );
       })()}
@@ -3452,22 +3548,6 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         };
         const miniBadge = v => (
           <span style={{ fontFamily: fam, fontSize: 11, fontWeight: 700, padding: "3px 10px", ...badgeLook({ ...styles, badgeStyle: v }, "#ef4444") }}>-20%</span>
-        );
-
-        const accRow = (id, icon, title, sub, body) => (
-          <div className={`pb-acc ${acc === id ? "pb-acc--open" : ""}`}>
-            <button type="button" className="pb-acc__head" onClick={() => setAcc(acc === id ? "" : id)}>
-              <span className="pb-acc__icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS[icon]}</svg>
-              </span>
-              <span className="pb-acc__body">
-                <span className="pb-acc__title">{title}</span>
-                <span className="pb-acc__sub">{sub}</span>
-              </span>
-              <span className="pb-acc__chev"><SChevron /></span>
-            </button>
-            {acc === id && <div className="pb-acc__panel">{body}</div>}
-          </div>
         );
 
         const fieldPv = { ...fieldLook(styles, { border: brd, surface: surf, text: muted }), direction: "ltr", textAlign: "left", fontFamily: fam };
