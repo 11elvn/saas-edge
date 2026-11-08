@@ -13,7 +13,7 @@ import StoreFooter from "../components/StoreFooter";
 import FaqSection from "../components/FaqSection";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
-import { rs, themeVars, btnStyle } from "../utils/themeStyles";
+import { rs, themeVars, btnStyle, themeAttrs, badgeLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -456,8 +456,10 @@ function Checkout() {
   return (
     <div
       dir={direction}
+      {...themeAttrs(styles)}
       style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, paddingBottom: checkoutSettings.stickyButton !== false && !isCompact ? 74 : 0 }}
     >
+      <style>{COMPONENTS_CSS}</style>
       {/* ── Announcement Bar ── */}
       {isAnnouncementEnabled(announcementSec) && (
         <SectionWrapper type="announcement" isPreview={isPreview} spacing={sec(homeSections, "announcement")?.settings?.spacing} isHighlighted={highlightedSection === "announcement"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>

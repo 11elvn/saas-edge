@@ -14,7 +14,7 @@ import FaqSection from "../components/FaqSection";
 import ReviewsSection from "../components/ReviewsSection";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
-import { rs, themeVars, btnStyle } from "../utils/themeStyles";
+import { rs, themeVars, btnStyle, themeAttrs, badgeLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -596,8 +596,10 @@ function ProductDetails() {
   return (
     <div
       dir="rtl"
+      {...themeAttrs(styles)}
       style={{ ...themeVars(styles), minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction, paddingBottom: checkoutSettings.stickyButton !== false ? 74 : 0 }}
     >
+      <style>{COMPONENTS_CSS}</style>
       <style>{`
         @media (max-width: 768px) {
           .pd-grid { grid-template-columns: 1fr !important; }
@@ -767,7 +769,7 @@ function ProductDetails() {
                 </span>
               )}
               {product.oldPrice && (
-                <span style={{ background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 99, display: "inline-block", marginBottom: 12, marginInlineStart: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 12px", display: "inline-block", marginBottom: 12, marginInlineStart: 8, ...badgeLook(styles, "#ef4444") }}>
                   خصم {Math.round((1 - product.currentPrice / product.oldPrice) * 100)}%
                 </span>
               )}

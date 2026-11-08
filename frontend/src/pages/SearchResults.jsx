@@ -10,7 +10,7 @@ import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
-import { rs, themeVars, btnStyle } from "../utils/themeStyles";
+import { rs, themeVars, btnStyle, themeAttrs, cardLook, cardHoverMode, badgeLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -328,9 +328,11 @@ export default function SearchResults() {
     bordered: { cardBorder: `1px solid ${borderColor}`, cardPadding: 8, imgRadius: 12, titleSize: 14, priceSize: 16, gap: 8 },
   };
   const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
+  const cLook = cardLook(styles, { border: borderColor, bg: bgColor });
 
   return (
-    <div dir={direction} style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
+    <div dir={direction} {...themeAttrs(styles)} style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
+      <style>{COMPONENTS_CSS}</style>
       <style>{`
         ${ANNOUNCEMENT_BAR_CSS}
         .sr-card { transition: transform .25s ease, box-shadow .25s ease; }
@@ -403,12 +405,14 @@ export default function SearchResults() {
                   <div
                     key={product._id}
                     className="sr-card"
+                    data-card-hover={cardHoverMode(styles)}
                     onClick={() => !isPreview && navigate(`/store/${slug}/product/${product._id}`)}
                     style={{
-                      background: "transparent",
-                      border: cardStyleCfg.cardBorder,
-                      borderRadius: rs(cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0)),
-                      padding: cardStyleCfg.cardPadding,
+                      background: cLook ? cLook.background : "transparent",
+                      border: cLook ? cLook.border : cardStyleCfg.cardBorder,
+                      boxShadow: cLook ? cLook.boxShadow : undefined,
+                      borderRadius: rs(cardStyleCfg.imgRadius + ((cLook ? cLook.padding : cardStyleCfg.cardPadding) ? 4 : 0)),
+                      padding: cLook ? cLook.padding : cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: isPreview ? "default" : "pointer",
                       opacity: outOfStock ? 0.6 : 1,
@@ -439,7 +443,7 @@ export default function SearchResults() {
                         </div>
                       </div>
                       {showBadge && product.oldPrice && !outOfStock && (
-                        <span style={{ position: "absolute", top: 12, right: 12, background: "#ef4444", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, letterSpacing: .5 }}>
+                        <span style={{ position: "absolute", top: 12, right: 12, fontSize: 11, fontWeight: 700, padding: "3px 10px", letterSpacing: .5, ...badgeLook(styles, "#ef4444") }}>
                           تخفيض
                         </span>
                       )}

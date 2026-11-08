@@ -4,7 +4,7 @@
 // ============================================================
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { btnStyle, getRadiusScale, getSecondaryKind } from "../utils/themeStyles";
+import { btnStyle, getRadiusScale, getSecondaryKind, cardLook, badgeLook, fieldLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API   = () => import.meta.env.VITE_API_URL;
 const token = () => localStorage.getItem("token");
@@ -1438,6 +1438,17 @@ const CSS = `
 .pb-bhead { display:flex; align-items:center; justify-content:space-between; font-size:.8rem; font-weight:600; color:#6f6590; }
 .pb-bhead b { font-weight:700; color:#1f1a33; }
 .pb-bhint { font-size:.7rem; line-height:1.6; color:#8b7fae; }
+.pb-cstage { border-radius:14px; border:1px solid #e7e1fa; padding:16px; display:flex; flex-direction:column; align-items:center; gap:12px; transition:background .2s; }
+.pb-acc { border:1px solid #ece7fb; border-radius:14px; background:#fff; overflow:hidden; }
+.pb-acc__head { width:100%; display:flex; align-items:center; gap:10px; padding:11px 12px; background:none; border:none; font-family:inherit; cursor:pointer; text-align:start; }
+.pb-acc__head:hover { background:#faf8ff; }
+.pb-acc__icon { width:32px; height:32px; border-radius:10px; background:#f1eefd; color:#7c6df2; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pb-acc__body { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.pb-acc__title { font-size:.84rem; font-weight:700; color:#1f1a33; }
+.pb-acc__sub { font-size:.7rem; color:#8b7fae; }
+.pb-acc__chev { color:#a89ccb; display:flex; transition:transform .18s; }
+.pb-acc--open .pb-acc__chev { transform:rotate(90deg); }
+.pb-acc__panel { padding:2px 12px 14px; display:flex; flex-direction:column; gap:10px; }
 .pb-fpv { border-radius:16px; padding:14px 16px; }
 .pb-fpv__k { font-size:.62rem; letter-spacing:.04em; opacity:.6; margin-bottom:6px; direction:ltr; text-align:left; text-transform:uppercase; }
 .pb-fpv__h { font-size:1.3rem; line-height:1.35; font-weight:700; direction:rtl; text-align:right; }
@@ -3059,6 +3070,22 @@ const SROW_ICONS = {
       <rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
     </>
   ),
+  cards: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 15h18" /><path d="M7 19h5" />
+    </>
+  ),
+  badge: (
+    <>
+      <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+      <circle cx="7.5" cy="7.5" r="1.2" />
+    </>
+  ),
+  field: (
+    <>
+      <rect x="3" y="7" width="18" height="10" rx="2" /><path d="M7 12h5" />
+    </>
+  ),
 };
 
 function StyleRow({ icon, title, sub, isNew, onClick, children }) {
@@ -3116,6 +3143,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
   const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
   useEffect(() => { loadEditorFonts(); }, []);
   const [btab, setBtab] = useState("primary"); // primary | secondary | order
+  const [acc, setAcc] = useState("cards");     // cards | badges | fields | ""  (Components accordion)
   const s = (k, v) => onChange({ ...styles, [k]: v });
 
   const font    = styles.fontFamily || "Cairo";
@@ -3173,9 +3201,15 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
           </StyleRow>
 
           <StyleRow icon="components" title="Components" isNew sub="Cards, badges, fields" onClick={() => setView("components")}>
-            <span style={{ width: 44, height: 30, borderRadius: 10 * scale, background: surface, border: `1px solid ${border}` }} />
-            <span className="pb-srow__badge" style={{ background: primary }}>-20%</span>
-            <span className="pb-srow__field" style={{ borderRadius: 8 * scale, borderColor: border }}>Email</span>
+            {(() => {
+              const cl = cardLook(styles, { border, bg: "#ffffff" });
+              return <span style={{ width: 44, height: 30, borderRadius: 10 * scale, background: cl ? "#ffffff" : surface, border: cl && cl.border !== "none" ? cl.border : `1px solid ${cl ? "transparent" : border}`, boxShadow: cl ? cl.boxShadow : "none" }} />;
+            })()}
+            <span className="pb-srow__badge" style={{ ...badgeLook(styles, primary) }}>-20%</span>
+            {(() => {
+              const fl = fieldLook(styles, { border, surface, text: "#a89ccb" });
+              return <span className="pb-srow__field" style={{ background: fl.background, borderStyle: fl.borderStyle, borderWidth: fl.borderWidth, borderColor: fl.borderColor, borderRadius: fl.borderRadius }}>Email</span>;
+            })()}
           </StyleRow>
 
           <StyleRow icon="layout" title="Layout & motion" sub="Width, density, motion" onClick={() => setView("layout")}>
@@ -3365,7 +3399,142 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         );
       })()}
 
-      {(view === "components" || view === "layout") && (
+      {view === "components" && (() => {
+        const cv  = styles.cardVariant || "flat";
+        const ch  = styles.cardHover   || "zoom";
+        const bs  = styles.badgeStyle  || "filled";
+        const bsh = styles.badgeShape  || "pill";
+        const fs  = styles.fieldStyle  || "outline";
+        const fz  = styles.fieldSize   || "comfortable";
+        const bgc   = styles.backgroundColor || "#ffffff";
+        const txt   = styles.textColor       || "#111827";
+        const muted = styles.mutedTextColor  || "#6b7280";
+        const surf  = styles.surfaceColor    || "#fafafa";
+        const brd   = styles.borderColor     || "#ebebeb";
+        const fam   = `'${font}', sans-serif`;
+        const miniBrd = `color-mix(in srgb, ${brd} 55%, #8b7fae)`;
+        const look  = cardLook({ ...styles, cardVariant: cv }, { border: brd, bg: bgc });
+
+        const L = {
+          flat: "Flat", bordered: "Bordered", elevated: "Elevated",
+          none: "None", lift: "Lift", zoom: "Zoom",
+          filled: "Filled", soft: "Soft", outline: "Outline", underline: "Underline",
+          pill: "Pill", corners: "Follow corners",
+          compact: "Compact", comfortable: "Comfortable",
+        };
+
+        const seg = (items, cur, key) => (
+          <div className="pb-segment">
+            {items.map(v => (
+              <button key={v} type="button"
+                className={`pb-seg-btn ${cur === v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s(key, v)}>{L[v]}</button>
+            ))}
+          </div>
+        );
+
+        const tiles = (items, cur, key, pv) => (
+          <div className="pb-btiles">
+            {items.map(v => (
+              <button key={v} type="button"
+                className={`pb-btile ${cur === v ? "pb-btile--active" : ""}`}
+                onClick={() => s(key, v)}>
+                <span className="pb-btile__pv">{pv(v)}</span>
+                {L[v]}
+              </button>
+            ))}
+          </div>
+        );
+
+        const miniCard = v => {
+          const l = cardLook({ ...styles, cardVariant: v }, { border: miniBrd, bg: "#ffffff" });
+          return <span style={{ display: "block", width: 46, height: 32, borderRadius: 10 * scale, background: v === "flat" ? surf : "#ffffff", border: l.border === "none" ? "1px solid transparent" : l.border, boxShadow: l.boxShadow }} />;
+        };
+        const miniBadge = v => (
+          <span style={{ fontFamily: fam, fontSize: 11, fontWeight: 700, padding: "3px 10px", ...badgeLook({ ...styles, badgeStyle: v }, "#ef4444") }}>-20%</span>
+        );
+
+        const accRow = (id, icon, title, sub, body) => (
+          <div className={`pb-acc ${acc === id ? "pb-acc--open" : ""}`}>
+            <button type="button" className="pb-acc__head" onClick={() => setAcc(acc === id ? "" : id)}>
+              <span className="pb-acc__icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS[icon]}</svg>
+              </span>
+              <span className="pb-acc__body">
+                <span className="pb-acc__title">{title}</span>
+                <span className="pb-acc__sub">{sub}</span>
+              </span>
+              <span className="pb-acc__chev"><SChevron /></span>
+            </button>
+            {acc === id && <div className="pb-acc__panel">{body}</div>}
+          </div>
+        );
+
+        const fieldPv = { ...fieldLook(styles, { border: brd, surface: surf, text: muted }), direction: "ltr", textAlign: "left", fontFamily: fam };
+
+        return (
+          <>
+            <style>{COMPONENTS_CSS}</style>
+
+            <div className="pb-cstage" style={{ background: bgc }}>
+              <div
+                data-card-hover={ch}
+                style={{
+                  width: 168, boxSizing: "border-box", cursor: "pointer",
+                  padding: look.padding, background: look.background, border: look.border, boxShadow: look.boxShadow,
+                  borderRadius: (12 + (look.padding ? 4 : 0)) * scale,
+                }}
+              >
+                <div style={{ position: "relative", overflow: "hidden", height: 92, background: surf, borderRadius: 12 * scale }}>
+                  <div className="cmp-img" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: primary, opacity: .5 }}>
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+                    </svg>
+                  </div>
+                  <span style={{ position: "absolute", top: 8, right: 8, fontFamily: fam, fontSize: 11, fontWeight: 700, padding: "3px 10px", letterSpacing: .3, ...badgeLook(styles, "#ef4444") }}>-20%</span>
+                </div>
+                <div style={{ padding: "8px 2px 2px", fontFamily: fam, direction: "rtl" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: txt }}>قهوة مطحونة</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: primary }}>2,400 DA</div>
+                </div>
+              </div>
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={fieldPv}>Email</div>
+                <div style={fieldPv}>Phone</div>
+              </div>
+            </div>
+
+            {accRow("cards", "cards", "Cards", `${L[cv]} · ${L[ch]}`, (
+              <>
+                <div className="pb-label">Style</div>
+                {tiles(["flat", "bordered", "elevated"], cv, "cardVariant", miniCard)}
+                <div className="pb-label">Hover effect</div>
+                {seg(["none", "lift", "zoom"], ch, "cardHover")}
+              </>
+            ))}
+
+            {accRow("badges", "badge", "Badges", `${L[bs]} · ${L[bsh]}`, (
+              <>
+                <div className="pb-label">Style</div>
+                {tiles(["filled", "soft", "outline"], bs, "badgeStyle", miniBadge)}
+                <div className="pb-label">Shape</div>
+                {seg(["corners", "pill"], bsh, "badgeShape")}
+              </>
+            ))}
+
+            {accRow("fields", "field", "Fields", `${L[fs]} · ${L[fz]}`, (
+              <>
+                <div className="pb-label">Style</div>
+                {seg(["outline", "filled", "underline"], fs, "fieldStyle")}
+                <div className="pb-label">Size</div>
+                {seg(["compact", "comfortable"], fz, "fieldSize")}
+              </>
+            ))}
+          </>
+        );
+      })()}
+
+      {view === "layout" && (
         <div className="pb-group">
           <div className="pb-scard__text" style={{ textAlign: "center", padding: "18px 6px" }}>
             Details for this group will be added in the next step.

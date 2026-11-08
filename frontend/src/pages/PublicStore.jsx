@@ -12,7 +12,7 @@ import ReviewsSection from "../components/ReviewsSection";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
 import { useCart } from "../context/CartContext";
-import { rs, themeVars, btnStyle } from "../utils/themeStyles";
+import { rs, themeVars, btnStyle, themeAttrs, cardLook, cardHoverMode, badgeLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -701,7 +701,8 @@ function PublicStore() {
   const phone     = store?.whatsappNumber || "";
 
   return (
-    <div style={{ ...themeVars(tc?.styles), minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
+    <div {...themeAttrs(tc?.styles)} style={{ ...themeVars(tc?.styles), minHeight: "100vh", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction: direction, display: "flex", flexDirection: "column" }}>
+      <style>{COMPONENTS_CSS}</style>
 
       {/* ── Announcement Bar ── */}
       {(() => {
@@ -1049,6 +1050,7 @@ function PublicStore() {
           bordered: { cardBorder: `1px solid ${borderColor}`, cardPadding: 8, imgRadius: 12, titleSize: 14, priceSize: 16, gap: 8 },
         };
         const cardStyleCfg = CARD_STYLE_MAP[cardStyle] || CARD_STYLE_MAP.default;
+        const cLook = cardLook(tc?.styles, { border: borderColor, bg: bgColor });
 
         const viewAllBtnStyle = {
           link:    { background: "none", color: primary, border: "none", textDecoration: "underline" },
@@ -1102,12 +1104,14 @@ function PublicStore() {
                   <div
                     key={product._id}
                     className="ps-card ps-fade-up"
+                    data-card-hover={cardHoverMode(tc?.styles)}
                     style={{
                       animationDelay: `${(idx % 6) * 0.07}s`,
-                      background: "transparent",
-                      border: cardStyleCfg.cardBorder,
-                      borderRadius: rs(cardStyleCfg.imgRadius + (cardStyleCfg.cardPadding ? 4 : 0)),
-                      padding: cardStyleCfg.cardPadding,
+                      background: cLook ? cLook.background : "transparent",
+                      border: cLook ? cLook.border : cardStyleCfg.cardBorder,
+                      boxShadow: cLook ? cLook.boxShadow : undefined,
+                      borderRadius: rs(cardStyleCfg.imgRadius + ((cLook ? cLook.padding : cardStyleCfg.cardPadding) ? 4 : 0)),
+                      padding: cLook ? cLook.padding : cardStyleCfg.cardPadding,
                       display: "flex", flexDirection: "column",
                       cursor: "pointer",
                       opacity: outOfStock ? 0.6 : 1,
@@ -1145,9 +1149,8 @@ function PublicStore() {
                       {showBadge && product.oldPrice && !outOfStock && (
                         <span style={{
                           position: "absolute", top: 12, right: 12,
-                          background: "#ef4444", color: "#fff",
-                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
-                          letterSpacing: .5,
+                          fontSize: 11, fontWeight: 700, padding: "3px 10px", letterSpacing: .5,
+                          ...badgeLook(tc?.styles, "#ef4444"),
                         }}>تخفيض</span>
                       )}
                       {outOfStock && (
