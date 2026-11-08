@@ -129,6 +129,7 @@ const DEFAULT_CONFIG = {
     mutedTextColor: "#666666",
     borderColor: "#ebebeb",
     fontFamily: "Cairo",
+    headingFont: "Cairo",
     borderRadius: "medium",
     buttonStyle: "filled",
     direction: "rtl",
@@ -601,7 +602,6 @@ function Icon({ name, size = 15 }) {
   }
 }
 
-const FONTS     = ["Cairo","Inter","Poppins","Roboto"];
 const RADII     = [{ v:"small", l:"Small" },{ v:"medium", l:"Medium" },{ v:"large", l:"Large" }];
 const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"ghost", l:"Ghost" }];
 
@@ -1413,6 +1413,28 @@ const CSS = `
 .pb-srow__field { flex:1; min-width:70px; height:28px; display:flex; align-items:center; padding:0 9px; font-size:.7rem; color:#a89ccb; background:#fff; border:1.5px solid #e7e1fa; }
 .pb-srow__chip { font-size:.7rem; padding:3px 9px; border-radius:999px; background:#f1eefd; color:#5b3fd6; }
 .pb-scard__text { font-size:.8rem; color:#8b7fae; }
+.pb-fpv { border-radius:16px; padding:14px 16px; }
+.pb-fpv__k { font-size:.62rem; letter-spacing:.04em; opacity:.6; margin-bottom:6px; direction:ltr; text-align:left; text-transform:uppercase; }
+.pb-fpv__h { font-size:1.3rem; line-height:1.35; font-weight:700; direction:rtl; text-align:right; }
+.pb-fpv__b { font-size:.78rem; line-height:1.7; opacity:.8; direction:rtl; text-align:right; }
+.pb-fpv__btn { display:inline-block; margin-top:10px; font-size:.74rem; font-weight:700; padding:6px 14px; }
+.pb-fpv__row { display:flex; justify-content:flex-end; }
+.pb-flbl { display:flex; align-items:center; justify-content:space-between; font-size:.78rem; font-weight:700; color:#5b3fd6; }
+.pb-flbl small { font-size:.68rem; font-weight:500; color:#8b7fae; }
+.pb-fpair {
+  display:block; width:100%; text-align:start; font-family:inherit; cursor:pointer;
+  background:#fff; border:1.5px solid #efeafd; border-radius:14px; padding:10px 13px;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.pb-fpair:hover { border-color:#cabdf7; }
+.pb-fpair--active { border-color:#7c6df2; background:#faf8ff; box-shadow:0 0 0 3px rgba(124,109,242,.12); }
+.pb-fpair__top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pb-fpair__name { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:700; color:#443a63; }
+.pb-fpair__ck { width:16px; height:16px; border-radius:50%; background:#7c6df2; color:#fff; font-size:.68rem; display:none; align-items:center; justify-content:center; }
+.pb-fpair--active .pb-fpair__ck { display:flex; }
+.pb-fpair__fonts { font-size:.66rem; color:#8b7fae; direction:ltr; }
+.pb-fpair__h { font-size:1.12rem; line-height:1.4; color:#1f1a33; margin-top:6px; }
+.pb-fpair__b { font-size:.75rem; line-height:1.6; color:#6f6590; }
 .pb-sback {
   display:flex; align-items:center; gap:6px; align-self:flex-start;
   background:none; border:none; cursor:pointer; font-family:inherit;
@@ -3035,6 +3057,28 @@ function StyleRow({ icon, title, sub, isNew, onClick, children }) {
   );
 }
 
+// ✦ أزواج الخطوط: خط العناوين (h) + خط النص (b) — كلها تدعم الأوزان 400→900 باش تشتغل مع loadFont ديال صفحات المتجر
+const FONT_PAIRS = [
+  { id: "balanced",  name: "Balanced",  h: "Cairo",            b: "Cairo",            w: 700, t: "أفضل المنتجات لك",    s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "editorial", name: "Editorial", h: "Noto Kufi Arabic", b: "Noto Sans Arabic", w: 700, t: "مجموعة الموسم",       s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "soft",      name: "Soft",      h: "Rubik",            b: "Noto Sans Arabic", w: 700, t: "تسوّق بهدوء وراحة",   s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "strong",    name: "Strong",    h: "Cairo",            b: "Rubik",            w: 900, t: "عروض لا تفوّتها",     s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "minimal",   name: "Minimal",   h: "Noto Sans Arabic", b: "Noto Sans Arabic", w: 700, t: "بساطة في كل تفصيل",   s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "display",   name: "Display",   h: "Noto Kufi Arabic", b: "Cairo",            w: 700, t: "هوية تشبه علامتك",    s: "نص تجريبي قصير يوضح شكل الخط" },
+  { id: "latin",     name: "Latin",     h: "Poppins",          b: "Inter",            w: 700, t: "Shop the new season", s: "A short sample that shows the font", latin: true },
+];
+
+// ✦ تحميل خطوط المعاينة داخل المحرر (مرة وحدة)
+function loadEditorFonts() {
+  const id = "pb-editor-fonts";
+  if (typeof document === "undefined" || document.getElementById(id)) return;
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Noto+Kufi+Arabic:wght@500;700&family=Noto+Sans+Arabic:wght@400;700&family=Rubik:wght@400;700&family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap";
+  document.head.appendChild(link);
+}
+
 const STYLE_VIEW_TITLES = {
   colors:     "Colors",
   fonts:      "Fonts",
@@ -3045,9 +3089,11 @@ const STYLE_VIEW_TITLES = {
 
 function StylesPanel({ styles, onChange, onApplyPreset }) {
   const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
+  useEffect(() => { loadEditorFonts(); }, []);
   const s = (k, v) => onChange({ ...styles, [k]: v });
 
   const font    = styles.fontFamily || "Cairo";
+  const headFont = styles.headingFont || font;
   const primary = styles.primaryColor || "#2563eb";
   const scale   = getRadiusScale(styles);
   const swatches = [styles.primaryColor, styles.secondaryColor, styles.backgroundColor, styles.surfaceColor, styles.textColor].filter(Boolean);
@@ -3076,10 +3122,10 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             </div>
           </StyleRow>
 
-          <StyleRow icon="fonts" title="Fonts" sub={`${font} · ${dir}`} onClick={() => setView("fonts")}>
-            <div style={{ fontFamily: `'${font}', sans-serif`, direction: "rtl", display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span className="pb-srow__fontTitle">متجرك</span>
-              <span className="pb-srow__fontSub">نص تجريبي قصير</span>
+          <StyleRow icon="fonts" title="Fonts" sub={`${headFont === font ? font : `${headFont} + ${font}`} · ${dir}`} onClick={() => setView("fonts")}>
+            <div style={{ direction: "rtl", display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span className="pb-srow__fontTitle" style={{ fontFamily: `'${headFont}', sans-serif` }}>متجرك</span>
+              <span className="pb-srow__fontSub" style={{ fontFamily: `'${font}', sans-serif` }}>نص تجريبي قصير</span>
             </div>
           </StyleRow>
 
@@ -3142,29 +3188,57 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         </>
       )}
 
-      {view === "fonts" && (
-        <div className="pb-group">
-          <div className="pb-group__label">Typography</div>
-          <div className="pb-field">
-            <div className="pb-label">Direction</div>
-            <div className="pb-segment">
-              {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
-                <button key={o.v}
-                  className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("direction", o.v)}>{o.l}</button>
-              ))}
+      {view === "fonts" && (() => {
+        const activePair = FONT_PAIRS.find(p => p.h === headFont && p.b === font);
+        const pvBg = styles.textColor || "#111111";
+        const pvFg = styles.backgroundColor || "#ffffff";
+        return (
+          <>
+            <div className="pb-fpv" style={{ background: pvBg, color: pvFg }}>
+              <div className="pb-fpv__k">Heading {headFont} · Body {font}</div>
+              <div className="pb-fpv__h" style={{ fontFamily: `'${headFont}', sans-serif` }}>متجرك الإلكتروني</div>
+              <div className="pb-fpv__b" style={{ fontFamily: `'${font}', sans-serif` }}>أفضل المنتجات بأفضل الأسعار، يصلك إلى باب بيتك.</div>
+              <div className="pb-fpv__row">
+                <span className="pb-fpv__btn" style={{ fontFamily: `'${font}', sans-serif`, borderRadius: 9 * scale, background: primary, color: "#fff" }}>اشترِ الآن</span>
+              </div>
             </div>
-          </div>
-          <div className="pb-font-grid">
-            {FONTS.map(f => (
-              <button key={f}
-                className={`pb-font-btn ${styles.fontFamily === f ? "pb-font-btn--active" : ""}`}
-                style={{ fontFamily: f }}
-                onClick={() => s("fontFamily", f)}>{f}</button>
-            ))}
-          </div>
-        </div>
-      )}
+
+            <div className="pb-flbl">
+              <span>Font pairs</span>
+              {!activePair && <small>Custom · {headFont} + {font}</small>}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {FONT_PAIRS.map(p => {
+                const active = activePair?.id === p.id;
+                const align = p.latin ? { direction: "ltr", textAlign: "left" } : { direction: "rtl", textAlign: "right" };
+                return (
+                  <button key={p.id} type="button"
+                    className={`pb-fpair ${active ? "pb-fpair--active" : ""}`}
+                    onClick={() => onChange({ ...styles, fontFamily: p.b, headingFont: p.h })}>
+                    <div className="pb-fpair__top">
+                      <span className="pb-fpair__name"><span className="pb-fpair__ck">✓</span>{p.name}</span>
+                      <span className="pb-fpair__fonts">{p.h === p.b ? p.h : `${p.h} + ${p.b}`}</span>
+                    </div>
+                    <div className="pb-fpair__h" style={{ fontFamily: `'${p.h}', sans-serif`, fontWeight: p.w, ...align }}>{p.t}</div>
+                    <div className="pb-fpair__b" style={{ fontFamily: `'${p.b}', sans-serif`, ...align }}>{p.s}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pb-group">
+              <div className="pb-group__label">Direction</div>
+              <div className="pb-segment">
+                {[{v:"rtl",l:"RTL"},{v:"ltr",l:"LTR"}].map(o => (
+                  <button key={o.v}
+                    className={`pb-seg-btn ${(styles.direction || "rtl") === o.v ? "pb-seg-btn--active" : ""}`}
+                    onClick={() => s("direction", o.v)}>{o.l}</button>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {view === "buttons" && (
         <>
