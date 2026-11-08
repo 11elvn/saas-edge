@@ -607,8 +607,7 @@ const BTN_STYLE = [{ v:"filled", l:"Filled" },{ v:"outline", l:"Outline" },{ v:"
 const BTN_SIZES     = ["S","M","L"];
 const ORDER_SIZES   = ["M","L","XL"];
 const ORDER_WEIGHTS = [{ v:500, l:"Medium" },{ v:700, l:"Bold" },{ v:800, l:"Extra" },{ v:900, l:"Black" }];
-const INVERTED_OPTS = [{ v:"brand", l:"Brand color" },{ v:"contrast", l:"High contrast" }];
-const BTN_TABS      = [{ id:"primary", l:"Primary" },{ id:"secondary", l:"Secondary" },{ id:"order", l:"Order" },{ id:"dark", l:"On dark" }];
+const BTN_TABS      = [{ id:"primary", l:"Primary" },{ id:"secondary", l:"Secondary" },{ id:"order", l:"Order" }];
 const CORNER_PREVIEW = { square: 0, small: 4, medium: 8, large: 12, pill: "50%" };
 
 // ─────────────────────────────────────────────
@@ -1424,12 +1423,10 @@ const CSS = `
 .pb-btab--active { background:#7c6df2; color:#fff; }
 .pb-bstage { border-radius:14px; min-height:84px; display:flex; align-items:center; justify-content:center; padding:16px; transition:background .2s; }
 .pb-btiles { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
-.pb-btiles--2 { grid-template-columns:repeat(2,1fr); }
 .pb-btile { display:flex; flex-direction:column; align-items:center; gap:7px; padding:9px 4px; font-family:inherit; font-size:.72rem; font-weight:600; color:#6f6590; background:#fff; border:1.5px solid #e7e1fa; border-radius:12px; cursor:pointer; transition:all .15s; }
 .pb-btile:hover { border-color:#cabdf7; }
 .pb-btile--active { border-color:#7c6df2; background:#faf8ff; color:#5b3fd6; }
 .pb-btile__pv { display:flex; align-items:center; justify-content:center; width:100%; padding:4px 0; border-radius:8px; }
-.pb-btile__pv--dark { background:#1f2a24; }
 .pb-bcorners { display:flex; gap:6px; }
 .pb-bcorner { flex:1; min-width:0; height:68px; border-radius:12px; border:1.5px solid #e7e1fa; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; font-family:inherit; transition:all .15s; }
 .pb-bcorner:hover { border-color:#cabdf7; }
@@ -3118,7 +3115,7 @@ const STYLE_VIEW_TITLES = {
 function StylesPanel({ styles, onChange, onApplyPreset }) {
   const [view, setView] = useState("list"); // list | colors | fonts | buttons | components | layout
   useEffect(() => { loadEditorFonts(); }, []);
-  const [btab, setBtab] = useState("primary"); // primary | secondary | order | dark
+  const [btab, setBtab] = useState("primary"); // primary | secondary | order
   const s = (k, v) => onChange({ ...styles, [k]: v });
 
   const font    = styles.fontFamily || "Cairo";
@@ -3272,9 +3269,8 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
       {view === "buttons" && (() => {
         const kind   = styles.buttonStyle || "filled";
         const secK   = getSecondaryKind(styles);
-        const inv    = styles.buttonOnInverted || "brand";
         const fam    = `'${font}', sans-serif`;
-        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "14px 28px", fontSize: 14 };
+        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "19px 34px", fontSize: 15 };
         const mini   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 8 * scale, padding: "4px 11px", fontSize: 11 };
         const seg    = (items, isActive, onPick) => (
           <div className="pb-segment">
@@ -3286,11 +3282,11 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
           </div>
         );
 
-        let stageBg = "#f6f3ff", stageBtn;
-        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 28 }) }}>اشترِ الآن</span>;
-        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 28 }) }}>المزيد</span>;
+        const stageBg = "#f6f3ff";
+        let stageBtn;
+        if (btab === "primary")   stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { padX: 34 }) }}>اشترِ الآن</span>;
+        if (btab === "secondary") stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 34 }) }}>المزيد</span>;
         if (btab === "order")     stageBtn = <span style={{ ...base, padding: "16px 36px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 36 }) }}>اطلب الآن</span>;
-        if (btab === "dark")    { stageBg = "#1f2a24"; stageBtn = <span style={{ ...base, ...btnStyle(styles, primary, { onImage: true, padX: 28 }) }}>اشترِ الآن</span>; }
 
         return (
           <>
@@ -3356,23 +3352,6 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                 <div className="pb-label">Weight</div>
                 {seg(ORDER_WEIGHTS, v => Number(styles.orderButtonWeight || 800) === v, v => s("orderButtonWeight", v))}
                 <div className="pb-bhint">Applies to the order and checkout buttons, which should stay the most visible button on the page.</div>
-              </div>
-            )}
-
-            {btab === "dark" && (
-              <div className="pb-group">
-                <div className="pb-label">Buttons on images and dark areas</div>
-                <div className="pb-btiles pb-btiles--2">
-                  {INVERTED_OPTS.map(o => (
-                    <button key={o.v} type="button" className={`pb-btile ${inv === o.v ? "pb-btile--active" : ""}`} onClick={() => s("buttonOnInverted", o.v)}>
-                      <span className="pb-btile__pv pb-btile__pv--dark">
-                        <span style={{ ...mini, background: o.v === "brand" ? primary : "#ffffff", color: o.v === "brand" ? "#fff" : "#111827" }}>اشترِ</span>
-                      </span>
-                      {o.l}
-                    </button>
-                  ))}
-                </div>
-                <div className="pb-bhint">Applies to filled buttons over banner images and product cards. Pick high contrast when your brand color is light or hard to read on photos.</div>
               </div>
             )}
           </>
