@@ -1373,20 +1373,6 @@ const CSS = `
   box-shadow: none;
 }
 
-/* ── COLLAPSIBLE GROUP (accordion) — لصفحة Product settings ── */
-.pb-acc { border-bottom: 1px solid #f1edfd; }
-.pb-acc:last-child { border-bottom: none; }
-.pb-acc__header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 2px; cursor: pointer; user-select: none;
-  background: none; border: none; width: 100%;
-  font-family: 'Inter', sans-serif;
-}
-.pb-acc__title { font-size: .8rem; font-weight: 700; color: #5b3fd6; }
-.pb-acc__chevron { display:flex; color: #a89ccb; transition: transform .2s; }
-.pb-acc__chevron--open { transform: rotate(180deg); }
-.pb-acc__body { display:flex; flex-direction:column; gap:11px; padding-bottom: 14px; }
-
 /* ── STYLES PANEL — grouped list rows ── */
 .pb-slist { background:#ffffff; border:1px solid #efeafd; border-radius:16px; overflow:hidden; }
 .pb-srow {
@@ -1500,6 +1486,42 @@ const CSS = `
 }
 .pb-field-card__title { font-size: .83rem; font-weight: 700; color: #2b2440; }
 .pb-field-card__hint { font-size: .72rem; color: #a89ccb; margin-top: -2px; }
+
+/* ── RIGHT PANEL — نفس تصميم لوحة Styles (بطاقات accordion + معاينة حية) ── */
+.pb-right__top { flex-shrink:0; background:#fff; position:relative; z-index:2; box-shadow:0 10px 18px -14px rgba(124,109,242,.45); }
+.pb-right__icon { width:32px; height:32px; border-radius:10px; background:#f1eefd; color:#7c6df2; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pb-right__header { padding: 14px 15px 12px; }
+.pb-right__title { font-size:1rem; gap:10px; }
+
+.pb-spv { margin:12px 14px 14px; height:112px; border-radius:16px; background:#f5f3ff; display:flex; align-items:center; justify-content:center; padding:12px; overflow:hidden; box-sizing:border-box; }
+.pb-spv i { display:block; border-radius:5px; background:#d9d0f7; flex-shrink:0; }
+.pb-spv i.d { background:#b6a6f0; }
+.pb-spv i.s { background:#e3dcf9; }
+.pb-spv i.w { background:#fff; box-shadow:0 0 0 1px #e7e1fa; }
+.pb-spv__bar { width:100%; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.pb-spv__card { background:#fff; box-shadow:0 0 0 1px #e7e1fa; border-radius:12px; display:flex; box-sizing:border-box; width:100%; }
+.pb-spv__row { display:flex; align-items:center; }
+.pb-spv__col { display:flex; flex-direction:column; }
+
+.pb-acc__panel { padding:4px 14px 16px; gap:14px; }
+.pb-acc__trail { display:flex; align-items:center; }
+
+.pb-toggle-row--hint { align-items:center; gap:12px; padding:2px 0; }
+.pb-toggle-row__txt { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.pb-toggle-row__hint { font-size:.7rem; color:#8b7fae; line-height:1.4; }
+
+.pb-opts { display:grid; gap:8px; }
+.pb-opt { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:11px 6px 9px; min-height:66px; border:1.5px solid #e7e1fa; border-radius:12px; background:#fff; cursor:pointer; font-family:inherit; transition:border-color .15s, background .15s, box-shadow .15s; }
+.pb-opt:hover { border-color:#cabdf7; }
+.pb-opt--active { border-color:#7c6df2; background:#faf8ff; box-shadow:0 0 0 3px rgba(124,109,242,.10); }
+.pb-opt__pv { display:flex; align-items:center; justify-content:center; min-height:30px; }
+.pb-opt__l { font-size:.7rem; font-weight:600; color:#6f6590; line-height:1; }
+.pb-opt--active .pb-opt__l { color:#5b3fd6; font-weight:700; }
+.pb-opt__stack { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.pb-opt__row { display:flex; gap:3px; }
+.pb-pvb { display:block; border-radius:4px; background:#e1daf8; flex-shrink:0; }
+.pb-opt--active .pb-pvb { background:#c4b6f5; }
+.pb-pvb--dash { background:transparent !important; border:1.5px dashed #b6a6f0; box-sizing:border-box; }
 `;
 
 // ─────────────────────────────────────────────
@@ -1515,21 +1537,307 @@ function Toggle({ checked, onChange }) {
 }
 
 // ─────────────────────────────────────────────
-// COLLAPSE (accordion group) — يستعملها Gallery/Product Info/Checkout settings
+// HELPERS — يستعملهم الـ right panel (نفس أسلوب لوحة Styles)
 // ─────────────────────────────────────────────
-function Collapse({ title, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen);
+const capFirst = (v) => (v ? String(v).charAt(0).toUpperCase() + String(v).slice(1) : v);
+
+function ToggleRow({ label, hint, checked, onChange }) {
   return (
-    <div className="pb-acc">
-      <button type="button" className="pb-acc__header" onClick={() => setOpen(v => !v)}>
-        <span className="pb-acc__title">{title}</span>
-        <span className={`pb-acc__chevron ${open ? "pb-acc__chevron--open" : ""}`}>
-          <Icon name="chevronDown" size={14} />
-        </span>
-      </button>
-      {open && <div className="pb-acc__body">{children}</div>}
+    <div className="pb-toggle-row pb-toggle-row--hint">
+      <span className="pb-toggle-row__txt">
+        <span className="pb-toggle-row__label">{label}</span>
+        {hint && <span className="pb-toggle-row__hint">{hint}</span>}
+      </span>
+      <Toggle checked={checked} onChange={onChange} />
     </div>
   );
+}
+
+// ✦ بطاقات اختيار بمعاينة صغيرة (Layout / Image ratio)
+function OptionCards({ value, onChange, options, cols }) {
+  return (
+    <div className="pb-opts" style={{ gridTemplateColumns: `repeat(${cols || options.length}, 1fr)` }}>
+      {options.map(o => (
+        <button key={o.v} type="button"
+          className={`pb-opt ${value === o.v ? "pb-opt--active" : ""}`}
+          onClick={() => onChange(o.v)}>
+          <span className="pb-opt__pv">{o.pv}</span>
+          <span className="pb-opt__l">{o.l}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const pvBlock = (w, h) => <i className="pb-pvb" style={{ width: w, height: h }} />;
+
+const GALLERY_LAYOUT_OPTS = [
+  { v: "stacked", l: "Stacked", pv: <span className="pb-opt__stack">{pvBlock(44, 14)}{pvBlock(44, 14)}</span> },
+  {
+    v: "bottom-rail", l: "Bottom rail",
+    pv: (
+      <span className="pb-opt__stack">
+        {pvBlock(44, 20)}
+        <span className="pb-opt__row">{pvBlock(13, 6)}{pvBlock(13, 6)}{pvBlock(13, 6)}</span>
+      </span>
+    ),
+  },
+];
+
+const IMAGE_RATIO_OPTS = [
+  { v: "1:1",   l: "1:1",   pv: pvBlock(24, 24) },
+  { v: "3:4",   l: "3:4",   pv: pvBlock(20, 27) },
+  { v: "4:3",   l: "4:3",   pv: pvBlock(28, 21) },
+  { v: "adapt", l: "Adapt", pv: <i className="pb-pvb pb-pvb--dash" style={{ width: 24, height: 24 }} /> },
+];
+
+function PbDots({ colors }) {
+  return (
+    <span className="pb-acc__dots">
+      {colors.map((c, i) => <span key={i} style={{ background: c || "#ffffff" }} />)}
+    </span>
+  );
+}
+
+// ─────────────────────────────────────────────
+// COLLAPSE (accordion card) — نفس بطاقة لوحة Styles: أيقونة + عنوان + ملخص القيمة الحالية
+// ─────────────────────────────────────────────
+function Collapse({ title, icon, sub, trail, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className={`pb-acc ${open ? "pb-acc--open" : ""}`}>
+      <button type="button" className="pb-acc__head" onClick={() => setOpen(v => !v)}>
+        {icon && SROW_ICONS[icon] && (
+          <span className="pb-acc__icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{SROW_ICONS[icon]}</svg>
+          </span>
+        )}
+        <span className="pb-acc__body">
+          <span className="pb-acc__title">{title}</span>
+          {sub ? <span className="pb-acc__sub">{sub}</span> : null}
+        </span>
+        {trail}
+        <span className="pb-acc__chev"><SChevron /></span>
+      </button>
+      {open && <div className="pb-acc__panel">{children}</div>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// SECTION PREVIEW — معاينة صغيرة حية فأعلى الـ right panel
+// ─────────────────────────────────────────────
+const PV_RATIO = { "1:1": 1, "3:4": 0.75, "4:3": 1.333, adapt: 1 };
+
+function SectionPreview({ type, settings }) {
+  const st = settings || {};
+  const b = (w, h, c, style, key) => <i key={key} className={c || ""} style={{ width: w, height: h, ...style }} />;
+  const rep = (n, fn) => Array.from({ length: n }, (_, i) => fn(i));
+  let body = null;
+
+  switch (type) {
+    case "announcement":
+      body = (
+        <div className="pb-spv__bar" style={{ background: st.bgColor || "#111827" }}>
+          {b(96, 5, "", { background: st.textColor || "#ffffff", opacity: 0.9 })}
+        </div>
+      );
+      break;
+
+    case "header":
+      body = (
+        <div className="pb-spv__card" style={{ height: 36, padding: "0 12px", alignItems: "center", justifyContent: "space-between" }}>
+          {b(34, 10, "d")}
+          <span className="pb-spv__row" style={{ gap: 7 }}>{rep(3, i => b(22, 5, "s", null, i))}</span>
+          <span className="pb-spv__row" style={{ gap: 5 }}>{rep(2, i => b(11, 11, "d", { borderRadius: "50%" }, i))}</span>
+        </div>
+      );
+      break;
+
+    case "hero": {
+      const al = { right: "flex-end", left: "flex-start", center: "center" }[st.textAlign || "right"];
+      body = (
+        <div className="pb-spv__card" style={{ height: "100%", flexDirection: "column", justifyContent: "center", alignItems: al, gap: 7, padding: "0 18px", boxShadow: "none", background: st.image ? `center / cover no-repeat url("${st.image}")` : "#e4defb" }}>
+          {b(110, 8, "d")}
+          {b(74, 5, "", { background: "#f5f3ff" })}
+          {b(42, 12, "", { background: st.ctaColor || "#7c6df2", borderRadius: 99 })}
+        </div>
+      );
+      break;
+    }
+
+    case "trust": {
+      const grid = st.layout === "grid";
+      body = (
+        <div style={{ width: "100%", display: "grid", gridTemplateColumns: `repeat(${grid ? 2 : 3}, 1fr)`, gap: 7 }}>
+          {rep(grid ? 4 : 3, i => (
+            <div key={i} className="pb-spv__card" style={{ padding: 8, alignItems: "center", gap: 7 }}>
+              {b(16, 16, "d", { borderRadius: "50%" })}
+              <span className="pb-spv__col" style={{ gap: 4, flex: 1 }}>{b("100%", 5, "s")}{b("60%", 4, "s")}</span>
+            </div>
+          ))}
+        </div>
+      );
+      break;
+    }
+
+    case "collection": {
+      const cols = Math.min(Math.max(st.columns || 3, 1), 4);
+      const ratio = PV_RATIO[st.imageRatio || "1:1"] || 1;
+      body = (
+        <div style={{ width: "100%", display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8 }}>
+          {rep(cols, i => (
+            <div key={i} className="pb-spv__col" style={{ gap: 5, alignItems: "center" }}>
+              {b(Math.round(44 * ratio), 44, "d", { maxWidth: "100%" })}
+              {b("70%", 4, "s")}
+            </div>
+          ))}
+        </div>
+      );
+      break;
+    }
+
+    case "categories":
+      body = st.displayStyle === "row" ? (
+        <div className="pb-spv__row" style={{ gap: 14 }}>
+          {rep(4, i => (
+            <span key={i} className="pb-spv__col" style={{ alignItems: "center", gap: 5 }}>
+              {b(34, 34, "d", { borderRadius: "50%" })}{b(28, 4, "s")}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+          {rep(3, i => b("100%", 40, i === 1 ? "d" : "s", { borderRadius: 10 }, i))}
+        </div>
+      );
+      break;
+
+    case "faq": {
+      const cards = st.style === "cards";
+      body = (
+        <div className="pb-spv__col" style={{ width: "100%", gap: cards ? 6 : 0 }}>
+          {rep(3, i => (
+            <div key={i} className={cards ? "pb-spv__card" : "pb-spv__row"}
+              style={{ height: 26, padding: "0 10px", alignItems: "center", justifyContent: "space-between", borderBottom: !cards && i < 2 ? "1px solid #e1daf8" : "none" }}>
+              {b(i === 0 ? 120 : 96, 5, "s")}{b(8, 8, "d", { borderRadius: 2 })}
+            </div>
+          ))}
+        </div>
+      );
+      break;
+    }
+
+    case "reviews":
+      body = (
+        <div style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
+          {rep(3, i => (
+            <div key={i} className="pb-spv__card" style={{ flexDirection: "column", padding: 8, gap: 5 }}>
+              <span className="pb-spv__row" style={{ gap: 2 }}>{rep(5, j => b(6, 6, "", { background: "#f6c76b", borderRadius: 2 }, j))}</span>
+              {b("100%", 4, "s")}{b("80%", 4, "s")}{b("50%", 4, "s")}
+            </div>
+          ))}
+        </div>
+      );
+      break;
+
+    case "footer":
+      body = (
+        <div className="pb-spv__col" style={{ width: "100%", gap: 10, alignItems: "center" }}>
+          <span className="pb-spv__row" style={{ gap: 6 }}>{rep(4, i => b(16, 16, "d", { borderRadius: "50%" }, i))}</span>
+          {b(120, 5, "s")}
+          {b(80, 4, "s")}
+        </div>
+      );
+      break;
+
+    case "gallery": {
+      const ratio = PV_RATIO[st.imageRatio || "1:1"] || 1;
+      const mainStyle = st.imageRatio === "adapt" ? { border: "1.5px dashed #b6a6f0", background: "transparent", boxSizing: "border-box" } : null;
+      const arrow = { width: 16, height: 16, borderRadius: "50%", background: "#fff", boxShadow: "0 0 0 1px #e7e1fa" };
+      if (st.carouselMode) {
+        const h = 58;
+        body = (
+          <div className="pb-spv__col" style={{ alignItems: "center", gap: 8 }}>
+            <span className="pb-spv__row" style={{ gap: 8 }}>
+              {st.showArrows !== false && <i style={arrow} />}
+              {b(Math.round(h * ratio), h, "d", mainStyle)}
+              {st.showArrows !== false && <i style={arrow} />}
+            </span>
+            {st.showThumbnails !== false && (
+              <span className="pb-spv__row" style={{ gap: 5 }}>
+                {rep(Math.min(st.thumbnailsShown || 4, 6), i => b(14, 14, i === 0 ? "d" : "s", { borderRadius: 4 }, i))}
+              </span>
+            )}
+          </div>
+        );
+      } else if (st.layout === "bottom-rail") {
+        const h = 54;
+        body = (
+          <div className="pb-spv__col" style={{ alignItems: "center", gap: 7 }}>
+            {b(Math.round(h * ratio), h, "d", mainStyle)}
+            <span className="pb-spv__row" style={{ gap: 5 }}>{rep(3, i => b(26, 12, i === 0 ? "d" : "s", { borderRadius: 4 }, i))}</span>
+          </div>
+        );
+      } else {
+        const h = 38;
+        body = (
+          <div className="pb-spv__col" style={{ alignItems: "center", gap: 6 }}>
+            {b(Math.round(h * ratio), h, "d", mainStyle)}
+            {b(Math.round(h * ratio), h, "s", mainStyle)}
+          </div>
+        );
+      }
+      break;
+    }
+
+    case "productInfo":
+      body = (
+        <div className="pb-spv__col" style={{ width: "70%", gap: 7 }}>
+          {b("80%", 8, "d")}
+          {b("34%", 6, "s")}
+          <span className="pb-spv__row" style={{ gap: 5 }}>
+            {rep(3, i => b(18, 18, i === 0 ? "d" : "s", { borderRadius: st.optionStyle === "dropdown" ? 4 : "50%" }, i))}
+          </span>
+          {b("100%", 16, "d", { borderRadius: 8 })}
+        </div>
+      );
+      break;
+
+    case "checkout":
+      body = (
+        <div className="pb-spv__col" style={{ width: "76%", gap: 6 }}>
+          {rep(3, i => b("100%", 16, "w", { borderRadius: 7 }, i))}
+          {b("100%", 18, "d", { borderRadius: 8 })}
+        </div>
+      );
+      break;
+
+    case "categoryBanner":
+      body = (
+        <div className="pb-spv__card" style={{ height: st.style === "compact" ? 38 : "100%", background: "#e4defb", boxShadow: "none", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6 }}>
+          {b(90, 8, "d")}
+          {st.showProductCount !== false && b(50, 5, "", { background: "#f5f3ff" })}
+        </div>
+      );
+      break;
+
+    case "successMessage":
+      body = (
+        <div className="pb-spv__col" style={{ alignItems: "center", gap: 7 }}>
+          {b(30, 30, "d", { borderRadius: "50%" })}
+          {b(100, 6, "d")}
+          {b(70, 4, "s")}
+          {b(54, 14, "", { background: "#7c6df2", borderRadius: 99 })}
+        </div>
+      );
+      break;
+
+    default:
+      return null;
+  }
+
+  return <div className="pb-spv">{body}</div>;
 }
 
 // ─────────────────────────────────────────────
@@ -1778,20 +2086,17 @@ function AnnouncementSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+      <Collapse title="Content" icon="content" sub={(settings.message || "").trim().slice(0, 34) || "No message yet"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Message</div>
           <textarea className="pb-textarea" value={settings.message} onChange={e => s("message", e.target.value)} />
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Styles</div>
+      </Collapse>
+      <Collapse title="Styles" icon="colors" sub={"Background & text"} trail={<PbDots colors={[settings.bgColor, settings.textColor]} />}>
         <ColorField label="Background color" value={settings.bgColor}   onChange={v => s("bgColor", v)} />
         <ColorField label="Text color"       value={settings.textColor} onChange={v => s("textColor", v)} />
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Options</div>
+      </Collapse>
+      <Collapse title="Options" icon="motion" sub={`Animation ${settings.animation ? "on" : "off"} · Close ${settings.showClose ? "on" : "off"}`}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Animation (marquee)</span>
           <Toggle checked={settings.animation} onChange={v => s("animation", v)} />
@@ -1800,7 +2105,7 @@ function AnnouncementSettings({ settings, onChange }) {
           <span className="pb-toggle-row__label">Show close button</span>
           <Toggle checked={settings.showClose} onChange={v => s("showClose", v)} />
         </div>
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -1964,8 +2269,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
 
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Branding</div>
+      <Collapse title="Branding" icon="store" sub={nameValue || "Store name"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Store name</div>
           <input
@@ -1988,9 +2292,8 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
               value={settings.logoSize ?? 1} onChange={e => s("logoSize", +e.target.value)} />
           </div>
         )}
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Actions</div>
+      </Collapse>
+      <Collapse title="Actions" icon="click" sub={[settings.showSearch && "Search", settings.showCart && "Cart", settings.sticky && "Sticky"].filter(Boolean).join(" · ") || "All hidden"}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show search</span>
           <Toggle checked={settings.showSearch} onChange={v => s("showSearch", v)} />
@@ -2003,9 +2306,8 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
           <span className="pb-toggle-row__label">Sticky header</span>
           <Toggle checked={settings.sticky} onChange={v => s("sticky", v)} />
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Navigation</div>
+      </Collapse>
+      <Collapse title="Navigation" icon="link" sub={`${navLinks.length} ${navLinks.length === 1 ? "link" : "links"}`}>
         {navLinks.map((link, i) => (
           <div key={link.id} className="pb-link-card">
             <div className="pb-link-card__header">
@@ -2029,7 +2331,7 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
         <button type="button" className="pb-add-link-btn" onClick={addLink}>
           <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add link
         </button>
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2053,8 +2355,7 @@ function HeroSettings({ settings, onChange }) {
 
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+      <Collapse title="Content" icon="content" sub={settings.title || "No headline"} defaultOpen>
 
         <div className="pb-field">
           <div className="pb-label">Headline</div>
@@ -2111,10 +2412,9 @@ function HeroSettings({ settings, onChange }) {
           <input type="range" className="pb-range" min={0} max={90} step={5}
             value={settings.overlayOpacity} onChange={e => s("overlayOpacity", +e.target.value)} />
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Layout</div>
+      <Collapse title="Layout" icon="layout" sub={`${capFirst(settings.textAlign || "right")} · ${({ small: "Small", large: "Medium", full: "Large" })[settings.height] || "Medium"}`}>
 
         <div className="pb-field">
           <div className="pb-label">Text alignment</div>
@@ -2146,7 +2446,7 @@ function HeroSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2168,8 +2468,7 @@ function TrustSettings({ settings, onChange }) {
 
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Layout</div>
+      <Collapse title="Layout" icon="layout" sub={settings.layout === "grid" ? "Grid" : "Row"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Display Style</div>
           <select className="pb-input" value={settings.layout || "row"} onChange={e => s("layout", e.target.value)}>
@@ -2177,10 +2476,9 @@ function TrustSettings({ settings, onChange }) {
             <option value="grid">Grid</option>
           </select>
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Badges</div>
+      <Collapse title="Badges" icon="badge" sub={`${(settings.badges || []).filter(b => b.enabled !== false).length} of ${(settings.badges || []).length} shown`}>
         {(settings.badges || []).map((badge, i) => (
           <div key={i} className="pb-badge-card">
             <div className="pb-badge-card__header">
@@ -2197,7 +2495,7 @@ function TrustSettings({ settings, onChange }) {
             </div>
           </div>
         ))}
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2243,7 +2541,7 @@ function ReviewsSettings({ settings, onChange }) {
 
   return (
     <>
-      <Collapse title="General">
+      <Collapse title="General" icon="gear" sub={`${capFirst(settings.layout || "wall")} · ${({ manual: "Manual", newest: "Newest", highest: "Top rated" })[settings.sort || "manual"]}`} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Section title</div>
           <input className="pb-input" value={settings.title || ""} onChange={e => s("title", e.target.value)} placeholder="آراء زبائننا" />
@@ -2280,7 +2578,7 @@ function ReviewsSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Reviews">
+      <Collapse title="Reviews" icon="star" sub={`${reviews.length} ${reviews.length === 1 ? "review" : "reviews"}`}>
         <p style={{ fontSize: 12.5, color: "#9ca3af", margin: "0 0 12px", lineHeight: 1.5 }}>
           Real photo reviews in your dialect sell more — avoid copy-paste.
         </p>
@@ -2379,7 +2677,7 @@ function FaqSettings({ settings, onChange }) {
 
   return (
     <>
-      <Collapse title="General">
+      <Collapse title="General" icon="gear" sub={`${capFirst(settings.style || "divided")} · First item ${settings.openFirstItem ? "open" : "closed"}`} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Title</div>
           <input className="pb-input" value={settings.title || ""} onChange={e => s("title", e.target.value)} placeholder="أسئلة شائعة" />
@@ -2400,7 +2698,7 @@ function FaqSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Questions">
+      <Collapse title="Questions" icon="help" sub={`${questions.length} ${questions.length === 1 ? "question" : "questions"}`}>
         {questions.map((q, i) => (
           <div key={q.id} className="pb-link-card">
             <div className="pb-link-card__header">
@@ -2442,8 +2740,7 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">General</div>
+      <Collapse title="General" icon="content" sub={settings.title || "Untitled"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Section title</div>
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
@@ -2467,10 +2764,9 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
             ))}
           </div>
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Product Source</div>
+      <Collapse title="Product Source" icon="components" sub={`${settings.productsShown || 8} products`}>
         {!hideForSearch && (
           <div className="pb-field">
             <div className="pb-label">Selection Mode</div>
@@ -2489,10 +2785,9 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
             ))}
           </div>
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Layout</div>
+      <Collapse title="Layout" icon="layout" sub={`${settings.columns || 3} columns${settings.carouselMode ? " · Carousel" : ""}`}>
         {!hideForSearch && (
           <div className="pb-toggle-row">
             <span className="pb-toggle-row__label">Carousel mode</span>
@@ -2515,10 +2810,9 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
             ))}
           </div>
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Product Cards</div>
+      <Collapse title="Product Cards" icon="cards" sub={`${capFirst(settings.cardStyle || "default")} · ${settings.imageRatio === "adapt" ? "Adapt" : (settings.imageRatio || "1:1")}`}>
         <div className="pb-field">
           <div className="pb-label">Card style</div>
           <div className="pb-segment">
@@ -2531,13 +2825,8 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
         </div>
         <div className="pb-field">
           <div className="pb-label">Image ratio</div>
-          <div className="pb-segment">
-            {[{v:"1:1",l:"1:1"},{v:"3:4",l:"3:4"},{v:"adapt",l:"Adapt"}].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.imageRatio || "1:1") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("imageRatio", o.v)}>{o.l}</button>
-            ))}
-          </div>
+          <OptionCards value={settings.imageRatio || "1:1"} onChange={v => s("imageRatio", v)}
+            options={IMAGE_RATIO_OPTS.filter(o => o.v !== "4:3")} />
         </div>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show badge</span>
@@ -2547,10 +2836,9 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
           <span className="pb-toggle-row__label">Show rating</span>
           <Toggle checked={!!settings.showRating} onChange={v => s("showRating", v)} />
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Footer</div>
+      <Collapse title="Footer" icon="direction" sub={hideForSearch ? `Infinite scroll ${settings.infiniteScroll ? "on" : "off"}` : `View all ${settings.showViewAll ? "on" : "off"} · Infinite scroll ${settings.infiniteScroll ? "on" : "off"}`}>
         {!hideForSearch && (
           <div className="pb-toggle-row">
             <span className="pb-toggle-row__label">Show "View all" link</span>
@@ -2579,7 +2867,7 @@ function CollectionSettings({ settings, onChange, hideForSearch, showSortToggle,
             </div>
           </>
         )}
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2588,8 +2876,7 @@ function CategoriesSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+      <Collapse title="Content" icon="content" sub={settings.title || "Untitled"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Section title</div>
           <input className="pb-input" value={settings.title} onChange={e => s("title", e.target.value)} />
@@ -2610,9 +2897,8 @@ function CategoriesSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
-      </div>
-      <div className="pb-group">
-        <div className="pb-group__label">Layout</div>
+      </Collapse>
+      <Collapse title="Layout" icon="layout" sub={settings.displayStyle === "row" ? "Row" : "Grid"}>
         <div className="pb-field">
           <div className="pb-label">Display style</div>
           <div className="pb-segment">
@@ -2632,7 +2918,7 @@ function CategoriesSettings({ settings, onChange }) {
             </button>
           </div>
         </div>
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2653,8 +2939,7 @@ function FooterSettings({ settings, onChange }) {
 
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Content</div>
+      <Collapse title="Content" icon="content" sub={settings.copyright || "No copyright text"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Copyright text <span>optional</span></div>
           <input className="pb-input" value={settings.copyright} onChange={e => s("copyright", e.target.value)} />
@@ -2663,10 +2948,9 @@ function FooterSettings({ settings, onChange }) {
           <div className="pb-label">Terms link text <span>leave empty to hide the link</span></div>
           <input className="pb-input" value={settings.termsText || ""} onChange={e => s("termsText", e.target.value)} />
         </div>
-      </div>
+      </Collapse>
 
-      <div className="pb-group">
-        <div className="pb-group__label">Social links</div>
+      <Collapse title="Social links" icon="link" sub={settings.showSocials === false ? "Hidden" : `${Object.values(socials).filter(Boolean).length} linked`}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show social links</span>
           <Toggle checked={settings.showSocials !== false} onChange={v => s("showSocials", v)} />
@@ -2683,7 +2967,7 @@ function FooterSettings({ settings, onChange }) {
             ))}
           </>
         )}
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2693,55 +2977,39 @@ function FooterSettings({ settings, onChange }) {
 // ─────────────────────────────────────────────
 function GallerySettings({ settings, onChange, isMobile }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
+  const layoutLabel = (settings.layout || "stacked") === "bottom-rail" ? "Bottom rail" : "Stacked";
+  const ratioLabel = settings.imageRatio === "adapt" ? "Adapt" : (settings.imageRatio || "1:1");
+  const displaySub = settings.carouselMode ? "Carousel on" : `${layoutLabel} · Carousel off`;
+  const navSub = `Arrows ${settings.showArrows !== false ? "on" : "off"}${settings.carouselMode ? ` · Thumbnails ${settings.showThumbnails !== false ? "on" : "off"}` : ""}`;
   return (
     <>
-      <Collapse title="Display mode">
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Carousel mode</span>
-          <Toggle checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
-        </div>
+      <Collapse title="Display mode" icon="display" sub={displaySub} defaultOpen>
+        <ToggleRow label="Carousel mode" hint="Swipe through images one by one."
+          checked={!!settings.carouselMode} onChange={v => s("carouselMode", v)} />
         {!settings.carouselMode && !isMobile && (
           <div className="pb-field">
             <div className="pb-label">Layout</div>
-            <div className="pb-segment">
-              {[{ v: "stacked", l: "Stacked" }, { v: "bottom-rail", l: "Bottom rail" }].map(o => (
-                <button key={o.v}
-                  className={`pb-seg-btn ${(settings.layout || "stacked") === o.v ? "pb-seg-btn--active" : ""}`}
-                  onClick={() => s("layout", o.v)}>{o.l}</button>
-              ))}
-            </div>
+            <OptionCards value={settings.layout || "stacked"} onChange={v => s("layout", v)} options={GALLERY_LAYOUT_OPTS} />
           </div>
         )}
       </Collapse>
 
-      <Collapse title="Image options">
+      <Collapse title="Image options" icon="image" sub={`${ratioLabel} · Zoom ${settings.enableZoom ? "on" : "off"}`} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Image ratio</div>
-          <div className="pb-segment">
-            {[{ v: "1:1", l: "1:1" }, { v: "3:4", l: "3:4" }, { v: "4:3", l: "4:3" }, { v: "adapt", l: "Adapt" }].map(o => (
-              <button key={o.v}
-                className={`pb-seg-btn ${(settings.imageRatio || "1:1") === o.v ? "pb-seg-btn--active" : ""}`}
-                onClick={() => s("imageRatio", o.v)}>{o.l}</button>
-            ))}
-          </div>
+          <OptionCards value={settings.imageRatio || "1:1"} onChange={v => s("imageRatio", v)} options={IMAGE_RATIO_OPTS} />
         </div>
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Enable zoom</span>
-          <Toggle checked={!!settings.enableZoom} onChange={v => s("enableZoom", v)} />
-        </div>
+        <ToggleRow label="Enable zoom" hint="Zoom the image on hover or tap."
+          checked={!!settings.enableZoom} onChange={v => s("enableZoom", v)} />
       </Collapse>
 
-      <Collapse title="Navigation">
-        <div className="pb-toggle-row">
-          <span className="pb-toggle-row__label">Show arrows</span>
-          <Toggle checked={settings.showArrows !== false} onChange={v => s("showArrows", v)} />
-        </div>
+      <Collapse title="Navigation" icon="navigation" sub={navSub}>
+        <ToggleRow label="Show arrows" hint="Previous and next buttons."
+          checked={settings.showArrows !== false} onChange={v => s("showArrows", v)} />
         {settings.carouselMode && (
           <>
-            <div className="pb-toggle-row">
-              <span className="pb-toggle-row__label">Show thumbnails</span>
-              <Toggle checked={settings.showThumbnails !== false} onChange={v => s("showThumbnails", v)} />
-            </div>
+            <ToggleRow label="Show thumbnails" hint="Small previews under the main image."
+              checked={settings.showThumbnails !== false} onChange={v => s("showThumbnails", v)} />
             {settings.showThumbnails !== false && (
               <div className="pb-field">
                 <div className="pb-label" style={{ display: "flex", justifyContent: "space-between" }}>
@@ -2763,7 +3031,7 @@ function ProductInfoSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <Collapse title="Checkout options">
+      <Collapse title="Checkout options" icon="click" sub={settings.ctaButtonText || "No button text"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">CTA button text</div>
           <input className="pb-input" value={settings.ctaButtonText} onChange={e => s("ctaButtonText", e.target.value)} />
@@ -2778,7 +3046,7 @@ function ProductInfoSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Product options">
+      <Collapse title="Product options" icon="components" sub={settings.showVariants === false ? "Hidden" : capFirst(settings.optionStyle || "buttons")}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show colors & sizes</span>
           <Toggle checked={settings.showVariants !== false} onChange={v => s("showVariants", v)} />
@@ -2797,7 +3065,7 @@ function ProductInfoSettings({ settings, onChange }) {
         )}
       </Collapse>
 
-      <Collapse title="Badges & notes">
+      <Collapse title="Badges & notes" icon="badge" sub={`Badge ${settings.badgeText ? "on" : "off"} · Note ${settings.showDeliveryNote !== false ? "on" : "off"}`}>
         <div className="pb-field">
           <div className="pb-label">Badge text <span>leave empty to hide it</span></div>
           <input className="pb-input" value={settings.badgeText || ""} onChange={e => s("badgeText", e.target.value)} />
@@ -2842,7 +3110,7 @@ function CheckoutSettings({ settings, onChange }) {
 
   return (
     <>
-      <Collapse title="General">
+      <Collapse title="General" icon="gear" sub={settings.sectionTitle || "Untitled"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Section title</div>
           <input className="pb-input" value={settings.sectionTitle || ""} onChange={e => s("sectionTitle", e.target.value)} />
@@ -2865,7 +3133,7 @@ function CheckoutSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Form fields">
+      <Collapse title="Form fields" icon="field" sub={`${CHECKOUT_FIELD_LABELS.filter(f => (fields[f.key] || {}).enabled !== false).length} of ${CHECKOUT_FIELD_LABELS.length} enabled`}>
         {CHECKOUT_FIELD_LABELS.map(f => {
           const fv = fields[f.key] || { enabled: true, required: true };
           return (
@@ -2893,7 +3161,7 @@ function CheckoutSettings({ settings, onChange }) {
         })}
       </Collapse>
 
-      <Collapse title="Form style" defaultOpen={false}>
+      <Collapse title="Form style" icon="cards" sub={`${capFirst(settings.formStyle || "default")} · Animation ${settings.buttonAnimation && settings.buttonAnimation !== "none" ? "on" : "off"}`}>
         <div className="pb-field">
           <div className="pb-label">Form style</div>
           <select className="pb-input" value={settings.formStyle || "default"} onChange={e => s("formStyle", e.target.value)}>
@@ -2910,7 +3178,7 @@ function CheckoutSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Field options" defaultOpen={false}>
+      <Collapse title="Field options" icon="gear" sub={[settings.showFieldIcons !== false && "Icons", settings.showAddressField && "Address", settings.showNoteField && "Note"].filter(Boolean).join(" · ") || "None"}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show field icons</span>
           <Toggle checked={settings.showFieldIcons !== false} onChange={v => s("showFieldIcons", v)} />
@@ -2925,7 +3193,7 @@ function CheckoutSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Sticky button" defaultOpen={false}>
+      <Collapse title="Sticky button" icon="pin" sub={settings.stickyButton !== false ? "On" : "Off"}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Sticky order button</span>
           <Toggle checked={settings.stickyButton !== false} onChange={v => s("stickyButton", v)} />
@@ -2945,8 +3213,7 @@ function CategoryBannerSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <div className="pb-group">
-        <div className="pb-group__label">Banner style</div>
+      <Collapse title="Banner style" icon="layout" sub={`${capFirst(settings.style || "overlay")} · Count ${settings.showProductCount !== false ? "on" : "off"}`} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Style</div>
           <div className="pb-segment">
@@ -2961,7 +3228,7 @@ function CategoryBannerSettings({ settings, onChange }) {
           <span className="pb-toggle-row__label">Show product count</span>
           <Toggle checked={settings.showProductCount !== false} onChange={v => s("showProductCount", v)} />
         </div>
-      </div>
+      </Collapse>
     </>
   );
 }
@@ -2970,7 +3237,7 @@ function SuccessMessageSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
   return (
     <>
-      <Collapse title="Message">
+      <Collapse title="Message" icon="content" sub={settings.headline || "No headline"} defaultOpen>
         <div className="pb-field">
           <div className="pb-label">Headline</div>
           <input className="pb-input" value={settings.headline || ""} onChange={e => s("headline", e.target.value)} />
@@ -2981,7 +3248,7 @@ function SuccessMessageSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Order details">
+      <Collapse title="Order details" icon="list" sub={`${[settings.showOrderNumber !== false, settings.showOrderSummary !== false, settings.showTimeline !== false].filter(Boolean).length} of 3 shown`}>
         <div className="pb-toggle-row">
           <span className="pb-toggle-row__label">Show order number</span>
           <Toggle checked={settings.showOrderNumber !== false} onChange={v => s("showOrderNumber", v)} />
@@ -2996,7 +3263,7 @@ function SuccessMessageSettings({ settings, onChange }) {
         </div>
       </Collapse>
 
-      <Collapse title="Call to action">
+      <Collapse title="Call to action" icon="click" sub={settings.ctaButtonText || "No button text"}>
         <div className="pb-field">
           <div className="pb-label">Button text</div>
           <input className="pb-input" value={settings.ctaButtonText || ""} onChange={e => s("ctaButtonText", e.target.value)} />
@@ -3023,7 +3290,7 @@ function SuccessMessageSettings({ settings, onChange }) {
         )}
       </Collapse>
 
-      <Collapse title="Appearance" defaultOpen={false}>
+      <Collapse title="Appearance" icon="colors" sub={capFirst(settings.backgroundStyle || "tinted")}>
         <div className="pb-field">
           <div className="pb-label">Background style</div>
           <div className="pb-segment">
@@ -3144,6 +3411,65 @@ const SROW_ICONS = {
     <>
       <circle cx="9" cy="20" r="1.3" /><circle cx="18" cy="20" r="1.3" />
       <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6" />
+    </>
+  ),
+  content: (
+    <>
+      <path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h10" />
+    </>
+  ),
+  gear: (
+    <>
+      <path d="M4 7h10" /><path d="M18 7h2" /><circle cx="16" cy="7" r="2" />
+      <path d="M4 17h2" /><path d="M10 17h10" /><circle cx="8" cy="17" r="2" />
+    </>
+  ),
+  store: (
+    <>
+      <path d="M3 9l2-5h14l2 5" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /><path d="M5 12v8h14v-8" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.43" />
+      <path d="M14 11a5 5 0 0 0-7.07 0l-1.93 1.93a5 5 0 0 0 7.07 7.07L13.5 18.57" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M9 6h11" /><path d="M9 12h11" /><path d="M9 18h11" />
+      <circle cx="4.5" cy="6" r="1" /><circle cx="4.5" cy="12" r="1" /><circle cx="4.5" cy="18" r="1" />
+    </>
+  ),
+  star: <polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3" />,
+  help: (
+    <>
+      <circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7" /><circle cx="12" cy="17" r=".5" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="1.5" /><path d="m21 16-5-5-8 8" />
+    </>
+  ),
+  display: (
+    <>
+      <rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8" /><path d="M12 16v4" />
+    </>
+  ),
+  navigation: (
+    <>
+      <circle cx="12" cy="12" r="9" /><path d="m10 8 4 4-4 4" />
+    </>
+  ),
+  spacing: (
+    <>
+      <path d="M4 4h16" /><path d="M4 20h16" /><path d="M12 8v8" /><path d="m9 10 3-3 3 3" /><path d="m9 14 3 3 3-3" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 17v5" /><path d="M9 3h6l-1 6 3 3H7l3-3z" />
     </>
   ),
   corners: <path d="M4 20V10a6 6 0 0 1 6-6h10" />,
@@ -3794,7 +4120,7 @@ function SpacingSettings({ type, page, settings, onChange }) {
   const d = SPACING_DEFAULTS_BY_PAGE[page]?.[type] || SPACING_DEFAULTS[type] || {};
   const setSp = (k, v) => onChange({ ...settings, spacing: { ...sp, [k]: v } });
   return (
-    <Collapse title="Spacing" defaultOpen={false}>
+    <Collapse title="Spacing" icon="spacing" sub={`Top ${sp.top ?? d.top ?? 0} · Bottom ${sp.bottom ?? d.bottom ?? 0}`}>
       <SpacingRow label="Top padding"    value={sp.top ?? d.top ?? 0}       onChange={v => setSp("top", v)} />
       <SpacingRow label="Bottom padding" value={sp.bottom ?? d.bottom ?? 0} onChange={v => setSp("bottom", v)} />
       <SpacingRow label="Start padding"  value={sp.start ?? d.start ?? 0}   onChange={v => setSp("start", v)} />
@@ -3830,16 +4156,19 @@ function SectionSettingsPanel({ section, store, onUpdate, onClose, onLogoChange,
 
   return (
     <div className="pb-right" style={{ width: collapsed ? 0 : 340 }}>
-      <div className="pb-right__header">
-        <div className="pb-right__title">
-          <span style={{ display:"flex" }}><Icon name={meta.icon} size={16} /></span>
-          {meta.label}
+      <div className="pb-right__top">
+        <div className="pb-right__header">
+          <div className="pb-right__title">
+            <span className="pb-right__icon"><Icon name={meta.icon} size={16} /></span>
+            {meta.label}
+          </div>
+          <button className="pb-right__close" onClick={onClose}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
-        <button className="pb-right__close" onClick={onClose}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+        <SectionPreview type={section.type} settings={section.settings} />
       </div>
       <div className="pb-right__body">
         {inner()}
