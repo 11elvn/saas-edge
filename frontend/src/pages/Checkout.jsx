@@ -75,13 +75,35 @@ select.pd-input { appearance:none; -webkit-appearance:none; -moz-appearance:none
   .pd-section-wrapper:hover::after { content: ""; position: absolute; inset: 0; border: 2px dashed rgba(124,109,242,.55); background: rgba(124,109,242,.05); pointer-events: none; z-index: 140; }
   .pd-section-wrapper--highlighted::after { content: ""; position: absolute; inset: 0; border: 2px solid #7c6df2; background: rgba(124,109,242,.10); pointer-events: none; z-index: 140; }
   .pd-section-label {
-    display: block;
-    position: absolute; top: 8px; left: 8px; z-index: 150;
-    background: #7c6df2; color: #fff; font-size: 11px; font-weight: 700;
-    padding: 3px 10px; border-radius: 6px; pointer-events: none;
-    font-family: 'Inter', sans-serif; letter-spacing: .3px; white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(124,109,242,.35);
-    opacity: 0; transition: opacity .12s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 150;
+    background: #ffffff;
+    color: #5b3fd6;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 6px 16px 6px 7px;
+    border-radius: 999px;
+    border: 1px solid #d9d2fb;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(124,109,242,.35);
+    opacity: 0;
+    transition: opacity .12s ease;
+  }
+  .pd-section-label::before {
+    content: "";
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #7c6df2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='1.5'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1.5'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1.5'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1.5'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
   }
   .pd-section-wrapper:hover .pd-section-label,
   .pd-section-wrapper--highlighted .pd-section-label { opacity: 1; }
@@ -163,11 +185,18 @@ function SectionHighlightOverlay({ rect, label, variant }) {
       }} />
       <div style={{
         position: "absolute", top: rect.top + 8, left: 8, zIndex: 150,
-        background: "#7c6df2", color: "#fff", fontSize: 11, fontWeight: 700,
-        padding: "3px 10px", borderRadius: rs(6), pointerEvents: "none",
-        fontFamily: "'Inter', sans-serif", letterSpacing: .3, whiteSpace: "nowrap",
-        boxShadow: "0 2px 8px rgba(124,109,242,.35)",
+        display: "flex", alignItems: "center", gap: 6,
+        background: "#ffffff", color: "#5b3fd6", fontSize: 12.5, fontWeight: 700,
+        padding: "5px 12px 5px 5px", borderRadius: 999, border: "1px solid #d9d2fb",
+        pointerEvents: "none", fontFamily: "'Inter', sans-serif", letterSpacing: .2, whiteSpace: "nowrap",
+        boxShadow: "0 3px 10px rgba(124,109,242,.35)",
       }}>
+        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#7c6df2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+        </span>
         {label}
       </div>
     </>
