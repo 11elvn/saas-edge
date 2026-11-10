@@ -1420,7 +1420,8 @@ const CSS = `
 .pb-btabs { display:flex; background:#f1eefd; border-radius:99px; padding:3px; gap:2px; }
 .pb-btab { flex:1; border:none; background:none; font-family:inherit; font-size:.74rem; font-weight:600; color:#7d7a96; padding:7px 2px; border-radius:99px; cursor:pointer; transition:all .15s; }
 .pb-btab--active { background:#7c6df2; color:#fff; }
-.pb-bstage { border-radius:14px; min-height:84px; display:flex; align-items:center; justify-content:center; padding:16px; transition:background .2s; }
+.pb-bsticky { position:sticky; top:0; z-index:5; flex-shrink:0; margin:0 -16px; padding:8px 16px 10px; background:#fff; box-shadow:0 6px 12px -8px rgba(15,23,42,.18); }
+.pb-bstage { flex-shrink:0; border-radius:14px; min-height:84px; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; padding:14px 12px; transition:background .2s; }
 .pb-btiles { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .pb-btile { display:flex; flex-direction:column; align-items:center; gap:7px; padding:9px 4px; font-family:inherit; font-size:.72rem; font-weight:600; color:#6f6590; background:#fff; border:1.5px solid #e7e1fa; border-radius:12px; cursor:pointer; transition:all .15s; }
 .pb-btile:hover { border-color:#cabdf7; }
@@ -3409,7 +3410,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         const kind   = styles.buttonStyle || "filled";
         const secK   = getSecondaryKind(styles);
         const fam    = `'${font}', sans-serif`;
-        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "13px 30px", fontSize: 14 };
+        const base   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 12 * scale, padding: "11px 18px", fontSize: 13 };
         const mini   = { fontFamily: fam, display: "inline-block", fontWeight: 700, border: "none", borderRadius: 8 * scale, padding: "4px 11px", fontSize: 11 };
         const lbl    = v => BTN_STYLE.find(b => b.v === v)?.l;
         const wLabel = ORDER_WEIGHTS.find(w => w.v === Number(styles.orderButtonWeight || 800))?.l;
@@ -3425,10 +3426,12 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 
         return (
           <>
-            <div className="pb-bstage" style={{ background: "#f6f3ff", flexDirection: "column", gap: 10 }}>
-              <span style={{ ...base, ...btnStyle(styles, primary, { padX: 30 }) }}>اشترِ الآن</span>
-              <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 30 }) }}>المزيد</span>
-              <span style={{ ...base, padding: "16px 36px", fontSize: 15, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 36 }) }}>اطلب الآن</span>
+            <div className="pb-bsticky">
+              <div className="pb-bstage" style={{ background: "#f6f3ff" }}>
+                <span style={{ ...base, ...btnStyle(styles, primary, { padX: 18 }) }}>اشترِ الآن</span>
+                <span style={{ ...base, ...btnStyle(styles, primary, { secondary: true, padX: 18 }) }}>المزيد</span>
+                <span style={{ ...base, padding: "12px 22px", fontSize: 14, fontWeight: 800, ...btnStyle(styles, primary, { role: "order", padX: 22 }) }}>اطلب الآن</span>
+              </div>
             </div>
 
             {accRow("primary", "click", "Primary", `${lbl(kind)} · ${styles.buttonSize || "M"}`, (
