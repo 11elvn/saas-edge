@@ -1420,7 +1420,8 @@ const CSS = `
 .pb-btabs { display:flex; background:#f1eefd; border-radius:99px; padding:3px; gap:2px; }
 .pb-btab { flex:1; border:none; background:none; font-family:inherit; font-size:.74rem; font-weight:600; color:#7d7a96; padding:7px 2px; border-radius:99px; cursor:pointer; transition:all .15s; }
 .pb-btab--active { background:#7c6df2; color:#fff; }
-.pb-bsticky { position:sticky; top:0; z-index:5; flex-shrink:0; margin:0 -16px; padding:8px 16px 10px; background:#fff; box-shadow:0 6px 12px -8px rgba(15,23,42,.18); }
+.pb-sbar { position:sticky; top:0; z-index:6; flex-shrink:0; box-sizing:border-box; height:46px; margin:0 -16px; padding:10px 16px 4px; display:flex; align-items:center; background:#fff; }
+.pb-bsticky { position:sticky; top:46px; z-index:5; flex-shrink:0; margin:0 -16px; padding:8px 16px 10px; background:#fff; box-shadow:0 6px 12px -8px rgba(15,23,42,.18); }
 .pb-bstage { flex-shrink:0; border-radius:14px; min-height:84px; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; padding:14px 12px; transition:background .2s; }
 .pb-btiles { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .pb-btile { display:flex; flex-direction:column; align-items:center; gap:7px; padding:9px 4px; font-family:inherit; font-size:.72rem; font-weight:600; color:#6f6590; background:#fff; border:1.5px solid #e7e1fa; border-radius:12px; cursor:pointer; transition:all .15s; }
@@ -3281,13 +3282,15 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 
   // ═══════ DETAIL ═══════
   return (
-    <div style={wrapStyle}>
-      <button type="button" className="pb-sback" onClick={() => setView("list")}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 6 9 12 15 18" />
-        </svg>
-        <span>{STYLE_VIEW_TITLES[view]}</span>
-      </button>
+    <div style={{ ...wrapStyle, padding: "0 16px 14px" }}>
+      <div className="pb-sbar">
+        <button type="button" className="pb-sback" onClick={() => setView("list")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 6 9 12 15 18" />
+          </svg>
+          <span>{STYLE_VIEW_TITLES[view]}</span>
+        </button>
+      </div>
 
       {view === "colors" && (() => {
         const bgc   = styles.backgroundColor || "#ffffff";
