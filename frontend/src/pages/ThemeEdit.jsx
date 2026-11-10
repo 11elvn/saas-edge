@@ -1451,7 +1451,7 @@ const CSS = `
 .pb-acc__chev { color:#a89ccb; display:flex; transition:transform .18s; }
 .pb-acc--open .pb-acc__chev { transform:rotate(90deg); }
 .pb-acc__panel { padding:2px 12px 14px; display:flex; flex-direction:column; gap:10px; }
-.pb-fpv { border-radius:16px; padding:14px 16px; }
+.pb-fpv { flex-shrink:0; border-radius:16px; padding:14px 16px; }
 .pb-fpv__k { font-size:.62rem; letter-spacing:.04em; opacity:.6; margin-bottom:6px; direction:ltr; text-align:left; text-transform:uppercase; }
 .pb-fpv__h { font-size:1.3rem; line-height:1.35; font-weight:700; direction:rtl; text-align:right; }
 .pb-fpv__b { font-size:.78rem; line-height:1.7; opacity:.8; direction:rtl; text-align:right; }
@@ -3303,6 +3303,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 
         return (
           <>
+            <div className="pb-bsticky">
             <div className="pb-cstage" style={{ background: bgc, alignItems: "stretch", gap: 8, padding: 12 }}>
               <div style={{ height: 14, background: sec, borderRadius: 6 * scale }} />
               <div style={{ background: surf, border: `1px solid ${brd}`, borderRadius: 12 * scale, padding: 12, display: "flex", flexDirection: "column", gap: 5, fontFamily: fam, direction: "rtl" }}>
@@ -3310,6 +3311,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                 <div style={{ fontSize: 11, color: muted }}>وصف قصير للمنتج يظهر هنا</div>
                 <span style={{ alignSelf: "flex-start", display: "inline-block", marginTop: 4, fontFamily: fam, fontSize: 12, fontWeight: 700, padding: "7px 16px", borderRadius: 8 * scale, ...btnStyle(styles, primary, { padX: 16 }) }}>اطلب الآن</span>
               </div>
+            </div>
             </div>
 
             {accRow("presets", "presets", "Presets", presetName || "Custom",
@@ -3350,6 +3352,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
 
         return (
           <>
+            <div className="pb-bsticky">
             <div className="pb-fpv" style={{ background: pvBg, color: pvFg }}>
               <div className="pb-fpv__k">Heading {headFont} · Body {font}</div>
               <div className="pb-fpv__h" style={{ fontFamily: `'${headFont}', sans-serif` }}>متجرك الإلكتروني</div>
@@ -3357,6 +3360,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
               <div className="pb-fpv__row">
                 <span className="pb-fpv__btn" style={{ fontFamily: `'${font}', sans-serif`, borderRadius: 9 * scale, background: primary, color: "#fff" }}>اشترِ الآن</span>
               </div>
+            </div>
             </div>
 
             {accRow("pairs", "fonts", "Font pairs", headFont === font ? font : `${headFont} + ${font}`, (
@@ -3559,6 +3563,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
           <>
             <style>{COMPONENTS_CSS}</style>
 
+            <div className="pb-bsticky">
             <div className="pb-cstage" style={{ background: bgc }}>
               <div
                 data-card-hover={ch}
@@ -3585,6 +3590,7 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
                 <div style={fieldPv}>Email</div>
                 <div style={fieldPv}>Phone</div>
               </div>
+            </div>
             </div>
 
             {accRow("cards", "cards", "Cards", `${L[cv]} · ${L[ch]}`, (
