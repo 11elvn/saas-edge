@@ -3561,37 +3561,38 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         );
 
         const fieldPv = { ...fieldLook(styles, { border: brd, surface: surf, text: muted }), direction: "ltr", textAlign: "left", fontFamily: fam };
+        const fieldPvSm = { ...fieldPv, fontSize: 12, padding: fz === "compact" ? "5px 10px" : "8px 10px" };
 
         return (
           <>
             <style>{COMPONENTS_CSS}</style>
 
             <div className="pb-bsticky">
-            <div className="pb-cstage" style={{ background: bgc }}>
+            <div className="pb-cstage" style={{ background: bgc, flexDirection: "row", alignItems: "center", gap: 10, padding: 10 }}>
               <div
                 data-card-hover={ch}
                 style={{
-                  width: 168, boxSizing: "border-box", cursor: "pointer",
+                  width: 124, flexShrink: 0, boxSizing: "border-box", cursor: "pointer",
                   padding: look.padding, background: look.background, border: look.border, boxShadow: look.boxShadow,
-                  borderRadius: (12 + (look.padding ? 4 : 0)) * scale,
+                  borderRadius: (10 + (look.padding ? 4 : 0)) * scale,
                 }}
               >
-                <div style={{ position: "relative", overflow: "hidden", height: 92, background: surf, borderRadius: 12 * scale }}>
+                <div style={{ position: "relative", overflow: "hidden", height: 46, background: surf, borderRadius: 8 * scale }}>
                   <div className="cmp-img" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: primary, opacity: .5 }}>
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
                     </svg>
                   </div>
-                  <span style={{ position: "absolute", top: 8, right: 8, fontFamily: fam, fontSize: 11, fontWeight: 700, padding: "3px 10px", letterSpacing: .3, ...badgeLook(styles, "#ef4444") }}>-20%</span>
+                  <span style={{ position: "absolute", top: 4, right: 4, fontFamily: fam, fontSize: 11, fontWeight: 700, padding: "1px 6px", letterSpacing: .3, ...badgeLook(styles, "#ef4444") }}>-20%</span>
                 </div>
-                <div style={{ padding: "8px 2px 2px", fontFamily: fam, direction: "rtl" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: txt }}>قهوة مطحونة</div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: primary }}>2,400 DA</div>
+                <div style={{ padding: "5px 2px 1px", fontFamily: fam, direction: "rtl" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: txt }}>قهوة مطحونة</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: primary }}>2,400 DA</div>
                 </div>
               </div>
-              <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={fieldPv}>Email</div>
-                <div style={fieldPv}>Phone</div>
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={fieldPvSm}>Email</div>
+                <div style={fieldPvSm}>Phone</div>
               </div>
             </div>
             </div>
