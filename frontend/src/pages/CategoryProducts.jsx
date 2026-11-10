@@ -380,7 +380,7 @@ export default function CategoryProducts() {
       <SectionWrapper type="categoryBanner" isPreview={isPreview} spacing={sec(catSections, "categoryBanner")?.settings?.spacing} isHighlighted={highlightedType === "categoryBanner"} style={{ order: categoryOrder("categoryBanner") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {bannerStyle === "compact" ? (
           /* ══════ Compact — صورة دائرية مضغوطة + الاسم جنبها ══════ */
-          <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ maxWidth: "var(--container-max, 960px)", margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", background: "#f3f4f6", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               {categoryImg
                 ? <img src={categoryImg} alt={categoryName} onError={e => { e.target.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -444,7 +444,7 @@ export default function CategoryProducts() {
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(catSections, "collection")?.settings?.spacing} isHighlighted={highlightedType === "collection"} style={{ order: categoryOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── Sort — دابا جوا section الـ Collection، مرتبطة بإعداد "Show sort dropdown" ── */}
         {collSettings.showSortBar !== false && (
-          <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 16px", display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ maxWidth: "var(--container-max, 960px)", margin: "0 auto", padding: "0 24px 16px", display: "flex", justifyContent: "flex-end" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 13, color: mutedTextColor }}>الترتيب حسب:</span>
               {[
@@ -464,7 +464,7 @@ export default function CategoryProducts() {
             </div>
           </div>
         )}
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ maxWidth: "var(--container-max, 960px)", margin: "0 auto", padding: "0 24px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 20, gap: 12,
             justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
@@ -495,7 +495,7 @@ export default function CategoryProducts() {
               style={carouselMode ? {
                 display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
               } : {
-                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
+                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: "calc(20px * var(--density, 1))",
               }}
             >
               {visibleProducts.map((product, idx) => {

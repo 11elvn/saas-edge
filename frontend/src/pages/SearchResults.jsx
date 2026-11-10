@@ -373,7 +373,7 @@ export default function SearchResults() {
            فـ preview يغطي العنوان مع الگريد كوحدة واحدة، ماشي غير الگريد بروحه ── */}
       <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(searchSections, "collection")?.settings?.spacing} isHighlighted={normalizeSection(highlightedSection) === "collection"} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         {/* ── عنوان النتائج — نفس تصميم Home بالضبط: عنوان + badge عدد المنتجات ── */}
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 24px 8px" }}>
+        <div style={{ maxWidth: "var(--container-max, 1080px)", margin: "0 auto", padding: "0 24px 8px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
             justifyContent: (collSettings.titleAlign || "right") === "center" ? "center" : "space-between",
@@ -390,13 +390,13 @@ export default function SearchResults() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 24px 0" }}>
+        <div style={{ maxWidth: "var(--container-max, 1080px)", margin: "0 auto", padding: "16px 24px 0" }}>
           {products.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
               <p style={{ fontSize: 13.5 }}>{(!isPreview && !q.trim()) ? "أدخل كلمة للبحث" : "لا توجد نتائج مطابقة"}</p>
             </div>
           ) : (
-            <div className="sr-grid" data-cols={columns} style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20 }}>
+            <div className="sr-grid" data-cols={columns} style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: "calc(20px * var(--density, 1))" }}>
               {visibleProducts.map(product => {
                 const img        = product.images?.[0] || product.image || "";
                 const hasImg     = !!img;

@@ -21,9 +21,19 @@ export const RADIUS_SCALE = { square: 0, small: 0.35, medium: 1, large: 1.7, pil
 
 export const getRadiusScale = (styles) => RADIUS_SCALE[styles?.borderRadius] ?? 1;
 
+// ✦ Layout & motion — ThemeEdit → Styles → Layout & motion
+//    styles.layoutWidth   : narrow | standard | wide          (standard/بلا قيمة = عرض كل صفحة الأصلي)
+//    styles.layoutDensity : compact | comfortable | spacious  (comfortable/بلا قيمة = المسافات الأصلية)
+//    styles.motion        : none | subtle | lively            (subtle/بلا قيمة = الحركة الأصلية)
+//    العرض والكثافة كيوصلو عبر CSS vars (--container-max / --density) والحركة عبر data-motion
+export const LAYOUT_WIDTH   = { narrow: 860, wide: 1200 };
+export const LAYOUT_DENSITY = { compact: 0.7, spacious: 1.4 };
+
 // متغيّر CSS يتحط مرة وحدة على الـ wrapper، وكل العناصر الداخلية ترثه
 export const themeVars = (styles) => ({
   "--r-scale": getRadiusScale(styles),
+  ...(LAYOUT_WIDTH[styles?.layoutWidth]     ? { "--container-max": `${LAYOUT_WIDTH[styles.layoutWidth]}px` } : {}),
+  ...(LAYOUT_DENSITY[styles?.layoutDensity] ? { "--density": LAYOUT_DENSITY[styles.layoutDensity] } : {}),
   ...(styles?.surfaceColor ? { "--fld-surface": styles.surfaceColor } : {}),
   ...(styles?.borderColor  ? { "--fld-border":  styles.borderColor  } : {}),
 });
@@ -154,6 +164,7 @@ export function fieldLook(styles, { border = "#ebebeb", surface = "#fafafa", tex
 export const themeAttrs = (styles) => ({
   "data-fld": styles?.fieldStyle || undefined,
   "data-fsz": styles?.fieldSize  || undefined,
+  "data-motion": styles?.motion && styles.motion !== "subtle" ? styles.motion : undefined,
 });
 
 // CSS مشترك — يتحط مرة وحدة داخل wrapper كل صفحة
@@ -174,4 +185,17 @@ export const COMPONENTS_CSS = `
 [data-fld="filled"] .pd-input:focus { background: var(--fld-surface, #f1f2f4); border-color: var(--pd-primary); }
 [data-fld="underline"] .pd-input { background: transparent; border: none; border-bottom: 1.5px solid var(--fld-border, var(--pd-border, #e5e7eb)); border-radius: 0; }
 [data-fld="underline"] .pd-input:focus { background: transparent; border-bottom-color: var(--pd-primary); }
+
+@keyframes ps-fade-up-lively { from { opacity:0; transform:translateY(44px) scale(.95); } to { opacity:1; transform:none; } }
+[data-motion="none"] *:not(.ps-spinner),
+[data-motion="none"] *:not(.ps-spinner)::before,
+[data-motion="none"] *:not(.ps-spinner)::after { animation: none !important; transition: none !important; }
+[data-motion="lively"] .ps-fade-up { animation-name: ps-fade-up-lively; animation-duration: .85s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+[data-motion="lively"] .ps-delay-1 { animation-delay: .12s; }
+[data-motion="lively"] .ps-delay-2 { animation-delay: .24s; }
+[data-motion="lively"] .ps-delay-3 { animation-delay: .36s; }
+[data-motion="lively"] .ps-delay-4 { animation-delay: .48s; }
+[data-motion="lively"] [data-card-hover] { transition-duration: .4s; }
+[data-motion="lively"] [data-card-hover="lift"]:hover { translate: 0 -8px; }
+[data-motion="lively"] [data-card-hover="zoom"]:hover .cmp-img { transform: scale(1.12); }
 `;

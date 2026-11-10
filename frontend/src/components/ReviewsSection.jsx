@@ -82,7 +82,7 @@ export default function ReviewsSection({ settings, primary, bgColor, surfaceColo
   const avg = (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1);
 
   return (
-    <section style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
+    <section style={{ maxWidth: "var(--container-max, 980px)", margin: "0 auto", padding: "0 24px" }}>
       {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
         <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: textColor, margin: 0, textAlign: "right", direction: "rtl" }}>

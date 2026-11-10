@@ -1422,6 +1422,16 @@ const CSS = `
 .pb-btab--active { background:#7c6df2; color:#fff; }
 .pb-sbar { position:sticky; top:0; z-index:6; flex-shrink:0; box-sizing:border-box; height:46px; margin:0 -16px; padding:10px 16px 4px; display:flex; align-items:center; background:#fff; }
 .pb-bsticky { position:sticky; top:46px; z-index:5; flex-shrink:0; margin:0 -16px; padding:8px 16px 10px; background:#fff; box-shadow:0 6px 12px -8px rgba(15,23,42,.18); }
+.pb-lstage { flex-shrink:0; border-radius:14px; padding:10px; background:#f6f3ff; display:flex; justify-content:center; }
+.pb-lscreen { width:100%; height:92px; box-sizing:border-box; border-radius:8px; background:#fff; border:1.5px solid #e7e1fa; display:flex; justify-content:center; padding:7px 0; overflow:hidden; }
+.pb-lcont { width:var(--lw,68%); display:flex; flex-direction:column; gap:var(--lg,6px); transition:width .3s ease, gap .3s ease; }
+.pb-lhero { height:16px; border-radius:5px; flex-shrink:0; }
+.pb-lrow { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--lg,6px); transition:gap .3s ease; }
+.pb-lcard { height:36px; border-radius:6px; }
+.pb-lcard--subtle { animation:pb-lv-subtle 2.6s ease infinite both; }
+.pb-lcard--lively { animation:pb-lv-lively 2.6s cubic-bezier(.2,.8,.2,1) infinite both; }
+@keyframes pb-lv-subtle { 0% { opacity:0; transform:translateY(8px); } 22%,85% { opacity:1; transform:none; } 100% { opacity:0; transform:none; } }
+@keyframes pb-lv-lively { 0% { opacity:0; transform:translateY(18px) scale(.9); } 26%,85% { opacity:1; transform:none; } 100% { opacity:0; transform:none; } }
 .pb-bstage { flex-shrink:0; border-radius:14px; min-height:84px; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; padding:14px 12px; transition:background .2s; }
 .pb-btiles { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .pb-btile { display:flex; flex-direction:column; align-items:center; gap:7px; padding:9px 4px; font-family:inherit; font-size:.72rem; font-weight:600; color:#6f6590; background:#fff; border:1.5px solid #e7e1fa; border-radius:12px; cursor:pointer; transition:all .15s; }
@@ -3041,6 +3051,21 @@ const SChevron = () => (
 
 // ✦ أيقونات صفوف لوحة Styles (SVG خفيف، بدون أي تبعية)
 const SROW_ICONS = {
+  width: (
+    <>
+      <path d="M3 12h18" /><path d="M7 8l-4 4 4 4" /><path d="M17 8l4 4-4 4" />
+    </>
+  ),
+  density: (
+    <>
+      <path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" />
+    </>
+  ),
+  motion: (
+    <>
+      <path d="M4 12h10" /><path d="M10 7l5 5-5 5" /><path d="M20 5v14" />
+    </>
+  ),
   sections: (
     <>
       <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
@@ -3167,6 +3192,10 @@ function loadEditorFonts() {
   document.head.appendChild(link);
 }
 
+const LAYOUT_WIDTH_OPTS   = [{ v: "narrow", l: "Narrow", px: 860, pct: "60%" }, { v: "standard", l: "Standard", px: null, pct: "68%" }, { v: "wide", l: "Wide", px: 1200, pct: "83%" }];
+const LAYOUT_DENSITY_OPTS = [{ v: "compact", l: "Compact", gap: 3 }, { v: "comfortable", l: "Comfortable", gap: 6 }, { v: "spacious", l: "Spacious", gap: 11 }];
+const MOTION_OPTS         = [{ v: "none", l: "None" }, { v: "subtle", l: "Subtle" }, { v: "lively", l: "Lively" }];
+
 const STYLE_VIEW_TITLES = {
   colors:     "Colors",
   fonts:      "Fonts",
@@ -3270,10 +3299,19 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
             })()}
           </StyleRow>
 
-          <StyleRow icon="layout" title="Layout & motion" sub="Width, density, motion" onClick={() => setView("layout")}>
-            <span className="pb-srow__chip">Wide 1200px</span>
-            <span className="pb-srow__chip">Comfortable</span>
-            <span className="pb-srow__chip">Subtle motion</span>
+          <StyleRow icon="layout" title="Layout & motion" sub="Width, density, motion" onClick={() => { setView("layout"); setAcc("width"); }}>
+            {(() => {
+              const w = LAYOUT_WIDTH_OPTS.find(o => o.v === (styles.layoutWidth || "standard"));
+              const d = LAYOUT_DENSITY_OPTS.find(o => o.v === (styles.layoutDensity || "comfortable"));
+              const m = MOTION_OPTS.find(o => o.v === (styles.motion || "subtle"));
+              return (
+                <>
+                  <span className="pb-srow__chip">{w.l}{w.px ? ` ${w.px}px` : ""}</span>
+                  <span className="pb-srow__chip">{d.l}</span>
+                  <span className="pb-srow__chip">{m.l} motion</span>
+                </>
+              );
+            })()}
           </StyleRow>
         </div>
       </div>
@@ -3627,13 +3665,67 @@ function StylesPanel({ styles, onChange, onApplyPreset }) {
         );
       })()}
 
-      {view === "layout" && (
-        <div className="pb-group">
-          <div className="pb-scard__text" style={{ textAlign: "center", padding: "18px 6px" }}>
-            Details for this group will be added in the next step.
+      {view === "layout" && (() => {
+        const wOpt = LAYOUT_WIDTH_OPTS.find(o => o.v === (styles.layoutWidth || "standard"));
+        const dOpt = LAYOUT_DENSITY_OPTS.find(o => o.v === (styles.layoutDensity || "comfortable"));
+        const mOpt = MOTION_OPTS.find(o => o.v === (styles.motion || "subtle"));
+        const segL = (opts, cur, key) => (
+          <div className="pb-segment">
+            {opts.map(o => (
+              <button key={o.v} type="button"
+                className={`pb-seg-btn ${cur === o.v ? "pb-seg-btn--active" : ""}`}
+                onClick={() => s(key, o.v)}>{o.l}</button>
+            ))}
           </div>
-        </div>
-      )}
+        );
+        const heroBg = `color-mix(in srgb, ${primary} 28%, #ffffff)`;
+        const cardBg = `color-mix(in srgb, ${primary} 14%, #ffffff)`;
+
+        return (
+          <>
+            <div className="pb-bsticky">
+              <div className="pb-lstage">
+                <div className="pb-lscreen">
+                  <div className="pb-lcont" style={{ "--lw": wOpt.pct, "--lg": `${dOpt.gap}px` }}>
+                    <div className="pb-lhero" style={{ background: heroBg }} />
+                    <div className="pb-lrow">
+                      {[0, 1, 2].map(i => (
+                        <div key={`${mOpt.v}-${i}`}
+                          className={`pb-lcard ${mOpt.v === "none" ? "" : `pb-lcard--${mOpt.v}`}`}
+                          style={{ background: cardBg, animationDelay: `${i * (mOpt.v === "lively" ? 0.16 : 0.09)}s` }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {accRow("width", "width", "Width", `${wOpt.l}${wOpt.px ? ` · ${wOpt.px}px` : ""}`, (
+              <>
+                <div className="pb-label">Content width</div>
+                {segL(LAYOUT_WIDTH_OPTS, wOpt.v, "layoutWidth")}
+                <div className="pb-bhint">Max width of the store content on desktop. Standard keeps each page's original width (about 960–1080px). Phones aren't affected.</div>
+              </>
+            ))}
+
+            {accRow("density", "density", "Density", dOpt.l, (
+              <>
+                <div className="pb-label">Spacing</div>
+                {segL(LAYOUT_DENSITY_OPTS, dOpt.v, "layoutDensity")}
+                <div className="pb-bhint">Space between sections and around product grids.</div>
+              </>
+            ))}
+
+            {accRow("motion", "motion", "Motion", mOpt.l, (
+              <>
+                <div className="pb-label">Animations</div>
+                {segL(MOTION_OPTS, mOpt.v, "motion")}
+                <div className="pb-bhint">Entrance and hover animations. Subtle is the current default; None turns them off.</div>
+              </>
+            ))}
+          </>
+        );
+      })()}
     </div>
   );
 }

@@ -403,8 +403,8 @@ function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, 
   const sp = spacing || {};
   const d = PS_SPACING_DEFAULTS[type] || {};
   const extraPad = {
-    paddingTop: sp.top ?? d.top ?? 0,
-    paddingBottom: sp.bottom ?? d.bottom ?? 0,
+    paddingTop: sp.top ?? `calc(${d.top ?? 0}px * var(--density, 1))`,
+    paddingBottom: sp.bottom ?? `calc(${d.bottom ?? 0}px * var(--density, 1))`,
     paddingInlineStart: sp.start || 0,
     paddingInlineEnd: sp.end || 0,
   };
@@ -843,7 +843,7 @@ function PublicStore() {
           const groups = [];
           for (let i = 0; i < activeBadges.length; i += 4) groups.push(activeBadges.slice(i, i + 4));
           return (
-            <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ maxWidth: "var(--container-max, 900px)", margin: "0 auto", padding: "0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
               {groups.map((group, gi) => (
                 <div key={gi} style={{
                   background: surfaceColor, borderRadius: rs(20), overflow: "hidden",
@@ -870,7 +870,7 @@ function PublicStore() {
 
         const renderGrid = () => (
           <div style={{
-            maxWidth: 900, margin: "0 auto", padding: "0 24px",
+            maxWidth: "var(--container-max, 900px)", margin: "0 auto", padding: "0 24px",
             display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
           }}>
             {activeBadges.map((b, i) => (
@@ -912,7 +912,7 @@ function PublicStore() {
         const displayCategories = usingDemo ? DEMO_CATEGORIES : categories;
         return (
         <SectionWrapper type="categories" isPreview={isPreview} spacing={sec(tc, "categories")?.settings?.spacing} isHighlighted={highlightedSection === "categories"} style={{ order: sectionOrder("categories") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section id="ps-categories" style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
+        <section id="ps-categories" style={{ maxWidth: "var(--container-max, 980px)", margin: "0 auto", padding: "0 24px" }}>
           {/* Header row */}
           <div style={{
             display: "flex", alignItems: "flex-end", marginBottom: 28, gap: 12,
@@ -1060,7 +1060,7 @@ function PublicStore() {
 
         return (
         <SectionWrapper type="collection" isPreview={isPreview} spacing={sec(tc, "collection")?.settings?.spacing} isHighlighted={highlightedSection === "collection"} style={{ order: sectionOrder("collection") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
-        <section ref={productsRef} id="ps-products" style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px" }}>
+        <section ref={productsRef} id="ps-products" style={{ maxWidth: "var(--container-max, 980px)", margin: "0 auto", padding: "0 24px" }}>
           <div style={{
             display: "flex", alignItems: "center", marginBottom: 24, gap: 12,
             justifyContent: titleAlign === "center" ? "center" : "space-between",
@@ -1091,9 +1091,9 @@ function PublicStore() {
               data-cols={columns}
               data-carousel={carouselMode ? "1" : "0"}
               style={carouselMode ? {
-                display: "flex", gap: 20, overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
+                display: "flex", gap: "calc(20px * var(--density, 1))", overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 4,
               } : {
-                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: 20,
+                display: "grid", gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: "calc(20px * var(--density, 1))",
               }}
             >
               {visibleProducts.map((product, idx) => {

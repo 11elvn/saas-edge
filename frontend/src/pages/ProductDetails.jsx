@@ -634,7 +634,7 @@ function ProductDetails() {
       {/* ── Content ── */}
       <div
         className="pd-grid"
-        style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", columnGap: 32, rowGap: 0, alignItems: "start" }}
+        style={{ maxWidth: "var(--container-max, 980px)", margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: galleryEnabled ? "1fr 1fr" : "1fr", columnGap: 32, rowGap: 0, alignItems: "start" }}
       >
 
         {/* ── Gallery ── */}
