@@ -358,9 +358,6 @@ const PREVIEW_CSS = `
   .ps-section-wrapper--highlighted .ps-section-label {
     opacity: 1;
   }
-  .ps-section-label--active {
-    background: #7c6df2;
-  }
 }
 `;
 
