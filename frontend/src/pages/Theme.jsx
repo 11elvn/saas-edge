@@ -2,7 +2,7 @@
 // 📁 pages/Theme.jsx — Live store preview (تصميم جديد)
 // Layout: desktop preview (left) + mobile frame (right) + footer bar
 // ============================================================
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API   = () => import.meta.env.VITE_API_URL;
@@ -17,17 +17,18 @@ const CSS = `
 .th-page {
   height: calc(100vh - 60px);
   background: #fff;
-  overflow-y: auto;
-  padding: 24px 28px 32px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 16px 28px 16px;
   font-family: 'Inter', sans-serif;
   color: #1f1747;
 }
-.th-wrap { max-width: 1180px; margin: 0 auto; }
+.th-wrap { flex: 1; min-height: 0; width: 100%; max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; }
 
 /* ══ HEADER ══ */
 .th-head {
   display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 12px; flex-shrink: 0;
 }
 .th-title { font-size: 1.3rem; font-weight: 700; color: #1f1747; margin: 0; }
 .th-sub   { font-size: .82rem; color: #8b7fae; margin: 3px 0 0; }
@@ -53,9 +54,9 @@ const CSS = `
 /* ══ STAGE ══ */
 .th-stage {
   position: relative; background: #f4f1fe; border-radius: 16px;
-  height: 560px; overflow: hidden;
+  flex: 1; min-height: 0; overflow: hidden;
   display: flex; justify-content: center; align-items: flex-start;
-  gap: 28px; padding: 64px 32px 0;
+  gap: 28px; padding: 58px 32px 18px;
 }
 .th-float {
   position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
@@ -299,19 +300,19 @@ const CSS = `
 }
 
 /* ══ STAGE DEVICES ══ */
-.th-stage .th-desktop { flex: 1; max-width: 640px; height: 485px; max-height: none; }
+.th-stage .th-desktop { flex: 1; max-width: 700px; height: 100%; max-height: none; }
 .th-stage.is-desktop .th-desktop { max-width: 980px; }
-.th-stage .th-mobile-wrap { width: 224px; height: 485px; position: relative; flex-shrink: 0; display: block; }
-.th-stage .th-iphone { transform: scale(.86); transform-origin: top left; position: absolute; top: 0; left: 0; }
+.th-stage .th-mobile-wrap { position: relative; flex-shrink: 0; display: block; }
+.th-stage .th-iphone { transform-origin: top left; position: absolute; top: 0; left: 0; }
 
 /* ══ INFO CARDS ══ */
-.th-info { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; margin-top: 14px; }
+.th-info { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
 .th-card-box {
   border: 1px solid #ebe7f7; border-radius: 14px; background: #fff;
-  padding: 14px 18px; display: flex; align-items: center;
+  padding: 10px 16px; display: flex; align-items: center;
 }
 .th-theme-ico {
-  width: 44px; height: 44px; border-radius: 12px; background: #ece7fb; color: #5b3fd6;
+  width: 40px; height: 40px; border-radius: 12px; background: #ece7fb; color: #5b3fd6;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 14px;
 }
 .th-theme-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -608,6 +609,8 @@ function Theme() {
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [view,       setView]       = useState("both"); // both | desktop | mobile
+  const stageRef = useRef(null);
+  const [scale, setScale] = useState(0.8);
 
   useEffect(() => {
     const t = token();
@@ -624,6 +627,20 @@ function Theme() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // يضبط حجم الهاتف حسب ارتفاع المعاينة ليبان كل شيء في شاشة واحدة
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const fit = () => {
+      const h = el.clientHeight - 58 - 18;
+      setScale(Math.max(0.5, Math.min(1, h / 564)));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [loading, view]);
 
   if (loading) return (
     <div className="th-loading">
@@ -685,7 +702,7 @@ function Theme() {
         </div>
 
         {/* ══ PREVIEW STAGE ══ */}
-        <div className={`th-stage is-${view}`}>
+        <div ref={stageRef} className={`th-stage is-${view}`}>
           <div className="th-float" role="tablist" aria-label="Preview mode">
             {VIEWS.map(v => (
               <button key={v.id} role="tab" aria-selected={view === v.id}
@@ -722,8 +739,8 @@ function Theme() {
           {showMobile && (
           <>
           {/* ── iPhone 15 Pro Frame ── */}
-          <div className="th-mobile-wrap">
-            <div className="th-iphone">
+          <div className="th-mobile-wrap" style={{ width: 260 * scale, height: 564 * scale }}>
+            <div className="th-iphone" style={{ transform: `scale(${scale})` }}>
               {/* الإطار الخارجي */}
               <div className="th-iphone__frame" />
               {/* أزرار جانبية */}
