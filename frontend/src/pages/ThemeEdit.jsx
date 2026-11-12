@@ -55,6 +55,13 @@ const DEFAULT_CONFIG = {
         overlayOpacity: 50,
         height: "large",
         textAlign: "center",
+        carouselMode: false,
+        autoplay: true,
+        showArrows: true,
+        speed: 4,
+        showPause: false,
+        navPosition: "under",
+        slides: [],
       },
     },
     {
@@ -2110,25 +2117,181 @@ function HeaderSettings({ settings, onChange, store, onLogoChange, onNameChange,
   );
 }
 
+// ✦ رفع صورة لـ Cloudinary (مشترك بين الـ Hero العادي وشرائح الـ Carousel)
+async function uploadHeroImage(file) {
+  if (!file || !file.type.startsWith("image/")) return null;
+  const CLOUDINARY_CLOUD  = "dbcbkly4w";
+  const CLOUDINARY_PRESET = "saas_edge";
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: formData });
+    const data = await res.json();
+    return data.secure_url || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+const HERO_MAX_SLIDES = 8;
+const newSlideId = () => "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+// ✦ بطاقة شريحة واحدة داخل Carousel
+function HeroSlideCard({ slide, index, canDelete, onChange, onDelete }) {
+  const [open, setOpen] = useState(index === 0);
+  const u = (k, v) => onChange({ ...slide, [k]: v });
+  const handleFile = async (file) => {
+    const url = await uploadHeroImage(file);
+    if (url) u("image", url);
+  };
+  return (
+    <div className="pb-link-card">
+      <div className="pb-link-card__header" style={{ cursor: "pointer" }} onClick={() => setOpen(v => !v)}>
+        <span>Slide {index + 1}{slide.title ? ` · ${slide.title}` : ""}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {canDelete && (
+            <button type="button" className="pb-link-card__delete" title="Delete"
+              onClick={e => { e.stopPropagation(); onDelete(); }}>
+              <Icon name="trash" size={14} />
+            </button>
+          )}
+          <span style={{ display: "flex", transform: open ? "rotate(180deg)" : "none", transition: "transform .18s" }}><SChevron /></span>
+        </span>
+      </div>
+      {open && (
+        <div className="pb-link-card__body">
+          <div className="pb-field">
+            <div className="pb-label">Headline</div>
+            <input className="pb-input" value={slide.title || ""} onChange={e => u("title", e.target.value)} placeholder="New slide" />
+          </div>
+          <div className="pb-field">
+            <div className="pb-label">Subheading</div>
+            <input className="pb-input" value={slide.subtitle || ""} onChange={e => u("subtitle", e.target.value)} placeholder="Slide description" />
+          </div>
+          <div className="pb-field">
+            <div className="pb-label">Button text</div>
+            <input className="pb-input" value={slide.ctaText || ""} onChange={e => u("ctaText", e.target.value)} />
+          </div>
+          <div className="pb-field">
+            <div className="pb-label">Button link</div>
+            <input className="pb-input" value={slide.ctaLink || ""} onChange={e => u("ctaLink", e.target.value)} placeholder="#products" />
+          </div>
+          <ColorField label="Button color" value={slide.ctaColor || "#111827"} onChange={v => u("ctaColor", v)} />
+          <div className="pb-field">
+            <div className="pb-label">Background image</div>
+            <div className="pb-img-row">
+              {slide.image && (
+                <div className="pb-img-thumb">
+                  <img src={slide.image} alt="" />
+                  <button type="button" className="pb-img-thumb__remove" onClick={() => u("image", "")}>✕</button>
+                </div>
+              )}
+              <label className="pb-img-add">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Drag or click to upload</span>
+                <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HeroSettings({ settings, onChange }) {
   const s = (k, v) => onChange({ ...settings, [k]: v });
+  const carousel = !!settings.carouselMode;
+  const slides = Array.isArray(settings.slides) ? settings.slides : [];
 
   const handleFile = async (file) => {
-    if (!file || !file.type.startsWith("image/")) return;
-    const CLOUDINARY_CLOUD  = "dbcbkly4w";
-    const CLOUDINARY_PRESET = "saas_edge";
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", CLOUDINARY_PRESET);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: formData });
-      const data = await res.json();
-      if (data.secure_url) s("image", data.secure_url);
-    } catch (_) {}
+    const url = await uploadHeroImage(file);
+    if (url) s("image", url);
   };
+
+  // أول تفعيل: الشريحة الأولى تاخذ محتوى الـ Hero الحالي باش ما يضيع شي
+  const toggleCarousel = (on) => {
+    if (on && slides.length === 0) {
+      onChange({
+        ...settings,
+        carouselMode: true,
+        slides: [{
+          id: newSlideId(),
+          image: settings.image || "",
+          title: settings.title || "",
+          subtitle: settings.subtitle || "",
+          ctaText: settings.ctaText || "تسوق الآن",
+          ctaLink: settings.ctaLink || "#products",
+          ctaColor: settings.ctaColor || "",
+        }],
+      });
+    } else {
+      s("carouselMode", on);
+    }
+  };
+
+  const updateSlide = (id, next) => s("slides", slides.map(sl => sl.id === id ? next : sl));
+  const deleteSlide = (id) => s("slides", slides.filter(sl => sl.id !== id));
+  const addSlide = () => {
+    if (slides.length >= HERO_MAX_SLIDES) return;
+    s("slides", [...slides, {
+      id: newSlideId(), image: "", title: "شريحة جديدة", subtitle: "وصف الشريحة",
+      ctaText: "اعرف المزيد", ctaLink: "#products", ctaColor: "",
+    }]);
+  };
+
+  const speed = Number(settings.speed ?? 4);
+  const autoplay = settings.autoplay ?? true;
+  const navPos = settings.navPosition === "on" ? "on" : "under";
 
   return (
     <>
+      <Collapse title="Carousel mode" icon="motion" sub={carousel ? `${slides.length} ${slides.length === 1 ? "slide" : "slides"}` : "Off"} defaultOpen>
+        <ToggleRow label="Carousel mode" hint="Show several slides that switch automatically" checked={carousel} onChange={toggleCarousel} />
+        {carousel && (
+          <>
+            <ToggleRow label="Auto-play" checked={autoplay} onChange={v => s("autoplay", v)} />
+            <ToggleRow label="Show arrows" checked={settings.showArrows ?? true} onChange={v => s("showArrows", v)} />
+            <div className="pb-field">
+              <div className="pb-label">Speed (seconds) <span>{speed}</span></div>
+              <input type="range" className="pb-range" min={1} max={10} step={1}
+                value={speed} onChange={e => s("speed", +e.target.value)} />
+            </div>
+            <ToggleRow label="Pause button" checked={!!settings.showPause} onChange={v => s("showPause", v)} />
+            <div className="pb-field">
+              <div className="pb-label">Arrows and dots</div>
+              <div className="pb-segment">
+                {[{ v: "on", l: "On the photo" }, { v: "under", l: "Under the photo" }].map(o => (
+                  <button key={o.v} type="button"
+                    className={`pb-seg-btn ${navPos === o.v ? "pb-seg-btn--active" : ""}`}
+                    onClick={() => s("navPosition", o.v)}>{o.l}</button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </Collapse>
+
+      {carousel && (
+        <Collapse title="Slides" icon="content" sub={`${slides.length} / ${HERO_MAX_SLIDES}`} defaultOpen>
+          {slides.map((sl, i) => (
+            <HeroSlideCard key={sl.id} slide={sl} index={i}
+              canDelete={slides.length > 1}
+              onChange={next => updateSlide(sl.id, next)}
+              onDelete={() => deleteSlide(sl.id)} />
+          ))}
+          {slides.length < HERO_MAX_SLIDES && (
+            <button type="button" className="pb-add-link-btn" onClick={addSlide}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add slide
+            </button>
+          )}
+        </Collapse>
+      )}
+
+      {!carousel && (
       <Collapse title="Content" icon="content" sub={settings.title || "No headline"} defaultOpen>
 
         <div className="pb-field">
@@ -2187,6 +2350,7 @@ function HeroSettings({ settings, onChange }) {
             value={settings.overlayOpacity} onChange={e => s("overlayOpacity", +e.target.value)} />
         </div>
       </Collapse>
+      )}
 
       <Collapse title="Layout" icon="layout" sub={`${capFirst(settings.textAlign || "right")} · ${({ small: "Small", large: "Medium", full: "Large" })[settings.height] || "Medium"}`}>
 
@@ -2220,6 +2384,14 @@ function HeroSettings({ settings, onChange }) {
             ))}
           </div>
         </div>
+
+        {carousel && (
+          <div className="pb-field">
+            <div className="pb-label">Overlay opacity <span>{settings.overlayOpacity ?? 50}%</span></div>
+            <input type="range" className="pb-range" min={0} max={90} step={5}
+              value={settings.overlayOpacity ?? 50} onChange={e => s("overlayOpacity", +e.target.value)} />
+          </div>
+        )}
       </Collapse>
     </>
   );

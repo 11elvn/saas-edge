@@ -11,6 +11,7 @@ import FaqSection  from "../components/FaqSection";
 import ReviewsSection from "../components/ReviewsSection";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
+import HeroCarousel, { HERO_CAROUSEL_CSS } from "../components/HeroCarousel";
 import { useCart } from "../context/CartContext";
 import { rs, themeVars, btnStyle, themeAttrs, cardLook, cardHoverMode, badgeLook, COMPONENTS_CSS } from "../utils/themeStyles";
 
@@ -59,6 +60,7 @@ const CSS = `
   to   { transform:translateX(0); }
 }
 ${ANNOUNCEMENT_BAR_CSS}
+${HERO_CAROUSEL_CSS}
 @keyframes ps-spin { to { transform:rotate(360deg); } }
 
 .ps-fade-up  { animation: ps-fade-up .55s ease both; }
@@ -262,7 +264,7 @@ const DEFAULT_TC = {
   sections: [
     { id:"announcement", type:"announcement", enabled:true,  settings:{ message:"توصيل لجميع ولايات الجزائر 🇩🇿 · الدفع عند الاستلام 💰", bgColor:"#111827", textColor:"#ffffff", animation:true,  showClose:false } },
     { id:"header",       type:"header",       enabled:true,  settings:{ showSearch:true, showCart:true, sticky:true } },
-    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center" } },
+    { id:"hero",         type:"hero",         enabled:true,  settings:{ image:"", title:"", subtitle:"اكتشف أفضل المنتجات", ctaText:"تسوق الآن", ctaLink:"#products", ctaColor:"", overlayOpacity:50, height:"large", textAlign:"center", carouselMode:false, autoplay:true, showArrows:true, speed:4, showPause:false, navPosition:"under", slides:[] } },
     { id:"trust", type:"trust", enabled:true, settings:{ layout:"row", badges:[ {id:"cod",enabled:true,title:"دفع عند الاستلام",sub:"دفع آمن وسهل"}, {id:"shipping",enabled:true,title:"توصيل سريع",sub:"لجميع ولايات الجزائر"}, {id:"return",enabled:true,title:"إرجاع مجاني",sub:"خلال 7 أيام"}, {id:"support",enabled:true,title:"دعم 24/7",sub:"نحن هنا لمساعدتك"}, {id:"secure",enabled:true,title:"متجر موثوق",sub:"آلاف العملاء الراضين"} ], bgColor:"#ffffff" } },
     { id:"collection",   type:"collection",   enabled:true,  settings:{ title:"أحدث المنتجات", titleAlign:"right", selectionMode:"all", productsShown:8, carouselMode:false, columns:3, imageRatio:"1:1", showBadge:true, showRating:false, showViewAll:true, viewAllText:"عرض الكل", viewAllStyle:"link", infiniteScroll:false } },
     { id:"categories",   type:"categories",   enabled:true,  settings:{ title:"التصنيفات", subtitle:"اعثر على كل ما تريد", titleAlign:"right", displayStyle:"grid", maxItems:6 } },
@@ -766,6 +768,33 @@ function PublicStore() {
             window.open(link, "_blank");
           }
         };
+        if (hs.carouselMode && Array.isArray(hs.slides) && hs.slides.length > 0) {
+          return (
+          <SectionWrapper type="hero" isPreview={isPreview} spacing={sec(tc, "hero")?.settings?.spacing} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
+            <HeroCarousel
+              settings={hs}
+              heroHeight={heroHeight}
+              fallbackImage={banner}
+              fallbackTitle={storeName}
+              primary={primary}
+              secondary={secondary}
+              textColor={textColor}
+              rs={rs}
+              btnStyle={btnStyle}
+              styles={tc?.styles}
+              onCtaClick={(link) => {
+                if (link.startsWith("#")) {
+                  const id = link.slice(1);
+                  if (id === "products") { productsRef.current?.scrollIntoView({ behavior: "smooth" }); return; }
+                  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+                } else {
+                  window.open(link, "_blank");
+                }
+              }}
+            />
+          </SectionWrapper>
+          );
+        }
         return (
         <SectionWrapper type="hero" isPreview={isPreview} spacing={sec(tc, "hero")?.settings?.spacing} isHighlighted={highlightedSection === "hero"} style={{ order: sectionOrder("hero") }} registerRef={registerSectionRef} onHoverChange={setHoveredSection}>
         <section style={{ position: "relative", height: heroHeight, overflow: "hidden", display: "flex", alignItems: "center" }}>
