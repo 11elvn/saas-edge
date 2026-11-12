@@ -306,6 +306,10 @@ const CSS = `
 .th-stage .th-mobile-wrap { position: relative; flex-shrink: 0; display: block; }
 .th-stage .th-iphone { transform-origin: top left; position: absolute; top: 0; left: 0; }
 
+/* ══ LIVE PREVIEW (iframe) ══ */
+.th-stage .th-desktop-store { position: relative; overflow: hidden; direction: ltr; }
+.th-stage .th-mobile-screen { overflow: hidden; direction: ltr; }
+
 /* ══ INFO CARDS ══ */
 .th-info { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
 .th-card-box {
@@ -346,258 +350,49 @@ const CSS = `
 }
 `;
 
-// ── Desktop Store Preview ──────────────────────────────────────
-function DesktopStore({ store, products, categories }) {
-  const pc   = store?.primaryColor   || "#2563eb";
-  const sc   = store?.secondaryColor || "#0f172a";
-  const ff   = store?.fontFamily     || "Inter";
-  const name = store?.name           || "المتجر";
+// ── Live Store Preview (iframe) ────────────────────────────────
+// يعرض المتجر الحقيقي (/store/:slug) بتصميمه الحالي كما عدّله المستخدم.
+// الـ iframe يُعرض بعرض "افتراضي" (حاسوب 1280 / هاتف 390) ثم يُصغَّر ليناسب الإطار.
+function ScaledFrame({ src, baseWidth, title }) {
+  const boxRef = useRef(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const scale = size.w ? size.w / baseWidth : 1;
 
   return (
-    <div style={{ fontFamily: `'${ff}', sans-serif`, direction: "rtl", background: "#fff" }}>
-
-      {/* Announcement bar */}
-      <div className="th-announce" style={{ background: sc, padding: "7px 0" }}>
-        <div className="th-announce-track">
-          {[...Array(6)].map((_, i) => (
-            <span key={i} style={{ fontSize: 11, color: "rgba(255,255,255,.6)", whiteSpace: "nowrap", fontWeight: 600 }}>
-              مرحبًا بك في متجرنا &nbsp;·&nbsp; توصيل 58 ولاية 🇩🇿 &nbsp;·&nbsp; الدفع عند الاستلام 💰
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Navbar */}
-      <div className="th-navbar" style={{ padding: "12px 24px", borderBottom: "1px solid #f0f0f0" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {store?.logo
-            ? <img src={store.logo} style={{ width: 30, height: 30, borderRadius: 7, objectFit: "cover" }} alt="" />
-            : <div style={{ width: 30, height: 30, borderRadius: 7, background: pc, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14 }}>{name.charAt(0)}</div>
-          }
-          <span style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>{name}</span>
-        </div>
-        <div style={{ display: "flex", gap: 20 }}>
-          {["الرئيسية", "التصنيفات", "اتصل بنا"].map(l => (
-            <span key={l} style={{ fontSize: 12, fontWeight: 600, color: "#444", cursor: "default" }}>{l}</span>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <svg width="16" height="16" fill="none" stroke="#555" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <div style={{ position: "relative" }}>
-            <svg width="16" height="16" fill="none" stroke="#555" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-            <span style={{ position: "absolute", top: -6, right: -6, background: pc, color: "#fff", borderRadius: "50%", width: 14, height: 14, fontSize: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>3</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero / Banner */}
-      <div className="th-hero" style={{ height: 220 }}>
-        {store?.banner
-          ? <img src={store.banner} className="th-hero-img" alt="banner" />
-          : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${pc}33 0%, ${sc}88 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 48 }}>🖼️</span>
-            </div>
-        }
-        <div className="th-hero-overlay" />
-        <div className="th-hero-cta" style={{ gap: 10 }}>
-          <button style={{ background: pc, color: "#fff", border: "none", borderRadius: 99, padding: "9px 24px", fontSize: 12, fontWeight: 700, cursor: "default", fontFamily: "inherit" }}>
-            🛍️ تسوق الآن
-          </button>
-        </div>
-      </div>
-
-      {/* Trust badges */}
-      <div className="th-trust" style={{ gridTemplateColumns: "repeat(3,1fr)", borderTop: "1px solid #eee", borderBottom: "1px solid #eee" }}>
-        {[
-          { icon: "🚚", title: "توصيل سريع", sub: "58 ولاية" },
-          { icon: "🛡️", title: "جودة مضمونة", sub: "فحص شامل" },
-          { icon: "🎧", title: "دعم 24/7", sub: "خدمة العملاء" },
-        ].map((b, i) => (
-          <div key={i} className="th-trust-item" style={{ padding: "14px 10px", borderRight: i < 2 ? "1px solid #eee" : "none" }}>
-            <span style={{ fontSize: 18 }}>{b.icon}</span>
-            <p style={{ fontWeight: 700, color: "#111", fontSize: 11, margin: 0 }}>{b.title}</p>
-            <p style={{ color: "#888", fontSize: 9, margin: 0 }}>{b.sub}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Categories */}
-      {categories.length > 0 && (
-        <div style={{ padding: "20px 24px 10px" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}>
-            <div>
-              <h3 style={{ fontWeight: 900, color: "#111", margin: "0 0 3px", fontSize: 14 }}>Collection</h3>
-              <p style={{ color: "#888", margin: 0, fontSize: 10 }}>اعثر على كل ما تريد</p>
-            </div>
-            <span style={{ fontSize: 11, color: pc, fontWeight: 700, cursor: "default" }}>عرض الكل →</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
-            {categories.slice(0, 4).map(cat => (
-              <div key={cat._id} className="th-cat-card">
-                {cat.image
-                  ? <img src={cat.image} style={{ width: "100%", height: 72, objectFit: "cover", display: "block" }} alt={cat.name} />
-                  : <div style={{ width: "100%", height: 72, background: pc + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📁</div>
-                }
-                <div style={{ padding: "7px 9px" }}>
-                  <p style={{ fontWeight: 700, fontSize: 11, color: "#111", margin: 0 }}>{cat.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div ref={boxRef} style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#fff" }}>
+      {src ? (
+        size.w > 0 && (
+          <iframe
+            key={src}
+            src={src}
+            title={title}
+            style={{
+              width: baseWidth,
+              height: size.h / scale,
+              border: 0,
+              display: "block",
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              background: "#fff",
+            }}
+          />
+        )
+      ) : (
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#8b7fae", fontSize: 13 }}>
+          لا يوجد متجر بعد
         </div>
       )}
-
-      {/* Products */}
-      <div style={{ padding: "16px 24px 28px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}>
-          <div>
-            <h3 style={{ fontWeight: 900, color: "#111", margin: "0 0 3px", fontSize: 14 }}>المنتجات</h3>
-            <p style={{ color: "#888", margin: 0, fontSize: 10 }}>أحدث المنتجات المتاحة</p>
-          </div>
-        </div>
-        {products.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
-            {products.slice(0, 8).map(p => (
-              <div key={p._id} className="th-prod-card">
-                {(p.images?.[0] || p.image)
-                  ? <img src={p.images?.[0] || p.image} className="th-prod-img" style={{ height: 80 }} alt={p.name} />
-                  : <div className="th-prod-ph" style={{ height: 80, fontSize: 24 }}>📦</div>
-                }
-                <div style={{ padding: "8px 9px 10px" }}>
-                  <p style={{ fontWeight: 700, fontSize: 10, color: "#111", margin: "0 0 4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-                    <span style={{ fontWeight: 800, fontSize: 11, color: pc }}>{p.currentPrice?.toLocaleString()} DA</span>
-                    {p.oldPrice && <span style={{ textDecoration: "line-through", color: "#aaa", fontSize: 9 }}>{p.oldPrice?.toLocaleString()}</span>}
-                  </div>
-                  <button style={{ width: "100%", background: sc, color: "#fff", border: "none", borderRadius: 7, padding: "5px 0", fontSize: 9, fontWeight: 700, cursor: "default", fontFamily: "inherit" }}>اطلب الآن</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "32px 0", color: "#ccc", fontSize: 12 }}>📦 لا توجد منتجات بعد</div>
-        )}
-      </div>
-
-    </div>
-  );
-}
-
-// ── Mobile Store Preview ───────────────────────────────────────
-const IC = {
-  truck:  <><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>,
-  shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></>,
-  headset:<><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1v-7h3zM3 19a2 2 0 002 2h1v-7H3z"/></>,
-};
-const Ico = ({ n, c, s = 17 }) => (
-  <svg width={s} height={s} fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">{IC[n]}</svg>
-);
-
-function MobileStore({ store, products, categories }) {
-  const pc   = store?.primaryColor   || "#2563eb";
-  const sc   = store?.secondaryColor || "#0f172a";
-  const ff   = store?.fontFamily     || "Inter";
-  const name = store?.name           || "المتجر";
-
-  return (
-    <div style={{ fontFamily: `'${ff}', sans-serif`, direction: "rtl", background: "#fff", color: "#111" }}>
-
-      {/* Announcement bar */}
-      <div style={{ background: sc, padding: "6px 0", overflow: "hidden" }}>
-        <div className="th-announce-track">
-          {[...Array(4)].map((_, i) => (
-            <span key={i} style={{ fontSize: 11, color: "rgba(255,255,255,.75)", whiteSpace: "nowrap", fontWeight: 600, marginRight: 28 }}>
-              الدفع عند الاستلام · توصيل 58 ولاية
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Navbar */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "1px solid #f0f0f0" }}>
-        <svg width="18" height="18" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {store?.logo
-            ? <img src={store.logo} style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }} alt="" />
-            : <div style={{ width: 22, height: 22, borderRadius: "50%", background: pc, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 11 }}>{name.charAt(0)}</div>
-          }
-          <span style={{ fontSize: 13, fontWeight: 700 }}>{name}</span>
-        </div>
-        <div style={{ position: "relative", display: "flex" }}>
-          <svg width="18" height="18" fill="none" stroke="#333" strokeWidth="2" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-          <span style={{ position: "absolute", top: -6, left: -7, background: pc, color: "#fff", borderRadius: "50%", width: 14, height: 14, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>3</span>
-        </div>
-      </div>
-
-      {/* Hero */}
-      <div style={{ position: "relative", height: 150, overflow: "hidden", background: store?.banner ? "#000" : `${sc}` }}>
-        {store?.banner && <img src={store.banner} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} alt="" />}
-        <div style={{ position: "absolute", inset: 0, background: store?.banner ? "rgba(0,0,0,.38)" : `${pc}55` }} />
-        <div style={{ position: "absolute", inset: 0, padding: "0 16px 14px", display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 5 }}>
-          <p style={{ color: "#fff", fontSize: 15, fontWeight: 800, margin: 0 }}>مرحبًا بك في متجرنا</p>
-          <p style={{ color: "rgba(255,255,255,.85)", fontSize: 11, margin: 0, lineHeight: 1.5 }}>أفضل المنتجات بأسعار رائعة وتوصيل لكل الولايات</p>
-          <span style={{ alignSelf: "flex-start", marginTop: 4, background: pc, color: "#fff", fontSize: 11, fontWeight: 700, padding: "6px 16px", borderRadius: 99 }}>تسوق الآن</span>
-        </div>
-      </div>
-
-      {/* Trust badges */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", textAlign: "center", padding: "11px 4px", borderBottom: "1px solid #f0f0f0" }}>
-        {[["truck", "توصيل سريع"], ["shield", "جودة مضمونة"], ["headset", "دعم 24/7"]].map(([ic, t]) => (
-          <div key={t} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-            <Ico n={ic} c={pc} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>{t}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Categories */}
-      {categories.length > 0 && (
-        <div style={{ padding: "12px 14px 4px" }}>
-          <p style={{ fontSize: 13, fontWeight: 800, margin: "0 0 8px" }}>Collection</p>
-          <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
-            {categories.slice(0, 4).map(cat => (
-              <div key={cat._id} style={{ flexShrink: 0, width: 74, textAlign: "center" }}>
-                {cat.image
-                  ? <img src={cat.image} style={{ width: 74, height: 74, borderRadius: 12, objectFit: "cover", display: "block" }} alt={cat.name} />
-                  : <div style={{ width: 74, height: 74, borderRadius: 12, background: pc + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📁</div>
-                }
-                <p style={{ fontSize: 11, fontWeight: 600, margin: "5px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cat.name}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Products */}
-      <div style={{ padding: "12px 14px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
-          <p style={{ fontSize: 13, fontWeight: 800, margin: 0 }}>المنتجات</p>
-          <span style={{ fontSize: 11, color: pc, fontWeight: 700 }}>عرض الكل</span>
-        </div>
-        {products.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-            {products.slice(0, 6).map(p => (
-              <div key={p._id} style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #eee", background: "#fff" }}>
-                {(p.images?.[0] || p.image)
-                  ? <img src={p.images?.[0] || p.image} style={{ width: "100%", height: 84, objectFit: "cover", display: "block" }} alt={p.name} />
-                  : <div style={{ width: "100%", height: 84, background: "#f8f9fa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📦</div>
-                }
-                <div style={{ padding: "7px 9px 9px" }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</p>
-                  <div style={{ color: "#f59e0b", fontSize: 11, letterSpacing: 1, lineHeight: 1.2 }}>★★★★★</div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: pc }}>{p.currentPrice?.toLocaleString()} DA</span>
-                    <span style={{ width: 22, height: 22, borderRadius: 7, background: sc, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1 }}>+</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "20px 0", color: "#bbb", fontSize: 11 }}>📦 لا توجد منتجات</div>
-        )}
-      </div>
-
     </div>
   );
 }
@@ -732,7 +527,7 @@ function Theme() {
             </div>
             {/* Store content */}
             <div className="th-desktop-store">
-              <DesktopStore store={store} products={products} categories={categories} />
+              <ScaledFrame src={storeUrl} baseWidth={1280} title="Desktop preview" />
             </div>
           </div>
           </>
@@ -783,7 +578,7 @@ function Theme() {
                 </div>
                 {/* Store content */}
                 <div className="th-mobile-screen">
-                  <MobileStore store={store} products={products} categories={categories} />
+                  <ScaledFrame src={storeUrl} baseWidth={390} title="Mobile preview" />
                 </div>
               </div>
             </div>
