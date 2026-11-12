@@ -203,7 +203,7 @@ export default function HeroCarousel({
                   textAlign: align, maxWidth: 640,
                 }}>
                   {(sl.title || (i === 0 && fallbackTitle)) && (
-                    <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
+                    <p className="ps-heading" style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
                       {sl.title || fallbackTitle}
                     </p>
                   )}

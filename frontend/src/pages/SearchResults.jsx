@@ -163,7 +163,7 @@ const SR_SPACING_DEFAULTS = { collection: { top: 32, bottom: 32 } };
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = SR_SPACING_DEFAULTS[type] || {};
-  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const extraPad = { paddingTop: sp.top ?? `calc(${d.top ?? 0}px * var(--density, 1))`, paddingBottom: sp.bottom ?? `calc(${d.bottom ?? 0}px * var(--density, 1))`, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
@@ -291,6 +291,8 @@ export default function SearchResults() {
 
   useEffect(() => { loadFont("Cairo"); injectPreviewCSS(); }, []);
   useEffect(() => { if (font) loadFont(font); }, [font]);
+  // ✦ خط العناوين (Heading font)
+  useEffect(() => { if (styles?.headingFont) loadFont(styles.headingFont); }, [styles?.headingFont]);
 
   // ── جلب المتجر — وفـ preview نستعمل منتجاته الحقيقية كمثال للنتائج، بلا اعتماد على q ──
   useEffect(() => {

@@ -627,6 +627,12 @@ function PublicStore() {
     if (font) loadFont(font);
   }, [font]);
 
+  // ✦ خط العناوين (Heading font) — يتحمّل ويتطبق عبر --heading-font
+  const headingFont = tc?.styles?.headingFont;
+  useEffect(() => {
+    if (headingFont) loadFont(headingFont);
+  }, [headingFont]);
+
   // ✦ سكرول لأي section عندو hash فالرابط (مثلا #ps-products جاي من "المنتجات" فالهيدر)
   useEffect(() => {
     if (!location.hash) return;
@@ -811,7 +817,7 @@ function PublicStore() {
               alignItems: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
               textAlign: align, maxWidth: 640,
             }}>
-              <p style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
+              <p className="ps-heading" style={{ fontSize: "clamp(1.8rem,5vw,3.5rem)", fontWeight: 900, color: "#fff", margin: 0, letterSpacing: -1, lineHeight: 1.15, textShadow: "0 2px 16px rgba(0,0,0,.4)" }}>
                 {hs.title || storeName}
               </p>
               {hs.subtitle && (

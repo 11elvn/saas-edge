@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
+import CartDrawer from "../components/CartDrawer";
+import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
+import { useCart } from "../context/CartContext";
+import { rs, themeVars, themeAttrs, cardLook, cardHoverMode, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -17,6 +21,14 @@ function loadFont(font) {
   link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g,"+")}:wght@400;600;700;800;900&display=swap`;
   document.head.appendChild(link);
 }
+
+// ✦ نفس القيم الافتراضية ديال باقي صفحات المتجر
+const DEFAULT_STYLES = {
+  primaryColor: "#2563eb", secondaryColor: "#0f172a", backgroundColor: "#ffffff",
+  surfaceColor: "#fafafa", textColor: "#111111", mutedTextColor: "#666666",
+  borderColor: "#ebebeb", fontFamily: "Cairo", direction: "rtl",
+};
+const sec = (arr, type) => (arr || []).find(s => s.type === type);
 
 const IconWA = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
@@ -32,11 +44,30 @@ export default function StoreCollections() {
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
 
-  const primary = store?.primaryColor || "#111827";
-  const font    = store?.fontFamily   || "Cairo";
+  const { getCartCount } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
+
+  // ✦ الثيم (Styles + Header/Announcement/Footer) من themeConfig ديال المتجر — نفس منطق باقي الصفحات
+  const rawTc          = store?.themeConfig || null;
+  const homeSections   = rawTc?.sections || [];
+  const styles         = { ...DEFAULT_STYLES, ...(rawTc?.styles || {}) };
+  const primary        = styles.primaryColor    || store?.primaryColor || "#111827";
+  const secondary      = styles.secondaryColor  || store?.secondaryColor || "#0f172a";
+  const bgColor        = styles.backgroundColor || "#ffffff";
+  const surfaceColor   = styles.surfaceColor    || "#fafafa";
+  const textColor      = styles.textColor       || "#111111";
+  const mutedTextColor = styles.mutedTextColor  || "#666666";
+  const borderColor    = styles.borderColor     || "#ebebeb";
+  const font           = styles.fontFamily      || store?.fontFamily || "Cairo";
+  const direction      = styles.direction       || "rtl";
+  const announcementSec = sec(homeSections, "announcement");
+  const headerSettings  = sec(homeSections, "header")?.settings;
+  const footerSettings  = sec(homeSections, "footer")?.settings;
+  const cLook = cardLook(styles, { border: borderColor, bg: bgColor });
 
   useEffect(() => { loadFont("Cairo"); }, []);
   useEffect(() => { if (font) loadFont(font); }, [font]);
+  useEffect(() => { if (styles.headingFont) loadFont(styles.headingFont); }, [styles.headingFont]);
 
   useEffect(() => {
     if (!slug) return;
@@ -55,8 +86,6 @@ export default function StoreCollections() {
     })();
   }, [slug]);
 
-  const logo      = store?.logo || "";
-  const storeName = store?.name || "المتجر";
   const phone     = store?.whatsappNumber || "";
 
   if (loading) return (
@@ -67,31 +96,37 @@ export default function StoreCollections() {
   );
 
   return (
-    <div dir="rtl" style={{ minHeight: "100vh", background: "#fff", fontFamily: `'${font}','Cairo',sans-serif`, color: "#111" }}>
+    <div dir={direction} {...themeAttrs(styles)} style={{ ...themeVars(styles), minHeight: "100vh", background: bgColor, fontFamily: `'${font}','Cairo',sans-serif`, color: textColor, direction }}>
+      <style>{COMPONENTS_CSS}</style>
+      <style>{ANNOUNCEMENT_BAR_CSS}</style>
 
-      {/* ── Navbar ── */}
+      {/* ── Announcement Bar (مشترك مع Home) ── */}
+      {isAnnouncementEnabled(announcementSec) && (
+        <AnnouncementBar settings={announcementSec.settings} slug={slug} isPreview={false} />
+      )}
+
+      {/* ── Navbar (إعدادات الـ Header من ThemeEdit) ── */}
       <StoreNavbar
         store={store}
         slug={slug}
-        links={[
-          { label: "الصفحة الرئيسية", action: () => navigate(`/store/${slug}`) },
-          { label: "التصنيفات",       action: () => navigate(`/store/${slug}/collections`) },
-          { label: "اتصل بنا",        action: () => phone && window.open(`https://wa.me/${phone}`, "_blank") },
-        ]}
+        headerSettings={headerSettings}
+        themeColors={{ primary, secondary, bgColor, surfaceColor, textColor, mutedTextColor, borderColor }}
+        cartCount={getCartCount(slug)}
+        onCartClick={() => setCartOpen(true)}
       />
 
       {/* ── Hero text ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "52px 24px 36px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#111", margin: "0 0 10px", letterSpacing: -1 }}>
+      <div style={{ maxWidth: "var(--container-max, 960px)", margin: "0 auto", padding: "52px 24px 36px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: textColor, margin: "0 0 10px", letterSpacing: -1 }}>
           جميع التشكيلات
         </h1>
-        <p style={{ color: "#888", fontSize: 15, margin: 0 }}>ستجد كل ما تبحث عنه</p>
+        <p style={{ color: mutedTextColor, fontSize: 15, margin: 0 }}>ستجد كل ما تبحث عنه</p>
       </div>
 
       {/* ── Categories Grid ── */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 80px" }}>
+      <div style={{ maxWidth: "var(--container-max, 960px)", margin: "0 auto", padding: "0 24px 80px" }}>
         {categories.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
+          <div style={{ textAlign: "center", padding: "60px 0", color: mutedTextColor }}>
             <p style={{ fontSize: 40 }}>📁</p>
             <p>لا توجد تصنيفات بعد</p>
           </div>
@@ -99,39 +134,38 @@ export default function StoreCollections() {
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: 20,
+            gap: "calc(20px * var(--density, 1))",
           }}>
             {categories.map(cat => (
               <div
                 key={cat._id}
                 onClick={() => navigate(`/store/${slug}/collections/${cat._id}`)}
+                data-card-hover={cardHoverMode(styles)}
                 style={{
-                  border: "1px solid #eee", borderRadius: 16,
+                  border: cLook ? cLook.border : `1px solid ${borderColor}`,
+                  borderRadius: rs(16 + ((cLook ? cLook.padding : 0) ? 4 : 0)),
                   overflow: "hidden", cursor: "pointer",
-                  background: "#fff",
-                  boxShadow: "0 2px 8px rgba(0,0,0,.05)",
-                  transition: "transform .25s, box-shadow .25s",
+                  background: cLook ? cLook.background : surfaceColor,
+                  boxShadow: cLook ? cLook.boxShadow : "0 2px 8px rgba(0,0,0,.05)",
+                  padding: cLook ? cLook.padding : 0,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.12)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,.05)"; }}
               >
                 {/* Image */}
-                <div style={{ height: 240, overflow: "hidden", background: "#f9fafb" }}>
+                <div style={{ height: 240, overflow: "hidden", background: surfaceColor, borderRadius: rs(cLook && cLook.padding ? 12 : 0), position: "relative" }}>
                   {cat.image ? (
                     <img
+                      className="cmp-img"
                       src={cat.image} alt={cat.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s" }}
-                      onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
-                      onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                     />
                   ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, color: "#ddd" }}>📁</div>
+                    <div className="cmp-img" style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, color: mutedTextColor, opacity: .5 }}>📁</div>
                   )}
                 </div>
                 {/* Name */}
                 <div style={{ padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontWeight: 700, fontSize: 16, color: "#111" }}>{cat.name}</span>
-                  <svg width="16" height="16" fill="none" stroke="#999" strokeWidth="2" viewBox="0 0 24 24">
+                  <span style={{ fontWeight: 700, fontSize: 16, color: textColor }}>{cat.name}</span>
+                  <svg width="16" height="16" fill="none" stroke={mutedTextColor} strokeWidth="2" viewBox="0 0 24 24" style={{ transform: direction === "ltr" ? "scaleX(-1)" : "none" }}>
                     <polyline points="15 18 9 12 15 6"/>
                   </svg>
                 </div>
@@ -142,7 +176,21 @@ export default function StoreCollections() {
       </div>
 
       {/* ── Footer ── */}
-      <StoreFooter store={store} slug={slug} light />
+      <StoreFooter store={store} slug={slug} bgColor={surfaceColor} textColor={textColor} mutedColor={mutedTextColor} light={surfaceColor === "#ffffff"} settings={footerSettings} />
+
+      <CartDrawer
+        buttonStyle={styles.buttonStyle}
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        slug={slug}
+        primary={primary}
+        textColor={textColor}
+        mutedTextColor={mutedTextColor}
+        borderColor={borderColor}
+        surfaceColor={surfaceColor}
+        bgColor={bgColor}
+        isPreview={false}
+      />
 
       {/* WhatsApp */}
       {phone && (

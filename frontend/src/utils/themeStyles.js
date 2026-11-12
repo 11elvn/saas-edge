@@ -34,6 +34,7 @@ export const themeVars = (styles) => ({
   "--r-scale": getRadiusScale(styles),
   ...(LAYOUT_WIDTH[styles?.layoutWidth]     ? { "--container-max": `${LAYOUT_WIDTH[styles.layoutWidth]}px` } : {}),
   ...(LAYOUT_DENSITY[styles?.layoutDensity] ? { "--density": LAYOUT_DENSITY[styles.layoutDensity] } : {}),
+  ...(styles?.headingFont ? { "--heading-font": `'${styles.headingFont}', 'Cairo', sans-serif` } : {}),
   ...(styles?.surfaceColor ? { "--fld-surface": styles.surfaceColor } : {}),
   ...(styles?.borderColor  ? { "--fld-border":  styles.borderColor  } : {}),
 });
@@ -169,6 +170,7 @@ export const themeAttrs = (styles) => ({
 
 // CSS مشترك — يتحط مرة وحدة داخل wrapper كل صفحة
 export const COMPONENTS_CSS = `
+h1, h2, h3, .ps-heading { font-family: var(--heading-font, inherit); }
 [data-card-hover] { transition: translate .25s ease, box-shadow .25s ease; }
 [data-card-hover="lift"]:hover { translate: 0 -4px; }
 [data-card-hover="lift"]:hover img,

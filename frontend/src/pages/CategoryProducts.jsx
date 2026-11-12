@@ -111,7 +111,7 @@ const CP_SPACING_DEFAULTS = {
 function SectionWrapper({ type, isPreview, isHighlighted, children, style = {}, className = "", spacing, registerRef, onHoverChange }) {
   const sp = spacing || {};
   const d = CP_SPACING_DEFAULTS[type] || {};
-  const extraPad = { paddingTop: sp.top ?? d.top ?? 0, paddingBottom: sp.bottom ?? d.bottom ?? 0, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
+  const extraPad = { paddingTop: sp.top ?? `calc(${d.top ?? 0}px * var(--density, 1))`, paddingBottom: sp.bottom ?? `calc(${d.bottom ?? 0}px * var(--density, 1))`, paddingInlineStart: sp.start || 0, paddingInlineEnd: sp.end || 0 };
   if (!isPreview) return <div style={{ ...extraPad, ...style }} data-section={type} className={className || undefined}>{children}</div>;
   const handleClick = () => window.parent.postMessage({ type: "SECTION_CLICK", sectionType: type }, "*");
   return (
@@ -266,6 +266,8 @@ export default function CategoryProducts() {
 
   useEffect(() => { loadFont("Cairo"); }, []);
   useEffect(() => { if (font) loadFont(font); }, [font]);
+  // ✦ خط العناوين (Heading font)
+  useEffect(() => { if (styles?.headingFont) loadFont(styles.headingFont); }, [styles?.headingFont]);
 
   useEffect(() => {
     if (!slug || !categoryId) return;

@@ -10,7 +10,7 @@ import StoreNavbar from "../components/StoreNavbar";
 import StoreFooter from "../components/StoreFooter";
 import CartDrawer from "../components/CartDrawer";
 import AnnouncementBar, { isAnnouncementEnabled, ANNOUNCEMENT_BAR_CSS } from "../components/AnnouncementBar";
-import { rs, themeVars, btnStyle } from "../utils/themeStyles";
+import { rs, themeVars, btnStyle, themeAttrs, COMPONENTS_CSS } from "../utils/themeStyles";
 
 const API = () => import.meta.env.VITE_API_URL;
 
@@ -240,6 +240,8 @@ function OrderSuccess() {
   const direction      = styles.direction       || "rtl";
 
   useEffect(() => { if (font) loadFont(font); }, [font]);
+  // ✦ خط العناوين (Heading font)
+  useEffect(() => { if (styles?.headingFont) loadFont(styles.headingFont); }, [styles?.headingFont]);
 
   const headerSettings  = sec(homeSections, "header")?.settings;
   const announcementSec = sec(homeSections, "announcement");
@@ -285,7 +287,8 @@ function OrderSuccess() {
   );
 
   return (
-    <div dir="rtl" style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction }}>
+    <div dir="rtl" {...themeAttrs(styles)} style={{ ...themeVars(styles), minHeight: "100vh", position: "relative", background: bgColor, color: textColor, fontFamily: `'${font}', 'Cairo', sans-serif`, direction }}>
+      <style>{COMPONENTS_CSS}</style>
       <style>{`
         @keyframes os-checkPop {
           0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
