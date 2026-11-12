@@ -118,135 +118,6 @@ const CSS = `
 .th-desktop-store::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
 .th-desktop-store::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
-/* ══ MOBILE FRAME — iPhone 15 Pro ══ */
-.th-mobile-wrap {
-  width: 260px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-.th-iphone {
-  position: relative;
-  width: 260px;
-  height: 564px;
-  flex-shrink: 0;
-}
-/* الإطار الخارجي للهاتف */
-.th-iphone__frame {
-  position: absolute;
-  inset: 0;
-  border-radius: 44px;
-  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 40%, #111 60%, #1e1e1e 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.12),
-    0 0 0 1px rgba(0,0,0,.8),
-    0 24px 60px rgba(0,0,0,.55),
-    0 6px 16px rgba(0,0,0,.35);
-  pointer-events: none;
-  z-index: 5;
-}
-/* الشاشة الداخلية */
-.th-iphone__screen-wrap {
-  position: absolute;
-  top: 10px; left: 10px; right: 10px; bottom: 10px;
-  border-radius: 36px;
-  overflow: hidden;
-  background: #000;
-  z-index: 10;
-}
-/* Dynamic Island */
-.th-iphone__island {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 86px; height: 24px;
-  background: #000;
-  border-radius: 20px;
-  z-index: 25;
-  pointer-events: none;
-}
-/* Status bar */
-.th-iphone__status {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 44px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 0 16px;
-  z-index: 22;
-  pointer-events: none;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.th-iphone__time {
-  font-size: 12px; font-weight: 600;
-  color: #000; font-family: -apple-system, sans-serif;
-  letter-spacing: -.2px;
-  justify-self: start;
-  padding-top: 8px;
-}
-.th-iphone__island-spacer {
-  width: 86px; height: 24px;
-}
-.th-iphone__signals {
-  display: flex; align-items: center; gap: 4px;
-  justify-self: end;
-  padding-top: 8px;
-}
-/* الشاشة القابلة للتمرير */
-.th-mobile-screen {
-  position: absolute;
-  top: 44px;
-  left: 0; right: 0; bottom: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  background: #fff;
-  direction: rtl;
-}
-.th-mobile-screen::-webkit-scrollbar { display: none; }
-/* أزرار جانبية */
-.th-iphone__btn-right {
-  position: absolute;
-  right: -3px; top: 110px;
-  width: 3px; height: 58px;
-  background: linear-gradient(to right, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 0 2px 2px 0;
-  z-index: 21;
-  pointer-events: none;
-}
-.th-iphone__btn-left1 {
-  position: absolute;
-  left: -3px; top: 85px;
-  width: 3px; height: 34px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21;
-  pointer-events: none;
-}
-.th-iphone__btn-left2 {
-  position: absolute;
-  left: -3px; top: 138px;
-  width: 3px; height: 54px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21;
-  pointer-events: none;
-}
-.th-iphone__btn-left3 {
-  position: absolute;
-  left: -3px; top: 204px;
-  width: 3px; height: 54px;
-  background: linear-gradient(to left, #1a1a1a, #2e2e2e, #1a1a1a);
-  border-radius: 2px 0 0 2px;
-  z-index: 21;
-  pointer-events: none;
-}
-
 /* ══ STORE CONTENT SHARED ══ */
 
 /* Announcement bar */
@@ -303,12 +174,18 @@ const CSS = `
 /* ══ STAGE DEVICES ══ */
 .th-stage .th-desktop { flex: 1; max-width: 700px; height: 100%; max-height: none; }
 .th-stage.is-desktop .th-desktop { max-width: 980px; }
-.th-stage .th-mobile-wrap { position: relative; flex-shrink: 0; display: block; }
-.th-stage .th-iphone { transform-origin: top left; position: absolute; top: 0; left: 0; }
+/* إطار الهاتف — نفس شكل معاينة الموبايل في ThemeEdit (نافذة متصفح ضيقة) */
+.th-m-frame {
+  width: 300px; height: 100%; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: #fff; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 0 0 1px #e0d9f7;
+}
+.th-stage.is-mobile .th-m-frame { width: 420px; max-width: 100%; }
+.th-m-wrap { position: relative; flex: 1; overflow: hidden; }
 
 /* ══ LIVE PREVIEW (iframe) ══ */
 .th-stage .th-desktop-store { position: relative; overflow: hidden; direction: ltr; }
-.th-stage .th-mobile-screen { overflow: hidden; direction: ltr; }
 
 /* ══ INFO CARDS ══ */
 .th-info { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
@@ -377,6 +254,15 @@ function ScaledFrame({ src, baseWidth, title }) {
             key={src}
             src={src}
             title={title}
+            onLoad={(e) => {
+              try {
+                const d = e.currentTarget.contentDocument;
+                if (!d) return;
+                const st = d.createElement("style");
+                st.textContent = "html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0;display:none}";
+                d.head?.appendChild(st);
+              } catch (_) {}
+            }}
             style={{
               width: baseWidth,
               height: size.h / scale,
@@ -406,8 +292,6 @@ function Theme() {
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [view,       setView]       = useState("both"); // both | desktop | mobile
-  const stageRef = useRef(null);
-  const [scale, setScale] = useState(0.8);
 
   useEffect(() => {
     const t = token();
@@ -424,20 +308,6 @@ function Theme() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
-
-  // يضبط حجم الهاتف حسب ارتفاع المعاينة ليبان كل شيء في شاشة واحدة
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const fit = () => {
-      const h = el.clientHeight - 58 - 18;
-      setScale(Math.max(0.5, Math.min(1, h / 564)));
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [loading, view]);
 
   if (loading) return (
     <div className="th-loading">
@@ -508,7 +378,7 @@ function Theme() {
         </div>
 
         {/* ══ PREVIEW STAGE ══ */}
-        <div ref={stageRef} className={`th-stage is-${view}`}>
+        <div className={`th-stage is-${view}`}>
           <div className="th-float" role="tablist" aria-label="Preview mode">
             {VIEWS.map(v => (
               <button key={v.id} role="tab" aria-selected={view === v.id}
@@ -543,56 +413,22 @@ function Theme() {
           )}
 
           {showMobile && (
-          <>
-          {/* ── iPhone 15 Pro Frame ── */}
-          <div className="th-mobile-wrap" style={{ width: 260 * scale, height: 564 * scale }}>
-            <div className="th-iphone" style={{ transform: `scale(${scale})` }}>
-              {/* الإطار الخارجي */}
-              <div className="th-iphone__frame" />
-              {/* أزرار جانبية */}
-              <div className="th-iphone__btn-right" />
-              <div className="th-iphone__btn-left1" />
-              <div className="th-iphone__btn-left2" />
-              <div className="th-iphone__btn-left3" />
-              {/* الشاشة */}
-              <div className="th-iphone__screen-wrap">
-                {/* Dynamic Island */}
-                <div className="th-iphone__island" />
-                {/* Status Bar */}
-                <div className="th-iphone__status">
-                  <span className="th-iphone__time">9:41</span>
-                  <div className="th-iphone__island-spacer" />
-                  <div className="th-iphone__signals">
-                    {/* Signal bars */}
-                    <svg width="10" height="8" viewBox="0 0 17 12" fill="#000">
-                      <rect x="0" y="7" width="3" height="5" rx=".5"/>
-                      <rect x="4.5" y="4.5" width="3" height="7.5" rx=".5"/>
-                      <rect x="9" y="2" width="3" height="10" rx=".5"/>
-                      <rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/>
-                    </svg>
-                    {/* WiFi */}
-                    <svg width="10" height="8" viewBox="0 0 16 12" fill="none" stroke="#000" strokeWidth="1.8" strokeLinecap="round">
-                      <path d="M8 10h.01"/>
-                      <path d="M5.5 7.5a3.5 3.5 0 015 0"/>
-                      <path d="M3 5a7 7 0 0110 0"/>
-                      <path d="M1 2.5a11 11 0 0114 0"/>
-                    </svg>
-                    {/* Battery */}
-                    <svg width="15" height="8" viewBox="0 0 25 12" fill="#000">
-                      <rect x="0" y="1" width="21" height="10" rx="2.5" stroke="#000" strokeWidth="1" fill="none"/>
-                      <rect x="22" y="4" width="2.5" height="4" rx="1" fill="#000" opacity=".4"/>
-                      <rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/>
-                    </svg>
-                  </div>
-                </div>
-                {/* Store content */}
-                <div className="th-mobile-screen">
-                  <ScaledFrame src={storeUrl} baseWidth={390} title="Mobile preview" />
-                </div>
+          <div className="th-m-frame">
+            <div className="th-chrome">
+              <div className="th-dot" style={{ background: "#ff5f57" }} />
+              <div className="th-dot" style={{ background: "#febc2e" }} />
+              <div className="th-dot" style={{ background: "#28c840" }} />
+              <div className="th-url-bar">
+                <svg width="9" height="9" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                {typeof window !== "undefined" ? window.location.hostname : ""}/store/{store?.slug || "my-store"}
               </div>
             </div>
+            <div className="th-m-wrap">
+              <ScaledFrame src={storeUrl} baseWidth={393} title="Mobile preview" />
+            </div>
           </div>
-          </>
           )}
         </div>
 
