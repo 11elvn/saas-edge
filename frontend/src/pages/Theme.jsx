@@ -311,7 +311,7 @@ const CSS = `
 .th-stage .th-mobile-screen { overflow: hidden; direction: ltr; }
 
 /* ══ INFO CARDS ══ */
-.th-info { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
+.th-info { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
 .th-card-box {
   border: 1px solid #ebe7f7; border-radius: 14px; background: #fff;
   padding: 10px 16px; display: flex; align-items: center;
@@ -333,7 +333,7 @@ const CSS = `
 .th-stat-l { font-size: .68rem; color: #8b7fae; margin-top: 3px; }
 .th-stat-sep { width: 1px; height: 30px; background: #ebe7f7; flex-shrink: 0; }
 .th-dots { display: flex; gap: 4px; justify-content: center; }
-.th-dots i { width: 18px; height: 18px; border-radius: 50%; display: block; border: 1px solid rgba(0,0,0,.08); }
+.th-dots i { width: 20px; height: 20px; border-radius: 50%; display: block; border: 1px solid rgba(0,0,0,.08); }
 @media (max-width: 980px) { .th-info { grid-template-columns: 1fr; } }
 @media (max-width: 768px) { .th-page { margin: -20px -16px; padding: 12px 16px; } }
 
@@ -456,9 +456,18 @@ function Theme() {
       })
     : null;
 
-  const pc = store?.primaryColor   || "#2563eb";
-  const sc = store?.secondaryColor || "#0f172a";
-  const ff = store?.fontFamily     || "Inter";
+  // ألوان وخطوط الثيم الحقيقية كما حفظها المستخدم في ThemeEdit (themeConfig.styles)
+  const st = store?.themeConfig?.styles || {};
+  const ff = st.fontFamily || store?.fontFamily || "Cairo";
+  const PALETTE = [
+    ["Primary",    st.primaryColor    || store?.primaryColor],
+    ["Secondary",  st.secondaryColor  || store?.secondaryColor],
+    ["Background", st.backgroundColor],
+    ["Surface",    st.surfaceColor],
+    ["Text",       st.textColor],
+    ["Muted text", st.mutedTextColor],
+    ["Border",     st.borderColor],
+  ].filter(([, c]) => !!c);
   const showDesktop = view !== "mobile";
   const showMobile  = view !== "desktop";
 
@@ -604,7 +613,9 @@ function Theme() {
 
           <div className="th-card-box th-stats">
             <div className="th-stat">
-              <div className="th-dots"><i style={{ background: pc }} /><i style={{ background: sc }} /></div>
+              <div className="th-dots">
+                {PALETTE.map(([n, c]) => <i key={n} style={{ background: c }} title={`${n} ${c}`} />)}
+              </div>
               <div className="th-stat-l">Colors</div>
             </div>
             <div className="th-stat-sep" />
