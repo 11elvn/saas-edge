@@ -4396,6 +4396,20 @@ function ThemeEdit() {
     setTimeout(() => setNotif(null), 3500);
   };
 
+  // ✦ حماية الخروج: تنبيه لما تكون تعديلات غير محفوظة (غلق التبويب / refresh)
+  useEffect(() => {
+    if (!isDirty) return undefined;
+    const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
+
+  // ✦ زر Back: يسأل قبل الخروج إذا كاين تعديلات غير محفوظة
+  const handleBack = () => {
+    if (isDirty && !window.confirm("You have unsaved changes. Leave without saving?")) return;
+    navigate("/theme");
+  };
+
   // ── Fetch store ──────────────────────────────────────────
   useEffect(() => {
     fetch(`${API()}/api/stores/my-store`, {
@@ -4942,7 +4956,7 @@ function ThemeEdit() {
       <div className="pb-topbar">
         {/* Left */}
         <div className="pb-topbar__left">
-          <button className="pb-back-btn" onClick={() => navigate("/theme")}>
+          <button className="pb-back-btn" onClick={handleBack}>
             <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
