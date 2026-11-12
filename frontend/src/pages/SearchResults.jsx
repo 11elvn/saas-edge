@@ -366,7 +366,6 @@ export default function SearchResults() {
         ${ANNOUNCEMENT_BAR_CSS}
         .sr-card { transition: transform .25s ease, box-shadow .25s ease; }
         .sr-card-img { transition: transform .2s; }
-        .sr-card:hover .sr-card-img { transform: scale(1.05); }
         .sr-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
         .sr-card:hover .sr-card-cta { opacity: 1; transform: translateY(0); }
         @media (hover: none) { .sr-card-cta { opacity: 1; transform: translateY(0); } }
@@ -455,12 +454,12 @@ export default function SearchResults() {
                       {hasImg ? (
                         <img
                           src={img} alt={product.name}
-                          className="sr-card-img"
+                          className="sr-card-img cmp-img"
                           onError={e => { e.target.onerror = null; e.target.style.display = "none"; e.target.nextSibling && (e.target.nextSibling.style.display = "flex"); }}
                           style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                         />
                       ) : null}
-                      <div style={{
+                      <div className="cmp-img" style={{
                         position: "absolute", inset: 0, display: hasImg ? "none" : "flex",
                         alignItems: "center", justifyContent: "center", overflow: "hidden",
                         background: "#f1f2f4",

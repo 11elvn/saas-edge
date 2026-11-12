@@ -561,12 +561,12 @@ export default function CategoryProducts() {
                         <img
                           src={img}
                           alt={product.name}
-                          className="cp-card-img"
+                          className="cp-card-img cmp-img"
                           onError={e => { e.target.onerror = null; e.target.style.display = "none"; e.target.nextSibling && (e.target.nextSibling.style.display = "flex"); }}
                           style={{ width: "100%", height: imageRatio === "adapt" ? "auto" : "100%", display: "block", objectFit: "cover" }}
                         />
                       ) : null}
-                      <div style={{
+                      <div className="cmp-img" style={{
                         position: "absolute", inset: 0, display: hasImg ? "none" : "flex", minHeight: 140,
                         alignItems: "center", justifyContent: "center", overflow: "hidden",
                         background: "#f1f2f4",
@@ -721,7 +721,6 @@ export default function CategoryProducts() {
         }
         .cp-card { transition: transform .25s ease, box-shadow .25s ease; }
         .cp-card-img { transition: transform .2s; }
-        .cp-card:hover .cp-card-img { transform: scale(1.05); }
         .cp-card-cta { opacity: 0; transform: translateY(8px); transition: opacity .22s ease, transform .22s ease; }
         .cp-card:hover .cp-card-cta { opacity: 1; transform: translateY(0); }
 
