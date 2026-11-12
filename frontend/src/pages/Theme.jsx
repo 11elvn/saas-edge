@@ -18,31 +18,52 @@ const CSS = `
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px);
-  background: #f5f5f7;
+  background: #fff;
   padding: 0;
   overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+.th-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+/* ══ TOP TOOLBAR ══ */
+.th-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; flex-shrink: 0;
+  padding: 14px 24px; background: #fff;
+  border-bottom: 1px solid #ece7fb;
+}
+.th-top-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.th-top-name { font-size: .95rem; font-weight: 700; color: #2a1f5c; white-space: nowrap; }
+.th-top-saved { font-size: .74rem; color: #8b7fae; white-space: nowrap; }
+.th-badge-current {
+  font-size: .68rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+  background: #ece7fb; color: #5b3fd6; border: 1px solid #e7e1fa;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.th-badge-current::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: #7c6df2; display: block;
 }
 
-/* ══ MAIN PREVIEW CARD ══ */
-.th-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  height: 100%;
+/* Segmented toggle */
+.th-seg { display: flex; background: #f1eefd; border-radius: 99px; padding: 3px; gap: 2px; }
+.th-seg button {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; background: transparent; color: #8b7fae;
+  font-size: .78rem; font-weight: 600; font-family: inherit;
+  padding: 7px 16px; border-radius: 99px; cursor: pointer; transition: all .15s;
 }
+.th-seg button:hover { color: #5b3fd6; }
+.th-seg button.is-on { background: #7c6df2; color: #fff; }
 
-/* ══ PREVIEW AREA ══ */
+/* ══ PREVIEW STAGE ══ */
 .th-preview-area {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  overflow: hidden;
-  background: #f5f5f7;
-  padding: 32px 32px 32px 32px;
-  min-height: 0;
+  flex: 1; display: flex; flex-direction: row; gap: 24px;
+  overflow: hidden; background: #faf8ff;
+  padding: 24px 32px; min-height: 0;
+  justify-content: center;
 }
+.th-preview-area.is-mobile .th-mobile-wrap { margin: 0 auto; }
+.th-preview-area.is-desktop .th-desktop { max-width: 1100px; margin: 0 auto; }
 
 /* ══ DESKTOP BROWSER ══ */
 .th-desktop {
@@ -51,7 +72,7 @@ const CSS = `
   flex-direction: column;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 4px 32px rgba(0,0,0,.10);
+  box-shadow: 0 0 0 1px #e7e1fa, 0 4px 28px rgba(91,63,214,.10);
   overflow: hidden;
   min-height: 0;
   max-height: 100%;
@@ -271,60 +292,57 @@ const CSS = `
   position: relative;
 }
 
-/* ══ FOOTER BAR ══ */
-.th-footer {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
-  flex-wrap: wrap; gap: 12px;
-  flex-shrink: 0;
-}
-.th-footer-left { display: flex; flex-direction: column; gap: 3px; }
-.th-footer-name-row { display: flex; align-items: center; gap: 8px; }
-.th-footer-name { font-size: .92rem; font-weight: 700; color: #111827; }
-.th-badge-current {
-  font-size: .68rem; font-weight: 600;
-  padding: 3px 10px; border-radius: 99px;
-  background: #dcfce7; color: #16a34a;
-  border: 1px solid #bbf7d0;
-  display: inline-flex; align-items: center; gap: 5px;
-}
-.th-badge-current::before {
-  content: ""; width: 6px; height: 6px;
-  border-radius: 50%; background: #16a34a; display: block;
-}
-.th-footer-saved { font-size: .74rem; color: #9ca3af; }
-.th-footer-actions { display: flex; gap: 8px; align-items: center; }
-
+/* ══ ACTION BUTTONS ══ */
+.th-actions { display: flex; gap: 8px; align-items: center; }
 .th-btn-edit {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 20px; border-radius: 9px; border: none;
-  background: #111827; color: #fff;
+  padding: 9px 20px; border-radius: 12px; border: 1px solid #5b3fd6;
+  background: #7c6df2; color: #fff;
   font-size: .83rem; font-weight: 700;
-  cursor: pointer; font-family: inherit; transition: opacity .15s;
+  cursor: pointer; font-family: inherit; transition: background .15s;
 }
-.th-btn-edit:hover { opacity: .85; }
+.th-btn-edit:hover { background: #6b5be6; }
 .th-btn-view {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 9px;
-  border: 1px solid #e5e7eb; background: #fff;
-  color: #374151; font-size: .83rem; font-weight: 600;
+  padding: 9px 18px; border-radius: 12px;
+  border: 1px solid #e7e1fa; background: #fff;
+  color: #5b3fd6; font-size: .83rem; font-weight: 600;
   cursor: pointer; font-family: inherit; transition: all .15s;
   text-decoration: none;
 }
-.th-btn-view:hover { background: #f9fafb; border-color: #d1d5db; }
+.th-btn-view:hover { background: #f5f3ff; border-color: #cabdf7; }
+
+/* ══ THEMES STRIP ══ */
+.th-themes {
+  flex-shrink: 0; background: #fff; border-top: 1px solid #ece7fb;
+  padding: 12px 24px 16px;
+}
+.th-themes-title { font-size: .72rem; color: #8b7fae; margin: 0 0 8px; font-weight: 600; }
+.th-themes-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 720px; }
+.th-theme-card {
+  background: #fff; border: 1px solid #e7e1fa; border-radius: 12px;
+  padding: 7px; display: flex; flex-direction: column; gap: 6px;
+}
+.th-theme-card.is-active { border: 1.5px solid #7c6df2; }
+.th-theme-card.is-soon { opacity: .6; }
+.th-theme-thumb { height: 34px; border-radius: 8px; background: #f5f3ff; }
+.th-theme-card.is-active .th-theme-thumb { background: #ece7fb; }
+.th-theme-name {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .74rem; font-weight: 600; color: #2a1f5c; padding: 0 2px;
+}
+.th-theme-card.is-soon .th-theme-name { color: #8b7fae; }
+.th-theme-soon { font-size: .62rem; font-weight: 600; color: #8b7fae; }
 
 /* Loading */
 .th-loading {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; height: 60vh; gap: 14px;
-  color: #9ca3af; font-size: .85rem;
+  color: #8b7fae; font-size: .85rem;
 }
 .th-spinner {
   width: 28px; height: 28px;
-  border: 3px solid #f0f0f0; border-top-color: #111827;
+  border: 3px solid #ece7fb; border-top-color: #7c6df2;
   border-radius: 50%; animation: th-spin .7s linear infinite;
 }
 `;
@@ -581,6 +599,7 @@ function Theme() {
   const [products,   setProducts]   = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
+  const [view,       setView]       = useState("both"); // both | desktop | mobile
 
   useEffect(() => {
     const t = token();
@@ -615,15 +634,69 @@ function Theme() {
       })
     : null;
 
+  const showDesktop = view !== "mobile";
+  const showMobile  = view !== "desktop";
+
+  const VIEWS = [
+    { id: "desktop", label: "Desktop", icon: <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
+    { id: "mobile",  label: "Mobile",  icon: <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg> },
+    { id: "both",    label: "Both",    icon: <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="11" rx="2"/><rect x="14" y="9" width="8" height="12" rx="2" fill="#fff"/></svg> },
+  ];
+
   return (
     <div className="th-page" dir="ltr">
       <style>{CSS}</style>
 
       <div className="th-card">
 
-        {/* ══ PREVIEW AREA ══ */}
-        <div className="th-preview-area">
+        {/* ══ TOP TOOLBAR ══ */}
+        <div className="th-top">
+          <div className="th-top-left">
+            <span className="th-top-name">
+              {store?.name ? `${store.name}'s theme` : "My Theme"}
+            </span>
+            <span className="th-badge-current">Current theme</span>
+            {savedDate && <span className="th-top-saved">Last saved: {savedDate}</span>}
+          </div>
 
+          <div className="th-seg" role="tablist" aria-label="Preview mode">
+            {VIEWS.map(v => (
+              <button
+                key={v.id}
+                role="tab"
+                aria-selected={view === v.id}
+                className={view === v.id ? "is-on" : ""}
+                onClick={() => setView(v.id)}
+              >
+                {v.icon}{v.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="th-actions">
+            {storeUrl && (
+              <a href={storeUrl} target="_blank" rel="noreferrer" className="th-btn-view">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                View your store
+              </a>
+            )}
+            <button className="th-btn-edit" onClick={() => navigate("/theme/edit")}>
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit Theme
+            </button>
+          </div>
+        </div>
+
+        {/* ══ PREVIEW STAGE ══ */}
+        <div className={`th-preview-area is-${view}`}>
+
+          {showDesktop && (
+          <>
           {/* ── Desktop Browser ── */}
           <div className="th-desktop">
             {/* Chrome bar */}
@@ -643,7 +716,11 @@ function Theme() {
               <DesktopStore store={store} products={products} categories={categories} />
             </div>
           </div>
+          </>
+          )}
 
+          {showMobile && (
+          <>
           {/* ── iPhone 15 Pro Frame ── */}
           <div className="th-mobile-wrap">
             <div className="th-iphone">
@@ -692,39 +769,28 @@ function Theme() {
               </div>
             </div>
           </div>
+          </>
+          )}
 
         </div>
 
-        {/* ══ FOOTER BAR ══ */}
-        <div className="th-footer">
-          <div className="th-footer-left">
-            <div className="th-footer-name-row">
-              <span className="th-footer-name">
-                {store?.name ? `${store.name}'s theme` : "My Theme"}
-              </span>
-              <span className="th-badge-current">Current theme</span>
+        {/* ══ THEMES STRIP ══ */}
+        <div className="th-themes">
+          <p className="th-themes-title">Your themes</p>
+          <div className="th-themes-grid">
+            <div className="th-theme-card is-active">
+              <div className="th-theme-thumb" />
+              <div className="th-theme-name">
+                <span>{store?.name || "My Theme"}</span>
+                <svg width="13" height="13" fill="none" stroke="#7c6df2" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>
+              </div>
             </div>
-            {savedDate && (
-              <span className="th-footer-saved">Last saved: {savedDate}</span>
-            )}
-          </div>
-
-          <div className="th-footer-actions">
-            {storeUrl && (
-              <a href={storeUrl} target="_blank" rel="noreferrer" className="th-btn-view">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-                View your store
-              </a>
-            )}
-            <button className="th-btn-edit" onClick={() => navigate("/theme/edit")}>
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Edit Theme
-            </button>
+            {["Classic", "Minimal"].map(n => (
+              <div key={n} className="th-theme-card is-soon">
+                <div className="th-theme-thumb" />
+                <div className="th-theme-name"><span>{n}</span><span className="th-theme-soon">Soon</span></div>
+              </div>
+            ))}
           </div>
         </div>
 
