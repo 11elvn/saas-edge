@@ -16,6 +16,7 @@ const CSS = `
 /* ══ PAGE WRAPPER ══ */
 .th-page {
   height: calc(100vh - 60px);
+  margin: -28px -32px; /* يلغي حشوة .app-layout__content ليستعمل الصفحة كاملة */
   background: #fff;
   overflow: hidden;
   display: flex; flex-direction: column;
@@ -330,6 +331,7 @@ const CSS = `
 .th-dots { display: flex; gap: 4px; justify-content: center; }
 .th-dots i { width: 18px; height: 18px; border-radius: 50%; display: block; border: 1px solid rgba(0,0,0,.08); }
 @media (max-width: 980px) { .th-info { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .th-page { margin: -20px -16px; padding: 12px 16px; } }
 
 /* Loading */
 .th-loading {
