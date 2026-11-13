@@ -54,8 +54,14 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
   return (
     <aside className={`sidebar sb${collapsed ? " sb--collapsed" : ""}`}>
 
-      {/* ══ TOGGLE — فتح / تسكير القائمة ══ */}
+      {/* ══ LOGO + TOGGLE — مفتوحة: أيقونة + كلمة Dott | مسكرة: الأيقونة فقط ══ */}
       <div className="sb-top">
+        <Link to="/dashboard" className="sb-logo" title="Dott" aria-label="Dott">
+          {collapsed
+            ? <img src="/dott-icon.png" alt="Dott" className="sb-logo__icon" />
+            : <img src="/dott-logo.png" alt="Dott" className="sb-logo__full" />
+          }
+        </Link>
         <button
           type="button"
           className="sb-toggle"
@@ -270,7 +276,13 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         .sb-logout:hover { background: #fef2f2; color: #dc2626; }
 
         /* زر الفتح / التسكير */
-        .sb-top { display: flex; justify-content: flex-end; flex-shrink: 0; }
+        .sb-top {
+          display: flex; align-items: center; justify-content: space-between;
+          flex-shrink: 0; direction: ltr; padding: 2px 2px 0;
+        }
+        .sb-logo { display: flex; align-items: center; text-decoration: none; padding-left: 4px; }
+        .sb-logo__full { height: 24px; width: auto; display: block; }
+        .sb-logo__icon { height: 30px; width: auto; display: block; }
         .sb-toggle {
           width: 34px; height: 34px;
           display: flex; align-items: center; justify-content: center;
@@ -284,7 +296,8 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         @media (min-width: 769px) {
           .sidebar.sb { transition: width .22s ease; overflow-x: hidden; }
           .sb--collapsed { padding: 12px 10px; }
-          .sb--collapsed .sb-top { justify-content: center; }
+          .sb--collapsed .sb-top { flex-direction: column; gap: 10px; padding: 4px 0 0; }
+          .sb--collapsed .sb-logo { padding-left: 0; }
           .sb--collapsed .sb-brand { padding: 8px; }
           .sb--collapsed .sb-brand__row { justify-content: center; }
           .sb--collapsed .sb-brand__info,
