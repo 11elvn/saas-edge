@@ -1,286 +1,504 @@
 // ============================================================
-// 📁 pages/OverviewPage.jsx — بدون recharts (SVG يدوي)
+// 📁 pages/OverviewPage.jsx
 // ============================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ALGERIAN_CITIES } from "../constants/algerianCities";
+import { ALGERIA_MAP } from "../constants/algeriaMap";
 
 const getToken = () => localStorage.getItem("token");
 const getAPI   = () => import.meta.env.VITE_API_URL;
 
+const HOUR = 3600 * 1000;
+const DAY  = 24 * HOUR;
+
+const PERIODS = [
+  { key: "24h", label: "آخر 24 ساعة", count: 24, step: HOUR },
+  { key: "7d",  label: "آخر 7 أيام",  count: 7,  step: DAY  },
+  { key: "30d", label: "آخر 30 يوم",  count: 30, step: DAY  },
+];
+
+const CITY_BY_ID = Object.fromEntries(ALGERIAN_CITIES.map((c) => [c.id, c.name]));
+const ID_BY_NAME = {
+  ...Object.fromEntries(ALGERIAN_CITIES.map((c) => [c.name, c.id])),
+  "الجزائر": "16",
+  "المسيلة": "28",
+  "توقرت":   "55",
+};
+
 // ── CSS ───────────────────────────────────────────────────
 const ovStyles = `
-.ov-loading {
+.ov-loading{
   display:flex;flex-direction:column;align-items:center;
   justify-content:center;height:300px;gap:16px;color:#6b7280;font-size:.9rem;
 }
-.ov-loading__spinner {
+.ov-loading__spinner{
   width:32px;height:32px;border:3px solid #f0f0f0;
-  border-top-color:#111827;border-radius:50%;animation:ov-spin .7s linear infinite;
+  border-top-color:#894bf4;border-radius:50%;animation:ov-spin .7s linear infinite;
 }
 @keyframes ov-spin{to{transform:rotate(360deg)}}
-.ov-page{display:flex;flex-direction:column;gap:24px;}
-.ov-period-tabs{display:flex;gap:6px;}
-.ov-period-btn{
-  padding:7px 16px;border-radius:8px;border:1px solid #e5e7eb;
-  background:#fff;color:#6b7280;font-size:.82rem;font-weight:500;
-  cursor:pointer;font-family:inherit;transition:all .15s;
+@media(prefers-reduced-motion:reduce){.ov-loading__spinner{animation-duration:2s}}
+
+.ov-page{display:flex;flex-direction:column;gap:20px;}
+.ov-num{direction:ltr;unicode-bidi:isolate;display:inline-block;}
+
+.ov-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ov-head__title{font-size:1.25rem;font-weight:700;color:#111827;}
+.ov-tabs{display:inline-flex;gap:2px;padding:3px;background:#f1f2f4;border-radius:10px;}
+.ov-tab{
+  padding:7px 14px;border:none;border-radius:8px;background:transparent;
+  color:#6b7280;font-size:.8rem;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:background .15s,color .15s;white-space:nowrap;
 }
-.ov-period-btn:hover{border-color:#111827;color:#111827;}
-.ov-period-btn--active{background:#111827;color:#fff;border-color:#111827;}
-.ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.ov-tab:hover{color:#111827;}
+.ov-tab:focus-visible{outline:2px solid #894bf4;outline-offset:1px;}
+.ov-tab--active{background:#fff;color:#111827;box-shadow:0 1px 2px rgba(17,24,39,.08);}
+
+.ov-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
 .ov-stat{
-  background:#fff;border:1px solid #f0f0f0;border-radius:12px;
-  padding:20px 24px;display:flex;flex-direction:column;gap:6px;
+  background:#fff;border:1px solid #eef0f2;border-radius:14px;
+  padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0;
 }
-.ov-stat__label{font-size:.78rem;color:#6b7280;font-weight:500;}
-.ov-stat__value{font-size:1.8rem;font-weight:700;color:#111827;line-height:1;}
-.ov-stat__sub{font-size:.75rem;color:#ef4444;font-weight:500;}
-.ov-charts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.ov-chart{
-  background:#fff;border:1px solid #f0f0f0;
-  border-radius:12px;padding:20px 20px 14px;
+.ov-stat__label{font-size:.8rem;color:#6b7280;font-weight:500;}
+.ov-stat__value{font-size:1.75rem;font-weight:700;color:#111827;line-height:1.1;white-space:nowrap;}
+.ov-stat__unit{font-size:.8rem;font-weight:600;color:#9ca3af;margin-inline-start:4px;}
+.ov-stat__foot{display:flex;align-items:center;gap:6px;font-size:.74rem;color:#9ca3af;flex-wrap:wrap;}
+.ov-delta{
+  display:inline-flex;align-items:center;gap:2px;padding:2px 8px;
+  border-radius:99px;font-weight:600;font-size:.72rem;
 }
-.ov-chart__header{
-  display:flex;justify-content:space-between;
-  align-items:flex-start;margin-bottom:16px;
+.ov-delta--good{background:#ecfdf5;color:#059669;}
+.ov-delta--bad{background:#fef2f2;color:#dc2626;}
+.ov-delta--flat{background:#f3f4f6;color:#6b7280;}
+
+.ov-main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:stretch;}
+.ov-card{
+  background:#fff;border:1px solid #eef0f2;border-radius:14px;
+  padding:20px 22px;display:flex;flex-direction:column;min-width:0;
 }
-.ov-chart__title{font-size:.78rem;color:#6b7280;font-weight:500;margin-bottom:4px;}
-.ov-chart__value{font-size:1.4rem;font-weight:700;color:#111827;}
-.ov-chart__trend{font-size:.75rem;font-weight:600;padding:3px 8px;border-radius:99px;}
-.ov-chart__trend--up{background:#f0fdf4;color:#10b981;}
-.ov-chart__trend--down{background:#fef2f2;color:#ef4444;}
-.ov-svg-wrap{width:100%;overflow:hidden;}
-.ov-svg-label{font-size:9px;fill:#9ca3af;}
-.ov-recent{
-  background:#fff;border:1px solid #f0f0f0;
-  border-radius:12px;padding:20px 24px;
+.ov-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.ov-card__title{font-size:.82rem;font-weight:500;color:#6b7280;margin-bottom:4px;}
+.ov-card__big{font-size:1.6rem;font-weight:700;color:#111827;line-height:1.1;}
+.ov-card__hint{font-size:.74rem;color:#9ca3af;}
+
+.ov-trend__plot{position:relative;flex:1;min-height:240px;display:flex;align-items:center;}
+.ov-trend__svg{width:100%;height:auto;display:block;direction:ltr;touch-action:pan-y;}
+.ov-trend__grid{stroke:#f1f2f4;stroke-width:1;}
+.ov-trend__axis{font-size:11px;fill:#9ca3af;font-family:inherit;}
+.ov-trend__line{fill:none;stroke:#894bf4;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.ov-trend__guide{stroke:#894bf4;stroke-width:1;stroke-dasharray:3 3;opacity:.5;}
+.ov-trend__dot{fill:#fff;stroke:#894bf4;stroke-width:2.5;}
+.ov-trend__tip{
+  position:absolute;top:0;pointer-events:none;background:#111827;color:#fff;
+  border-radius:8px;padding:7px 10px;font-size:.74rem;line-height:1.5;white-space:nowrap;z-index:2;
 }
-.ov-recent__header{
-  display:flex;justify-content:space-between;
-  align-items:center;margin-bottom:16px;
+.ov-trend__tip b{font-weight:700;}
+.ov-trend__tip span{color:#c4c9d4;}
+.ov-trend__empty{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#9ca3af;font-size:.82rem;pointer-events:none;padding-bottom:28px;
 }
-.ov-recent__title{font-size:1rem;font-weight:600;color:#111827;}
-.ov-recent__link{
-  font-size:.82rem;color:#6b7280;background:none;
-  border:none;cursor:pointer;font-family:inherit;transition:color .15s;
+.ov-trend__sum{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  margin-top:14px;padding-top:14px;border-top:1px solid #f1f2f4;
 }
-.ov-recent__link:hover{color:#111827;}
-.ov-table{width:100%;border-collapse:collapse;font-size:.82rem;}
-.ov-table th{
-  text-align:right;padding:8px 12px;color:#9ca3af;
-  font-weight:500;font-size:.75rem;border-bottom:1px solid #f0f0f0;white-space:nowrap;
+.ov-trend__sum-label{font-size:.74rem;color:#9ca3af;margin-bottom:2px;}
+.ov-trend__sum-value{font-size:.95rem;font-weight:600;color:#111827;}
+
+.ov-map__wrap{position:relative;display:flex;justify-content:center;}
+.ov-map__svg{width:100%;max-width:420px;height:auto;display:block;}
+.ov-map__path{stroke:#fff;stroke-width:.9;transition:fill .15s;cursor:pointer;}
+.ov-map__hl{fill:none;stroke:#4c1d95;stroke-width:1.8;pointer-events:none;stroke-linejoin:round;}
+.ov-map__tip{
+  position:absolute;pointer-events:none;background:#111827;color:#fff;
+  border-radius:8px;padding:7px 10px;font-size:.74rem;line-height:1.5;
+  white-space:nowrap;transform:translate(-50%,-125%);z-index:2;
 }
-.ov-table td{
-  padding:12px;border-bottom:1px solid #f9fafb;
-  color:#374151;vertical-align:middle;
+.ov-map__tip b{font-weight:700;}
+.ov-map__tip span{color:#c4c9d4;}
+.ov-map__legend{display:flex;align-items:center;gap:8px;font-size:.72rem;color:#9ca3af;margin:6px 0 4px;}
+.ov-map__ramp{flex:1;height:6px;border-radius:99px;background:linear-gradient(to left,#4c1d95,#d9ccff);}
+.ov-top{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:14px;border-top:1px solid #f1f2f4;}
+.ov-top__row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:10px;font-size:.8rem;}
+.ov-top__name{color:#374151;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ov-top__bar{height:6px;border-radius:99px;background:#f1f2f4;overflow:hidden;}
+.ov-top__fill{height:100%;border-radius:99px;background:#894bf4;}
+.ov-top__count{color:#111827;font-weight:600;min-width:20px;text-align:end;}
+.ov-top__empty{font-size:.8rem;color:#9ca3af;text-align:center;padding:6px 0;}
+
+@media(max-width:1180px){
+  .ov-main{grid-template-columns:minmax(0,1fr);}
 }
-.ov-table tr:last-child td{border-bottom:none;}
-.ov-table tr:hover td{background:#fafafa;}
-.ov-table__customer{display:flex;align-items:center;gap:10px;}
-.ov-table__avatar{
-  width:32px;height:32px;border-radius:50%;
-  background:#111827;color:#fff;display:flex;
-  align-items:center;justify-content:center;
-  font-size:.8rem;font-weight:700;flex-shrink:0;
-}
-.ov-table__name{font-weight:500;color:#111827;font-size:.82rem;}
-.ov-table__phone{color:#9ca3af;font-size:.75rem;}
-.ov-table__product{color:#374151;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ov-table__city{color:#6b7280;}
-.ov-table__price{font-weight:600;color:#111827;white-space:nowrap;}
-.ov-table__date{color:#9ca3af;white-space:nowrap;font-size:.78rem;}
-.ov-badge{
-  display:inline-block;padding:3px 10px;
-  border-radius:99px;font-size:.72rem;font-weight:600;white-space:nowrap;
-}
-.badge-amber{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
-.badge-blue{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}
-.badge-green{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;}
-.badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
-.badge-gray{background:#f9fafb;color:#6b7280;border:1px solid #e5e7eb;}
-.ov-empty{
-  text-align:center;padding:40px;color:#9ca3af;
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-}
-.ov-empty span{font-size:2.5rem;opacity:.4;}
 @media(max-width:1024px){
-  .ov-stats-row{grid-template-columns:repeat(2,1fr);}
-  .ov-charts-row{grid-template-columns:1fr;}
+  .ov-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
-@media(max-width:640px){
-  .ov-stats-row{grid-template-columns:1fr 1fr;}
-  .ov-table th:nth-child(3),.ov-table td:nth-child(3),
-  .ov-table th:nth-child(6),.ov-table td:nth-child(6){display:none;}
+@media(max-width:520px){
+  .ov-stats{gap:10px;}
+  .ov-stat{padding:14px;}
+  .ov-stat__value{font-size:1.4rem;}
+  .ov-card{padding:16px;}
+  .ov-trend__sum{grid-template-columns:1fr 1fr;}
+  .ov-top__row{grid-template-columns:80px minmax(0,1fr) auto;}
 }
 `;
 
-// ── buildChartData ────────────────────────────────────────
-function buildChartData(orders) {
-  const result = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const key   = d.toLocaleDateString("en-CA");
-    const dayOrders = orders.filter(
-      (o) => new Date(o.createdAt).toLocaleDateString("en-CA") === key
-    );
-    result.push({
-      date:    label,
-      orders:  dayOrders.length,
-      revenue: dayOrders.filter(o => o.status === "delivered").reduce((s, o) => s + (o.totalPrice || 0), 0),
-      profit:  dayOrders.filter(o => o.status === "delivered").reduce((s, o) => s + (o.totalPrice || 0) * 0.8, 0),
-    });
+// ── Helpers ───────────────────────────────────────────────
+const fmt = (n) => Math.round(n || 0).toLocaleString("en-US");
+
+function buildBuckets(period, nowMs) {
+  const base = new Date(nowMs);
+  if (period.step === HOUR) base.setMinutes(0, 0, 0);
+  else base.setHours(0, 0, 0, 0);
+  const lastStart = base.getTime();
+
+  const buckets = [];
+  for (let i = period.count - 1; i >= 0; i--) {
+    let start;
+    if (period.step === HOUR) {
+      start = lastStart - i * HOUR;
+    } else {
+      const d = new Date(lastStart);
+      d.setDate(d.getDate() - i);
+      start = d.getTime();
+    }
+    const d = new Date(start);
+    const label = period.step === HOUR
+      ? `${String(d.getHours()).padStart(2, "0")}:00`
+      : `${d.getDate()}/${d.getMonth() + 1}`;
+    buckets.push({ start, label, sales: 0, orders: 0 });
   }
-  return result;
+  return { buckets, from: buckets[0].start, to: lastStart + period.step };
 }
 
-// ── SVG Area Chart (بدون recharts) ───────────────────────
-function AreaChartSVG({ data, dataKey, color }) {
-  const W = 300, H = 100, PAD = 10;
-  const values = data.map(d => d[dataKey]);
-  const max = Math.max(...values, 1);
-
-  const points = values.map((v, i) => {
-    const x = PAD + (i / (values.length - 1)) * (W - PAD * 2);
-    const y = H - PAD - (v / max) * (H - PAD * 2);
-    return `${x},${y}`;
-  });
-
-  const linePath = `M ${points.join(" L ")}`;
-  const first = points[0].split(",");
-  const last  = points[points.length - 1].split(",");
-  const areaPath = `M ${first[0]},${H - PAD} L ${points.join(" L ")} L ${last[0]},${H - PAD} Z`;
-
-  return (
-    <div className="ov-svg-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 120 }}>
-        <defs>
-          <linearGradient id={`grad-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor={color} stopOpacity="0.2"/>
-            <stop offset="100%" stopColor={color} stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-        {/* خطوط أفقية خفيفة */}
-        {[0.25, 0.5, 0.75].map((r, i) => (
-          <line key={i}
-            x1={PAD} y1={PAD + r * (H - PAD * 2)}
-            x2={W - PAD} y2={PAD + r * (H - PAD * 2)}
-            stroke="#f0f0f0" strokeWidth="1"
-          />
-        ))}
-        {/* المنطقة الملونة */}
-        <path d={areaPath} fill={`url(#grad-${dataKey})`} />
-        {/* الخط */}
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        {/* التسميات */}
-        {data.map((d, i) => {
-          if (i % 2 !== 0) return null;
-          const x = PAD + (i / (values.length - 1)) * (W - PAD * 2);
-          return <text key={i} x={x} y={H - 1} textAnchor="middle" className="ov-svg-label">{d.date}</text>;
-        })}
-      </svg>
-    </div>
-  );
+function summarise(orders, from, to) {
+  const s = { orders: 0, pending: 0, cancelled: 0, delivered: 0, sales: 0 };
+  for (const o of orders) {
+    const t = new Date(o.createdAt).getTime();
+    if (t < from || t >= to) continue;
+    s.orders += 1;
+    if (o.status === "pending")   s.pending += 1;
+    if (o.status === "cancelled") s.cancelled += 1;
+    if (o.status === "delivered") { s.delivered += 1; s.sales += o.totalPrice || 0; }
+  }
+  return s;
 }
 
-// ── SVG Bar Chart (بدون recharts) ────────────────────────
-function BarChartSVG({ data, dataKey, color }) {
-  const W = 300, H = 100, PAD = 10;
-  const values = data.map(d => d[dataKey]);
-  const max = Math.max(...values, 1);
-  const barW = ((W - PAD * 2) / values.length) * 0.6;
-  const gap  = (W - PAD * 2) / values.length;
-
-  return (
-    <div className="ov-svg-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 120 }}>
-        {[0.25, 0.5, 0.75].map((r, i) => (
-          <line key={i}
-            x1={PAD} y1={PAD + r * (H - PAD * 2)}
-            x2={W - PAD} y2={PAD + r * (H - PAD * 2)}
-            stroke="#f0f0f0" strokeWidth="1"
-          />
-        ))}
-        {values.map((v, i) => {
-          const barH = Math.max((v / max) * (H - PAD * 2), v > 0 ? 3 : 0);
-          const x = PAD + i * gap + (gap - barW) / 2;
-          const y = H - PAD - barH;
-          return (
-            <g key={i}>
-              <rect x={x} y={y} width={barW} height={barH}
-                fill={color} rx="3" ry="3"/>
-              <text x={x + barW / 2} y={H - 1} textAnchor="middle" className="ov-svg-label">
-                {data[i].date}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
+function makeDelta(cur, prev, invert = false) {
+  if (prev === 0 && cur === 0) return null;
+  if (prev === 0) return { text: "جديد", tone: invert ? "bad" : "good", arrow: "↑" };
+  const pct = Math.round(((cur - prev) / prev) * 100);
+  if (pct === 0) return { text: "0%", tone: "flat", arrow: "" };
+  const up = pct > 0;
+  return {
+    text:  `${Math.abs(pct)}%`,
+    tone:  (up !== invert) ? "good" : "bad",
+    arrow: up ? "↑" : "↓",
+  };
 }
 
-// ── StatCard ──────────────────────────────────────────────
-function StatCard({ label, value, sub }) {
+function niceScale(max) {
+  if (max <= 0) return { max: 1000, step: 250 };
+  const raw = max / 4;
+  const exp = Math.pow(10, Math.floor(Math.log10(raw)));
+  const f   = raw / exp;
+  const nf  = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+  const step = nf * exp;
+  return { max: step * 4, step };
+}
+
+const compact = (v) => {
+  if (v >= 1e6) return `${+(v / 1e6).toFixed(2)}M`;
+  if (v >= 1e3) return `${+(v / 1e3).toFixed(2)}k`;
+  return `${v}`;
+};
+
+function monotonePath(pts) {
+  const n = pts.length;
+  if (n === 1) return `M${pts[0].x},${pts[0].y}`;
+  const dx = [], m = [], t = new Array(n).fill(0);
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = pts[i + 1].x - pts[i].x;
+    m[i]  = (pts[i + 1].y - pts[i].y) / dx[i];
+  }
+  t[0] = m[0];
+  t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  }
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], s = a * a + b * b;
+    if (s > 9) {
+      const tau = 3 / Math.sqrt(s);
+      t[i] = tau * a * m[i];
+      t[i + 1] = tau * b * m[i];
+    }
+  }
+  let d = `M${pts[0].x},${pts[0].y}`;
+  for (let i = 0; i < n - 1; i++) {
+    const c1x = pts[i].x + dx[i] / 3;
+    const c1y = pts[i].y + (t[i] * dx[i]) / 3;
+    const c2x = pts[i + 1].x - dx[i] / 3;
+    const c2y = pts[i + 1].y - (t[i + 1] * dx[i]) / 3;
+    d += ` C${c1x},${c1y} ${c2x},${c2y} ${pts[i + 1].x},${pts[i + 1].y}`;
+  }
+  return d;
+}
+
+// ── Stat Card ─────────────────────────────────────────────
+function StatCard({ label, value, unit, delta, note }) {
   return (
     <div className="ov-stat">
       <span className="ov-stat__label">{label}</span>
-      <span className="ov-stat__value">{value}</span>
-      {sub && <span className="ov-stat__sub">{sub}</span>}
-    </div>
-  );
-}
-
-// ── ChartCard ─────────────────────────────────────────────
-function ChartCard({ title, value, trend, trendUp, children }) {
-  return (
-    <div className="ov-chart">
-      <div className="ov-chart__header">
-        <div>
-          <p className="ov-chart__title">{title}</p>
-          <p className="ov-chart__value">{value}</p>
-        </div>
-        {trend !== undefined && (
-          <span className={`ov-chart__trend ${trendUp ? "ov-chart__trend--up" : "ov-chart__trend--down"}`}>
-            {trendUp ? "↗" : "↘"} {trend}%
+      <span className="ov-stat__value">
+        <span className="ov-num">{value}</span>
+        {unit && <span className="ov-stat__unit">{unit}</span>}
+      </span>
+      <div className="ov-stat__foot">
+        {delta && (
+          <span className={`ov-delta ov-delta--${delta.tone}`}>
+            {delta.arrow && <span>{delta.arrow}</span>}
+            <span className="ov-num">{delta.text}</span>
           </span>
         )}
+        <span>{note}</span>
       </div>
-      <div>{children}</div>
     </div>
   );
 }
 
-// ── Badge ─────────────────────────────────────────────────
-const STATUS = {
-  pending:   { label: "معلق",  cls: "badge-amber" },
-  shipped:   { label: "مشحون", cls: "badge-blue"  },
-  delivered: { label: "موصّل", cls: "badge-green" },
-  cancelled: { label: "ملغي",  cls: "badge-red"   },
-};
-function Badge({ status }) {
-  const s = STATUS[status] || { label: status, cls: "badge-gray" };
-  return <span className={`ov-badge ${s.cls}`}>{s.label}</span>;
+// ── Sales Trend ───────────────────────────────────────────
+function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
+  const W = 640, H = 270;
+  const PL = 44, PR = 12, PT = 14, PB = 28;
+  const plotW = W - PL - PR;
+  const plotH = H - PT - PB;
+
+  const [hover, setHover] = useState(null);
+
+  const maxVal = Math.max(...buckets.map((b) => b.sales), 0);
+  const { max: yMax, step } = niceScale(maxVal);
+  const n = buckets.length;
+
+  const pts = buckets.map((b, i) => ({
+    x: PL + (i / (n - 1)) * plotW,
+    y: PT + plotH - (b.sales / yMax) * plotH,
+  }));
+
+  const line = monotonePath(pts);
+  const area = `${line} L${pts[n - 1].x},${PT + plotH} L${pts[0].x},${PT + plotH} Z`;
+
+  const labelEvery = Math.ceil(n / 6);
+  const best = buckets.reduce((a, b) => (b.sales > a.sales ? b : a), buckets[0]);
+
+  const onMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * W;
+    const idx = Math.round(((x - PL) / plotW) * (n - 1));
+    setHover(Math.max(0, Math.min(n - 1, idx)));
+  };
+
+  const tipLeft = hover === null ? 0 : Math.max(14, Math.min(86, (pts[hover].x / W) * 100));
+
+  return (
+    <div className="ov-card">
+      <div className="ov-card__head">
+        <div>
+          <p className="ov-card__title">منحنى المبيعات</p>
+          <p className="ov-card__big"><span className="ov-num">{fmt(totalSales)}</span> DA</p>
+        </div>
+        <span className="ov-card__hint">{periodLabel} · الطلبات الموصّلة</span>
+      </div>
+
+      <div className="ov-trend__plot">
+        <svg
+          className="ov-trend__svg"
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label="منحنى المبيعات"
+          onPointerMove={onMove}
+          onPointerDown={onMove}
+          onPointerLeave={() => setHover(null)}
+        >
+          <defs>
+            <linearGradient id="ov-trend-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#894bf4" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#894bf4" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {[0, 1, 2, 3, 4].map((i) => {
+            const y = PT + plotH - (i / 4) * plotH;
+            return (
+              <g key={i}>
+                <line className="ov-trend__grid" x1={PL} x2={W - PR} y1={y} y2={y} />
+                <text className="ov-trend__axis" x={PL - 8} y={y + 4} textAnchor="end">
+                  {compact(step * i)}
+                </text>
+              </g>
+            );
+          })}
+
+          <path d={area} fill="url(#ov-trend-grad)" />
+          <path d={line} className="ov-trend__line" />
+
+          {buckets.map((b, i) =>
+            i % labelEvery === 0 ? (
+              <text key={i} className="ov-trend__axis" x={pts[i].x} y={H - 8} textAnchor="middle">
+                {b.label}
+              </text>
+            ) : null
+          )}
+
+          {hover !== null && (
+            <g>
+              <line className="ov-trend__guide" x1={pts[hover].x} x2={pts[hover].x} y1={PT} y2={PT + plotH} />
+              <circle className="ov-trend__dot" cx={pts[hover].x} cy={pts[hover].y} r="4.5" />
+            </g>
+          )}
+        </svg>
+
+        {maxVal === 0 && <div className="ov-trend__empty">لا توجد مبيعات في هذه الفترة</div>}
+
+        {hover !== null && (
+          <div className="ov-trend__tip" style={{ left: `${tipLeft}%`, transform: "translateX(-50%)" }}>
+            <span>{buckets[hover].label}</span><br />
+            <b><span className="ov-num" style={{ color: "#fff" }}>{fmt(buckets[hover].sales)}</span> DA</b><br />
+            <span><span className="ov-num">{buckets[hover].orders}</span> طلب</span>
+          </div>
+        )}
+      </div>
+
+      <div className="ov-trend__sum">
+        <div>
+          <p className="ov-trend__sum-label">طلبات موصّلة</p>
+          <p className="ov-trend__sum-value"><span className="ov-num">{deliveredCount}</span></p>
+        </div>
+        <div>
+          <p className="ov-trend__sum-label">متوسط قيمة الطلب</p>
+          <p className="ov-trend__sum-value">
+            <span className="ov-num">{deliveredCount > 0 ? fmt(totalSales / deliveredCount) : "—"}</span>
+            {deliveredCount > 0 && " DA"}
+          </p>
+        </div>
+        <div>
+          <p className="ov-trend__sum-label">الذروة</p>
+          <p className="ov-trend__sum-value">
+            <span className="ov-num">{best.sales > 0 ? best.label : "—"}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Algeria Map ───────────────────────────────────────────
+const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+function shade(count, max) {
+  if (!count || max <= 0) return "#eeedf3";
+  const t = Math.sqrt(count / max);
+  return `rgb(${lerp(217, 76, t)},${lerp(204, 29, t)},${lerp(255, 149, t)})`;
+}
+
+function AlgeriaMap({ byCity, periodLabel }) {
+  const wrapRef = useRef(null);
+  const [hover, setHover] = useState(null);
+
+  const ids = Object.keys(ALGERIA_MAP.paths);
+  const max = Math.max(...Object.values(byCity).map((v) => v.orders), 0);
+  const total = Object.values(byCity).reduce((s, v) => s + v.orders, 0);
+
+  const top = Object.entries(byCity)
+    .sort((a, b) => b[1].orders - a[1].orders)
+    .slice(0, 5);
+
+  const onMove = (e, id) => {
+    const rect = wrapRef.current.getBoundingClientRect();
+    setHover({ id, x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const info = hover ? byCity[hover.id] : null;
+
+  return (
+    <div className="ov-card">
+      <div className="ov-card__head">
+        <div>
+          <p className="ov-card__title">الطلبات حسب الولاية</p>
+          <p className="ov-card__big"><span className="ov-num">{total}</span> طلب</p>
+        </div>
+        <span className="ov-card__hint">{periodLabel}</span>
+      </div>
+
+      <div className="ov-map__wrap" ref={wrapRef}>
+        <svg
+          className="ov-map__svg"
+          viewBox={ALGERIA_MAP.viewBox}
+          role="img"
+          aria-label="خريطة الجزائر"
+          onPointerLeave={() => setHover(null)}
+        >
+          {ids.map((id) => (
+            <path
+              key={id}
+              d={ALGERIA_MAP.paths[id]}
+              fillRule="evenodd"
+              className="ov-map__path"
+              style={{ fill: shade(byCity[id]?.orders, max) }}
+              onPointerMove={(e) => onMove(e, id)}
+              onPointerDown={(e) => onMove(e, id)}
+            />
+          ))}
+          {hover && <path d={ALGERIA_MAP.paths[hover.id]} fillRule="evenodd" className="ov-map__hl" />}
+        </svg>
+
+        {hover && (
+          <div className="ov-map__tip" style={{ left: hover.x, top: hover.y }}>
+            <b>{CITY_BY_ID[hover.id]}</b><br />
+            <span><span className="ov-num">{info?.orders || 0}</span> طلب</span>
+            {info?.sales > 0 && <span> · <span className="ov-num">{fmt(info.sales)}</span> DA</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="ov-map__legend">
+        <span className="ov-num">0</span>
+        <div className="ov-map__ramp" />
+        <span className="ov-num">{max}</span>
+      </div>
+
+      {top.length === 0 ? (
+        <p className="ov-top__empty">لا توجد طلبات في هذه الفترة</p>
+      ) : (
+        <ul className="ov-top">
+          {top.map(([id, v]) => (
+            <li key={id} className="ov-top__row">
+              <span className="ov-top__name">{CITY_BY_ID[id]}</span>
+              <div className="ov-top__bar">
+                <div className="ov-top__fill" style={{ width: `${(v.orders / max) * 100}%` }} />
+              </div>
+              <span className="ov-top__count ov-num">{v.orders}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 // ── MAIN ─────────────────────────────────────────────────
 function OverviewPage() {
   const navigate = useNavigate();
 
-  const [analytics, setAnalytics] = useState({
-    totalProducts: 0, totalOrders: 0,
-    pendingOrders: 0, totalRevenue: 0, cancelledOrders: 0,
-  });
   const [orders,  setOrders]  = useState([]);
   const [loading, setLoading] = useState(true);
   const [period,  setPeriod]  = useState("7d");
+  const [now,     setNow]     = useState(() => Date.now());
 
   useEffect(() => {
-    if (!document.getElementById("ov-styles")) {
+    if (!document.getElementById("ov-styles-v2")) {
       const style = document.createElement("style");
-      style.id = "ov-styles";
+      style.id = "ov-styles-v2";
       style.textContent = ovStyles;
       document.head.appendChild(style);
     }
@@ -290,25 +508,43 @@ function OverviewPage() {
     const t = getToken();
     if (!t) { navigate("/login"); return; }
 
-    Promise.all([
-      fetch(`${getAPI()}/api/orders/analytics`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
-      fetch(`${getAPI()}/api/orders/my-orders`,  { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()),
-    ])
-      .then(([analyticsData, ordersData]) => {
-        if (analyticsData && !analyticsData.message) setAnalytics(analyticsData);
-        if (Array.isArray(ordersData)) setOrders(ordersData);
-      })
+    fetch(`${getAPI()}/api/orders/my-orders`, { headers: { Authorization: `Bearer ${t}` } })
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) { setOrders(data); setNow(Date.now()); } })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const cancellationRate = analytics.totalOrders > 0
-    ? Math.round((analytics.cancelledOrders / analytics.totalOrders) * 100) : 0;
-  const confirmedOrders  = analytics.totalOrders - analytics.pendingOrders - analytics.cancelledOrders;
-  const chartData        = buildChartData(orders);
-  const totalSales       = chartData.reduce((s, d) => s + d.revenue, 0);
-  const totalProfit      = chartData.reduce((s, d) => s + d.profit,  0);
-  const totalChartOrders = chartData.reduce((s, d) => s + d.orders,  0);
+  const periodDef = PERIODS.find((p) => p.key === period);
+
+  const view = useMemo(() => {
+    const { buckets, from, to } = buildBuckets(periodDef, now);
+    const span = to - from;
+
+    for (const o of orders) {
+      const t = new Date(o.createdAt).getTime();
+      if (t < from || t >= to) continue;
+      const idx = Math.min(buckets.length - 1, Math.floor((t - from) / periodDef.step));
+      buckets[idx].orders += 1;
+      if (o.status === "delivered") buckets[idx].sales += o.totalPrice || 0;
+    }
+
+    const cur  = summarise(orders, from, to);
+    const prev = summarise(orders, from - span, from);
+
+    const byCity = {};
+    for (const o of orders) {
+      const t = new Date(o.createdAt).getTime();
+      if (t < from || t >= to || o.status === "cancelled") continue;
+      const id = ID_BY_NAME[(o.shippingCity || "").trim()];
+      if (!id) continue;
+      if (!byCity[id]) byCity[id] = { orders: 0, sales: 0 };
+      byCity[id].orders += 1;
+      if (o.status === "delivered") byCity[id].sales += o.totalPrice || 0;
+    }
+
+    return { buckets, cur, prev, byCity };
+  }, [orders, periodDef, now]);
 
   if (loading) {
     return (
@@ -319,88 +555,63 @@ function OverviewPage() {
     );
   }
 
+  const { buckets, cur, prev, byCity } = view;
+  const cancelRate = cur.orders > 0 ? Math.round((cur.cancelled / cur.orders) * 100) : 0;
+
   return (
     <div className="ov-page">
 
-      {/* Period Tabs */}
-      <div className="ov-period-tabs">
-        {[
-          { key: "24h", label: "Last 24h"    },
-          { key: "7d",  label: "Last 7 Days" },
-          { key: "30d", label: "Last 30 Days"},
-        ].map((p) => (
-          <button key={p.key}
-            className={`ov-period-btn ${period === p.key ? "ov-period-btn--active" : ""}`}
-            onClick={() => setPeriod(p.key)}
-          >{p.label}</button>
-        ))}
-      </div>
-
-      {/* Stats */}
-      <div className="ov-stats-row">
-        <StatCard label="Total Orders"      value={analytics.totalOrders}     />
-        <StatCard label="Confirmed Orders"  value={confirmedOrders}            />
-        <StatCard label="Processing Orders" value={analytics.pendingOrders}    />
-        <StatCard label="Cancelled Orders"  value={analytics.cancelledOrders}
-          sub={analytics.totalOrders > 0 ? `${cancellationRate}%` : undefined} />
-      </div>
-
-      {/* Charts */}
-      <div className="ov-charts-row">
-        <ChartCard title="Total Sales" value={`DZD ${totalSales.toLocaleString()}`} trend={0} trendUp={true}>
-          <AreaChartSVG data={chartData} dataKey="revenue" color="#10b981" />
-        </ChartCard>
-
-        <ChartCard title="Net Profit" value={`DZD ${Math.round(totalProfit).toLocaleString()}`} trend={0} trendUp={true}>
-          <AreaChartSVG data={chartData} dataKey="profit" color="#6366f1" />
-        </ChartCard>
-
-        <ChartCard title="Orders" value={totalChartOrders} trend={cancellationRate} trendUp={cancellationRate === 0}>
-          <BarChartSVG data={chartData} dataKey="orders" color="#111827" />
-        </ChartCard>
-      </div>
-
-      {/* Recent Orders */}
-      <div className="ov-recent">
-        <div className="ov-recent__header">
-          <h3 className="ov-recent__title">آخر الطلبات</h3>
-          <button className="ov-recent__link" onClick={() => navigate("/dashboard/orders")}>
-            عرض الكل ←
-          </button>
+      <div className="ov-head">
+        <h2 className="ov-head__title">نظرة عامة</h2>
+        <div className="ov-tabs" role="tablist">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              role="tab"
+              aria-selected={period === p.key}
+              className={`ov-tab ${period === p.key ? "ov-tab--active" : ""}`}
+              onClick={() => setPeriod(p.key)}
+            >{p.label}</button>
+          ))}
         </div>
+      </div>
 
-        {orders.length === 0 ? (
-          <div className="ov-empty"><span>🛒</span><p>لا توجد طلبات بعد</p></div>
-        ) : (
-          <table className="ov-table">
-            <thead>
-              <tr>
-                <th>الزبون</th><th>المنتج</th><th>الولاية</th>
-                <th>المبلغ</th><th>الحالة</th><th>التاريخ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, 8).map((o) => (
-                <tr key={o._id}>
-                  <td>
-                    <div className="ov-table__customer">
-                      <span className="ov-table__avatar">{o.customerName?.charAt(0).toUpperCase()}</span>
-                      <div>
-                        <p className="ov-table__name">{o.customerName}</p>
-                        <p className="ov-table__phone">{o.phone}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="ov-table__product">{o.productId?.name || "منتج محذوف"}</td>
-                  <td className="ov-table__city">{o.shippingCity || "—"}</td>
-                  <td className="ov-table__price">{(o.totalPrice || 0).toLocaleString()} DA</td>
-                  <td><Badge status={o.status} /></td>
-                  <td className="ov-table__date">{new Date(o.createdAt).toLocaleDateString("en-CA")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="ov-stats">
+        <StatCard
+          label="الطلبات"
+          value={cur.orders}
+          delta={makeDelta(cur.orders, prev.orders)}
+          note="مقارنة بالفترة السابقة"
+        />
+        <StatCard
+          label="المبيعات"
+          value={fmt(cur.sales)}
+          unit="DA"
+          delta={makeDelta(cur.sales, prev.sales)}
+          note="الطلبات الموصّلة"
+        />
+        <StatCard
+          label="قيد المعالجة"
+          value={cur.pending}
+          delta={makeDelta(cur.pending, prev.pending)}
+          note="بانتظار التأكيد"
+        />
+        <StatCard
+          label="الملغاة"
+          value={cur.cancelled}
+          delta={makeDelta(cur.cancelled, prev.cancelled, true)}
+          note={cur.orders > 0 ? `${cancelRate}% من الطلبات` : "لا توجد طلبات"}
+        />
+      </div>
+
+      <div className="ov-main">
+        <SalesTrend
+          buckets={buckets}
+          totalSales={cur.sales}
+          deliveredCount={cur.delivered}
+          periodLabel={periodDef.label}
+        />
+        <AlgeriaMap byCity={byCity} periodLabel={periodDef.label} />
       </div>
 
     </div>
