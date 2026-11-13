@@ -162,7 +162,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         .sb-brand__info { min-width: 0; }
 
         .sb-avatar {
-          width: 40px; height: 40px;
+          width: 44px; height: 44px;
           border-radius: 50%;
           background: #ece7fb;
           overflow: hidden;
@@ -174,14 +174,14 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
 
         .sb-store-name {
           color: #1f1747;
-          font-size: .88rem;
+          font-size: .96rem;
           font-weight: 700;
           margin: 0;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .sb-store-slug {
           display: flex; align-items: center; gap: 5px;
-          color: #8b7fae; font-size: .72rem; margin-top: 2px;
+          color: #8b7fae; font-size: .8rem; margin-top: 2px;
         }
         .sb-dot { width: 7px; height: 7px; border-radius: 50%; background: #34c759; display: block; flex-shrink: 0; }
 
@@ -189,8 +189,8 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           margin-top: 10px;
           display: flex; align-items: center; justify-content: center; gap: 6px;
           background: #f1eefd; color: #5b3fd6;
-          font-size: .74rem; font-weight: 600;
-          padding: 7px; border-radius: 8px;
+          font-size: .82rem; font-weight: 600;
+          padding: 9px; border-radius: 9px;
           text-decoration: none;
           transition: background .15s;
         }
@@ -207,7 +207,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         }
         .sb-section__label {
           display: block;
-          font-size: .62rem;
+          font-size: .68rem;
           font-weight: 700;
           color: #a89ccb;
           letter-spacing: 1px;
@@ -223,10 +223,10 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           display: flex;
           flex-direction: row;
           align-items: center;
-          gap: 10px;
-          padding: 8px 10px;
-          border-radius: 8px;
-          font-size: .83rem;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 9px;
+          font-size: .92rem;
           font-weight: 500;
           color: #5b4f87;
           text-decoration: none;
@@ -248,7 +248,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         }
         .sb-item__icon {
           display: flex; align-items: center; justify-content: center;
-          width: 18px; flex-shrink: 0;
+          width: 20px; flex-shrink: 0;
           opacity: .85;
         }
         .sb-item--active .sb-item__icon { opacity: 1; }
@@ -260,10 +260,10 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           display: flex;
           flex-direction: row;
           align-items: center;
-          gap: 10px;
-          padding: 8px 10px;
-          border-radius: 8px;
-          font-size: .83rem;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 9px;
+          font-size: .92rem;
           color: #8b7fae;
           background: none;
           border: none;
@@ -281,10 +281,10 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           flex-shrink: 0; direction: ltr; padding: 2px 2px 0;
         }
         .sb-logo { display: flex; align-items: center; text-decoration: none; padding-left: 4px; }
-        .sb-logo__full { height: 24px; width: auto; display: block; }
-        .sb-logo__icon { height: 30px; width: auto; display: block; }
+        .sb-logo__full { height: 28px; width: auto; display: block; }
+        .sb-logo__icon { height: 32px; width: auto; display: block; }
         .sb-toggle {
-          width: 34px; height: 34px;
+          width: 38px; height: 38px;
           display: flex; align-items: center; justify-content: center;
           background: #fff; color: #5b4f87;
           border: 1px solid #ebe7f7; border-radius: 10px;
