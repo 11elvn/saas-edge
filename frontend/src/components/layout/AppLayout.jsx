@@ -15,6 +15,17 @@ function AppLayout({ children, title, flush = false }) {
   // ── Store data ──────────────────────────────
   const [store, setStore] = useState(null);
 
+  // ── Sidebar: مفتوحة / مسكرة (نتذكرو الاختيار) ──
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("sidebarCollapsed") === "1"; } catch (_) { return false; }
+  });
+  const toggleSidebar = () =>
+    setCollapsed((c) => {
+      const next = !c;
+      try { localStorage.setItem("sidebarCollapsed", next ? "1" : "0"); } catch (_) {}
+      return next;
+    });
+
   // ── Notifications ───────────────────────────
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const lastOrderIdRef = useRef(null);
@@ -100,10 +111,10 @@ function AppLayout({ children, title, flush = false }) {
   };
 
   return (
-    <div className="app-layout" dir="rtl">
+    <div className={`app-layout${collapsed ? " app-layout--collapsed" : ""}`} dir="rtl">
 
       {/* ── Sidebar ── */}
-      <Sidebar store={store} onLogout={logout} />
+      <Sidebar store={store} onLogout={logout} collapsed={collapsed} onToggle={toggleSidebar} />
 
       {/* ── Main ── */}
       <div className="app-layout__main">

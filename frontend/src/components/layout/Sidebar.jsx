@@ -41,7 +41,7 @@ const NAV = [
   },
 ];
 
-function Sidebar({ store, onLogout }) {
+function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
   const { pathname } = useLocation();
 
   const isActive = (to) =>
@@ -52,12 +52,29 @@ function Sidebar({ store, onLogout }) {
   const initial = store?.name?.charAt(0)?.toUpperCase() || "S";
 
   return (
-    <aside className="sidebar sb">
+    <aside className={`sidebar sb${collapsed ? " sb--collapsed" : ""}`}>
+
+      {/* ══ TOGGLE — فتح / تسكير القائمة ══ */}
+      <div className="sb-top">
+        <button
+          type="button"
+          className="sb-toggle"
+          onClick={onToggle}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2.5"/>
+            <line x1="9" y1="4" x2="9" y2="20"/>
+          </svg>
+        </button>
+      </div>
 
       {/* ══ BRAND CARD ══ */}
       <div className="sb-card sb-brand">
         <div className="sb-brand__row">
-          <div className="sb-avatar">
+          <div className="sb-avatar" title={collapsed ? (store?.name || "") : undefined}>
             {store?.logo
               ? <img src={store.logo} alt="logo" className="sb-avatar__img" />
               : <span className="sb-avatar__letter">{initial}</span>
@@ -97,6 +114,7 @@ function Sidebar({ store, onLogout }) {
                   key={item.to}
                   to={item.to}
                   className={`sb-item ${isActive(item.to) ? "sb-item--active" : ""}`}
+                  title={collapsed ? item.label : undefined}
                 >
                   <span className="sb-item__icon">{item.icon}</span>
                   <span className="sb-item__label">{item.label}</span>
@@ -109,7 +127,7 @@ function Sidebar({ store, onLogout }) {
 
       {/* ══ FOOTER CARD ══ */}
       <div className="sb-card sb-footer">
-        <button onClick={onLogout} className="sb-logout">
+        <button onClick={onLogout} className="sb-logout" title={collapsed ? "تسجيل الخروج" : undefined}>
           {Icons.logout}
           <span>تسجيل الخروج</span>
         </button>
@@ -250,6 +268,35 @@ function Sidebar({ store, onLogout }) {
           direction: ltr;
         }
         .sb-logout:hover { background: #fef2f2; color: #dc2626; }
+
+        /* زر الفتح / التسكير */
+        .sb-top { display: flex; justify-content: flex-end; flex-shrink: 0; }
+        .sb-toggle {
+          width: 34px; height: 34px;
+          display: flex; align-items: center; justify-content: center;
+          background: #fff; color: #5b4f87;
+          border: 1px solid #ebe7f7; border-radius: 10px;
+          cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+        }
+        .sb-toggle:hover { background: #f4f1fe; color: #5b3fd6; border-color: #e0d9f7; }
+
+        /* ══ حالة التسكير: شريط أيقونات فقط (حاسوب) ══ */
+        @media (min-width: 769px) {
+          .sidebar.sb { transition: width .22s ease; overflow-x: hidden; }
+          .sb--collapsed { padding: 12px 10px; }
+          .sb--collapsed .sb-top { justify-content: center; }
+          .sb--collapsed .sb-brand { padding: 8px; }
+          .sb--collapsed .sb-brand__row { justify-content: center; }
+          .sb--collapsed .sb-brand__info,
+          .sb--collapsed .sb-view-btn,
+          .sb--collapsed .sb-section__label,
+          .sb--collapsed .sb-item__label,
+          .sb--collapsed .sb-logout span { display: none; }
+          .sb--collapsed .sb-item { justify-content: center; padding: 10px 0; }
+          .sb--collapsed .sb-item--active::before { display: none; }
+          .sb--collapsed .sb-item__icon { width: auto; }
+          .sb--collapsed .sb-logout { justify-content: center; padding: 10px 0; }
+        }
       `}</style>
     </aside>
   );
