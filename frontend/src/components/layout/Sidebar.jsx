@@ -1,6 +1,6 @@
 // ============================================================
 // 📁 Sidebar.jsx
-// تصميم جديد: avatar وسط كبير + اسم + لينك + nav يسار→يمين
+// تصميم: خلفية بيضاء — بطاقات (brand card + مجموعات nav + footer card)
 // ============================================================
 
 import { Link, useLocation } from "react-router-dom";
@@ -52,52 +52,63 @@ function Sidebar({ store, onLogout }) {
   const initial = store?.name?.charAt(0)?.toUpperCase() || "S";
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar sb">
 
-      {/* ══ BRAND — avatar وسط كبير ══ */}
-      <div className="sb-brand">
-        <div className="sb-avatar">
-          {store?.logo
-            ? <img src={store.logo} alt="logo" className="sb-avatar__img" />
-            : <span className="sb-avatar__letter">{initial}</span>
-          }
+      {/* ══ BRAND CARD ══ */}
+      <div className="sb-card sb-brand">
+        <div className="sb-brand__row">
+          <div className="sb-avatar">
+            {store?.logo
+              ? <img src={store.logo} alt="logo" className="sb-avatar__img" />
+              : <span className="sb-avatar__letter">{initial}</span>
+            }
+          </div>
+          <div className="sb-brand__info">
+            <p className="sb-store-name">{store?.name || "متجري"}</p>
+            {store?.slug && (
+              <span className="sb-store-slug">
+                {store.slug}
+                <i className="sb-dot" />
+              </span>
+            )}
+          </div>
         </div>
-        <p className="sb-store-name">{store?.name || "متجري"}</p>
         {store?.slug && (
           <a
             href={`/store/${store.slug}`}
             target="_blank"
             rel="noreferrer"
-            className="sb-store-pill"
+            className="sb-view-btn"
           >
-            <span className="sb-store-pill__dot" />
-            {store.slug}
-            <span style={{ marginLeft:4, opacity:.7 }}>{Icons.link}</span>
+            {Icons.link}
+            View store
           </a>
         )}
       </div>
 
-      {/* ══ NAV ══ */}
+      {/* ══ NAV — كل مجموعة في بطاقة ══ */}
       <nav className="sb-nav">
         {NAV.map((section) => (
           <div key={section.group} className="sb-section">
             <span className="sb-section__label">{section.group}</span>
-            {section.items.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`sb-item ${isActive(item.to) ? "sb-item--active" : ""}`}
-              >
-                <span className="sb-item__icon">{item.icon}</span>
-                <span className="sb-item__label">{item.label}</span>
-              </Link>
-            ))}
+            <div className="sb-card sb-group">
+              {section.items.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`sb-item ${isActive(item.to) ? "sb-item--active" : ""}`}
+                >
+                  <span className="sb-item__icon">{item.icon}</span>
+                  <span className="sb-item__label">{item.label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         ))}
       </nav>
 
-      {/* ══ FOOTER ══ */}
-      <div className="sb-footer">
+      {/* ══ FOOTER CARD ══ */}
+      <div className="sb-card sb-footer">
         <button onClick={onLogout} className="sb-logout">
           {Icons.logout}
           <span>تسجيل الخروج</span>
@@ -106,115 +117,110 @@ function Sidebar({ store, onLogout }) {
 
       {/* ══ STYLES ══ */}
       <style>{`
-        /* brand block */
-        .sb-brand {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 24px 16px 20px;
-          text-align: center;
-          gap: 8px;
+        .sidebar.sb {
+          padding: 12px;
+          gap: 10px;
+          background: #faf8ff;
+          border-right: 1px solid #ebe7f7;
+          font-family: 'Inter', sans-serif;
         }
 
-        /* avatar */
+        /* بطاقة بيضاء مشتركة */
+        .sb-card {
+          background: #fff;
+          border: 1px solid #ebe7f7;
+          border-radius: 12px;
+        }
+
+        /* brand card */
+        .sb-brand { padding: 12px; flex-shrink: 0; }
+        .sb-brand__row { display: flex; align-items: center; gap: 10px; }
+        .sb-brand__info { min-width: 0; }
+
         .sb-avatar {
-          width: 64px; height: 64px;
-          border-radius: 18px;
-          background: rgba(255,255,255,0.22);
-          border: 2px solid rgba(255,255,255,0.30);
+          width: 40px; height: 40px;
+          border-radius: 50%;
+          background: #ece7fb;
           overflow: hidden;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .sb-avatar__img  { width:100%; height:100%; object-fit:cover; }
-        .sb-avatar__letter {
-          color: #fff;
-          font-size: 1.6rem;
-          font-weight: 800;
-          line-height: 1;
-        }
+        .sb-avatar__img  { width: 100%; height: 100%; object-fit: cover; }
+        .sb-avatar__letter { color: #5b3fd6; font-size: 1.1rem; font-weight: 800; line-height: 1; }
 
-        /* store name */
         .sb-store-name {
-          color: #fff;
+          color: #1f1747;
           font-size: .88rem;
           font-weight: 700;
           margin: 0;
-          letter-spacing: .3px;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        .sb-store-slug {
+          display: flex; align-items: center; gap: 5px;
+          color: #8b7fae; font-size: .72rem; margin-top: 2px;
+        }
+        .sb-dot { width: 7px; height: 7px; border-radius: 50%; background: #34c759; display: block; flex-shrink: 0; }
 
-        /* pill لينك المتجر */
-        .sb-store-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background: rgba(255,255,255,0.15);
-          border: 1px solid rgba(255,255,255,0.20);
-          color: #fff;
-          font-size: .72rem;
-          font-weight: 500;
-          padding: 4px 10px;
-          border-radius: 99px;
+        .sb-view-btn {
+          margin-top: 10px;
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+          background: #f1eefd; color: #5b3fd6;
+          font-size: .74rem; font-weight: 600;
+          padding: 7px; border-radius: 8px;
           text-decoration: none;
           transition: background .15s;
-          white-space: nowrap;
         }
-        .sb-store-pill:hover { background: rgba(255,255,255,0.25); }
-        .sb-store-pill__dot {
-          width: 7px; height: 7px;
-          border-radius: 50%;
-          background: #4ade80;
-          flex-shrink: 0;
-        }
+        .sb-view-btn:hover { background: #e7e1fa; }
 
         /* nav */
         .sb-nav {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 2px;
-          padding: 0 12px;
+          gap: 10px;
           overflow-y: auto;
+          min-height: 0;
         }
-
-        .sb-section { margin-bottom: 6px; }
-
         .sb-section__label {
           display: block;
-          font-size: .60rem;
+          font-size: .62rem;
           font-weight: 700;
-          color: rgba(255,255,255,0.40);
+          color: #a89ccb;
           letter-spacing: 1px;
-          padding: 8px 10px 4px;
+          padding: 0 6px 5px;
           text-transform: uppercase;
           direction: ltr;
           text-align: left;
         }
+        .sb-group { padding: 4px; display: flex; flex-direction: column; gap: 1px; }
 
-        /* item: أيقونة + نص من يسار لين يمين */
         .sb-item {
+          position: relative;
           display: flex;
           flex-direction: row;
           align-items: center;
           gap: 10px;
-          padding: 9px 12px;
-          border-radius: 10px;
+          padding: 8px 10px;
+          border-radius: 8px;
           font-size: .83rem;
           font-weight: 500;
-          color: rgba(255,255,255,0.72);
+          color: #5b4f87;
           text-decoration: none;
           transition: background .15s, color .15s;
           cursor: pointer;
           direction: ltr;
         }
-        .sb-item:hover {
-          background: rgba(255,255,255,0.12);
-          color: #fff;
-        }
+        .sb-item:hover { background: #f8f6ff; color: #5b3fd6; }
         .sb-item--active {
-          background: rgba(255,255,255,0.20);
-          color: #fff;
+          background: #f4f1fe;
+          color: #5b3fd6;
           font-weight: 600;
+        }
+        .sb-item--active::before {
+          content: "";
+          position: absolute; left: 0; top: 8px; bottom: 8px;
+          width: 3px; border-radius: 3px;
+          background: #6c5ce7;
         }
         .sb-item__icon {
           display: flex; align-items: center; justify-content: center;
@@ -224,22 +230,17 @@ function Sidebar({ store, onLogout }) {
         .sb-item--active .sb-item__icon { opacity: 1; }
         .sb-item__label { flex: 1; }
 
-        /* footer */
-        .sb-footer {
-          padding: 12px;
-          border-top: 1px solid rgba(255,255,255,0.12);
-          margin-top: 4px;
-        }
-
+        /* footer card */
+        .sb-footer { padding: 4px; flex-shrink: 0; }
         .sb-logout {
           display: flex;
           flex-direction: row;
           align-items: center;
           gap: 10px;
-          padding: 9px 12px;
-          border-radius: 10px;
+          padding: 8px 10px;
+          border-radius: 8px;
           font-size: .83rem;
-          color: rgba(255,255,255,0.72);
+          color: #8b7fae;
           background: none;
           border: none;
           cursor: pointer;
@@ -248,10 +249,7 @@ function Sidebar({ store, onLogout }) {
           transition: background .15s, color .15s;
           direction: ltr;
         }
-        .sb-logout:hover {
-          background: rgba(239,68,68,0.20);
-          color: #fca5a5;
-        }
+        .sb-logout:hover { background: #fef2f2; color: #dc2626; }
       `}</style>
     </aside>
   );
