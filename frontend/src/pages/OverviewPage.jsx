@@ -44,24 +44,25 @@ const ovStyles = `
 .ov-num{direction:ltr;unicode-bidi:isolate;display:inline-block;}
 
 .ov-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.ov-head__title{font-size:1.25rem;font-weight:700;color:#111827;}
-.ov-tabs{display:inline-flex;gap:2px;padding:3px;background:#f1f2f4;border-radius:10px;}
+.ov-head__title{font-size:1.5rem;font-weight:700;color:#2e1065;line-height:1.2;}
+.ov-head__date{font-size:.82rem;color:#7c6aa8;margin-top:4px;}
+.ov-tabs{display:inline-flex;gap:2px;padding:3px;background:#f1ecff;border-radius:10px;}
 .ov-tab{
   padding:7px 14px;border:none;border-radius:8px;background:transparent;
   color:#6b7280;font-size:.8rem;font-weight:500;cursor:pointer;
   font-family:inherit;transition:background .15s,color .15s;white-space:nowrap;
 }
-.ov-tab:hover{color:#111827;}
+.ov-tab:hover{color:#4c1d95;}
 .ov-tab:focus-visible{outline:2px solid #894bf4;outline-offset:1px;}
-.ov-tab--active{background:#fff;color:#111827;box-shadow:0 1px 2px rgba(17,24,39,.08);}
+.ov-tab--active,.ov-tab--active:hover{background:#894bf4;color:#fff;}
 
 .ov-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
 .ov-stat{
-  background:#fff;border:1px solid #eef0f2;border-radius:14px;
+  background:#fff;border:1px solid #ece6fb;border-radius:14px;
   padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0;
 }
 .ov-stat__label{font-size:.8rem;color:#6b7280;font-weight:500;}
-.ov-stat__value{font-size:1.75rem;font-weight:700;color:#111827;line-height:1.1;white-space:nowrap;}
+.ov-stat__value{font-size:1.75rem;font-weight:700;color:#3b1a7a;line-height:1.1;white-space:nowrap;}
 .ov-stat__unit{font-size:.8rem;font-weight:600;color:#9ca3af;margin-inline-start:4px;}
 .ov-stat__foot{display:flex;align-items:center;gap:6px;font-size:.74rem;color:#9ca3af;flex-wrap:wrap;}
 .ov-delta{
@@ -74,19 +75,19 @@ const ovStyles = `
 
 .ov-main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:stretch;}
 .ov-card{
-  background:#fff;border:1px solid #eef0f2;border-radius:14px;
-  padding:20px 22px;display:flex;flex-direction:column;min-width:0;
+  background:#fff;border:1px solid #ece6fb;border-radius:14px;
+  padding:16px 18px;display:flex;flex-direction:column;min-width:0;
 }
-.ov-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.ov-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
 .ov-card__title{font-size:.82rem;font-weight:500;color:#6b7280;margin-bottom:4px;}
-.ov-card__big{font-size:1.6rem;font-weight:700;color:#111827;line-height:1.1;}
+.ov-card__big{font-size:1.35rem;font-weight:700;color:#3b1a7a;line-height:1.1;}
 .ov-card__hint{font-size:.74rem;color:#9ca3af;}
 
-.ov-trend__plot{position:relative;flex:1;min-height:240px;display:flex;align-items:center;}
+.ov-trend__plot{position:relative;flex:1;min-height:150px;display:flex;align-items:center;}
 .ov-trend__svg{width:100%;height:auto;display:block;direction:ltr;touch-action:pan-y;}
-.ov-trend__grid{stroke:#f1f2f4;stroke-width:1;}
+.ov-trend__grid{stroke:#f1ecff;stroke-width:1;}
 .ov-trend__axis{font-size:11px;fill:#9ca3af;font-family:inherit;}
-.ov-trend__line{fill:none;stroke:#894bf4;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.ov-trend__line{fill:none;stroke:#7c3aed;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 .ov-trend__guide{stroke:#894bf4;stroke-width:1;stroke-dasharray:3 3;opacity:.5;}
 .ov-trend__dot{fill:#fff;stroke:#894bf4;stroke-width:2.5;}
 .ov-trend__tip{
@@ -101,13 +102,13 @@ const ovStyles = `
 }
 .ov-trend__sum{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
-  margin-top:14px;padding-top:14px;border-top:1px solid #f1f2f4;
+  margin-top:10px;padding-top:12px;border-top:1px solid #f1f2f4;
 }
 .ov-trend__sum-label{font-size:.74rem;color:#9ca3af;margin-bottom:2px;}
-.ov-trend__sum-value{font-size:.95rem;font-weight:600;color:#111827;}
+.ov-trend__sum-value{font-size:.95rem;font-weight:600;color:#3b1a7a;}
 
 .ov-map__wrap{position:relative;display:flex;justify-content:center;}
-.ov-map__svg{width:100%;max-width:420px;height:auto;display:block;}
+.ov-map__svg{width:100%;max-width:270px;height:auto;display:block;}
 .ov-map__path{stroke:#fff;stroke-width:.9;transition:fill .15s;cursor:pointer;}
 .ov-map__hl{fill:none;stroke:#4c1d95;stroke-width:1.8;pointer-events:none;stroke-linejoin:round;}
 .ov-map__tip{
@@ -119,7 +120,7 @@ const ovStyles = `
 .ov-map__tip span{color:#c4c9d4;}
 .ov-map__legend{display:flex;align-items:center;gap:8px;font-size:.72rem;color:#9ca3af;margin:6px 0 4px;}
 .ov-map__ramp{flex:1;height:6px;border-radius:99px;background:linear-gradient(to left,#4c1d95,#d9ccff);}
-.ov-top{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:14px;border-top:1px solid #f1f2f4;}
+.ov-top{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid #f1f2f4;}
 .ov-top__row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:10px;font-size:.8rem;}
 .ov-top__name{color:#374151;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ov-top__bar{height:6px;border-radius:99px;background:#f1f2f4;overflow:hidden;}
@@ -270,8 +271,8 @@ function StatCard({ label, value, unit, delta, note }) {
 
 // ── Sales Trend ───────────────────────────────────────────
 function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
-  const W = 640, H = 270;
-  const PL = 44, PR = 12, PT = 14, PB = 28;
+  const W = 640, H = 190;
+  const PL = 44, PR = 12, PT = 10, PB = 26;
   const plotW = W - PL - PR;
   const plotH = H - PT - PB;
 
@@ -345,7 +346,7 @@ function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
 
           {buckets.map((b, i) =>
             i % labelEvery === 0 ? (
-              <text key={i} className="ov-trend__axis" x={pts[i].x} y={H - 8} textAnchor="middle">
+              <text key={i} className="ov-trend__axis" x={pts[i].x} y={H - 7} textAnchor="middle">
                 {b.label}
               </text>
             ) : null
@@ -396,7 +397,7 @@ function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
 // ── Algeria Map ───────────────────────────────────────────
 const lerp = (a, b, t) => Math.round(a + (b - a) * t);
 function shade(count, max) {
-  if (!count || max <= 0) return "#eeedf3";
+  if (!count || max <= 0) return "#efeafd";
   const t = Math.sqrt(count / max);
   return `rgb(${lerp(217, 76, t)},${lerp(204, 29, t)},${lerp(255, 149, t)})`;
 }
@@ -494,6 +495,7 @@ function OverviewPage() {
   const [loading, setLoading] = useState(true);
   const [period,  setPeriod]  = useState("7d");
   const [now,     setNow]     = useState(() => Date.now());
+  const [storeName, setStoreName] = useState("");
 
   useEffect(() => {
     if (!document.getElementById("ov-styles-v2")) {
@@ -507,6 +509,11 @@ function OverviewPage() {
   useEffect(() => {
     const t = getToken();
     if (!t) { navigate("/login"); return; }
+
+    fetch(`${getAPI()}/api/stores/my-store`, { headers: { Authorization: `Bearer ${t}` } })
+      .then((r) => r.json())
+      .then((d) => { if (d?.store?.name) setStoreName(d.store.name); })
+      .catch(() => {});
 
     fetch(`${getAPI()}/api/orders/my-orders`, { headers: { Authorization: `Bearer ${t}` } })
       .then((r) => r.json())
@@ -556,13 +563,19 @@ function OverviewPage() {
   }
 
   const { buckets, cur, prev, byCity } = view;
+  const hour = new Date(now).getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const dateText = new Date(now).toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
   const cancelRate = cur.orders > 0 ? Math.round((cur.cancelled / cur.orders) * 100) : 0;
 
   return (
     <div className="ov-page" dir="ltr">
 
       <div className="ov-head">
-        <h2 className="ov-head__title">Overview</h2>
+        <div>
+          <h2 className="ov-head__title">{greeting}{storeName ? `, ${storeName}` : ""}</h2>
+          <p className="ov-head__date">{dateText}</p>
+        </div>
         <div className="ov-tabs" role="tablist">
           {PERIODS.map((p) => (
             <button
