@@ -16,12 +16,10 @@ const CSS = `
 .th-page {
   display: flex; flex-direction: column; gap: 20px;
   position: relative; border-radius: 22px; padding: 24px;
-  height: calc(100vh - 60px - 56px);
+  height: calc(100vh - var(--topbar-height, 60px) - 56px);
   min-height: 560px;
   border: 1px solid rgba(255,255,255,.9);
   background:
-    radial-gradient(520px 340px at 92% -6%, rgba(167,139,250,.55), transparent 70%),
-    radial-gradient(460px 360px at -4% 105%, rgba(196,181,253,.5), transparent 70%),
     radial-gradient(380px 260px at 55% 48%, rgba(221,214,254,.45), transparent 70%),
     #faf7ff;
   box-shadow: 0 10px 40px rgba(137,75,244,.10), inset 0 1px 0 rgba(255,255,255,.9);
@@ -159,11 +157,11 @@ const CSS = `
 
 @media (max-width: 980px) {
   .th-info { grid-template-columns: 1fr; }
-  .th-page { height: auto; min-height: calc(100vh - 60px - 56px); }
+  .th-page { height: auto; min-height: calc(100vh - var(--topbar-height, 60px) - 56px); }
   .th-stage { height: 560px; flex: none; }
 }
 @media (max-width: 768px) {
-  .th-page { min-height: calc(100vh - 60px - 40px); }
+  .th-page { min-height: calc(100vh - var(--topbar-height, 60px) - 40px); }
 }
 @media (max-width: 520px) {
   .th-page { padding: 14px; border-radius: 16px; }
