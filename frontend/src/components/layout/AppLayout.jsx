@@ -7,10 +7,24 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate }                  from "react-router-dom";
 import Sidebar                          from "./Sidebar";
 import TopBar                           from "./TopBar";
+import { usePrefs }                     from "../../context/PrefsContext";
 
 function AppLayout({ children, title, flush = false }) {
   const navigate  = useNavigate();
   const token     = localStorage.getItem("token");
+
+  // ── تفضيلات: اللغة + الدارك مود ──────────────
+  const { theme, lang } = usePrefs();
+  useEffect(() => {
+    const root     = document.documentElement;
+    const prevLang = root.getAttribute("lang");
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("lang", lang);
+    return () => {
+      root.removeAttribute("data-theme");
+      if (prevLang) root.setAttribute("lang", prevLang); else root.removeAttribute("lang");
+    };
+  }, [theme, lang]);
 
   // ── Store data ──────────────────────────────
   const [store, setStore] = useState(null);
@@ -122,6 +136,8 @@ function AppLayout({ children, title, flush = false }) {
           title={title}
           newOrdersCount={newOrdersCount}
           onBellClick={handleBellClick}
+          store={store}
+          onLogout={logout}
         />
         <div className={`app-layout__content${flush ? " app-layout__content--flush" : ""}`}>
           {children}

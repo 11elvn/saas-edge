@@ -29,6 +29,7 @@ import AppLayout        from "./components/layout/AppLayout";
 
 // ── Cart (سلة التسوق) — عالمية عبر التطبيق ──────────────────
 import { CartProvider } from "./context/CartContext";
+import { PrefsProvider } from "./context/PrefsContext";
 
 // ── Helper: يلف الصفحة بـ ProtectedRoute + AppLayout ───────
 const DashPage = ({ component: Component, title }) => (
@@ -41,6 +42,7 @@ const DashPage = ({ component: Component, title }) => (
 
 function App() {
   return (
+    <PrefsProvider>
     <CartProvider>
     <BrowserRouter>
       <Routes>
@@ -83,6 +85,7 @@ function App() {
       </Routes>
     </BrowserRouter>
     </CartProvider>
+    </PrefsProvider>
   );
 }
 

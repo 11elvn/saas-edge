@@ -4,6 +4,7 @@
 // ============================================================
 
 import { Link, useLocation } from "react-router-dom";
+import { usePrefs } from "../../context/PrefsContext";
 
 // SVG icons بدل emoji
 const Icons = {
@@ -43,6 +44,7 @@ const NAV = [
 
 function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
   const { pathname } = useLocation();
+  const { t } = usePrefs();
 
   const isActive = (to) =>
     to === "/dashboard"
@@ -60,7 +62,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
         }
       </div>
       <div className="sb-store__info">
-        <p className="sb-store-name">{store?.name || "متجري"}</p>
+        <p className="sb-store-name">{store?.name || t("My store")}</p>
         {store?.slug && (
           <span className="sb-store-slug">
             <i className="sb-dot" />
@@ -105,7 +107,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           target="_blank"
           rel="noreferrer"
           className="sb-store"
-          title={collapsed ? `${store?.name || ""} — ${store.slug}` : "View store"}
+          title={collapsed ? `${store?.name || ""} — ${store.slug}` : t("View store")}
         >
           {storeInner}
         </a>
@@ -117,16 +119,16 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
       <nav className="sb-nav">
         {NAV.map((section) => (
           <div key={section.group} className="sb-section">
-            <span className="sb-section__label">{section.group}</span>
+            <span className="sb-section__label">{t(section.group)}</span>
             {section.items.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 className={`sb-item ${isActive(item.to) ? "sb-item--active" : ""}`}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? t(item.label) : undefined}
               >
                 <span className="sb-item__icon">{item.icon}</span>
-                <span className="sb-item__label">{item.label}</span>
+                <span className="sb-item__label">{t(item.label)}</span>
               </Link>
             ))}
           </div>
@@ -135,9 +137,9 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
 
       {/* ══ FOOTER ══ */}
       <div className="sb-footer">
-        <button onClick={onLogout} className="sb-logout" title={collapsed ? "تسجيل الخروج" : undefined}>
+        <button onClick={onLogout} className="sb-logout" title={collapsed ? t("Log out") : undefined}>
           {Icons.logout}
-          <span>تسجيل الخروج</span>
+          <span>{t("Log out")}</span>
         </button>
       </div>
 
