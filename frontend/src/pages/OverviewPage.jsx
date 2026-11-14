@@ -40,19 +40,22 @@ const ovStyles = `
 @keyframes ov-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ov-loading__spinner{animation-duration:2s}}
 
-.ov-page{display:flex;flex-direction:column;gap:20px;}
+.ov-page{
+  display:flex;flex-direction:column;gap:20px;
+  background:#fff;border:1px solid #ece6fb;border-radius:20px;padding:24px;
+}
 .ov-num{direction:ltr;unicode-bidi:isolate;display:inline-block;}
 
 .ov-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.ov-head__title{font-size:1.5rem;font-weight:700;color:#2e1065;line-height:1.2;}
-.ov-head__date{font-size:.82rem;color:#7c6aa8;margin-top:4px;}
+.ov-head__title{font-size:1.5rem;font-weight:700;color:#111827;line-height:1.2;}
+.ov-head__date{font-size:.82rem;color:#6b7280;margin-top:4px;}
 .ov-tabs{display:inline-flex;gap:2px;padding:3px;background:#f1ecff;border-radius:10px;}
 .ov-tab{
   padding:7px 14px;border:none;border-radius:8px;background:transparent;
   color:#6b7280;font-size:.8rem;font-weight:500;cursor:pointer;
   font-family:inherit;transition:background .15s,color .15s;white-space:nowrap;
 }
-.ov-tab:hover{color:#4c1d95;}
+.ov-tab:hover{color:#111827;}
 .ov-tab:focus-visible{outline:2px solid #894bf4;outline-offset:1px;}
 .ov-tab--active,.ov-tab--active:hover{background:#894bf4;color:#fff;}
 
@@ -62,7 +65,7 @@ const ovStyles = `
   padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0;
 }
 .ov-stat__label{font-size:.8rem;color:#6b7280;font-weight:500;}
-.ov-stat__value{font-size:1.75rem;font-weight:700;color:#3b1a7a;line-height:1.1;white-space:nowrap;}
+.ov-stat__value{font-size:1.75rem;font-weight:700;color:#111827;line-height:1.1;white-space:nowrap;}
 .ov-stat__unit{font-size:.8rem;font-weight:600;color:#9ca3af;margin-inline-start:4px;}
 .ov-stat__foot{display:flex;align-items:center;gap:6px;font-size:.74rem;color:#9ca3af;flex-wrap:wrap;}
 .ov-delta{
@@ -80,7 +83,7 @@ const ovStyles = `
 }
 .ov-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
 .ov-card__title{font-size:.82rem;font-weight:500;color:#6b7280;margin-bottom:4px;}
-.ov-card__big{font-size:1.35rem;font-weight:700;color:#3b1a7a;line-height:1.1;}
+.ov-card__big{font-size:1.35rem;font-weight:700;color:#111827;line-height:1.1;}
 .ov-card__hint{font-size:.74rem;color:#9ca3af;}
 
 .ov-trend__plot{position:relative;flex:1;min-height:150px;display:flex;align-items:center;}
@@ -105,7 +108,7 @@ const ovStyles = `
   margin-top:10px;padding-top:12px;border-top:1px solid #f1f2f4;
 }
 .ov-trend__sum-label{font-size:.74rem;color:#9ca3af;margin-bottom:2px;}
-.ov-trend__sum-value{font-size:.95rem;font-weight:600;color:#3b1a7a;}
+.ov-trend__sum-value{font-size:.95rem;font-weight:600;color:#111827;}
 
 .ov-map__wrap{position:relative;display:flex;justify-content:center;}
 .ov-map__svg{width:100%;max-width:270px;height:auto;display:block;}
@@ -135,6 +138,7 @@ const ovStyles = `
   .ov-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 @media(max-width:520px){
+  .ov-page{padding:14px;border-radius:16px;}
   .ov-stats{gap:10px;}
   .ov-stat{padding:14px;}
   .ov-stat__value{font-size:1.4rem;}
