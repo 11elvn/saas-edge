@@ -276,9 +276,9 @@ body {
 .topbar {
   height: var(--topbar-height);
   background: var(--layout-bg);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 0 32px;
   position: sticky;
@@ -302,10 +302,10 @@ body {
   z-index: 60;
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 44px;
-  padding: 0 5px;
-  flex-shrink: 0;
+  gap: 6px;
+  height: 52px;
+  padding: 0 8px;
+  grid-column: 2;
   background: rgba(255,255,255,.72);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -318,35 +318,35 @@ body {
 
 .tb-btn {
   position: relative;
-  height: 34px; min-width: 34px;
+  height: 40px; min-width: 40px;
   padding: 0;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
   border: none; border-radius: 999px;
   background: transparent;
   color: #64748b;
-  font-family: inherit; font-size: .8rem; font-weight: 600;
+  font-family: inherit; font-size: .88rem; font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   transition: background .15s, color .15s;
 }
 .tb-btn:hover { background: rgba(15,23,42,.06); color: #111827; }
-.tb-btn--text { padding: 0 12px; }
+.tb-btn--text { padding: 0 16px; }
 .tb-btn--active { background: rgba(137,75,244,.12); color: var(--accent); }
 
 .tb-sep {
-  width: 1px; height: 20px;
+  width: 1px; height: 24px;
   background: rgba(15,23,42,.10);
-  margin: 0 3px;
+  margin: 0 4px;
   flex-shrink: 0;
 }
 
 .tb-avatar {
-  width: 34px; height: 34px;
+  width: 40px; height: 40px;
   border: none; border-radius: 50%;
   overflow: hidden;
   background: var(--accent-light);
   color: var(--accent);
-  font-family: inherit; font-size: .85rem; font-weight: 700;
+  font-family: inherit; font-size: 1rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   padding: 0;
@@ -369,8 +369,8 @@ body {
 
 .tb-bell-badge {
   position: absolute;
-  top: 0; right: 0;
-  min-width: 16px; height: 16px;
+  top: 2px; right: 2px;
+  min-width: 17px; height: 17px;
   background: var(--red);
   color: #fff;
   font-size: .6rem; font-weight: 700;
@@ -462,7 +462,7 @@ body {
   }
 
   .tb-store__label { display: none; }
-  .tb-btn--text.tb-store { padding: 0 9px; }
+  .tb-btn--text.tb-store { padding: 0 11px; }
 }
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    THEME PAGE — no padding, full height
@@ -545,3 +545,10 @@ html[data-theme="dark"] .sb-logout:hover { background: rgba(239,68,68,.15); colo
 html[data-theme="dark"] .sb--collapsed .sb-section + .sb-section { border-top-color: #262a36; }
 html[data-theme="dark"] .sb-logo__full,
 html[data-theme="dark"] .sb-logo__icon { filter: invert(1); }
+
+/* الحبة في الوسط: على الشاشات الصغيرة نخبي العنوان لتتسع */
+@media (max-width: 560px) {
+  .topbar { grid-template-columns: 1fr; justify-items: center; }
+  .topbar__title { display: none; }
+  .tb-pill { grid-column: 1; }
+}

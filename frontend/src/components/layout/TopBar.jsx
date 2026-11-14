@@ -17,37 +17,37 @@ const svgProps = {
 };
 
 const IconExternal = () => (
-  <svg width="15" height="15" {...svgProps}>
+  <svg width="17" height="17" {...svgProps}>
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
     <polyline points="15 3 21 3 21 9" />
     <line x1="10" y1="14" x2="21" y2="3" />
   </svg>
 );
 const IconGlobe = () => (
-  <svg width="16" height="16" {...svgProps}>
+  <svg width="18" height="18" {...svgProps}>
     <circle cx="12" cy="12" r="10" />
     <line x1="2" y1="12" x2="22" y2="12" />
     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
   </svg>
 );
 const IconChevron = () => (
-  <svg width="11" height="11" {...svgProps} strokeWidth={2.5}>
+  <svg width="12" height="12" {...svgProps} strokeWidth={2.5}>
     <polyline points="6 9 12 15 18 9" />
   </svg>
 );
 const IconMoon = () => (
-  <svg width="17" height="17" {...svgProps}>
+  <svg width="20" height="20" {...svgProps}>
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 );
 const IconSun = () => (
-  <svg width="17" height="17" {...svgProps}>
+  <svg width="20" height="20" {...svgProps}>
     <circle cx="12" cy="12" r="4.5" />
     <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
   </svg>
 );
 const IconBell = () => (
-  <svg width="17" height="17" {...svgProps}>
+  <svg width="20" height="20" {...svgProps}>
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
@@ -89,7 +89,6 @@ function TopBar({ title = "Dashboard", newOrdersCount = 0, onBellClick, store, o
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const menuSide = dir === "rtl" ? "tb-menu--start" : "tb-menu--end";
   const currentLang = LANGS.find((l) => l.code === lang) || LANGS[0];
   const initial = store?.name?.charAt(0)?.toUpperCase() || "S";
   const isDark = theme === "dark";
@@ -136,7 +135,7 @@ function TopBar({ title = "Dashboard", newOrdersCount = 0, onBellClick, store, o
           </button>
 
           {open === "lang" && (
-            <div className={`tb-menu ${menuSide}`} role="menu" dir={dir}>
+            <div className="tb-menu tb-menu--start" role="menu" dir={dir}>
               {LANGS.map((l) => (
                 <button
                   key={l.code}
@@ -195,7 +194,7 @@ function TopBar({ title = "Dashboard", newOrdersCount = 0, onBellClick, store, o
           </button>
 
           {open === "account" && (
-            <div className={`tb-menu ${menuSide}`} role="menu" dir={dir}>
+            <div className="tb-menu tb-menu--end" role="menu" dir={dir}>
               <div className="tb-menu__head">
                 <strong>{store?.name || t("My store")}</strong>
                 {store?.slug && <span>{store.slug}</span>}
