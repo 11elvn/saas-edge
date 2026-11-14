@@ -1,6 +1,6 @@
 // ============================================================
-// 📁 pages/Theme.jsx — Live store preview (تصميم جديد)
-// Layout: desktop preview (left) + mobile frame (right) + footer bar
+// 📁 pages/Theme.jsx — Live store preview (Overview style)
+// Layout: desktop preview + mobile frame + info cards
 // ============================================================
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,226 +10,187 @@ const token = () => localStorage.getItem("token");
 
 // ── CSS ────────────────────────────────────────────────────────
 const CSS = `
-@keyframes th-spin    { to { transform: rotate(360deg); } }
-@keyframes th-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+@keyframes th-spin { to { transform: rotate(360deg); } }
 
-/* ══ PAGE WRAPPER ══ */
+/* ══ PAGE WRAPPER (same look as .ov-page) ══ */
 .th-page {
-  height: calc(100vh - 60px);
-  margin: -28px -32px; /* يلغي حشوة .app-layout__content ليستعمل الصفحة كاملة */
-  background: #fff;
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  padding: 16px 28px 16px;
+  display: flex; flex-direction: column; gap: 20px;
+  position: relative; border-radius: 22px; padding: 24px;
+  height: calc(100vh - 60px - 56px);
+  min-height: 560px;
+  border: 1px solid rgba(255,255,255,.9);
+  background:
+    radial-gradient(520px 340px at 92% -6%, rgba(167,139,250,.55), transparent 70%),
+    radial-gradient(460px 360px at -4% 105%, rgba(196,181,253,.5), transparent 70%),
+    radial-gradient(380px 260px at 55% 48%, rgba(221,214,254,.45), transparent 70%),
+    #faf7ff;
+  box-shadow: 0 10px 40px rgba(137,75,244,.10), inset 0 1px 0 rgba(255,255,255,.9);
   font-family: 'Inter', sans-serif;
-  color: #1f1747;
+  color: #111827;
+  overflow: hidden;
 }
-.th-wrap { flex: 1; min-height: 0; width: 100%; max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; }
 
 /* ══ HEADER ══ */
 .th-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap; margin-bottom: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; flex-shrink: 0;
 }
-.th-title { font-size: 1.3rem; font-weight: 700; color: #1f1747; margin: 0; }
-.th-sub   { font-size: .82rem; color: #8b7fae; margin: 3px 0 0; }
-.th-actions { display: flex; gap: 8px; align-items: center; }
+.th-title { font-size: 1.5rem; font-weight: 700; color: #111827; line-height: 1.2; margin: 0; }
+.th-sub   { font-size: .82rem; color: #6b7280; margin: 4px 0 0; }
+.th-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.th-tabs {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 10px;
+}
+.th-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border: none; border-radius: 8px; background: transparent;
+  color: #6b7280; font-size: .8rem; font-weight: 500; cursor: pointer;
+  font-family: inherit; transition: background .15s, color .15s; white-space: nowrap;
+}
+.th-tab:hover { color: #111827; }
+.th-tab:focus-visible { outline: 2px solid #894bf4; outline-offset: 1px; }
+.th-tab.is-on, .th-tab.is-on:hover { background: #894bf4; color: #fff; }
+
 .th-btn-edit {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 10px; border: 1px solid #5b3fd6;
-  background: #6c5ce7; color: #fff;
-  font-size: .83rem; font-weight: 600;
+  padding: 9px 18px; border-radius: 10px; border: none;
+  background: #894bf4; color: #fff;
+  font-size: .8rem; font-weight: 600;
   cursor: pointer; font-family: inherit; transition: background .15s;
+  box-shadow: 0 4px 14px rgba(137,75,244,.25);
 }
-.th-btn-edit:hover { background: #5b4bd6; }
+.th-btn-edit:hover { background: #7c3aed; }
+.th-btn-edit:focus-visible, .th-btn-view:focus-visible { outline: 2px solid #894bf4; outline-offset: 2px; }
 .th-btn-view {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 16px; border-radius: 10px;
-  border: 1px solid #e0d9f7; background: #fff;
-  color: #4b35c4; font-size: .83rem; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: all .15s;
+  border: 1px solid rgba(255,255,255,.9);
+  background: rgba(255,255,255,.65);
+  color: #4c1d95; font-size: .8rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: background .15s;
   text-decoration: none;
 }
-.th-btn-view:hover { background: #f5f3ff; border-color: #cabdf7; }
+.th-btn-view:hover { background: rgba(255,255,255,.95); }
+
+/* ══ GLASS CARD ══ */
+.th-card {
+  background: rgba(255,255,255,.62);
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(137,75,244,.07);
+  min-width: 0;
+}
 
 /* ══ STAGE ══ */
 .th-stage {
-  position: relative; background: #f4f1fe; border-radius: 16px;
-  flex: 1; min-height: 0; overflow: hidden;
-  display: flex; justify-content: center; align-items: flex-start;
-  gap: 28px; padding: 58px 32px 18px;
-}
-.th-float {
-  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-  display: flex; background: #fff; border: 1px solid #e0d9f7;
-  border-radius: 99px; padding: 3px; gap: 2px; z-index: 30;
-}
-.th-float button {
-  display: inline-flex; align-items: center; gap: 6px;
-  border: none; background: transparent; color: #8b7fae;
-  font-size: .76rem; font-weight: 600; font-family: inherit;
-  padding: 7px 15px; border-radius: 99px; cursor: pointer; transition: all .15s;
-}
-.th-float button:hover { color: #5b3fd6; }
-.th-float button.is-on { background: #6c5ce7; color: #fff; }
-
-/* ══ DESKTOP BROWSER ══ */
-.th-desktop {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px #e0d9f7;
+  flex: 1; min-height: 0; padding: 16px;
+  display: flex; justify-content: center; align-items: stretch; gap: 20px;
   overflow: hidden;
-  min-height: 0;
-  max-height: 100%;
 }
 
-/* Chrome bar */
-.th-chrome {
-  background: #ebebeb;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border-bottom: 1px solid #ddd;
-  flex-shrink: 0;
-}
-.th-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.th-url-bar {
-  flex: 1; margin: 0 10px;
-  background: #fff; border: 1px solid #d0d0d0;
-  border-radius: 6px; padding: 5px 12px;
-  font-size: 11px; color: #555;
-  display: flex; align-items: center; gap: 6px;
-  overflow: hidden; white-space: nowrap; font-family: monospace;
-}
-
-/* Desktop scroll content */
-.th-desktop-store {
-  flex: 1;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  direction: rtl;
-}
-.th-desktop-store::-webkit-scrollbar { width: 6px; }
-.th-desktop-store::-webkit-scrollbar-track { background: #f1f1f1; }
-.th-desktop-store::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 99px; }
-.th-desktop-store::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
-
-/* ══ STORE CONTENT SHARED ══ */
-
-/* Announcement bar */
-.th-announce { overflow: hidden; }
-.th-announce-track {
-  display: flex; gap: 40px; width: max-content;
-  animation: th-marquee 18s linear infinite;
-}
-
-/* Navbar */
-.th-navbar {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  background: #fff;
-}
-
-/* Hero */
-.th-hero {
-  position: relative; overflow: hidden;
-  display: flex; align-items: flex-end; justify-content: center;
-}
-.th-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.th-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.6) 100%);
-}
-.th-hero-cta {
-  position: absolute; bottom: 16px;
-  display: flex; justify-content: center; width: 100%;
-}
-
-/* Trust badges */
-.th-trust { display: grid; }
-.th-trust-item {
+/* ══ BROWSER FRAMES ══ */
+.th-desktop {
+  flex: 1; min-width: 0; max-width: 700px;
   display: flex; flex-direction: column;
-  align-items: center; gap: 4px; text-align: center;
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(137,75,244,.12), 0 6px 24px rgba(137,75,244,.08);
+  overflow: hidden; min-height: 0;
 }
-
-/* Product card */
-.th-prod-card {
-  border-radius: 10px; overflow: hidden;
-  border: 1px solid #eee; background: #fff;
-}
-.th-prod-img  { width: 100%; object-fit: cover; display: block; }
-.th-prod-ph   { width: 100%; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
-
-/* Category card */
-.th-cat-card {
-  border-radius: 10px; overflow: hidden;
-  border: 1px solid #eee; background: #fff;
-  position: relative;
-}
-
-/* ══ STAGE DEVICES ══ */
-.th-stage .th-desktop { flex: 1; max-width: 700px; height: 100%; max-height: none; }
 .th-stage.is-desktop .th-desktop { max-width: 980px; }
-/* إطار الهاتف — نفس شكل معاينة الموبايل في ThemeEdit (نافذة متصفح ضيقة) */
 .th-m-frame {
-  width: 300px; height: 100%; flex-shrink: 0;
+  width: 300px; flex-shrink: 0;
   display: flex; flex-direction: column;
-  background: #fff; border-radius: 10px; overflow: hidden;
-  box-shadow: 0 0 0 1px #e0d9f7;
+  background: #fff; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(137,75,244,.12), 0 6px 24px rgba(137,75,244,.08);
 }
 .th-stage.is-mobile .th-m-frame { width: 420px; max-width: 100%; }
 .th-m-wrap { position: relative; flex: 1; overflow: hidden; }
 
-/* ══ LIVE PREVIEW (iframe) ══ */
-.th-stage .th-desktop-store { position: relative; overflow: hidden; direction: ltr; }
+.th-chrome {
+  background: #f3f0fb;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: 1px solid #ebe7f7;
+  flex-shrink: 0;
+}
+.th-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.th-url-bar {
+  flex: 1; min-width: 0; margin: 0 10px;
+  background: #fff; border: 1px solid #e5e0f5;
+  border-radius: 7px; padding: 5px 12px;
+  font-size: 11px; color: #6b7280;
+  display: flex; align-items: center; gap: 6px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  font-family: monospace;
+}
+.th-desktop-store { flex: 1; position: relative; overflow: hidden; direction: ltr; min-height: 0; }
 
 /* ══ INFO CARDS ══ */
-.th-info { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; margin-top: 12px; flex-shrink: 0; }
-.th-card-box {
-  border: 1px solid #ebe7f7; border-radius: 14px; background: #fff;
-  padding: 10px 16px; display: flex; align-items: center;
-}
+.th-info { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; flex-shrink: 0; }
+.th-info .th-card { padding: 14px 18px; display: flex; align-items: center; }
 .th-theme-ico {
-  width: 40px; height: 40px; border-radius: 12px; background: #ece7fb; color: #5b3fd6;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 14px;
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #ede9ff; color: #894bf4;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-right: 14px;
 }
 .th-theme-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.th-theme-name { font-size: 1rem; font-weight: 700; color: #1f1747; }
+.th-theme-name { font-size: 1rem; font-weight: 700; color: #111827; }
 .th-badge-live {
   font-size: .68rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
-  background: #e8f7ee; color: #157a3e;
+  background: #ecfdf5; color: #059669;
 }
-.th-saved { font-size: .76rem; color: #8b7fae; margin-top: 3px; }
+.th-saved { font-size: .76rem; color: #9ca3af; margin-top: 3px; }
 .th-stats { justify-content: space-around; gap: 6px; }
 .th-stat { text-align: center; min-width: 0; }
-.th-stat-v { font-size: .95rem; font-weight: 700; color: #1f1747; line-height: 1.25; }
-.th-stat-l { font-size: .68rem; color: #8b7fae; margin-top: 3px; }
-.th-stat-sep { width: 1px; height: 30px; background: #ebe7f7; flex-shrink: 0; }
-.th-dots { display: flex; gap: 4px; justify-content: center; }
-.th-dots i { width: 20px; height: 20px; border-radius: 50%; display: block; border: 1px solid rgba(0,0,0,.08); }
-@media (max-width: 980px) { .th-info { grid-template-columns: 1fr; } }
-@media (max-width: 768px) { .th-page { margin: -20px -16px; padding: 12px 16px; } }
+.th-stat-v { font-size: 1.05rem; font-weight: 700; color: #111827; line-height: 1.25; }
+.th-stat-l { font-size: .72rem; color: #9ca3af; margin-top: 3px; font-weight: 500; }
+.th-stat-sep { width: 1px; height: 30px; background: rgba(137,75,244,.12); flex-shrink: 0; }
+.th-dots { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.th-dots i {
+  width: 20px; height: 20px; border-radius: 50%; display: block;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.08);
+}
+
+@media (max-width: 980px) {
+  .th-info { grid-template-columns: 1fr; }
+  .th-page { height: auto; min-height: calc(100vh - 60px - 56px); }
+  .th-stage { height: 560px; flex: none; }
+}
+@media (max-width: 768px) {
+  .th-page { min-height: calc(100vh - 60px - 40px); }
+}
+@media (max-width: 520px) {
+  .th-page { padding: 14px; border-radius: 16px; }
+  .th-stage { padding: 10px; gap: 10px; }
+  .th-stats { flex-wrap: wrap; row-gap: 12px; }
+  .th-m-frame, .th-stage.is-mobile .th-m-frame { width: 100%; }
+}
+@media (max-width: 700px) {
+  .th-stage.is-both .th-desktop { display: none; }
+  .th-stage.is-both .th-m-frame { width: 100%; }
+}
 
 /* Loading */
 .th-loading {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; height: 60vh; gap: 14px;
-  color: #9ca3af; font-size: .85rem;
+  justify-content: center; height: 300px; gap: 16px;
+  color: #6b7280; font-size: .9rem;
 }
 .th-spinner {
-  width: 28px; height: 28px;
-  border: 3px solid #ece7fb; border-top-color: #6c5ce7;
+  width: 32px; height: 32px;
+  border: 3px solid #f0f0f0; border-top-color: #894bf4;
   border-radius: 50%; animation: th-spin .7s linear infinite;
 }
+@media (prefers-reduced-motion: reduce) { .th-spinner { animation-duration: 2s; } }
 `;
 
 // ── Live Store Preview (iframe) ────────────────────────────────
-// يعرض المتجر الحقيقي (/store/:slug) بتصميمه الحالي كما عدّله المستخدم.
-// الـ iframe يُعرض بعرض "افتراضي" (حاسوب 1280 / هاتف 390) ثم يُصغَّر ليناسب الإطار.
 function ScaledFrame({ src, baseWidth, title }) {
   const boxRef = useRef(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -275,7 +236,7 @@ function ScaledFrame({ src, baseWidth, title }) {
           />
         )
       ) : (
-        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#8b7fae", fontSize: 13 }}>
+        <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: 13 }}>
           لا يوجد متجر بعد
         </div>
       )}
@@ -326,7 +287,6 @@ function Theme() {
       })
     : null;
 
-  // ألوان وخطوط الثيم الحقيقية كما حفظها المستخدم في ThemeEdit (themeConfig.styles)
   const st = store?.themeConfig?.styles || {};
   const ff = st.fontFamily || store?.fontFamily || "Cairo";
   const PALETTE = [
@@ -347,52 +307,54 @@ function Theme() {
     { id: "both",    label: "Both",    icon: <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="11" rx="2"/><rect x="14" y="9" width="8" height="12" rx="2"/></svg> },
   ];
 
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+
   return (
     <div className="th-page" dir="ltr">
       <style>{CSS}</style>
-      <div className="th-wrap">
 
-        {/* ══ HEADER ══ */}
-        <div className="th-head">
-          <div>
-            <h1 className="th-title">Themes</h1>
-            <p className="th-sub">Control how your store looks on every screen.</p>
-          </div>
-          <div className="th-actions">
-            {storeUrl && (
-              <a href={storeUrl} target="_blank" rel="noreferrer" className="th-btn-view">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-                View your store
-              </a>
-            )}
-            <button className="th-btn-edit" onClick={() => navigate("/theme/edit")}>
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Edit theme
-            </button>
-          </div>
+      {/* ══ HEADER ══ */}
+      <div className="th-head">
+        <div>
+          <h1 className="th-title">Themes</h1>
+          <p className="th-sub">Control how your store looks on every screen.</p>
         </div>
-
-        {/* ══ PREVIEW STAGE ══ */}
-        <div className={`th-stage is-${view}`}>
-          <div className="th-float" role="tablist" aria-label="Preview mode">
+        <div className="th-actions">
+          <div className="th-tabs" role="tablist" aria-label="Preview mode">
             {VIEWS.map(v => (
-              <button key={v.id} role="tab" aria-selected={view === v.id}
-                className={view === v.id ? "is-on" : ""} onClick={() => setView(v.id)}>
+              <button
+                key={v.id}
+                role="tab"
+                aria-selected={view === v.id}
+                className={`th-tab ${view === v.id ? "is-on" : ""}`}
+                onClick={() => setView(v.id)}
+              >
                 {v.icon}{v.label}
               </button>
             ))}
           </div>
+          {storeUrl && (
+            <a href={storeUrl} target="_blank" rel="noreferrer" className="th-btn-view">
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              View your store
+            </a>
+          )}
+          <button className="th-btn-edit" onClick={() => navigate("/theme/edit")}>
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit theme
+          </button>
+        </div>
+      </div>
 
-          {showDesktop && (
-          <>
-          {/* ── Desktop Browser ── */}
+      {/* ══ PREVIEW STAGE ══ */}
+      <div className={`th-card th-stage is-${view}`}>
+        {showDesktop && (
           <div className="th-desktop">
-            {/* Chrome bar */}
             <div className="th-chrome">
               <div className="th-dot" style={{ background: "#ff5f57" }} />
               <div className="th-dot" style={{ background: "#febc2e" }} />
@@ -401,18 +363,16 @@ function Theme() {
                 <svg width="9" height="9" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
                   <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                {typeof window !== "undefined" ? window.location.hostname : "moo.tassyir.io"}/store/{store?.slug || "my-store"}
+                {host || "moo.tassyir.io"}/store/{store?.slug || "my-store"}
               </div>
             </div>
-            {/* Store content */}
             <div className="th-desktop-store">
               <ScaledFrame src={storeUrl} baseWidth={1280} title="Desktop preview" />
             </div>
           </div>
-          </>
-          )}
+        )}
 
-          {showMobile && (
+        {showMobile && (
           <div className="th-m-frame">
             <div className="th-chrome">
               <div className="th-dot" style={{ background: "#ff5f57" }} />
@@ -422,57 +382,56 @@ function Theme() {
                 <svg width="9" height="9" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
                   <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                {typeof window !== "undefined" ? window.location.hostname : ""}/store/{store?.slug || "my-store"}
+                {host}/store/{store?.slug || "my-store"}
               </div>
             </div>
             <div className="th-m-wrap">
               <ScaledFrame src={storeUrl} baseWidth={393} title="Mobile preview" />
             </div>
           </div>
-          )}
-        </div>
-
-        {/* ══ INFO ══ */}
-        <div className="th-info">
-          <div className="th-card-box">
-            <div className="th-theme-ico">
-              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div className="th-theme-name-row">
-                <span className="th-theme-name">{store?.name ? `${store.name}'s theme` : "My Theme"}</span>
-                <span className="th-badge-live">Live</span>
-              </div>
-              {savedDate && <div className="th-saved">Last saved: {savedDate}</div>}
-            </div>
-          </div>
-
-          <div className="th-card-box th-stats">
-            <div className="th-stat">
-              <div className="th-dots">
-                {PALETTE.map(([n, c]) => <i key={n} style={{ background: c }} title={`${n} ${c}`} />)}
-              </div>
-              <div className="th-stat-l">Colors</div>
-            </div>
-            <div className="th-stat-sep" />
-            <div className="th-stat">
-              <div className="th-stat-v" style={{ fontFamily: `'${ff}', sans-serif` }}>Aa</div>
-              <div className="th-stat-l">{ff}</div>
-            </div>
-            <div className="th-stat-sep" />
-            <div className="th-stat">
-              <div className="th-stat-v">{products.length}</div>
-              <div className="th-stat-l">Products</div>
-            </div>
-            <div className="th-stat-sep" />
-            <div className="th-stat">
-              <div className="th-stat-v">{categories.length}</div>
-              <div className="th-stat-l">Categories</div>
-            </div>
-          </div>
-        </div>
-
+        )}
       </div>
+
+      {/* ══ INFO ══ */}
+      <div className="th-info">
+        <div className="th-card">
+          <div className="th-theme-ico">
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div className="th-theme-name-row">
+              <span className="th-theme-name">{store?.name ? `${store.name}'s theme` : "My Theme"}</span>
+              <span className="th-badge-live">Live</span>
+            </div>
+            {savedDate && <div className="th-saved">Last saved: {savedDate}</div>}
+          </div>
+        </div>
+
+        <div className="th-card th-stats">
+          <div className="th-stat">
+            <div className="th-dots">
+              {PALETTE.map(([n, c]) => <i key={n} style={{ background: c }} title={`${n} ${c}`} />)}
+            </div>
+            <div className="th-stat-l">Colors</div>
+          </div>
+          <div className="th-stat-sep" />
+          <div className="th-stat">
+            <div className="th-stat-v" style={{ fontFamily: `'${ff}', sans-serif` }}>Aa</div>
+            <div className="th-stat-l">{ff}</div>
+          </div>
+          <div className="th-stat-sep" />
+          <div className="th-stat">
+            <div className="th-stat-v">{products.length}</div>
+            <div className="th-stat-l">Products</div>
+          </div>
+          <div className="th-stat-sep" />
+          <div className="th-stat">
+            <div className="th-stat-v">{categories.length}</div>
+            <div className="th-stat-l">Categories</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
