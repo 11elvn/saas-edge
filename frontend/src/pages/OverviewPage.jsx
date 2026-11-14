@@ -14,12 +14,12 @@ const HOUR = 3600 * 1000;
 const DAY  = 24 * HOUR;
 
 const PERIODS = [
-  { key: "24h", label: "آخر 24 ساعة", count: 24, step: HOUR },
-  { key: "7d",  label: "آخر 7 أيام",  count: 7,  step: DAY  },
-  { key: "30d", label: "آخر 30 يوم",  count: 30, step: DAY  },
+  { key: "24h", label: "Last 24h", count: 24, step: HOUR },
+  { key: "7d",  label: "Last 7 days",  count: 7,  step: DAY  },
+  { key: "30d", label: "Last 30 days",  count: 30, step: DAY  },
 ];
 
-const CITY_BY_ID = Object.fromEntries(ALGERIAN_CITIES.map((c) => [c.id, c.name]));
+const CITY_BY_ID = ALGERIA_MAP.names;
 const ID_BY_NAME = {
   ...Object.fromEntries(ALGERIAN_CITIES.map((c) => [c.name, c.id])),
   "الجزائر": "16",
@@ -186,7 +186,7 @@ function summarise(orders, from, to) {
 
 function makeDelta(cur, prev, invert = false) {
   if (prev === 0 && cur === 0) return null;
-  if (prev === 0) return { text: "جديد", tone: invert ? "bad" : "good", arrow: "↑" };
+  if (prev === 0) return { text: "New", tone: invert ? "bad" : "good", arrow: "↑" };
   const pct = Math.round(((cur - prev) / prev) * 100);
   if (pct === 0) return { text: "0%", tone: "flat", arrow: "" };
   const up = pct > 0;
@@ -305,10 +305,10 @@ function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
     <div className="ov-card">
       <div className="ov-card__head">
         <div>
-          <p className="ov-card__title">منحنى المبيعات</p>
+          <p className="ov-card__title">Sales trend</p>
           <p className="ov-card__big"><span className="ov-num">{fmt(totalSales)}</span> DA</p>
         </div>
-        <span className="ov-card__hint">{periodLabel} · الطلبات الموصّلة</span>
+        <span className="ov-card__hint">{periodLabel} · Delivered orders</span>
       </div>
 
       <div className="ov-trend__plot">
@@ -316,7 +316,7 @@ function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
           className="ov-trend__svg"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label="منحنى المبيعات"
+          aria-label="Sales trend"
           onPointerMove={onMove}
           onPointerDown={onMove}
           onPointerLeave={() => setHover(null)}
@@ -359,31 +359,31 @@ function SalesTrend({ buckets, totalSales, deliveredCount, periodLabel }) {
           )}
         </svg>
 
-        {maxVal === 0 && <div className="ov-trend__empty">لا توجد مبيعات في هذه الفترة</div>}
+        {maxVal === 0 && <div className="ov-trend__empty">No sales in this period</div>}
 
         {hover !== null && (
           <div className="ov-trend__tip" style={{ left: `${tipLeft}%`, transform: "translateX(-50%)" }}>
             <span>{buckets[hover].label}</span><br />
             <b><span className="ov-num" style={{ color: "#fff" }}>{fmt(buckets[hover].sales)}</span> DA</b><br />
-            <span><span className="ov-num">{buckets[hover].orders}</span> طلب</span>
+            <span><span className="ov-num">{buckets[hover].orders}</span> orders</span>
           </div>
         )}
       </div>
 
       <div className="ov-trend__sum">
         <div>
-          <p className="ov-trend__sum-label">طلبات موصّلة</p>
+          <p className="ov-trend__sum-label">Delivered orders</p>
           <p className="ov-trend__sum-value"><span className="ov-num">{deliveredCount}</span></p>
         </div>
         <div>
-          <p className="ov-trend__sum-label">متوسط قيمة الطلب</p>
+          <p className="ov-trend__sum-label">Average order value</p>
           <p className="ov-trend__sum-value">
             <span className="ov-num">{deliveredCount > 0 ? fmt(totalSales / deliveredCount) : "—"}</span>
             {deliveredCount > 0 && " DA"}
           </p>
         </div>
         <div>
-          <p className="ov-trend__sum-label">الذروة</p>
+          <p className="ov-trend__sum-label">Peak</p>
           <p className="ov-trend__sum-value">
             <span className="ov-num">{best.sales > 0 ? best.label : "—"}</span>
           </p>
@@ -424,8 +424,8 @@ function AlgeriaMap({ byCity, periodLabel }) {
     <div className="ov-card">
       <div className="ov-card__head">
         <div>
-          <p className="ov-card__title">الطلبات حسب الولاية</p>
-          <p className="ov-card__big"><span className="ov-num">{total}</span> طلب</p>
+          <p className="ov-card__title">Orders by wilaya</p>
+          <p className="ov-card__big"><span className="ov-num">{total}</span> orders</p>
         </div>
         <span className="ov-card__hint">{periodLabel}</span>
       </div>
@@ -435,7 +435,7 @@ function AlgeriaMap({ byCity, periodLabel }) {
           className="ov-map__svg"
           viewBox={ALGERIA_MAP.viewBox}
           role="img"
-          aria-label="خريطة الجزائر"
+          aria-label="Map of Algeria"
           onPointerLeave={() => setHover(null)}
         >
           {ids.map((id) => (
@@ -455,7 +455,7 @@ function AlgeriaMap({ byCity, periodLabel }) {
         {hover && (
           <div className="ov-map__tip" style={{ left: hover.x, top: hover.y }}>
             <b>{CITY_BY_ID[hover.id]}</b><br />
-            <span><span className="ov-num">{info?.orders || 0}</span> طلب</span>
+            <span><span className="ov-num">{info?.orders || 0}</span> orders</span>
             {info?.sales > 0 && <span> · <span className="ov-num">{fmt(info.sales)}</span> DA</span>}
           </div>
         )}
@@ -468,7 +468,7 @@ function AlgeriaMap({ byCity, periodLabel }) {
       </div>
 
       {top.length === 0 ? (
-        <p className="ov-top__empty">لا توجد طلبات في هذه الفترة</p>
+        <p className="ov-top__empty">No orders in this period</p>
       ) : (
         <ul className="ov-top">
           {top.map(([id, v]) => (
@@ -550,7 +550,7 @@ function OverviewPage() {
     return (
       <div className="ov-loading">
         <div className="ov-loading__spinner" />
-        <p>جاري تحميل البيانات...</p>
+        <p>Loading data...</p>
       </div>
     );
   }
@@ -559,10 +559,10 @@ function OverviewPage() {
   const cancelRate = cur.orders > 0 ? Math.round((cur.cancelled / cur.orders) * 100) : 0;
 
   return (
-    <div className="ov-page">
+    <div className="ov-page" dir="ltr">
 
       <div className="ov-head">
-        <h2 className="ov-head__title">نظرة عامة</h2>
+        <h2 className="ov-head__title">Overview</h2>
         <div className="ov-tabs" role="tablist">
           {PERIODS.map((p) => (
             <button
@@ -578,29 +578,29 @@ function OverviewPage() {
 
       <div className="ov-stats">
         <StatCard
-          label="الطلبات"
+          label="Orders"
           value={cur.orders}
           delta={makeDelta(cur.orders, prev.orders)}
-          note="مقارنة بالفترة السابقة"
+          note="vs previous period"
         />
         <StatCard
-          label="المبيعات"
+          label="Sales"
           value={fmt(cur.sales)}
           unit="DA"
           delta={makeDelta(cur.sales, prev.sales)}
-          note="الطلبات الموصّلة"
+          note="Delivered orders"
         />
         <StatCard
-          label="قيد المعالجة"
+          label="Processing"
           value={cur.pending}
           delta={makeDelta(cur.pending, prev.pending)}
-          note="بانتظار التأكيد"
+          note="Awaiting confirmation"
         />
         <StatCard
-          label="الملغاة"
+          label="Cancelled"
           value={cur.cancelled}
           delta={makeDelta(cur.cancelled, prev.cancelled, true)}
-          note={cur.orders > 0 ? `${cancelRate}% من الطلبات` : "لا توجد طلبات"}
+          note={cur.orders > 0 ? `${cancelRate}% of orders` : "No orders"}
         />
       </div>
 
