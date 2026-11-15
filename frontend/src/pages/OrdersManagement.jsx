@@ -1,5 +1,6 @@
 // ============================================================
-// 📁 pages/OrdersManagement.jsx — Day 21
+// 📁 pages/OrdersManagement.jsx — Orders (Overview style)
+// فلاتر الحالة + بحث + جدول بصفوف خفيفة + أزرار إجراءات دائرية
 // ============================================================
 import { useState, useEffect } from "react";
 
@@ -13,15 +14,162 @@ const STATUS_CONFIG = {
   cancelled: { label: "ملغي",         color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
 };
 
+const FILTERS = [
+  { key: "all",       label: "الكل"  },
+  { key: "pending",   label: "معلق"  },
+  { key: "shipped",   label: "مشحون" },
+  { key: "delivered", label: "موصّل" },
+  { key: "cancelled", label: "ملغي"  },
+];
+
+// ── CSS ────────────────────────────────────────────────────────
+const CSS = `
+.od-page{
+  display:flex;flex-direction:column;gap:16px;
+  position:relative;border-radius:22px;padding:24px;
+  border:1px solid rgba(255,255,255,.9);
+  background:
+    radial-gradient(520px 340px at 92% -6%, rgba(167,139,250,.55), transparent 70%),
+    radial-gradient(460px 360px at -4% 105%, rgba(196,181,253,.5), transparent 70%),
+    radial-gradient(380px 260px at 55% 48%, rgba(221,214,254,.45), transparent 70%),
+    #faf7ff;
+  box-shadow:0 10px 40px rgba(137,75,244,.10), inset 0 1px 0 rgba(255,255,255,.9);
+  font-family:'Inter',sans-serif;color:#111827;
+}
+
+/* header */
+.od-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.od-title{font-size:1.5rem;font-weight:700;color:#111827;line-height:1.2;margin:0;}
+.od-sub{font-size:.82rem;color:#6b7280;margin:4px 0 0;}
+.od-circ{
+  width:42px;height:42px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.9);background:#fff;color:#6b7280;
+  box-shadow:0 2px 10px rgba(137,75,244,.10);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:color .15s,box-shadow .15s;
+}
+.od-circ:hover{color:#894bf4;box-shadow:0 4px 16px rgba(137,75,244,.18);}
+.od-circ:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
+
+/* filter chips */
+.od-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.od-chip{
+  display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 8px 0 16px;
+  border:1px solid rgba(255,255,255,.9);border-radius:999px;background:#fff;
+  box-shadow:0 2px 10px rgba(137,75,244,.10);
+  font-family:inherit;font-size:.85rem;font-weight:600;color:#374151;cursor:pointer;
+  transition:box-shadow .15s,color .15s;
+}
+.od-chip:hover{color:#894bf4;box-shadow:0 4px 16px rgba(137,75,244,.18);}
+.od-chip:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
+.od-chip__n{
+  min-width:24px;height:24px;padding:0 7px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#f4f1fe;color:#894bf4;font-size:.75rem;font-weight:700;
+}
+.od-chip.is-on,.od-chip.is-on:hover{background:#894bf4;color:#fff;box-shadow:0 4px 14px rgba(137,75,244,.28);}
+.od-chip.is-on .od-chip__n{background:rgba(255,255,255,.25);color:#fff;}
+
+/* search */
+.od-search{
+  display:flex;align-items:center;gap:10px;height:44px;padding:0 18px;
+  border:1px solid rgba(255,255,255,.9);border-radius:999px;background:#fff;
+  box-shadow:0 2px 10px rgba(137,75,244,.10);color:#9ca3af;
+}
+.od-search:focus-within{box-shadow:0 0 0 2px #894bf4;}
+.od-search input{
+  flex:1;min-width:0;border:none;outline:none;background:transparent;
+  font-family:inherit;font-size:.85rem;color:#111827;
+}
+.od-search input::placeholder{color:#9ca3af;}
+
+/* table card */
+.od-card{
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);border-radius:18px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 4px 20px rgba(137,75,244,.07);overflow:hidden;
+}
+.od-scroll{overflow-x:auto;}
+.od-grid{min-width:780px;}
+.od-row{
+  display:grid;grid-template-columns:1.5fr 1.5fr .8fr .9fr 1fr 1.1fr;
+  gap:12px;align-items:center;padding:12px 20px;font-size:.84rem;
+}
+.od-row + .od-row{border-top:1px solid #f1ecfd;}
+.od-row--head{font-size:.75rem;color:#9ca3af;font-weight:600;padding:14px 20px 10px;}
+.od-row:not(.od-row--head):hover{background:rgba(244,241,254,.55);}
+
+.od-cust{display:flex;align-items:center;gap:10px;min-width:0;}
+.od-av{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:#ede9ff;color:#894bf4;font-weight:700;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;
+}
+.od-name{font-weight:600;color:#111827;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-phone{font-size:.74rem;color:#9ca3af;margin:2px 0 0;direction:ltr;text-align:right;}
+.od-items{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.od-item{color:#374151;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-item small{color:#9ca3af;font-size:.74rem;}
+.od-var{color:#894bf4;font-size:.72rem;font-weight:600;}
+.od-city{color:#894bf4;font-weight:600;}
+.od-addr{color:#9ca3af;font-size:.72rem;margin:2px 0 0;}
+.od-price{font-weight:700;color:#10b981;white-space:nowrap;}
+
+.od-badge{
+  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;
+  border-radius:999px;border:1px solid;font-size:.72rem;font-weight:700;white-space:nowrap;
+  width:fit-content;
+}
+.od-badge i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+
+.od-acts{display:flex;gap:6px;align-items:center;}
+.od-ib{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:#fff;border:1px solid #ebe7f7;color:#6b7280;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.od-ib:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
+.od-ib--go{background:#894bf4;border-color:#894bf4;color:#fff;}
+.od-ib--go:hover{background:#7c3aed;border-color:#7c3aed;}
+.od-ib--no{color:#ef4444;}
+.od-ib--no:hover{background:#fef2f2;border-color:#fecaca;}
+.od-final{font-size:.72rem;color:#9ca3af;font-style:italic;}
+
+.od-foot{border-top:1px solid #f1ecfd;padding:12px 20px;font-size:.75rem;color:#9ca3af;}
+.od-foot strong{color:#374151;}
+.od-empty{padding:48px 20px;text-align:center;color:#9ca3af;font-size:.9rem;}
+
+@media (max-width:768px){
+  .od-page{padding:14px;border-radius:16px;}
+}
+`;
+
+// ── Icons ──────────────────────────────────────────────────────
+const ico = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", viewBox: "0 0 24 24" };
+const IconRefresh = () => (
+  <svg width="18" height="18" {...ico}>
+    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </svg>
+);
+const IconSearch = () => (
+  <svg width="18" height="18" {...ico}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+);
+const IconShip = () => (
+  <svg width="16" height="16" {...ico}>
+    <rect x="1" y="3" width="15" height="13" rx="1" /><path d="M16 8h4l3 3v5h-7V8z" />
+    <circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+  </svg>
+);
+const IconCheck = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><polyline points="20 6 9 17 4 12" /></svg>);
+const IconX     = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>);
+
 const StatusBadge = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || { label: status, color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" };
   return (
-    <span style={{
-      background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`,
-      padding: "3px 10px", borderRadius: 99, fontSize: ".72rem", fontWeight: 700,
-      display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color, display: "inline-block" }} />
+    <span className="od-badge" style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.border }}>
+      <i />
       {cfg.label}
     </span>
   );
@@ -32,6 +180,8 @@ const OrdersManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
   const [notif,   setNotif]   = useState(null);
+  const [filter,  setFilter]  = useState("all");
+  const [query,   setQuery]   = useState("");
 
   const notify = (msg, type = "success") => {
     setNotif({ msg, type });
@@ -82,17 +232,33 @@ const OrdersManagement = () => {
     </div>
   );
 
-  // إحصائيات سريعة
-  const stats = [
-    { label: "الكل",    count: orders.length,                                        color: "#111827" },
-    { label: "معلق",    count: orders.filter(o => o.status === "pending").length,   color: "#f59e0b" },
-    { label: "مشحون",   count: orders.filter(o => o.status === "shipped").length,   color: "#3b82f6" },
-    { label: "موصّل",   count: orders.filter(o => o.status === "delivered").length, color: "#10b981" },
-    { label: "ملغي",    count: orders.filter(o => o.status === "cancelled").length, color: "#ef4444" },
-  ];
+  // عدّادات الفلاتر
+  const counts = {
+    all:       orders.length,
+    pending:   orders.filter(o => o.status === "pending").length,
+    shipped:   orders.filter(o => o.status === "shipped").length,
+    delivered: orders.filter(o => o.status === "delivered").length,
+    cancelled: orders.filter(o => o.status === "cancelled").length,
+  };
+
+  // فلترة + بحث
+  const q = query.trim().toLowerCase();
+  const visible = orders.filter(o => {
+    if (filter !== "all" && o.status !== filter) return false;
+    if (!q) return true;
+    const hay = [
+      o.customerName,
+      o.phone,
+      o.shippingCity,
+      o.productId?.name,
+      ...(o.items || []).map(it => it.name),
+    ].filter(Boolean).join(" ").toLowerCase();
+    return hay.includes(q);
+  });
 
   return (
-    <div dir="rtl">
+    <div className="od-page" dir="rtl">
+      <style>{CSS}</style>
 
       {/* Toast */}
       {notif && (
@@ -101,147 +267,135 @@ const OrdersManagement = () => {
         </div>
       )}
 
-      {/* Stats */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        {stats.map(s => (
-          <div key={s.label} className="pp-card" style={{ padding: "14px 20px", flex: "1 1 80px", textAlign: "center", minWidth: 80 }}>
-            <p style={{ fontSize: "1.4rem", fontWeight: 700, color: s.color, margin: 0 }}>{s.count}</p>
-            <p style={{ fontSize: ".72rem", color: "#9ca3af", margin: 0 }}>{s.label}</p>
-          </div>
+      {/* ══ HEADER ══ */}
+      <div className="od-head">
+        <div>
+          <h1 className="od-title">الطلبات</h1>
+          <p className="od-sub">تابع وأدر طلبات متجرك.</p>
+        </div>
+        <button className="od-circ" onClick={fetchOrders} title="تحديث" aria-label="تحديث">
+          <IconRefresh />
+        </button>
+      </div>
+
+      {/* ══ FILTER CHIPS ══ */}
+      <div className="od-chips" role="tablist" aria-label="تصفية حسب الحالة">
+        {FILTERS.map(f => (
+          <button
+            key={f.key}
+            role="tab"
+            aria-selected={filter === f.key}
+            className={`od-chip${filter === f.key ? " is-on" : ""}`}
+            onClick={() => setFilter(f.key)}
+          >
+            {f.label}
+            <span className="od-chip__n">{counts[f.key]}</span>
+          </button>
         ))}
       </div>
 
-      {/* Table */}
-      <div className="pp-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div className="pp-card__header" style={{ padding: "16px 20px" }}>
-          <h2 className="pp-card__title">🛒 الطلبات</h2>
-          <button className="pp-btn pp-btn--ghost pp-btn--sm" onClick={fetchOrders}>🔄 تحديث</button>
-        </div>
+      {/* ══ SEARCH ══ */}
+      <label className="od-search">
+        <IconSearch />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="ابحث باسم الزبون أو الهاتف أو المنتج أو الولاية"
+        />
+      </label>
 
-        {orders.length === 0 ? (
-          <div className="pp-empty">
-            <span>📭</span>
-            <p>لا توجد طلبات بعد</p>
+      {/* ══ TABLE ══ */}
+      <div className="od-card">
+        {visible.length === 0 ? (
+          <div className="od-empty">
+            {orders.length === 0 ? "لا توجد طلبات بعد" : "لا توجد طلبات مطابقة"}
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "right", fontSize: ".84rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid #f0f0f0", background: "#f9fafb" }}>
-                  {["الزبون", "الهاتف", "المنتج", "الولاية", "المبلغ", "الحالة", "إجراءات"].map(h => (
-                    <th key={h} style={{ padding: "10px 16px", color: "#6b7280", fontWeight: 600, fontSize: ".75rem", whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, i) => (
-                  <tr key={order._id} style={{ borderBottom: "1px solid #f9fafb", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-
-                    {/* الزبون */}
-                    <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: "50%",
-                          background: "#111827", color: "#fff",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontWeight: 700, fontSize: ".85rem", flexShrink: 0,
-                        }}>
-                          {order.customerName?.charAt(0).toUpperCase()}
-                        </div>
-                        <span style={{ fontWeight: 600, color: "#111827" }}>{order.customerName}</span>
-                      </div>
-                    </td>
-
-                    {/* الهاتف */}
-                    <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontFamily: "monospace", background: "#f3f4f6", padding: "3px 8px", borderRadius: 6, fontSize: ".8rem", color: "#374151" }}>
-                        {order.phone}
-                      </span>
-                    </td>
-
-                    {/* المنتج — نعرضو items كاملين (كي تكون سلة بعدة منتجات) مع اللون/المقاس */}
-                    <td style={{ padding: "12px 16px", maxWidth: 220 }}>
-                      {order.items?.length > 0 ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                          {order.items.map((it, idx) => (
-                            <span key={idx} style={{ color: "#374151", fontSize: ".8rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {it.name} <span style={{ color: "#9ca3af" }}>×{it.quantity}</span>
-                              {(it.color || it.size) && (
-                                <span style={{ color: "#6366f1", fontSize: ".7rem", fontWeight: 600 }}>
-                                  {" "}({[it.color, it.size].filter(Boolean).join(" · ")})
-                                </span>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ color: "#374151", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* الولاية */}
-                    <td style={{ padding: "12px 16px" }}>
-                      <span style={{ color: "#6366f1", fontWeight: 600 }}>{order.shippingCity || "—"}</span>
-                      {order.address && <p style={{ color: "#9ca3af", fontSize: ".72rem", margin: 0 }}>{order.address}</p>}
-                    </td>
-
-                    {/* المبلغ */}
-                    <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
-                      <span style={{ fontWeight: 700, color: "#10b981", fontFamily: "monospace" }}>
-                        {(order.totalPrice || 0).toLocaleString()} دج
-                      </span>
-                    </td>
-
-                    {/* الحالة */}
-                    <td style={{ padding: "12px 16px" }}>
-                      <StatusBadge status={order.status} />
-                    </td>
-
-                    {/* الإجراءات */}
-                    <td style={{ padding: "12px 16px" }}>
-                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
-                        {order.status === "pending" && (
-                          <button className="pp-btn pp-btn--sm"
-                            style={{ background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }}
-                            onClick={() => handleUpdateStatus(order._id, "shipped")}>
-                            📦 شحن
-                          </button>
-                        )}
-                        {order.status === "shipped" && (
-                          <button className="pp-btn pp-btn--sm"
-                            style={{ background: "#f0fdf4", color: "#10b981", border: "1px solid #bbf7d0" }}
-                            onClick={() => handleUpdateStatus(order._id, "delivered")}>
-                            ✅ توصيل
-                          </button>
-                        )}
-                        {(order.status === "pending" || order.status === "shipped") && (
-                          <button className="pp-btn pp-btn--danger pp-btn--sm"
-                            onClick={() => handleUpdateStatus(order._id, "cancelled")}>
-                            ✕ إلغاء
-                          </button>
-                        )}
-                        {(order.status === "delivered" || order.status === "cancelled") && (
-                          <span style={{ fontSize: ".72rem", color: "#9ca3af", fontStyle: "italic" }}>نهائي</span>
-                        )}
-                      </div>
-                    </td>
-
-                  </tr>
+          <div className="od-scroll">
+            <div className="od-grid">
+              <div className="od-row od-row--head">
+                {["الزبون", "المنتج", "الولاية", "المبلغ", "الحالة", "إجراءات"].map(h => (
+                  <span key={h}>{h}</span>
                 ))}
-              </tbody>
-            </table>
+              </div>
 
-            <div style={{ borderTop: "1px solid #f0f0f0", padding: "10px 20px" }}>
-              <p style={{ fontSize: ".75rem", color: "#9ca3af", margin: 0 }}>
-                إجمالي <strong style={{ color: "#374151" }}>{orders.length}</strong> طلب
-              </p>
+              {visible.map(order => (
+                <div className="od-row" key={order._id}>
+
+                  {/* الزبون + الهاتف */}
+                  <div className="od-cust">
+                    <span className="od-av">{order.customerName?.charAt(0).toUpperCase()}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <p className="od-name">{order.customerName}</p>
+                      <p className="od-phone">{order.phone}</p>
+                    </div>
+                  </div>
+
+                  {/* المنتج — items كاملين مع اللون/المقاس */}
+                  <div className="od-items">
+                    {order.items?.length > 0 ? (
+                      order.items.map((it, idx) => (
+                        <span key={idx} className="od-item">
+                          {it.name} <small>×{it.quantity}</small>
+                          {(it.color || it.size) && (
+                            <span className="od-var"> ({[it.color, it.size].filter(Boolean).join(" · ")})</span>
+                          )}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="od-item">
+                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* الولاية */}
+                  <div>
+                    <span className="od-city">{order.shippingCity || "—"}</span>
+                    {order.address && <p className="od-addr">{order.address}</p>}
+                  </div>
+
+                  {/* المبلغ */}
+                  <span className="od-price">{(order.totalPrice || 0).toLocaleString()} دج</span>
+
+                  {/* الحالة */}
+                  <StatusBadge status={order.status} />
+
+                  {/* الإجراءات */}
+                  <div className="od-acts">
+                    {order.status === "pending" && (
+                      <button className="od-ib od-ib--go" title="شحن" aria-label="شحن"
+                        onClick={() => handleUpdateStatus(order._id, "shipped")}>
+                        <IconShip />
+                      </button>
+                    )}
+                    {order.status === "shipped" && (
+                      <button className="od-ib od-ib--go" title="توصيل" aria-label="توصيل"
+                        onClick={() => handleUpdateStatus(order._id, "delivered")}>
+                        <IconCheck />
+                      </button>
+                    )}
+                    {(order.status === "pending" || order.status === "shipped") && (
+                      <button className="od-ib od-ib--no" title="إلغاء" aria-label="إلغاء"
+                        onClick={() => handleUpdateStatus(order._id, "cancelled")}>
+                        <IconX />
+                      </button>
+                    )}
+                    {(order.status === "delivered" || order.status === "cancelled") && (
+                      <span className="od-final">نهائي</span>
+                    )}
+                  </div>
+
+                </div>
+              ))}
             </div>
           </div>
         )}
+
+        <div className="od-foot">
+          عرض <strong>{visible.length}</strong> من <strong>{orders.length}</strong> طلب
+        </div>
       </div>
     </div>
   );
