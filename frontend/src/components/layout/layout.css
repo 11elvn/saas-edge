@@ -61,7 +61,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  margin-left: var(--sidebar-width); /* sidebar على اليسار */
+  margin-left: calc(var(--sidebar-width) + 12px); /* sidebar عائمة على اليسار */
   transition: margin-left .22s ease;
 }
 
@@ -527,7 +527,7 @@ html[data-theme="dark"] .tb-item--active { color: #c4b5fd; }
 html[data-theme="dark"] .tb-item--danger:hover { background: rgba(239,68,68,.15); color: #fca5a5; }
 
 /* Sidebar */
-html[data-theme="dark"] .sidebar.sb { background: #14161d; border-right-color: #262a36; }
+html[data-theme="dark"] .sidebar.sb { background: #14161d; border-color: #262a36; }
 html[data-theme="dark"] .sb-toggle { background: #1c1f29; color: #b9b2d6; border-color: #2a2e3b; }
 html[data-theme="dark"] .sb-toggle:hover { background: #242836; color: #fff; border-color: #34394a; }
 html[data-theme="dark"] .sb-store { background: #1c1f29; }

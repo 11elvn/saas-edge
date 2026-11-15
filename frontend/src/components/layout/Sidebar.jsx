@@ -279,7 +279,15 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
 
         /* ══ حالة التسكير: شريط أيقونات فقط (حاسوب) ══ */
         @media (min-width: 769px) {
-          .sidebar.sb { transition: width .22s ease; overflow-x: hidden; }
+          .sidebar.sb {
+            transition: width .22s ease;
+            overflow-x: hidden;
+            top: 12px; left: 12px;
+            height: calc(100vh - 24px);
+            border: 1px solid #ebe7f7;
+            border-radius: 28px;
+            box-shadow: 0 8px 30px rgba(137,75,244,.08);
+          }
           .sb--collapsed { padding: 12px 10px; }
           .sb--collapsed .sb-top { flex-direction: column; gap: 10px; padding: 4px 0 0; }
           .sb--collapsed .sb-logo { padding-left: 0; }
