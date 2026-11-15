@@ -1,25 +1,26 @@
 // ============================================================
 // 📁 pages/OrdersManagement.jsx — Orders (Overview style)
-// فلاتر الحالة + بحث + جدول بصفوف خفيفة + أزرار إجراءات دائرية
+// Status filters + search + light table rows + round action buttons (English / LTR like Overview)
 // ============================================================
 import { useState, useEffect } from "react";
+import { usePrefs } from "../context/PrefsContext";
 
 const API      = () => import.meta.env.VITE_API_URL;
 const getToken = () => localStorage.getItem("token");
 
 const STATUS_CONFIG = {
-  pending:   { label: "قيد الانتظار", color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" },
-  shipped:   { label: "تم الشحن",     color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
-  delivered: { label: "تم التوصيل",   color: "#10b981", bg: "#f0fdf4", border: "#bbf7d0" },
-  cancelled: { label: "ملغي",         color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+  pending:   { label: "Pending", color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" },
+  shipped:   { label: "Shipped",     color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
+  delivered: { label: "Delivered",   color: "#10b981", bg: "#f0fdf4", border: "#bbf7d0" },
+  cancelled: { label: "Cancelled",       color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
 };
 
 const FILTERS = [
-  { key: "all",       label: "الكل"  },
-  { key: "pending",   label: "معلق"  },
-  { key: "shipped",   label: "مشحون" },
-  { key: "delivered", label: "موصّل" },
-  { key: "cancelled", label: "ملغي"  },
+  { key: "all",       label: "All"       },
+  { key: "pending",   label: "Pending"   },
+  { key: "shipped",   label: "Shipped"   },
+  { key: "delivered", label: "Delivered" },
+  { key: "cancelled", label: "Cancelled" },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ const CSS = `
   display:flex;align-items:center;justify-content:center;
 }
 .od-name{font-weight:600;color:#111827;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.od-phone{font-size:.74rem;color:#9ca3af;margin:2px 0 0;direction:ltr;text-align:right;}
+.od-phone{font-size:.74rem;color:#9ca3af;margin:2px 0 0;direction:ltr;text-align:left;}
 .od-items{display:flex;flex-direction:column;gap:3px;min-width:0;}
 .od-item{color:#374151;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .od-item small{color:#9ca3af;font-size:.74rem;}
@@ -165,17 +166,18 @@ const IconShip = () => (
 const IconCheck = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><polyline points="20 6 9 17 4 12" /></svg>);
 const IconX     = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>);
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, t }) => {
   const cfg = STATUS_CONFIG[status] || { label: status, color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" };
   return (
     <span className="od-badge" style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.border }}>
       <i />
-      {cfg.label}
+      {t(cfg.label)}
     </span>
   );
 };
 
 const OrdersManagement = () => {
+  const { t } = usePrefs();
   const [orders,  setOrders]  = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
@@ -197,7 +199,7 @@ const OrdersManagement = () => {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setOrders(data);
-    } catch { setError("فشل في جلب الطلبات ❌"); }
+    } catch { setError("Failed to load orders ❌"); }
     finally  { setLoading(false); }
   };
 
@@ -209,10 +211,10 @@ const OrdersManagement = () => {
         body:    JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
-      if (!res.ok) return notify(data.message || "حدث خطأ ❌", "error");
+      if (!res.ok) return notify(data.message || "Something went wrong ❌", "error");
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-      notify("تم تحديث الحالة ✅");
-    } catch { notify("خطأ في الاتصال ❌", "error"); }
+      notify("Status updated ✅");
+    } catch { notify("Connection error ❌", "error"); }
   };
 
   useEffect(() => { fetchOrders(); }, []);
@@ -220,15 +222,15 @@ const OrdersManagement = () => {
   if (loading) return (
     <div className="pp-loading">
       <div className="pp-spinner" />
-      <p>جاري تحميل الطلبات...</p>
+      <p>{t("Loading orders...")}</p>
     </div>
   );
 
   if (error) return (
     <div className="pp-empty">
       <span>⚠️</span>
-      <p style={{ color: "#ef4444" }}>{error}</p>
-      <button className="pp-btn pp-btn--primary" onClick={fetchOrders}>إعادة المحاولة</button>
+      <p style={{ color: "#ef4444" }}>{t(error)}</p>
+      <button className="pp-btn pp-btn--primary" onClick={fetchOrders}>{t("Try again")}</button>
     </div>
   );
 
@@ -257,7 +259,7 @@ const OrdersManagement = () => {
   });
 
   return (
-    <div className="od-page" dir="rtl">
+    <div className="od-page" dir="ltr">
       <style>{CSS}</style>
 
       {/* Toast */}
@@ -270,16 +272,16 @@ const OrdersManagement = () => {
       {/* ══ HEADER ══ */}
       <div className="od-head">
         <div>
-          <h1 className="od-title">الطلبات</h1>
-          <p className="od-sub">تابع وأدر طلبات متجرك.</p>
+          <h1 className="od-title">{t("Orders")}</h1>
+          <p className="od-sub">{t("Track and manage your store orders.")}</p>
         </div>
-        <button className="od-circ" onClick={fetchOrders} title="تحديث" aria-label="تحديث">
+        <button className="od-circ" onClick={fetchOrders} title={t("Refresh")} aria-label={t("Refresh")}>
           <IconRefresh />
         </button>
       </div>
 
       {/* ══ FILTER CHIPS ══ */}
-      <div className="od-chips" role="tablist" aria-label="تصفية حسب الحالة">
+      <div className="od-chips" role="tablist" aria-label={t("Filter by status")}>
         {FILTERS.map(f => (
           <button
             key={f.key}
@@ -288,7 +290,7 @@ const OrdersManagement = () => {
             className={`od-chip${filter === f.key ? " is-on" : ""}`}
             onClick={() => setFilter(f.key)}
           >
-            {f.label}
+            {t(f.label)}
             <span className="od-chip__n">{counts[f.key]}</span>
           </button>
         ))}
@@ -301,7 +303,7 @@ const OrdersManagement = () => {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="ابحث باسم الزبون أو الهاتف أو المنتج أو الولاية"
+          placeholder={t("Search by customer, phone, product or wilaya")}
         />
       </label>
 
@@ -309,14 +311,14 @@ const OrdersManagement = () => {
       <div className="od-card">
         {visible.length === 0 ? (
           <div className="od-empty">
-            {orders.length === 0 ? "لا توجد طلبات بعد" : "لا توجد طلبات مطابقة"}
+            {orders.length === 0 ? t("No orders yet") : t("No matching orders")}
           </div>
         ) : (
           <div className="od-scroll">
             <div className="od-grid">
               <div className="od-row od-row--head">
-                {["الزبون", "المنتج", "الولاية", "المبلغ", "الحالة", "إجراءات"].map(h => (
-                  <span key={h}>{h}</span>
+                {["Customer", "Product", "Wilaya", "Amount", "Status", "Actions"].map(h => (
+                  <span key={h}>{t(h)}</span>
                 ))}
               </div>
 
@@ -345,7 +347,7 @@ const OrdersManagement = () => {
                       ))
                     ) : (
                       <span className="od-item">
-                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>منتج محذوف</span>}
+                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>{t("Deleted product")}</span>}
                       </span>
                     )}
                   </div>
@@ -357,33 +359,33 @@ const OrdersManagement = () => {
                   </div>
 
                   {/* المبلغ */}
-                  <span className="od-price">{(order.totalPrice || 0).toLocaleString()} دج</span>
+                  <span className="od-price">{(order.totalPrice || 0).toLocaleString("en-US")} DA</span>
 
                   {/* الحالة */}
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={order.status} t={t} />
 
                   {/* الإجراءات */}
                   <div className="od-acts">
                     {order.status === "pending" && (
-                      <button className="od-ib od-ib--go" title="شحن" aria-label="شحن"
+                      <button className="od-ib od-ib--go" title={t("Ship")} aria-label={t("Ship")}
                         onClick={() => handleUpdateStatus(order._id, "shipped")}>
                         <IconShip />
                       </button>
                     )}
                     {order.status === "shipped" && (
-                      <button className="od-ib od-ib--go" title="توصيل" aria-label="توصيل"
+                      <button className="od-ib od-ib--go" title={t("Mark delivered")} aria-label={t("Mark delivered")}
                         onClick={() => handleUpdateStatus(order._id, "delivered")}>
                         <IconCheck />
                       </button>
                     )}
                     {(order.status === "pending" || order.status === "shipped") && (
-                      <button className="od-ib od-ib--no" title="إلغاء" aria-label="إلغاء"
+                      <button className="od-ib od-ib--no" title={t("Cancel order")} aria-label={t("Cancel order")}
                         onClick={() => handleUpdateStatus(order._id, "cancelled")}>
                         <IconX />
                       </button>
                     )}
                     {(order.status === "delivered" || order.status === "cancelled") && (
-                      <span className="od-final">نهائي</span>
+                      <span className="od-final">{t("Final")}</span>
                     )}
                   </div>
 
@@ -394,7 +396,7 @@ const OrdersManagement = () => {
         )}
 
         <div className="od-foot">
-          عرض <strong>{visible.length}</strong> من <strong>{orders.length}</strong> طلب
+          {t("Showing")} <strong>{visible.length}</strong> {t("of")} <strong>{orders.length}</strong> {t("orders")}
         </div>
       </div>
     </div>
