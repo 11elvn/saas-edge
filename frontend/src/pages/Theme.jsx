@@ -20,6 +20,8 @@ const CSS = `
   min-height: 560px;
   border: 1px solid rgba(255,255,255,.9);
   background:
+    radial-gradient(520px 340px at 92% -6%, rgba(167,139,250,.55), transparent 70%),
+    radial-gradient(460px 360px at -4% 105%, rgba(196,181,253,.5), transparent 70%),
     radial-gradient(380px 260px at 55% 48%, rgba(221,214,254,.45), transparent 70%),
     #faf7ff;
   box-shadow: 0 10px 40px rgba(137,75,244,.10), inset 0 1px 0 rgba(255,255,255,.9);
