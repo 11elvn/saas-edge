@@ -50,6 +50,7 @@ const CSS = `
   transition:color .15s,box-shadow .15s;
 }
 .od-circ:hover{color:#894bf4;box-shadow:0 4px 16px rgba(137,75,244,.18);}
+.od-hact{display:flex;gap:8px;align-items:center;}
 .od-circ:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
 
 /* filter chips */
@@ -135,7 +136,27 @@ const CSS = `
 .od-ib--go:hover{background:#7c3aed;border-color:#7c3aed;}
 .od-ib--no{color:#ef4444;}
 .od-ib--no:hover{background:#fef2f2;border-color:#fecaca;}
-.od-final{font-size:.72rem;color:#9ca3af;font-style:italic;}
+.od-ib--view:hover{background:#f4f1fe;border-color:#e0d2fa;color:#894bf4;}
+
+/* details modal */
+.od-ov{
+  position:fixed;inset:0;z-index:200;padding:16px;
+  background:rgba(17,24,39,.35);
+  display:flex;align-items:center;justify-content:center;
+}
+.od-modal{
+  width:min(460px,100%);max-height:90vh;overflow-y:auto;
+  background:#fff;border-radius:24px;padding:22px;
+  box-shadow:0 20px 60px rgba(137,75,244,.22);
+}
+.od-modal__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.od-modal__title{font-size:1.1rem;font-weight:700;margin:0;color:#111827;}
+.od-dl{display:flex;flex-direction:column;}
+.od-dl__row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;font-size:.85rem;}
+.od-dl__row + .od-dl__row{border-top:1px solid #f1ecfd;}
+.od-dl__k{color:#9ca3af;flex-shrink:0;}
+.od-dl__v{color:#111827;font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere;}
+.od-dl__v--ltr{direction:ltr;}
 
 .od-foot{border-top:1px solid #f1ecfd;padding:12px 20px;font-size:.75rem;color:#9ca3af;}
 .od-foot strong{color:#374151;}
@@ -164,7 +185,24 @@ const IconShip = () => (
   </svg>
 );
 const IconCheck = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><polyline points="20 6 9 17 4 12" /></svg>);
+const IconDownload = () => (
+  <svg width="18" height="18" {...ico}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+const IconEye = () => (
+  <svg width="16" height="16" {...ico}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+);
 const IconX     = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>);
+
+// نص المنتجات لسطر واحد (للتصدير والتفاصيل)
+const itemsText = (o) =>
+  o.items?.length > 0
+    ? o.items.map(it => `${it.name} x${it.quantity}${(it.color || it.size) ? ` (${[it.color, it.size].filter(Boolean).join(" / ")})` : ""}`).join(" | ")
+    : (o.productId?.name || "");
+
+const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 const StatusBadge = ({ status, t }) => {
   const cfg = STATUS_CONFIG[status] || { label: status, color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" };
@@ -184,6 +222,7 @@ const OrdersManagement = () => {
   const [notif,   setNotif]   = useState(null);
   const [filter,  setFilter]  = useState("all");
   const [query,   setQuery]   = useState("");
+  const [detail,  setDetail]  = useState(null);   // الطلب المعروض في نافذة التفاصيل
 
   const notify = (msg, type = "success") => {
     setNotif({ msg, type });
@@ -218,6 +257,14 @@ const OrdersManagement = () => {
   };
 
   useEffect(() => { fetchOrders(); }, []);
+
+  // Escape يسكر نافذة التفاصيل
+  useEffect(() => {
+    if (!detail) return;
+    const onKey = (e) => { if (e.key === "Escape") setDetail(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [detail]);
 
   if (loading) return (
     <div className="pp-loading">
@@ -258,6 +305,26 @@ const OrdersManagement = () => {
     return hay.includes(q);
   });
 
+  // تصدير الطلبات الظاهرة (حسب الفلتر والبحث) إلى CSV
+  const exportCsv = () => {
+    if (visible.length === 0) return notify("No orders to export ❌", "error");
+    const head = ["Customer", "Phone", "Product", "Wilaya", "Address", "Amount (DA)", "Status", "Date"];
+    const rows = visible.map(o => [
+      o.customerName, o.phone, itemsText(o), o.shippingCity, o.address,
+      o.totalPrice || 0,
+      STATUS_CONFIG[o.status]?.label || o.status,
+      o.createdAt ? new Date(o.createdAt).toLocaleString("en-GB") : "",
+    ]);
+    const csv = "\uFEFF" + [head, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    notify("Orders exported ✅");
+  };
+
   return (
     <div className="od-page" dir="ltr">
       <style>{CSS}</style>
@@ -275,9 +342,14 @@ const OrdersManagement = () => {
           <h1 className="od-title">{t("Orders")}</h1>
           <p className="od-sub">{t("Track and manage your store orders.")}</p>
         </div>
-        <button className="od-circ" onClick={fetchOrders} title={t("Refresh")} aria-label={t("Refresh")}>
-          <IconRefresh />
-        </button>
+        <div className="od-hact">
+          <button className="od-circ" onClick={fetchOrders} title={t("Refresh")} aria-label={t("Refresh")}>
+            <IconRefresh />
+          </button>
+          <button className="od-circ" onClick={exportCsv} title={t("Export")} aria-label={t("Export")}>
+            <IconDownload />
+          </button>
+        </div>
       </div>
 
       {/* ══ FILTER CHIPS ══ */}
@@ -366,6 +438,10 @@ const OrdersManagement = () => {
 
                   {/* الإجراءات */}
                   <div className="od-acts">
+                    <button className="od-ib od-ib--view" title={t("View details")} aria-label={t("View details")}
+                      onClick={() => setDetail(order)}>
+                      <IconEye />
+                    </button>
                     {order.status === "pending" && (
                       <button className="od-ib od-ib--go" title={t("Ship")} aria-label={t("Ship")}
                         onClick={() => handleUpdateStatus(order._id, "shipped")}>
@@ -384,9 +460,6 @@ const OrdersManagement = () => {
                         <IconX />
                       </button>
                     )}
-                    {(order.status === "delivered" || order.status === "cancelled") && (
-                      <span className="od-final">{t("Final")}</span>
-                    )}
                   </div>
 
                 </div>
@@ -399,6 +472,32 @@ const OrdersManagement = () => {
           {t("Showing")} <strong>{visible.length}</strong> {t("of")} <strong>{orders.length}</strong> {t("orders")}
         </div>
       </div>
+
+      {/* ══ DETAILS MODAL ══ */}
+      {detail && (
+        <div className="od-ov" onClick={() => setDetail(null)}>
+          <div className="od-modal" role="dialog" aria-modal="true" aria-label={t("Order details")} onClick={e => e.stopPropagation()}>
+            <div className="od-modal__head">
+              <h2 className="od-modal__title">{t("Order details")}</h2>
+              <button className="od-circ" style={{ width: 36, height: 36 }} onClick={() => setDetail(null)} title={t("Close")} aria-label={t("Close")}>
+                <IconX />
+              </button>
+            </div>
+            <div className="od-dl">
+              <div className="od-dl__row"><span className="od-dl__k">{t("Customer")}</span><span className="od-dl__v">{detail.customerName}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Phone")}</span><span className="od-dl__v od-dl__v--ltr">{detail.phone}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Wilaya")}</span><span className="od-dl__v">{detail.shippingCity || "—"}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Address")}</span><span className="od-dl__v">{detail.address || "—"}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Product")}</span><span className="od-dl__v">{itemsText(detail) || "—"}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Amount")}</span><span className="od-dl__v" style={{ color: "#10b981" }}>{(detail.totalPrice || 0).toLocaleString("en-US")} DA</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Status")}</span><StatusBadge status={detail.status} t={t} /></div>
+              {detail.createdAt && (
+                <div className="od-dl__row"><span className="od-dl__k">{t("Date")}</span><span className="od-dl__v">{new Date(detail.createdAt).toLocaleString("en-GB")}</span></div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
