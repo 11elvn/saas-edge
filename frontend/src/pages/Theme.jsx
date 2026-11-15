@@ -38,41 +38,44 @@ const CSS = `
 .th-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 .th-tabs {
-  display: inline-flex; gap: 2px; padding: 3px;
-  background: rgba(255,255,255,.65);
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px;
+  background: #fff;
   border: 1px solid rgba(255,255,255,.9);
-  border-radius: 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(137,75,244,.10);
 }
 .th-tab {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border: none; border-radius: 8px; background: transparent;
-  color: #6b7280; font-size: .8rem; font-weight: 500; cursor: pointer;
-  font-family: inherit; transition: background .15s, color .15s; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; padding: 0; border: none; border-radius: 50%;
+  background: transparent; color: #6b7280; cursor: pointer;
+  font-family: inherit; transition: background .15s, color .15s;
 }
-.th-tab:hover { color: #111827; }
+.th-tab svg { width: 17px; height: 17px; }
+.th-tab:hover { background: #f4f1fe; color: #894bf4; }
 .th-tab:focus-visible { outline: 2px solid #894bf4; outline-offset: 1px; }
 .th-tab.is-on, .th-tab.is-on:hover { background: #894bf4; color: #fff; }
 
-.th-btn-edit {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 10px; border: none;
-  background: #894bf4; color: #fff;
-  font-size: .8rem; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: background .15s;
-  box-shadow: 0 4px 14px rgba(137,75,244,.25);
-}
-.th-btn-edit:hover { background: #7c3aed; }
-.th-btn-edit:focus-visible, .th-btn-view:focus-visible { outline: 2px solid #894bf4; outline-offset: 2px; }
 .th-btn-view {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,.9);
-  background: rgba(255,255,255,.65);
-  color: #4c1d95; font-size: .8rem; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: background .15s;
+  background: rgba(255,255,255,.75); color: #6b7280;
+  cursor: pointer; transition: background .15s, color .15s;
   text-decoration: none;
 }
-.th-btn-view:hover { background: rgba(255,255,255,.95); }
+.th-btn-view svg { width: 18px; height: 18px; }
+.th-btn-view:hover { background: #fff; color: #894bf4; }
+.th-btn-view:focus-visible, .th-btn-edit:focus-visible { outline: 2px solid #894bf4; outline-offset: 2px; }
+
+.th-btn-edit {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 42px; padding: 0 20px; border-radius: 999px; border: none;
+  background: #894bf4; color: #fff;
+  font-size: .85rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s;
+  box-shadow: 0 4px 14px rgba(137,75,244,.25);
+}
+.th-btn-edit:hover { background: #7c3aed; box-shadow: 0 6px 18px rgba(137,75,244,.32); }
 
 /* ══ GLASS CARD ══ */
 .th-card {
@@ -325,18 +328,19 @@ function Theme() {
                 role="tab"
                 aria-selected={view === v.id}
                 className={`th-tab ${view === v.id ? "is-on" : ""}`}
+                title={v.label}
+                aria-label={v.label}
                 onClick={() => setView(v.id)}
               >
-                {v.icon}{v.label}
+                {v.icon}
               </button>
             ))}
           </div>
           {storeUrl && (
-            <a href={storeUrl} target="_blank" rel="noreferrer" className="th-btn-view">
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <a href={storeUrl} target="_blank" rel="noreferrer"  className="th-btn-view" title="View your store" aria-label="View your store">
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
               </svg>
-              View your store
             </a>
           )}
           <button className="th-btn-edit" onClick={() => navigate("/theme/edit")}>
