@@ -95,9 +95,6 @@ function TopBar({ title = "Dashboard", newOrdersCount = 0, onBellClick, store, o
 
   return (
     <header className="topbar" dir={dir}>
-      {/* ── Page Title ── */}
-      <h1 className="topbar__title">{t(title)}</h1>
-
       {/* ── Floating pill ── */}
       <div className="tb-pill" dir="ltr">
 
