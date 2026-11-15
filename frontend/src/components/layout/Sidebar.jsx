@@ -165,7 +165,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           width: 38px; height: 38px;
           display: flex; align-items: center; justify-content: center;
           background: #fff; color: #5b4f87;
-          border: 1px solid #ebe7f7; border-radius: 10px;
+          border: 1px solid #ebe7f7; border-radius: 999px;
           cursor: pointer; transition: background .15s, color .15s, border-color .15s;
         }
         .sb-toggle:hover { background: #f4f1fe; color: #5b3fd6; border-color: #e0d9f7; }
@@ -231,8 +231,8 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           flex-direction: row;
           align-items: center;
           gap: 12px;
-          padding: 10px 12px;
-          border-radius: 9px;
+          padding: 10px 14px;
+          border-radius: 999px;
           font-size: .92rem;
           font-weight: 500;
           color: #5b4f87;
@@ -241,10 +241,10 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           cursor: pointer;
           direction: ltr;
         }
-        .sb-item:hover { background: #f4f1fe; color: #5b3fd6; }
+        .sb-item:hover { background: #f4f1fe; color: #894bf4; }
         .sb-item--active,
         .sb-item--active:hover {
-          background: #6c5ce7;
+          background: #894bf4;
           color: #fff;
           font-weight: 600;
         }
@@ -290,7 +290,7 @@ function Sidebar({ store, onLogout, collapsed = false, onToggle }) {
           .sb--collapsed .sb-item__label,
           .sb--collapsed .sb-logout span { display: none; }
           .sb--collapsed .sb-section + .sb-section { border-top: 1px solid #ece7fb; padding-top: 6px; margin-top: 2px; }
-          .sb--collapsed .sb-item { justify-content: center; padding: 10px 0; }
+          .sb--collapsed .sb-item { justify-content: center; width: 44px; height: 44px; padding: 0; margin: 0 auto; }
           .sb--collapsed .sb-item__icon { width: auto; }
           .sb--collapsed .sb-logout { justify-content: center; padding: 10px 0; }
         }
