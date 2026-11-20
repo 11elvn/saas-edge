@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { usePrefs } from "../context/PrefsContext";
-import { ALGERIAN_CITIES } from "../constants/algerianCities";
+import { ALGERIAN_CITIES, getCityLabel } from "../constants/algerianCities";
 
 const API      = () => import.meta.env.VITE_API_URL;
 const getToken = () => localStorage.getItem("token");
@@ -595,7 +595,7 @@ function DateSelect({ value, onChange, options, ariaLabel, t }) {
 // ── Create Order modal ─────────────────────────────────────────
 const emptyLine = () => ({ productId: "", quantity: 1, color: "", size: "" });
 
-function CreateOrderModal({ t, onClose, onCreated }) {
+function CreateOrderModal({ t, lang, onClose, onCreated }) {
   const [products,   setProducts]   = useState([]);
   const [loadingP,   setLoadingP]   = useState(true);
   const [name,       setName]       = useState("");
@@ -722,7 +722,7 @@ function CreateOrderModal({ t, onClose, onCreated }) {
               <select className="od-inp" value={city} onChange={e => setCity(e.target.value)}>
                 <option value="">{t("Choose a wilaya")}</option>
                 {ALGERIAN_CITIES.map(c => (
-                  <option key={c.id} value={c.name}>{c.id} - {c.name}</option>
+                  <option key={c.id} value={c.name}>{c.id} - {lang === "ar" ? c.name : c.en}</option>
                 ))}
               </select>
             </label>
@@ -828,7 +828,7 @@ function CreateOrderModal({ t, onClose, onCreated }) {
 }
 
 const OrdersManagement = () => {
-  const { t } = usePrefs();
+  const { t, lang } = usePrefs();
   const [orders,  setOrders]  = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
@@ -938,6 +938,7 @@ const OrdersManagement = () => {
       o.customerName,
       o.phone,
       o.shippingCity,
+      getCityLabel(o.shippingCity, "en"),
       o.productId?.name,
       ...(o.items || []).map(it => it.name),
     ].filter(Boolean).join(" ").toLowerCase();
@@ -971,7 +972,7 @@ const OrdersManagement = () => {
     if (source.length === 0) return notify("No orders to export ❌", "error");
     const head = ["Customer", "Phone", "Product", "Wilaya", "Address", "Amount (DA)", "Status", "Date"];
     const rows = source.map(o => [
-      o.customerName, o.phone, itemsText(o), o.shippingCity, o.address,
+      o.customerName, o.phone, itemsText(o), getCityLabel(o.shippingCity, lang), o.address,
       o.totalPrice || 0,
       STATUS_CONFIG[o.status]?.label || o.status,
       o.createdAt ? new Date(o.createdAt).toLocaleString("en-GB") : "",
@@ -1120,7 +1121,7 @@ const OrdersManagement = () => {
 
                     {/* التوصيل */}
                     <div style={{ minWidth: 0 }}>
-                      <p className="od-dv">{[order.shippingCity, order.municipality].filter(Boolean).join(", ") || "—"}</p>
+                      <p className="od-dv">{[getCityLabel(order.shippingCity, lang), order.municipality].filter(Boolean).join(", ") || "—"}</p>
                       {order.address && <p className="od-dvs">{order.address}</p>}
                     </div>
 
@@ -1187,6 +1188,7 @@ const OrdersManagement = () => {
       {creating && (
         <CreateOrderModal
           t={t}
+          lang={lang}
           onClose={() => setCreating(false)}
           onCreated={() => {
             setCreating(false);
@@ -1209,7 +1211,7 @@ const OrdersManagement = () => {
             <div className="od-dl">
               <div className="od-dl__row"><span className="od-dl__k">{t("Customer")}</span><span className="od-dl__v">{detail.customerName}</span></div>
               <div className="od-dl__row"><span className="od-dl__k">{t("Phone")}</span><span className="od-dl__v od-dl__v--ltr">{detail.phone}</span></div>
-              <div className="od-dl__row"><span className="od-dl__k">{t("Wilaya")}</span><span className="od-dl__v">{detail.shippingCity || "—"}</span></div>
+              <div className="od-dl__row"><span className="od-dl__k">{t("Wilaya")}</span><span className="od-dl__v">{getCityLabel(detail.shippingCity, lang) || "—"}</span></div>
               <div className="od-dl__row"><span className="od-dl__k">{t("Address")}</span><span className="od-dl__v">{detail.address || "—"}</span></div>
               <div className="od-dl__row"><span className="od-dl__k">{t("Product")}</span><span className="od-dl__v">{itemsText(detail) || "—"}</span></div>
               <div className="od-dl__row"><span className="od-dl__k">{t("Amount")}</span><span className="od-dl__v" style={{ color: "#10b981" }}>{(detail.totalPrice || 0).toLocaleString("en-US")} DA</span></div>
