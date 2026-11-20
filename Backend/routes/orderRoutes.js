@@ -167,7 +167,7 @@ router.get("/my-orders", auth, async (req, res) => {
 
     const orders = await Order.find({ storeId: store._id })
       .sort({ createdAt: -1 })
-      .populate("productId", "name currentPrice");
+      .populate("productId", "name currentPrice image images");
 
     res.status(200).json(orders);
 

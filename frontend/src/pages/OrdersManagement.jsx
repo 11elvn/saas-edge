@@ -1077,7 +1077,7 @@ const OrdersManagement = () => {
               {pageRows.map(order => {
                 const first = order.items?.[0];
                 const extra = (order.items?.length || 0) - 1;
-                const img   = first?.image || "";
+                const img   = first?.image || order.productId?.images?.[0] || order.productId?.image || "";
                 const prodName = first?.name || order.productId?.name;
                 const variant  = first ? [first.color, first.size].filter(Boolean).join(" · ") : "";
 
@@ -1102,7 +1102,7 @@ const OrdersManagement = () => {
 
                     {/* المنتج: صورة + اسم + سعر */}
                     <div className="od-prod">
-                      <span className="od-thumb" style={img ? { backgroundImage: `url(${img})` } : undefined}>
+                      <span className="od-thumb" style={img ? { backgroundImage: `url("${String(img).replace(/"/g, "%22")}")` } : undefined}>
                         {!img && <IconImage />}
                       </span>
                       <div style={{ minWidth: 0 }}>

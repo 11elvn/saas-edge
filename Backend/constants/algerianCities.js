@@ -75,12 +75,36 @@ export const getShippingPrice = (cityName) => {
   return city ? city.price : 0;
 };
 
+// ✦ تطبيع الاسم العربي (همزات، ة/ه، ى/ي، تشكيل، "ال" التعريف) باش المقارنة تنجح
+// حتى مع الأسماء القديمة المخزنة بصيغة مختلفة ("الجزائر" / "المسيلة" / "توقرت"...)
+const norm = (str) =>
+  String(str || "")
+    .replace(/[\u064B-\u0652\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^ال/, "");
+
+const CITY_BY_NORM = (() => {
+  const m = {};
+  ALGERIAN_CITIES.forEach((c) => { m[norm(c.name)] = c; });
+  m[norm("الجزائر")] = ALGERIAN_CITIES.find((c) => c.id === "16");
+  m[norm("المسيلة")] = ALGERIAN_CITIES.find((c) => c.id === "28");
+  m[norm("توقرت")]   = ALGERIAN_CITIES.find((c) => c.id === "55");
+  return m;
+})();
+
+// ✦ ترجع كائن الولاية (id, name, en, price) من أي صيغة مخزنة، أو undefined
+export const findCity = (cityName) => CITY_BY_NORM[norm(cityName)];
+
 // ✦ اسم الولاية للعرض في الداشبورد حسب اللغة
 // القيمة المخزنة في الطلب تبقى عربية (shippingCity) — هذي الدالة للعرض فقط
 // الاستخدام: getCityLabel("تمنراست", "en") → "Tamanrasset"
 export const getCityLabel = (cityName, lang = "ar") => {
   if (!cityName) return "";
   if (lang === "ar") return cityName;
-  const city = ALGERIAN_CITIES.find((c) => c.name === cityName);
+  const city = findCity(cityName);
   return city ? city.en : cityName;
 };
