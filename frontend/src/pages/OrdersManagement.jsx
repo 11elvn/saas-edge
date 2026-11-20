@@ -4,6 +4,7 @@
 // + Create Order (manual order from the merchant dashboard)
 // ============================================================
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { usePrefs } from "../context/PrefsContext";
 import { ALGERIAN_CITIES } from "../constants/algerianCities";
 
@@ -184,14 +185,72 @@ const CSS = `
   box-shadow:0 4px 20px rgba(137,75,244,.07);overflow:hidden;
 }
 .od-scroll{overflow-x:auto;}
-.od-grid{min-width:780px;}
+.od-grid{min-width:1000px;}
 .od-row{
-  display:grid;grid-template-columns:1.5fr 1.5fr .8fr .9fr 1fr 1.1fr;
-  gap:12px;align-items:center;padding:12px 20px;font-size:.84rem;
+  position:relative;
+  display:grid;grid-template-columns:34px 1.1fr 1.2fr 1.4fr 1.5fr 1.3fr .8fr .9fr;
+  gap:12px;align-items:center;padding:12px 18px;font-size:.84rem;
 }
 .od-row + .od-row{border-top:1px solid #f1ecfd;}
-.od-row--head{font-size:.75rem;color:#9ca3af;font-weight:600;padding:14px 20px 10px;}
+.od-row--head{font-size:.78rem;color:#6b7280;font-weight:600;padding:14px 18px;background:rgba(250,247,255,.9);}
 .od-row:not(.od-row--head):hover{background:rgba(244,241,254,.55);}
+.od-row.is-sel{background:rgba(237,233,255,.6);}
+.od-th-r{text-align:right;}
+.od-cb{width:18px;height:18px;accent-color:#894bf4;cursor:pointer;margin:0;}
+.od-num{
+  display:block;border:none;background:none;padding:0;margin:0;text-align:left;
+  font-family:inherit;font-size:.86rem;font-weight:600;color:#111827;cursor:pointer;
+}
+.od-num:hover{color:#894bf4;}
+.od-num:focus-visible{outline:2px solid #894bf4;outline-offset:2px;border-radius:4px;}
+.od-date{color:#9ca3af;font-size:.76rem;margin:3px 0 0;}
+.od-prod{display:flex;align-items:center;gap:10px;min-width:0;}
+.od-thumb{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:#ede9ff center/cover no-repeat;color:#894bf4;
+  display:flex;align-items:center;justify-content:center;
+}
+.od-pname{font-weight:600;color:#111827;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-psub{font-size:.76rem;color:#9ca3af;margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-more{color:#894bf4;font-weight:700;}
+.od-dv{font-weight:600;color:#111827;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-dvs{font-size:.76rem;color:#9ca3af;margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-st{
+  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px 0 12px;
+  border:1px solid;border-radius:999px;font-family:inherit;font-size:.76rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+}
+.od-st--static{padding:0 12px;cursor:default;}
+.od-st:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
+.od-st i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+.od-st svg{opacity:.6;}
+.od-age{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:.76rem;color:#6b7280;}
+.od-age i{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.od-smenu{
+  position:fixed;z-index:300;min-width:170px;background:#fff;border:1px solid #ebe7f7;
+  border-radius:20px;box-shadow:0 12px 36px rgba(137,75,244,.16);padding:6px;
+  font-family:'Inter',sans-serif;animation:od-pop .14s ease;
+}
+.od-smenu button{
+  display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;border-radius:999px;
+  background:none;font-family:inherit;font-size:.82rem;font-weight:500;color:#374151;cursor:pointer;text-align:left;
+}
+.od-smenu button:hover{background:#f4f1fe;color:#894bf4;}
+.od-smenu button i{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.od-asg{
+  width:34px;height:34px;border-radius:50%;border:1px solid #ebe7f7;background:#fff;color:#9ca3af;
+  display:flex;align-items:center;justify-content:center;
+}
+.od-total{text-align:right;font-weight:700;color:#111827;white-space:nowrap;}
+.od-hov{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  display:flex;gap:6px;padding:8px;background:#fff;border:1px solid #ebe7f7;border-radius:14px;
+  box-shadow:0 6px 20px rgba(137,75,244,.15);
+  opacity:0;pointer-events:none;transition:opacity .15s;z-index:2;
+}
+.od-row:hover .od-hov,.od-row:focus-within .od-hov{opacity:1;pointer-events:auto;}
+.od-ib--ok{color:#10b981;}
+.od-ib--ok:hover{background:#f0fdf4;border-color:#bbf7d0;}
 
 .od-cust{display:flex;align-items:center;gap:10px;min-width:0;}
 .od-av{
@@ -288,8 +347,26 @@ const CSS = `
 }
 .od-btn-ghost:hover{background:#f4f1fe;color:#894bf4;}
 
-.od-foot{border-top:1px solid #f1ecfd;padding:12px 20px;font-size:.75rem;color:#9ca3af;}
-.od-foot strong{color:#374151;}
+.od-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border-top:1px solid #f1ecfd;padding:12px 18px;background:rgba(250,247,255,.9);
+  font-size:.8rem;color:#6b7280;
+}
+.od-foot strong{color:#111827;}
+.od-pg{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.od-rpp{display:flex;align-items:center;gap:8px;}
+.od-rpp select{
+  height:34px;padding:0 12px;border:1px solid #ebe7f7;border-radius:999px;background:#fff;
+  font-family:inherit;font-size:.8rem;font-weight:600;color:#111827;outline:none;cursor:pointer;
+}
+.od-rpp select:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
+.od-pgb{
+  width:34px;height:34px;border-radius:50%;border:1px solid #ebe7f7;background:#fff;color:#6b7280;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.od-pgb:hover:not(:disabled){background:#f4f1fe;color:#894bf4;}
+.od-pgb:disabled{color:#c9c4d9;cursor:not-allowed;}
+.od-pgb:focus-visible{outline:2px solid #894bf4;outline-offset:2px;}
 .od-empty{padding:48px 20px;text-align:center;color:#9ca3af;font-size:.9rem;}
 
 @media (max-width:768px){
@@ -326,6 +403,14 @@ const IconEye = () => (
   <svg width="16" height="16" {...ico}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
 );
 const IconX     = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>);
+const IconImage = () => (
+  <svg width="18" height="18" {...ico}><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+);
+const IconChev = () => (<svg width="13" height="13" {...ico} strokeWidth={2.5}><polyline points="6 9 12 15 18 9" /></svg>);
+const IconFirst = () => (<svg width="16" height="16" {...ico}><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg>);
+const IconPrev  = () => (<svg width="16" height="16" {...ico}><polyline points="15 18 9 12 15 6" /></svg>);
+const IconNext  = () => (<svg width="16" height="16" {...ico}><polyline points="9 18 15 12 9 6" /></svg>);
+const IconLast  = () => (<svg width="16" height="16" {...ico}><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></svg>);
 const IconPlus  = () => (<svg width="16" height="16" {...ico} strokeWidth={2.5}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>);
 
 // نص المنتجات لسطر واحد (للتصدير والتفاصيل)
@@ -333,6 +418,30 @@ const itemsText = (o) =>
   o.items?.length > 0
     ? o.items.map(it => `${it.name} x${it.quantity}${(it.color || it.size) ? ` (${[it.color, it.size].filter(Boolean).join(" / ")})` : ""}`).join(" | ")
     : (o.productId?.name || "");
+
+const NEXT_STATUS = {
+  pending:   ["shipped", "cancelled"],
+  shipped:   ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: [],
+};
+
+const orderNo = (o) => `#${String(o._id || "").slice(-6).toUpperCase()}`;
+
+const pad2 = (n) => String(n).padStart(2, "0");
+const fmtDate = (v) => {
+  const d = new Date(v);
+  if (isNaN(d)) return "";
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+
+const daysSince = (v) => {
+  const ts = new Date(v).getTime();
+  if (!ts) return 0;
+  return Math.max(0, Math.floor((Date.now() - ts) / 86400000));
+};
+
+const PAGE_SIZES = [10, 20, 50, 100];
 
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
@@ -345,6 +454,77 @@ const StatusBadge = ({ status, t }) => {
     </span>
   );
 };
+
+// ── Status cell: pill + dropdown + age ─────────────────────────
+function StatusCell({ order, t, onChange }) {
+  const cfg  = STATUS_CONFIG[order.status] || { label: order.status, color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" };
+  const next = NEXT_STATUS[order.status] || [];
+  const [pos, setPos] = useState(null);
+  const btnRef = useRef(null);
+
+  useEffect(() => {
+    if (!pos) return;
+    const close  = () => setPos(null);
+    const onDown = (e) => {
+      if (e.target.closest?.(".od-smenu")) return;
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      setPos(null);
+    };
+    const onKey = (e) => { if (e.key === "Escape") setPos(null); };
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [pos]);
+
+  const toggle = () => {
+    if (pos) return setPos(null);
+    const r = btnRef.current.getBoundingClientRect();
+    setPos({ top: r.bottom + 6, left: r.left });
+  };
+
+  const pillStyle = { background: cfg.bg, color: cfg.color, borderColor: cfg.border };
+  const days = daysSince(order.createdAt);
+
+  return (
+    <div>
+      {next.length > 0 ? (
+        <button
+          ref={btnRef} type="button" className="od-st" style={pillStyle}
+          onClick={toggle} aria-haspopup="menu" aria-expanded={!!pos}
+        >
+          <i />{t(cfg.label)}<IconChev />
+        </button>
+      ) : (
+        <span className="od-st od-st--static" style={pillStyle}><i />{t(cfg.label)}</span>
+      )}
+
+      <div className="od-age">
+        <i style={{ background: cfg.color }} />
+        {days === 0 ? t("today") : `${t("for")} ${days} ${days === 1 ? t("day") : t("days")}`}
+      </div>
+
+      {pos && createPortal(
+        <div className="od-smenu" style={{ top: pos.top, left: pos.left }} role="menu">
+          {next.map(st => (
+            <button key={st} type="button" role="menuitem"
+              onClick={() => { setPos(null); onChange(order._id, st); }}>
+              <i style={{ background: STATUS_CONFIG[st].color }} />
+              {t(STATUS_CONFIG[st].label)}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
 
 // ── Date dropdown ──────────────────────────────────────────────
 function DateSelect({ value, onChange, options, ariaLabel, t }) {
@@ -658,6 +838,9 @@ const OrdersManagement = () => {
   const [query,   setQuery]   = useState("");
   const [detail,  setDetail]  = useState(null);   // الطلب المعروض في نافذة التفاصيل
   const [creating, setCreating] = useState(false); // نافذة إنشاء طلب
+  const [selected, setSelected] = useState(() => new Set()); // الطلبات المحددة (checkbox)
+  const [page,     setPage]     = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const notify = (msg, type = "success") => {
     setNotif({ msg, type });
@@ -707,6 +890,8 @@ const OrdersManagement = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [creating]);
+
+  useEffect(() => { setPage(1); }, [filter, period, query, pageSize]);
 
   if (loading) return (
     <div className="pp-loading">
@@ -759,11 +944,33 @@ const OrdersManagement = () => {
     return hay.includes(q);
   });
 
+  // ترقيم الصفحات
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
+  const curPage    = Math.min(page, totalPages);
+  const startIdx   = (curPage - 1) * pageSize;
+  const pageRows   = visible.slice(startIdx, startIdx + pageSize);
+  const showFrom   = visible.length ? startIdx + 1 : 0;
+  const showTo     = startIdx + pageRows.length;
+  const allOnPage  = pageRows.length > 0 && pageRows.every(o => selected.has(o._id));
+
+  const toggleOne = (id) => setSelected(prev => {
+    const n = new Set(prev);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+  const toggleAllOnPage = () => setSelected(prev => {
+    const n = new Set(prev);
+    if (allOnPage) pageRows.forEach(o => n.delete(o._id));
+    else           pageRows.forEach(o => n.add(o._id));
+    return n;
+  });
+
   // تصدير الطلبات الظاهرة (حسب الفلتر والبحث) إلى CSV
   const exportCsv = () => {
-    if (visible.length === 0) return notify("No orders to export ❌", "error");
+    const source = selected.size > 0 ? visible.filter(o => selected.has(o._id)) : visible;
+    if (source.length === 0) return notify("No orders to export ❌", "error");
     const head = ["Customer", "Phone", "Product", "Wilaya", "Address", "Amount (DA)", "Status", "Date"];
-    const rows = visible.map(o => [
+    const rows = source.map(o => [
       o.customerName, o.phone, itemsText(o), o.shippingCity, o.address,
       o.totalPrice || 0,
       STATUS_CONFIG[o.status]?.label || o.status,
@@ -856,87 +1063,123 @@ const OrdersManagement = () => {
           <div className="od-scroll">
             <div className="od-grid">
               <div className="od-row od-row--head">
-                {["Customer", "Product", "Wilaya", "Amount", "Status", "Actions"].map(h => (
-                  <span key={h}>{t(h)}</span>
-                ))}
+                <input type="checkbox" className="od-cb" checked={allOnPage} onChange={toggleAllOnPage} aria-label={t("Select all")} />
+                <span>{t("Order Number")}</span>
+                <span>{t("Customer")}</span>
+                <span>{t("Items")}</span>
+                <span>{t("Delivery")}</span>
+                <span>{t("Status")}</span>
+                <span>{t("Assignee")}</span>
+                <span className="od-th-r">{t("Total")}</span>
               </div>
 
-              {visible.map(order => (
-                <div className="od-row" key={order._id}>
+              {pageRows.map(order => {
+                const first = order.items?.[0];
+                const extra = (order.items?.length || 0) - 1;
+                const img   = first?.image || "";
+                const prodName = first?.name || order.productId?.name;
+                const variant  = first ? [first.color, first.size].filter(Boolean).join(" · ") : "";
 
-                  {/* الزبون + الهاتف */}
-                  <div className="od-cust">
-                    <span className="od-av">{order.customerName?.charAt(0).toUpperCase()}</span>
+                return (
+                  <div className={`od-row${selected.has(order._id) ? " is-sel" : ""}`} key={order._id}>
+
+                    <input type="checkbox" className="od-cb"
+                      checked={selected.has(order._id)} onChange={() => toggleOne(order._id)}
+                      aria-label={t("Select order")} />
+
+                    {/* رقم الطلب + التاريخ */}
+                    <div>
+                      <button type="button" className="od-num" onClick={() => setDetail(order)}>{orderNo(order)}</button>
+                      <p className="od-date">{fmtDate(order.createdAt)}</p>
+                    </div>
+
+                    {/* الزبون + الهاتف */}
                     <div style={{ minWidth: 0 }}>
                       <p className="od-name">{order.customerName}</p>
                       <p className="od-phone">{order.phone}</p>
                     </div>
-                  </div>
 
-                  {/* المنتج — items كاملين مع اللون/المقاس */}
-                  <div className="od-items">
-                    {order.items?.length > 0 ? (
-                      order.items.map((it, idx) => (
-                        <span key={idx} className="od-item">
-                          {it.name} <small>×{it.quantity}</small>
-                          {(it.color || it.size) && (
-                            <span className="od-var"> ({[it.color, it.size].filter(Boolean).join(" · ")})</span>
-                          )}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="od-item">
-                        {order.productId?.name || <span style={{ color: "#fca5a5", fontSize: ".75rem" }}>{t("Deleted product")}</span>}
+                    {/* المنتج: صورة + اسم + سعر */}
+                    <div className="od-prod">
+                      <span className="od-thumb" style={img ? { backgroundImage: `url(${img})` } : undefined}>
+                        {!img && <IconImage />}
                       </span>
-                    )}
-                  </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p className="od-pname">
+                          {prodName || <span style={{ color: "#fca5a5" }}>{t("Deleted product")}</span>}
+                          {extra > 0 && <span className="od-more"> +{extra}</span>}
+                        </p>
+                        {first && (
+                          <p className="od-psub">
+                            DZD {(first.price || 0).toLocaleString("en-US")} ×{first.quantity}
+                            {variant && ` · ${variant}`}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                  {/* الولاية */}
-                  <div>
-                    <span className="od-city">{order.shippingCity || "—"}</span>
-                    {order.address && <p className="od-addr">{order.address}</p>}
-                  </div>
+                    {/* التوصيل */}
+                    <div style={{ minWidth: 0 }}>
+                      <p className="od-dv">{[order.shippingCity, order.municipality].filter(Boolean).join(", ") || "—"}</p>
+                      {order.address && <p className="od-dvs">{order.address}</p>}
+                    </div>
 
-                  {/* المبلغ */}
-                  <span className="od-price">{(order.totalPrice || 0).toLocaleString("en-US")} DA</span>
+                    {/* الحالة + المدة */}
+                    <StatusCell order={order} t={t} onChange={handleUpdateStatus} />
 
-                  {/* الحالة */}
-                  <StatusBadge status={order.status} t={t} />
+                    {/* المسؤول */}
+                    <span className="od-asg" title={t("Assignee")}><IconPlus /></span>
 
-                  {/* الإجراءات */}
-                  <div className="od-acts">
-                    <button className="od-ib od-ib--view" title={t("View details")} aria-label={t("View details")}
-                      onClick={() => setDetail(order)}>
-                      <IconEye />
-                    </button>
-                    {order.status === "pending" && (
-                      <button className="od-ib od-ib--go" title={t("Ship")} aria-label={t("Ship")}
-                        onClick={() => handleUpdateStatus(order._id, "shipped")}>
-                        <IconShip />
+                    {/* المجموع */}
+                    <span className="od-total">DZD {(order.totalPrice || 0).toLocaleString("en-US")}</span>
+
+                    {/* أزرار تظهر عند hover */}
+                    <div className="od-hov">
+                      {order.status === "pending" && (
+                        <button type="button" className="od-ib od-ib--ok" title={t("Ship")} aria-label={t("Ship")}
+                          onClick={() => handleUpdateStatus(order._id, "shipped")}>
+                          <IconShip />
+                        </button>
+                      )}
+                      {order.status === "shipped" && (
+                        <button type="button" className="od-ib od-ib--ok" title={t("Mark delivered")} aria-label={t("Mark delivered")}
+                          onClick={() => handleUpdateStatus(order._id, "delivered")}>
+                          <IconCheck />
+                        </button>
+                      )}
+                      <button type="button" className="od-ib od-ib--view" title={t("View details")} aria-label={t("View details")}
+                        onClick={() => setDetail(order)}>
+                        <IconEye />
                       </button>
-                    )}
-                    {order.status === "shipped" && (
-                      <button className="od-ib od-ib--go" title={t("Mark delivered")} aria-label={t("Mark delivered")}
-                        onClick={() => handleUpdateStatus(order._id, "delivered")}>
-                        <IconCheck />
-                      </button>
-                    )}
-                    {(order.status === "pending" || order.status === "shipped") && (
-                      <button className="od-ib od-ib--no" title={t("Cancel order")} aria-label={t("Cancel order")}
-                        onClick={() => handleUpdateStatus(order._id, "cancelled")}>
-                        <IconX />
-                      </button>
-                    )}
-                  </div>
+                    </div>
 
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
         <div className="od-foot">
-          {t("Showing")} <strong>{visible.length}</strong> {t("of")} <strong>{dated.length}</strong> {t("orders")}
+          <span>
+            {t("Showing")} <strong>{showFrom}</strong> {t("to")} <strong>{showTo}</strong> {t("of")} <strong>{visible.length}</strong> {t("results")}
+            {selected.size > 0 && <> · <strong>{selected.size}</strong> {t("selected")}</>}
+          </span>
+          <div className="od-pg">
+            <label className="od-rpp">
+              {t("Rows per page")}
+              <select value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>
+                {PAGE_SIZES.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <span><strong>{t("Page")} {curPage} {t("of")} {totalPages}</strong></span>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button type="button" className="od-pgb" onClick={() => setPage(1)} disabled={curPage <= 1} aria-label={t("First page")}><IconFirst /></button>
+              <button type="button" className="od-pgb" onClick={() => setPage(curPage - 1)} disabled={curPage <= 1} aria-label={t("Previous page")}><IconPrev /></button>
+              <button type="button" className="od-pgb" onClick={() => setPage(curPage + 1)} disabled={curPage >= totalPages} aria-label={t("Next page")}><IconNext /></button>
+              <button type="button" className="od-pgb" onClick={() => setPage(totalPages)} disabled={curPage >= totalPages} aria-label={t("Last page")}><IconLast /></button>
+            </div>
+          </div>
         </div>
       </div>
 
