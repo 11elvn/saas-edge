@@ -112,7 +112,7 @@ const CSS = `
 .od-btn-create:disabled{opacity:.6;cursor:not-allowed;}
 
 /* filter bar: date select + status chips */
-.od-fbar{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;position:relative;z-index:5;}
+.od-fbar{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;position:relative;z-index:5;}
 
 /* date select (same look as Overview period select) */
 .od-dsel{position:relative;}
@@ -130,7 +130,7 @@ const CSS = `
 .od-dsel__chev{transition:transform .15s;}
 .od-dsel.is-open .od-dsel__chev{transform:rotate(180deg);}
 .od-dsel__menu{
-  position:absolute;top:calc(100% + 8px);left:0;min-width:190px;
+  position:absolute;top:calc(100% + 8px);right:0;min-width:190px;
   background:#fff;border:1px solid #ebe7f7;border-radius:24px;
   box-shadow:0 12px 36px rgba(137,75,244,.14);padding:8px;z-index:30;
   animation:od-pop .14s ease;
@@ -810,15 +810,8 @@ const OrdersManagement = () => {
         </div>
       </div>
 
-      {/* ══ DATE FILTER + STATUS CHIPS ══ */}
+      {/* ══ STATUS CHIPS + DATE FILTER (right, under Create Order) ══ */}
       <div className="od-fbar">
-        <DateSelect
-          value={period}
-          onChange={setPeriod}
-          options={PERIODS}
-          ariaLabel={t("Filter by date")}
-          t={t}
-        />
         <div className="od-chips" role="tablist" aria-label={t("Filter by status")}>
           {FILTERS.map(f => (
             <button
@@ -833,6 +826,13 @@ const OrdersManagement = () => {
             </button>
           ))}
         </div>
+        <DateSelect
+          value={period}
+          onChange={setPeriod}
+          options={PERIODS}
+          ariaLabel={t("Filter by date")}
+          t={t}
+        />
       </div>
 
       {/* ══ SEARCH ══ */}
